@@ -1,0 +1,249 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SMAT EXPLORER | LIVE FIXED</title>
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;700;900&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg: #0b0e11; --card: #181a20; --border: #2b2f36;
+            --text: #eaecef; --dim: #848e9c; --up: #0ecb81; --down: #f6465d;
+            --accent: #f3ba2f;
+        }
+
+        html, body { 
+            height: 100%; margin: 0; padding: 0; overflow: hidden; 
+            background: var(--bg); color: var(--text); font-family: 'Inter', sans-serif;
+        }
+
+        .wrapper { display: flex; flex-direction: column; height: 100vh; }
+
+        .content-area {
+            flex: 1; overflow-y: auto; padding: 20px;
+            -webkit-overflow-scrolling: touch;
+        }
+
+        .container { max-width: 1200px; margin: 0 auto; }
+        
+        .top-bar { display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border); padding-bottom: 20px; }
+        .search-box input { width: 220px; background: var(--card); border: 1px solid var(--border); color: white; padding: 10px 18px; border-radius: 20px; outline: none; }
+        
+        table { width: 100%; border-collapse: collapse; background: var(--card); margin-top: 20px; border-radius: 12px; overflow: hidden; }
+        th { background: #2b3139; color: var(--dim); padding: 15px; text-align: left; font-size: 11px; text-transform: uppercase; position: sticky; top: 0; z-index: 10; }
+        td { padding: 14px 15px; border-bottom: 1px solid var(--border); font-size: 14px; transition: 0.3s ease; }
+
+        tbody tr:hover td { background: #2b3139; cursor: pointer; }
+
+        .native-row { background: linear-gradient(90deg, #1e1a0a 0%, #181a20 100%); border-left: 4px solid var(--accent); }
+        .coin-info { display: flex; align-items: center; gap: 10px; }
+        .coin-logo { width: 28px; height: 28px; border-radius: 50%; }
+
+        /* --- নিখুঁত স্পিনার লজিক --- */
+        .spinner { 
+            width: 14px; height: 14px; 
+            border: 2px solid rgba(255,255,255,0.05); 
+            border-radius: 50%; 
+            display: inline-block; 
+            animation: spin 1s linear infinite; 
+            vertical-align: middle; 
+        }
+        .s-price { border-top: 2px solid var(--accent); }
+        .s-change { border-top: 2px solid var(--up); }
+        .s-chart { width: 20px; height: 20px; border-top: 2px solid #3498db; margin-left: 40px; }
+        .s-vol { border-top: 2px solid #9b59b6; } /* এখানে ২পিএক্স ফিক্স করা হয়েছে */
+
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+
+        .up { color: var(--up); } .down { color: var(--down); }
+
+        /* শ্যাডো ইফেক্ট */
+        .flash-up td { box-shadow: inset 0 0 15px rgba(14, 203, 129, 0.15); background: rgba(14, 203, 129, 0.05); }
+        .flash-down td { box-shadow: inset 0 0 15px rgba(246, 70, 93, 0.15); background: rgba(246, 70, 93, 0.05); }
+
+        .pagination { display: flex; justify-content: center; align-items: center; gap: 20px; margin: 30px 0 60px 0; }
+        button { background: #2b3139; color: white; border: 1px solid var(--border); padding: 8px 16px; border-radius: 6px; cursor: pointer; }
+
+        .bottom-nav {
+            height: 70px; background: #181a20; display: flex;
+            justify-content: space-around; align-items: center;
+            border-top: 1px solid var(--border); flex-shrink: 0; z-index: 100;
+        }
+        .nav-item { text-align: center; color: var(--dim); text-decoration: none; font-size: 12px; flex: 1; transition: 0.3s; cursor: pointer; }
+        .nav-item:hover, .nav-item.active { color: var(--accent); }
+        .nav-icon { font-size: 22px; margin-bottom: 2px; }
+    </style>
+</head>
+<body>
+
+<div class="wrapper">
+    <div class="content-area">
+        <div class="container">
+            <div class="top-bar">
+                <h2>SMAT <span style="color:var(--accent)">Terminal</span></h2>
+                <div class="search-box">
+                    <input type="text" id="searchInput" placeholder="Search Assets..." oninput="handleSearch()">
+                </div>
+            </div>
+
+            <table>
+                <thead>
+                    <tr>
+                        <th width="60">#</th>
+                        <th>Token</th>
+                        <th>Price (USD)</th>
+                        <th>24h Change</th>
+                        <th>7D Trend</th>
+                        <th>24h Volume</th>
+                    </tr>
+                </thead>
+                <tbody id="crypto-table"></tbody>
+            </table>
+
+            <div class="pagination">
+                <button onclick="changePage(-1)">Previous</button>
+                <span id="page-info" style="font-weight:bold; color:var(--accent)">Page 1</span>
+                <button onclick="changePage(1)">Next</button>
+            </div>
+        </div>
+    </div>
+
+    <nav class="bottom-nav">
+        <a class="nav-item"><div class="nav-icon">🔄</div><span>Exchange</span></a>
+        <a class="nav-item"><div class="nav-icon">🌐</div><span>Explore</span></a>
+        <a class="nav-item active"><div class="nav-icon">🔆</div><span>Airdrop</span></a>
+        <a class="nav-item "><div class="nav-icon">🖥️</div><span>Terminal</span></a>
+        <a class="nav-item"><div class="nav-icon">🧪</div><span>SmatLab</span></a>
+    </nav>
+</div>
+
+<script>
+    let currentPage = 1;
+    const perPage = 25;
+    let allAssets = [];
+    let filteredAssets = [];
+    let socket = null;
+
+    async function loadAssets() {
+        try {
+            const res = await fetch('https://api.binance.com/api/v3/ticker/24hr');
+            const data = await res.json();
+            allAssets = data.filter(t => t.symbol.endsWith('USDT'))
+                            .sort((a, b) => parseFloat(b.quoteVolume) - parseFloat(a.quoteVolume))
+                            .map((t, index) => ({
+                                rank: index + 1,
+                                symbol: t.symbol.replace('USDT', ''),
+                                fullSymbol: t.symbol,
+                                price: parseFloat(t.lastPrice),
+                                change: parseFloat(t.priceChangePercent),
+                                volume: parseFloat(t.quoteVolume)
+                            }));
+            filteredAssets = [...allAssets];
+            render();
+        } catch (e) { console.error(e); }
+    }
+
+    function render() {
+        const tbody = document.getElementById('crypto-table');
+        const start = (currentPage - 1) * perPage;
+        const pageData = filteredAssets.slice(start, start + perPage);
+        const searchQuery = document.getElementById('searchInput').value.trim();
+        tbody.innerHTML = '';
+
+        if (currentPage === 1 && searchQuery === "") {
+            const nativeRow = document.createElement('tr');
+            nativeRow.className = 'native-row';
+            nativeRow.innerHTML = `
+                <td style="color:var(--accent); font-weight:bold; font-size:18px;">#</td>
+                <td><div class="coin-info"><img class="coin-logo" src="https://ui-avatars.com/api/?name=S&background=f3ba2f&color=000&bold=true"><strong>SMAT</strong></div></td>
+                <td><span class="spinner s-price"></span> <span style="color:var(--dim); font-size:12px; margin-left:5px;">Syncing...</span></td>
+                <td><span class="spinner s-change"></span></td>
+                <td><div class="spinner s-chart"></div></td>
+                <td><span class="spinner s-vol"></span></td>
+            `;
+            tbody.appendChild(nativeRow);
+        }
+
+        pageData.forEach((coin) => {
+            const s = coin.fullSymbol.toLowerCase();
+            const row = document.createElement('tr');
+            row.id = `row-${s}`;
+            const isUp = coin.change >= 0;
+            row.innerHTML = `
+                <td style="color:var(--dim)">${coin.rank}</td>
+                <td><div class="coin-info"><img class="coin-logo" src="https://assets.coincap.io/assets/icons/${coin.symbol.toLowerCase()}@2x.png" onerror="this.src='https://ui-avatars.com/api/?name=${coin.symbol}&background=2b3139&color=fff'"><strong>${coin.symbol}</strong></div></td>
+                <td id="price-${s}" style="font-family:monospace; font-weight:bold;">$${coin.price.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 8})}</td>
+                <td id="change-${s}" class="${isUp ? 'up' : 'down'}">${coin.change.toFixed(2)}%</td>
+                <td><canvas id="chart-${s}" width="100" height="35"></canvas></td>
+                <td id="vol-${s}" style="color:var(--dim)">$${coin.volume.toLocaleString(undefined, {maximumFractionDigits: 0})}</td>
+            `;
+            tbody.appendChild(row);
+            draw7dChart(coin.fullSymbol, `chart-${s}`, isUp ? '#0ecb81' : '#f6465d');
+        });
+
+        document.getElementById('page-info').innerText = `Page ${currentPage}`;
+        connectWS(pageData);
+    }
+
+    function handleSearch() {
+        const query = document.getElementById('searchInput').value.toUpperCase().trim();
+        filteredAssets = allAssets.filter(a => a.symbol.includes(query));
+        currentPage = 1;
+        render();
+    }
+
+    async function draw7dChart(symbol, canvasId, color) {
+        try {
+            const res = await fetch(`https://api.binance.com/api/v3/klines?symbol=${symbol}&interval=4h&limit=20`);
+            const data = await res.json();
+            const prices = data.map(d => parseFloat(d[4]));
+            const canvas = document.getElementById(canvasId);
+            if (!canvas) return;
+            const ctx = canvas.getContext('2d');
+            const min = Math.min(...prices), max = Math.max(...prices), range = max - min;
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            ctx.beginPath(); ctx.strokeStyle = color; ctx.lineWidth = 2;
+            prices.forEach((p, i) => {
+                const x = (i / (prices.length - 1)) * canvas.width;
+                const y = canvas.height - ((p - min) / (range || 1)) * canvas.height;
+                i === 0 ? ctx.moveTo(x, y) : ctx.lineTo(x, y);
+            });
+            ctx.stroke();
+        } catch (e) {}
+    }
+
+    function connectWS(coins) {
+        if (socket) socket.close();
+        if (coins.length === 0) return;
+        const streams = coins.map(c => `${c.fullSymbol.toLowerCase()}@ticker`).join('/');
+        socket = new WebSocket(`wss://stream.binance.com:9443/ws/${streams}`);
+        socket.onmessage = (e) => {
+            const d = JSON.parse(e.data);
+            const s = d.s.toLowerCase();
+            const pEl = document.getElementById(`price-${s}`), cEl = document.getElementById(`change-${s}`), rEl = document.getElementById(`row-${s}`);
+            if (pEl) {
+                const newP = parseFloat(d.c), oldP = parseFloat(pEl.innerText.replace('$', '').replace(/,/g, ''));
+                if (newP !== oldP) {
+                    const statusClass = newP > oldP ? 'flash-up' : 'flash-down';
+                    rEl.classList.add(statusClass);
+                    setTimeout(() => rEl.classList.remove(statusClass), 800);
+                }
+                pEl.innerText = `$${newP.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 8})}`;
+                cEl.innerText = `${parseFloat(d.P).toFixed(2)}%`;
+                cEl.className = parseFloat(d.P) >= 0 ? 'up' : 'down';
+            }
+        };
+    }
+
+    function changePage(s) { 
+        if((currentPage + s) < 1) return;
+        currentPage += s; 
+        render(); 
+        document.querySelector('.content-area').scrollTo(0,0); 
+    }
+
+    loadAssets();
+    setInterval(loadAssets, 600000);
+</script>
+</body>
+</html>
