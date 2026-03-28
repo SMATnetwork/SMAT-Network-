@@ -1,0 +1,389 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SMAT Network - Advanced Pro Wallet</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap');
+        
+        :root {
+            --bg: #0b0e11; --text: #ffffff; --card: #1e2329; --modal: #1c2127;
+            --border: #3b424a; --input: #0b0e11; --asset-bg: #1e2329; --sub-text: #9ca3af;
+            --warn-text: #ffffff; --logo-bg: #f0b90b;
+        }
+
+        .light-mode {
+            --bg: #ffffff; --text: #111827; --card: #f3f4f6; --modal: #ffffff;
+            --border: #d1d5db; --input: #f3f4f6; --asset-bg: #ffffff; --sub-text: #6b7280;
+            --warn-text: #111827; --logo-bg: #f0b90b;
+        }
+        
+        body { background-color: var(--bg); color: var(--text); font-family: 'Inter', sans-serif; transition: 0.3s; overflow-x: hidden; }
+        p, h1, h2, h3, h4, span, label, i:not(.fa-hammer):not(.fa-plus):not(.fa-paper-plane) { color: var(--text); transition: 0.3s; }
+        .text-gray-500, .text-gray-400 { color: var(--sub-text) !important; }
+        .modal-content { background: var(--modal) !important; color: var(--text) !important; border: 1px solid var(--border); }
+        input, select { background: var(--input) !important; border: 1px solid var(--border) !important; color: var(--text) !important; }
+        .asset-item { background: var(--asset-bg) !important; border: 1px solid var(--border); border-radius: 20px; transition: 0.3s; }
+        .wallet-card { background: linear-gradient(135deg, #2b3139 0%, #1e2329 100%); border-radius: 24px; border: 1px solid rgba(128,128,128,0.2); color: white !important; }
+        .wallet-card p, .wallet-card h1, .wallet-card h2, .wallet-card span { color: white !important; }
+        .wallet-card .text-gray-400 { color: #d1d5db !important; }
+        .modal { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.85); z-index: 150; align-items: center; justify-content: center; padding: 20px; }
+        .modal-content { padding: 25px; border-radius: 24px; width: 100%; max-width: 380px; text-align: center; }
+        .btc-s { width: 32px; height: 32px; background: var(--logo-bg); color: black !important; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: 900; font-family: 'Courier New', monospace; font-size: 20px; position: relative; box-shadow: 0 0 10px rgba(240, 185, 11, 0.5); }
+        
+        .mining-btn { position: fixed; right: 20px; bottom: 100px; width: 70px; height: 70px; background: linear-gradient(45deg, #f0b90b, #f8d33a); border-radius: 50%; display: flex; flex-direction: column; align-items: center; justify-content: center; z-index: 90; border: 3px solid #000; cursor: pointer; }
+        .refer-btn { position: fixed; right: 20px; bottom: 180px; width: 50px; height: 50px; background: #1e2329; border: 2px solid #f0b90b; border-radius: 50%; display: flex; align-items: center; justify-content: center; z-index: 90; cursor: pointer; }
+        
+        .mining-btn * { color: black !important; }
+        .active-spin { animation: spin 4s linear infinite; }
+        @keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+        .hammer-hit { animation: hit 0.5s ease-in-out infinite; }
+        @keyframes hit { 0%, 100% { transform: rotate(0deg); } 50% { transform: rotate(-45deg); } }
+        .warn-highlight { color: var(--warn-text) !important; font-weight: 700; }
+        .warning-box { background: rgba(240, 185, 11, 0.1); border: 1px solid rgba(240, 185, 11, 0.3); border-radius: 12px; padding: 12px; margin-top: 15px; display: flex; gap: 10px; text-align: left; }
+        .btn-disabled { background: #3b424a !important; color: #9ca3af !important; cursor: not-allowed !important; opacity: 0.7; }
+        .nav-item { flex: 1; display: flex; flex-direction: column; align-items: center; gap: 4px; }
+        .stat-box { background: rgba(0,0,0,0.2); border: 1px solid var(--border); border-radius: 12px; padding: 10px; }
+    </style>
+</head>
+<body class="flex justify-center">
+
+<div id="float-refer-btn" class="refer-btn" onclick="openReferList()">
+    <i class="fas fa-users text-yellow-500"></i>
+    <span class="absolute -top-1 -right-1 bg-red-500 text-[10px] w-5 h-5 rounded-full flex items-center justify-center font-bold" id="active-ref-count">0</span>
+</div>
+
+<div id="float-mining-btn" class="mining-btn" onclick="openMining()">
+    <i id="hammer-icon" class="fas fa-hammer text-xl"></i>
+    <span class="text-[8px] font-extrabold" id="btn-text">Start Mining</span>
+</div>
+
+<div class="w-full max-w-md min-h-screen pb-32 relative">
+    <div class="p-6 flex justify-between items-center sticky top-0 z-10 bg-[var(--bg)]">
+        <div class="flex items-center gap-2">
+            <div class="btc-s">S</div>
+            <div>
+                <p class="text-[10px] text-gray-500 font-bold uppercase">ID: SMAT-4491</p>
+                <p class="text-sm font-semibold">oxSMAT Exchange</p>
+            </div>
+        </div>
+        <i class="fas fa-cog text-lg cursor-pointer" onclick="openSettings()"></i>
+    </div>
+
+    <div class="px-6 space-y-3">
+        <div class="wallet-card p-5 text-center shadow-xl">
+            <h2 class="text-gray-400 text-[9px] mb-1 uppercase font-bold tracking-widest">Portfolio Balance</h2>
+            <h1 class="text-3xl font-bold mb-5 tracking-tighter"><span id="curr-sym">$</span><span id="main-total">0.0000</span></h1>
+            <div class="flex justify-around">
+                <div onclick="openCoinSelect('deposit')" class="cursor-pointer text-center">
+                    <div class="w-10 h-10 bg-[#2b3139] rounded-full flex items-center justify-center mx-auto mb-1 border border-gray-600"><i class="fas fa-plus text-white text-xs"></i></div>
+                    <span class="text-[9px] font-bold">Deposit</span>
+                </div>
+                <div onclick="openCoinSelect('withdraw')" class="cursor-pointer text-center">
+                    <div class="w-10 h-10 bg-[#2b3139] rounded-full flex items-center justify-center mx-auto mb-1 text-yellow-500 border border-gray-600"><i class="fas fa-paper-plane text-xs"></i></div>
+                    <span class="text-[9px] font-bold">Withdraw</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="bg-[var(--card)] p-4 rounded-2xl border border-[var(--border)] shadow-md">
+            <div class="grid grid-cols-2 gap-4">
+                <div class="border-r border-gray-800 pr-2">
+                    <p class="text-[8px] text-[var(--sub-text)] font-bold uppercase mb-1">Staked TVL</p>
+                    <p class="text-sm font-bold text-[var(--text)] font-mono" id="func-tvl">$0.00</p>
+                </div>
+                <div>
+                    <p class="text-[8px] text-[var(--sub-text)] font-bold uppercase mb-1">Current Yield Speed</p>
+                    <p class="text-sm font-bold text-green-500 font-mono" id="func-yield">0.0000 SMAT/H</p>
+                </div>
+            </div>
+            <div class="mt-3 pt-3 border-t border-gray-800 flex justify-between items-center">
+                <p class="text-[8px] text-[var(--sub-text)] font-bold uppercase">Mining Status</p>
+                <div id="status-badge" class="flex items-center gap-1.5 px-2 py-0.5 rounded-full bg-black/10 border border-[var(--border)]">
+                    <span id="status-dot" class="w-1.5 h-1.5 bg-gray-500 rounded-full"></span>
+                    <p id="status-text" class="text-[9px] font-bold text-[var(--sub-text)] uppercase tracking-tighter">System Idle</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="mt-8 px-4">
+        <h3 class="text-[10px] font-bold text-gray-500 uppercase mb-4 tracking-widest">Assets List</h3>
+        <div id="assets-list"></div>
+    </div>
+
+    <div id="referListModal" class="modal"><div class="modal-content !text-left">
+        <h3 class="font-bold text-xl mb-4">Mining Analytics</h3>
+        <div class="grid grid-cols-2 gap-2 mb-4">
+            <div class="stat-box col-span-2">
+                <p class="text-[9px] text-gray-500 uppercase font-bold">Current Mining Speed</p>
+                <p class="text-xl font-bold text-green-500" id="ref-dash-speed">1.00x</p>
+            </div>
+            <div class="stat-box">
+                <p class="text-[9px] text-gray-500 uppercase font-bold">Active Referrals</p>
+                <p class="text-sm font-bold text-yellow-500" id="ref-dash-active">0</p>
+            </div>
+            <div class="stat-box">
+                <p class="text-[9px] text-gray-500 uppercase font-bold">Referral Staked</p>
+                <p class="text-sm font-bold" id="ref-dash-staked">$0.00</p>
+            </div>
+        </div>
+        <p class="text-[10px] font-bold text-gray-500 uppercase mb-2">Member List</p>
+        <div id="refer-container" class="space-y-2 max-h-48 overflow-y-auto pr-2 mb-4 border-b border-gray-800 pb-4"></div>
+        <div class="p-3 bg-yellow-500/10 rounded-xl border border-yellow-500/30">
+            <p class="text-[10px] font-bold uppercase text-yellow-500">Speed Formula</p>
+            <p class="text-[10px] leading-tight mt-1 opacity-70 italic">Base (1x) + Active Member (1x) + 10% Member Staking</p>
+        </div>
+        <button onclick="closeModals()" class="w-full bg-yellow-500 text-black py-3 rounded-xl font-bold mt-5 uppercase text-xs">Close Analytics</button>
+    </div></div>
+
+    <div id="miningModal" class="modal"><div class="modal-content"><h3 class="font-bold text-xl mb-6">SMAT Coin Mining</h3><div class="bg-black/20 p-6 rounded-3xl border border-gray-800 mb-6"><p class="text-[10px] text-gray-500 uppercase mb-2 font-bold">Mined in current session</p><p class="text-2xl font-bold text-yellow-500 tracking-tighter" id="session-mining-balance">0.00000000</p></div><div class="grid grid-cols-2 gap-2 text-[10px] font-bold mb-6"><div class="bg-black/10 p-2 rounded-lg"><span class="text-gray-500">BOOST:</span> <span class="text-green-500" id="mining-speed">1.0</span>x</div><div class="bg-black/10 p-2 rounded-lg"><span class="text-gray-500">TIME:</span> <span id="timer" class="text-yellow-500">24:00:00</span></div></div><div class="mb-6"><p class="text-[9px] text-gray-500 uppercase font-bold">Estimated Hourly Income</p><p class="text-sm font-bold"><span id="hourly-rate">0.0025</span> SMAT</p></div><button id="modal-start-btn" onclick="startMiningProcess()" class="w-full bg-yellow-500 text-black py-4 rounded-xl font-bold uppercase">START MINING</button><button onclick="closeModals()" class="mt-4 text-gray-500 text-xs">Close Dashboard</button></div></div>
+    
+    <div id="stakeActionModal" class="modal"><div class="modal-content"><h3 class="font-bold text-xl mb-1" id="stake-title">Stake Assets</h3><p class="text-xs text-gray-500 mb-6 uppercase">Available: <span id="stake-max-val" class="warn-highlight">0.00</span></p><p id="unstake-fee-notice" class="text-[9px] text-red-500 mb-4 hidden font-bold italic">* Note: Unstaking within 7 days incurs a 0.1% early withdrawal fee.</p><div class="relative mb-6"><input id="stake-amount" type="number" step="0.00000001" placeholder="0.00" class="w-full p-4 text-sm rounded-xl outline-none"><button onclick="setStakeMax()" class="absolute right-3 top-4 text-yellow-500 font-bold text-[10px]">MAX</button></div><button onclick="processStakeAction()" class="w-full bg-yellow-500 text-black py-4 rounded-xl font-bold uppercase">Confirm Action</button><button onclick="closeModals()" class="mt-4 text-gray-500 text-xs">Cancel</button></div></div>
+    
+    <div id="depositModal" class="modal"><div class="modal-content"><h3 class="font-bold mb-2 uppercase text-sm">Deposit <span id="dep-coin-name" class="text-yellow-500"></span></h3><div id="qrcode" class="mb-4 flex justify-center p-2 bg-white rounded-lg w-fit mx-auto"></div><div class="bg-black/20 p-3 rounded-xl border border-gray-700 mb-4 relative"><p id="w-address-display" class="text-[11px] font-mono break-all text-left pr-8"></p><button onclick="copyAddress()" class="absolute right-3 bottom-3 text-yellow-500 text-lg"><i class="fas fa-copy"></i></button></div><div class="warning-box"><i class="fas fa-exclamation-triangle text-yellow-500 mt-1"></i><p class="text-[10px] text-gray-400 leading-tight"><span class="text-yellow-500 font-bold uppercase">Warning:</span> Only send <span id="warn-coin" class="warn-highlight"></span> to this address via <span class="warn-highlight">BEP20</span> network.</p></div><button onclick="closeModals()" class="w-full bg-yellow-500 text-black py-3 rounded-xl font-bold mt-6">Done</button></div></div>
+    
+    <div id="withdrawModal" class="modal"><div class="modal-content"><h3 class="font-bold text-lg mb-1">Withdraw <span id="w-coin-name"></span></h3><p class="text-xs text-gray-500 mb-6 uppercase">Avail: <span id="w-avail" class="warn-highlight"></span></p><input id="rec-address" type="text" placeholder="Recipient Address" class="w-full p-4 mb-4 text-sm rounded-xl outline-none"><div class="relative mb-6"><input id="rec-amount" type="number" step="0.00000001" placeholder="Amount" class="w-full p-4 text-sm rounded-xl outline-none"><button onclick="setWithdrawMax()" class="absolute right-3 top-4 text-yellow-500 font-bold text-[10px]">MAX</button></div><p class="text-[9px] text-red-500 mb-4 font-bold uppercase">* Network Fee: $0.20 flat fee applies.</p><button onclick="confirmWithdraw()" class="w-full bg-yellow-500 text-black py-4 rounded-xl font-bold uppercase">CONFIRM WITHDRAW</button><button onclick="closeModals()" class="mt-4 text-gray-500 text-xs">Back</button></div></div>
+    
+    <div id="settingsModal" class="modal"><div class="modal-content text-left"><h3 class="font-bold mb-4">Settings</h3><select id="curr-select" onchange="updateCurrency()" class="w-full p-3 mb-6 text-sm rounded-xl outline-none"></select><button onclick="toggleTheme()" class="w-full p-4 bg-gray-500/20 rounded-xl mb-4 border border-gray-700 flex justify-between items-center"><span id="theme-text">Switch Theme</span><i class="fas fa-adjust"></i></button><button onclick="closeModals()" class="w-full bg-yellow-500 text-black py-3 rounded-xl font-bold">Close</button></div></div>
+    <div id="coinSelectModal" class="modal"><div class="modal-content !p-0"><div id="coin-list-ui" class="p-2"></div><button onclick="closeModals()" class="p-4 w-full text-xs">Cancel</button></div></div>
+
+    <div class="fixed bottom-0 left-0 w-full bg-[var(--card)] border-t border-[var(--border)] px-2 py-3 flex justify-around items-center z-[110] shadow-[0_-5px_25px_rgba(0,0,0,0.4)]">
+        <a href="#" class="nav-item group"><i class="fas fa-terminal text-lg text-gray-500 group-hover:text-yellow-500"></i><span class="text-[9px] font-bold text-gray-500 uppercase">oxTerminal</span></a>
+        <a href="#" class="nav-item"><i class="fas fa-wallet text-lg text-yellow-500"></i><span class="text-[9px] font-bold text-yellow-500 uppercase">Exchange</span></a>
+        <a href="#" class="nav-item group"><i class="fas fa-random text-lg text-gray-500 group-hover:text-yellow-500"></i><span class="text-[9px] font-bold text-gray-500 uppercase">oxSwap</span></a>
+        <a href="#" class="nav-item group"><i class="fas fa-layer-group text-lg text-gray-500 group-hover:text-yellow-500"></i><span class="text-[9px] font-bold text-gray-500 uppercase">oxEco</span></a>
+    </div>
+</div>
+
+<script>
+    const state = {
+        balances: JSON.parse(localStorage.getItem('balances')) || { BNB: 2.00, USDT: 1000.00 },
+        staked: JSON.parse(localStorage.getItem('staked')) || { BNB: 0.0, USDT: 0.0 },
+        stakeDates: JSON.parse(localStorage.getItem('stakeDates')) || { BNB: 0, USDT: 0 }, 
+        prices: { BNB: 0, USDT: 1, SMAT: 0.00 },
+        rates: { USD:1, BDT:118.5, INR:83.4, PKR:278.5, EUR:0.92, GBP:0.79, NGN:1450.0, RUB:92.3, CNY:7.2, JPY:151.4, SAR:3.75, AED:3.67, TRY:32.2, BRL:5.1, CAD:1.36, AUD:1.52, ZAR:18.9, GHS:13.9, KES:132.5, EGP:47.5, PHP:56.2, IDR:15800, THB:36.5, VND:24800, KRW:1350 },
+        symbols: { USD:'$', BDT:'৳', INR:'₹', PKR:'₨', EUR:'€', GBP:'£', NGN:'₦', RUB:'₽', CNY:'¥', JPY:'¥', SAR:'﷼', AED:'د.إ', TRY:'₺', BRL:'R$', CAD:'$', AUD:'$', ZAR:'R', GHS:'₵', KES:'KSh', EGP:'E£', PHP:'₱', IDR:'Rp', THB:'฿', VND:'₫', KRW:'₩' },
+        referrals: [
+            { id: "SMAT-8821", active: true, stakedUSD: 50.00 },
+            { id: "SMAT-1029", active: false, stakedUSD: 0.00 },
+            { id: "SMAT-5562", active: true, stakedUSD: 120.00 },
+            { id: "SMAT-2291", active: true, stakedUSD: 10.00 }
+        ],
+        currentCurr: localStorage.getItem('currency') || "USD", 
+        smatBalance: parseFloat(localStorage.getItem('smatBalance')) || 0,
+        sessionSmat: parseFloat(localStorage.getItem('sessionSmat')) || 0,
+        miningActive: localStorage.getItem('miningActive') === 'true', 
+        mineEndTime: parseInt(localStorage.getItem('mineEndTime')) || 0,
+        theme: localStorage.getItem('theme') || 'dark',
+        address: "0x7F23e8A9C1D94B5E2f77280f7A24c0221E922122",
+        selectedCoin: ''
+    };
+
+    function calculateTotalSpeed() {
+        const userStakedUSD = (state.staked.BNB * state.prices.BNB) + (state.staked.USDT * state.prices.USDT);
+        let speed = 1.0 + userStakedUSD;
+        let activeRefs = 0;
+        state.referrals.forEach(ref => { if(ref.active) { activeRefs++; speed += 1.0; speed += (ref.stakedUSD * 0.1); } });
+        document.getElementById('active-ref-count').innerText = activeRefs;
+        
+        const baseGlobalTVL = 124500.50; 
+        const baseGlobalUsers = 4820; 
+        const timeFactor = Math.floor(Date.now() / 5000); 
+        const randomSeed = Math.sin(timeFactor) * 10;
+        
+        const liveGlobalTVL = baseGlobalTVL + (randomSeed * 50) + userStakedUSD;
+        const liveGlobalUsers = baseGlobalUsers + Math.floor(Math.abs(randomSeed));
+        const liveGlobalYield = (liveGlobalTVL * 0.00012) + (0.0025 * speed);
+
+        if(document.getElementById('func-tvl')) document.getElementById('func-tvl').innerText = "$" + liveGlobalTVL.toLocaleString(undefined, {minimumFractionDigits: 4});
+        if(document.getElementById('func-yield')) document.getElementById('func-yield').innerText = liveGlobalYield.toFixed(4) + " SMAT/H";
+        if(document.getElementById('status-text')) document.getElementById('status-text').innerText = `${liveGlobalUsers} Miners Active`;
+        return speed;
+    }
+
+    async function fetchPrices() {
+        try {
+            const response = await fetch('https://api.binance.com/api/v3/ticker/price?symbol=BNBUSDT');
+            const data = await response.json();
+            if(data.price) { state.prices.BNB = parseFloat(data.price); updateUI(); }
+        } catch (e) { console.log("Price fetch failed"); }
+    }
+
+    function saveState() {
+        localStorage.setItem('balances', JSON.stringify(state.balances));
+        localStorage.setItem('staked', JSON.stringify(state.staked));
+        localStorage.setItem('stakeDates', JSON.stringify(state.stakeDates));
+        localStorage.setItem('smatBalance', state.smatBalance);
+        localStorage.setItem('sessionSmat', state.sessionSmat);
+        localStorage.setItem('miningActive', state.miningActive);
+        localStorage.setItem('mineEndTime', state.mineEndTime.toString());
+        localStorage.setItem('currency', state.currentCurr);
+        localStorage.setItem('theme', state.theme);
+    }
+
+    function updateUI() {
+        const rate = state.rates[state.currentCurr] || 1;
+        const sym = state.symbols[state.currentCurr] || '$';
+        document.getElementById('curr-sym').innerText = sym;
+        let totalUSD = (state.balances.BNB * state.prices.BNB) + (state.balances.USDT * state.prices.USDT) + (state.smatBalance * state.prices.SMAT);
+        document.getElementById('main-total').innerText = (totalUSD * rate).toFixed(4);
+        const totalSpeed = calculateTotalSpeed();
+        if(document.getElementById('mining-speed')) document.getElementById('mining-speed').innerText = totalSpeed.toFixed(2);
+        if(document.getElementById('hourly-rate')) document.getElementById('hourly-rate').innerText = (0.0025 * totalSpeed).toFixed(4);
+        document.getElementById('session-mining-balance').innerText = state.sessionSmat.toFixed(8);
+        const statusDot = document.getElementById('status-dot');
+        if(state.miningActive) { statusDot.classList.replace('bg-gray-500', 'bg-green-500'); statusDot.classList.add('animate-pulse'); }
+        else { statusDot.classList.add('bg-gray-500'); statusDot.classList.remove('animate-pulse'); }
+        renderAssets(); saveState();
+    }
+
+    function renderAssets() {
+        const container = document.getElementById('assets-list');
+        const rate = state.rates[state.currentCurr] || 1;
+        const sym = state.symbols[state.currentCurr] || '$';
+        container.innerHTML = `<div class="asset-item p-4 mb-3 border-2 border-yellow-500/30 flex justify-between items-center"><div class="flex items-center gap-3"><div class="btc-s">S</div><div><p class="font-bold text-sm">SMAT</p><p class="text-[9px] text-gray-500">SMAT Coin</p></div></div><div class="text-right"><p class="font-bold text-sm font-mono">${state.smatBalance.toFixed(8)}</p></div></div>`;
+        ['BNB', 'USDT'].forEach(coin => {
+            const logo = coin === 'BNB' ? 'https://cryptologos.cc/logos/binance-coin-bnb-logo.png' : 'https://cryptologos.cc/logos/tether-usdt-logo.png';
+            const livePrice = coin === 'BNB' ? (state.prices.BNB * rate).toFixed(2) : (1 * rate).toFixed(2);
+            container.innerHTML += `<div class="asset-item p-4 mb-3"><div class="flex justify-between items-center mb-2"><div class="flex items-center gap-3"><img src="${logo}" width="24"><div><p class="font-bold text-sm">${coin}</p><p class="text-[10px] text-yellow-500 font-bold">${sym}${livePrice}</p></div></div><div class="text-right"><p class="font-bold text-sm font-mono">${state.balances[coin].toFixed(8)}</p></div></div><div class="flex justify-between items-center p-3 bg-black/10 rounded-xl border border-dashed border-gray-700"><div class="text-left"><p class="text-[8px] text-gray-500 uppercase font-bold">Staked</p><p class="text-xs font-bold text-yellow-500">${state.staked[coin].toFixed(8)}</p></div><div class="flex gap-2"><button onclick="openStakeModal('${coin}', 'stake')" class="bg-yellow-500 text-black text-[9px] font-bold px-3 py-1.5 rounded-lg">STAKE</button><button onclick="openStakeModal('${coin}', 'unstake')" class="bg-gray-700 text-white text-[9px] font-bold px-3 py-1.5 rounded-lg">UNSTAKE</button></div></div></div>`;
+        });
+    }
+
+    function openReferList() {
+        const container = document.getElementById('refer-container');
+        container.innerHTML = "";
+        let activeCount = 0; let totalStakedByRefs = 0;
+        state.referrals.forEach(ref => {
+            if(ref.active) activeCount++;
+            totalStakedByRefs += ref.stakedUSD;
+            container.innerHTML += `<div class="flex justify-between items-center p-3 rounded-xl border border-gray-800 ${ref.active ? 'bg-green-500/5' : 'bg-red-500/5'}"><div><p class="text-[11px] font-bold">${ref.id}</p><p class="text-[9px] ${ref.active ? 'text-green-500' : 'text-red-500'} font-bold uppercase">${ref.active ? 'Mining Active (+1x)' : 'Inactive'}</p></div><div class="text-right"><p class="text-[9px] text-gray-500 font-bold">STAKED</p><p class="text-[10px] font-mono">$${ref.stakedUSD.toFixed(2)}</p></div></div>`;
+        });
+        document.getElementById('ref-dash-speed').innerText = calculateTotalSpeed().toFixed(2) + "x";
+        document.getElementById('ref-dash-active').innerText = activeCount;
+        document.getElementById('ref-dash-staked').innerText = "$" + totalStakedByRefs.toFixed(2);
+        document.getElementById('referListModal').style.display = 'flex';
+    }
+
+    function openStakeModal(coin, type) { state.activeStakeCoin = coin; state.activeStakeType = type; const maxVal = type === 'stake' ? state.balances[coin] : state.staked[coin]; document.getElementById('stake-title').innerText = type === 'stake' ? `Stake ${coin}` : `Unstake ${coin}`; document.getElementById('stake-max-val').innerText = maxVal.toFixed(8) + " " + coin; document.getElementById('stake-amount').value = ""; const feeNotice = document.getElementById('unstake-fee-notice'); if(type === 'unstake') { feeNotice.classList.remove('hidden'); } else { feeNotice.classList.add('hidden'); } document.getElementById('stakeActionModal').style.display = 'flex'; }
+    function processStakeAction() { const amount = parseFloat(document.getElementById('stake-amount').value); const coin = state.activeStakeCoin; if (isNaN(amount) || amount <= 0) return alert("Invalid amount"); if (state.activeStakeType === 'stake') { if (amount > state.balances[coin]) return alert("Insufficient Balance"); state.balances[coin] -= amount; state.staked[coin] += amount; state.stakeDates[coin] = Date.now(); alert(`${amount} ${coin} staked successfully!`); } else { if (amount > state.staked[coin]) return alert("Insufficient Staked Assets"); let finalUnstakeAmount = amount; if ((Date.now() - state.stakeDates[coin]) < (7 * 24 * 60 * 60 * 1000)) { const fee = amount * 0.001; finalUnstakeAmount = amount - fee; alert(`Early Unstake Fee 0.1% (${fee.toFixed(8)} ${coin}) deducted.`); } state.staked[coin] -= amount; state.balances[coin] += finalUnstakeAmount; } closeModals(); updateUI(); }
+    function miningLoop() { if(state.miningActive) { let remain = state.mineEndTime - Date.now(); if(remain <= 0) { state.miningActive = false; state.smatBalance += state.sessionSmat; state.sessionSmat = 0; document.getElementById('float-mining-btn').classList.remove('active-spin'); document.getElementById('hammer-icon').classList.remove('hammer-hit'); document.getElementById('btn-text').innerText = "Start Mining"; updateUI(); saveState(); } else { let h = Math.floor(remain/3600000).toString().padStart(2,'0'), m = Math.floor((remain%3600000)/60000).toString().padStart(2,'0'), s = Math.floor((remain%60000)/1000).toString().padStart(2,'0'); if(document.getElementById('timer')) document.getElementById('timer').innerText = `${h}:${m}:${s}`; state.sessionSmat += (0.0025 * calculateTotalSpeed()) / 3600; document.getElementById('session-mining-balance').innerText = state.sessionSmat.toFixed(8); } } }
+    function startMiningProcess() { if(state.miningActive) return; state.miningActive = true; state.mineEndTime = Date.now() + 86400000; state.sessionSmat = 0; document.getElementById('float-mining-btn').classList.add('active-spin'); document.getElementById('hammer-icon').classList.add('hammer-hit'); document.getElementById('btn-text').innerText = "Running"; updateUI(); saveState(); setTimeout(closeModals, 500); }
+    function openMining() { const modalBtn = document.getElementById('modal-start-btn'); if(state.miningActive) { modalBtn.innerText = "RUNNING..."; modalBtn.classList.add('btn-disabled'); modalBtn.onclick = null; } else { modalBtn.innerText = "START MINING"; modalBtn.classList.remove('btn-disabled'); modalBtn.onclick = startMiningProcess; } document.getElementById('miningModal').style.display = 'flex'; }
+    function openCoinSelect(type) { state.pendingAction = type; const ui = document.getElementById('coin-list-ui'); ui.innerHTML = `<h3 class="p-4 font-bold text-xs opacity-50 uppercase">Select Asset</h3>`; ['BNB', 'USDT'].forEach(c => ui.innerHTML += `<div onclick="finalSelection('${c}')" class="p-4 hover:bg-yellow-500/10 cursor-pointer border-t border-gray-800 font-bold text-left">${c}</div>`); document.getElementById('coinSelectModal').style.display = 'flex'; }
+    function finalSelection(coin) { closeModals(); state.selectedCoin = coin; if(state.pendingAction === 'deposit') { document.getElementById('dep-coin-name').innerText = coin; document.getElementById('warn-coin').innerText = coin; document.getElementById('qrcode').innerHTML = ""; new QRCode(document.getElementById("qrcode"), { text: state.address, width: 140, height: 140 }); document.getElementById('w-address-display').innerText = state.address; document.getElementById('depositModal').style.display = 'flex'; } else { document.getElementById('w-coin-name').innerText = coin; document.getElementById('w-avail').innerText = state.balances[coin].toFixed(8) + " " + coin; document.getElementById('withdrawModal').style.display = 'flex'; } }
+    function copyAddress() { navigator.clipboard.writeText(state.address); alert("Wallet Address Copied!"); }
+    function setWithdrawMax() { if(state.selectedCoin) document.getElementById('rec-amount').value = state.balances[state.selectedCoin]; }
+    function setStakeMax() { document.getElementById('stake-amount').value = state.activeStakeType === 'stake' ? state.balances[state.activeStakeCoin] : state.staked[state.activeStakeCoin]; }
+    
+    function confirmWithdraw() { 
+        const addr = document.getElementById('rec-address').value;
+        const inputAmount = parseFloat(document.getElementById('rec-amount').value);
+        const coin = state.selectedCoin;
+        
+        if (!addr || addr.length < 25) return alert("Error: Invalid wallet address!");
+        if (isNaN(inputAmount) || inputAmount <= 0) return alert("Error: Enter a valid amount!");
+        
+        // --- $0.20 Flat Fee Calculation ---
+        let feeInAsset = 0;
+        if (coin === 'BNB') {
+            feeInAsset = 0.20 / state.prices.BNB;
+        } else if (coin === 'USDT') {
+            feeInAsset = 0.20; // 1 USDT = $1
+        }
+
+        const totalNeeded = inputAmount + feeInAsset;
+
+        if (totalNeeded > state.balances[coin]) {
+            return alert(`Error: Insufficient balance!\nAmount: ${inputAmount} ${coin}\nNetwork Fee ($0.2): ${feeInAsset.toFixed(8)} ${coin}\nTotal Required: ${totalNeeded.toFixed(8)} ${coin}`);
+        }
+        
+        state.balances[coin] -= totalNeeded;
+        alert(`Withdrawal Success!\nSent: ${inputAmount.toFixed(8)} ${coin}\nFee Deducted: ${feeInAsset.toFixed(8)} ${coin} ($0.20)`);
+        closeModals();
+        updateUI();
+    }
+    
+    function closeModals() { document.querySelectorAll('.modal').forEach(m => m.style.display = 'none'); }
+    function openSettings() { const sel = document.getElementById('curr-select'); sel.innerHTML = ""; Object.keys(state.rates).forEach(k => sel.innerHTML += `<option value="${k}" ${k==state.currentCurr?'selected':''}>${k}</option>`); document.getElementById('settingsModal').style.display = 'flex'; }
+    function toggleTheme() { document.body.classList.toggle('light-mode'); state.theme = document.body.classList.contains('light-mode')?'light':'dark'; saveState(); updateUI(); }
+    function updateCurrency() { state.currentCurr = document.getElementById('curr-select').value; updateUI(); }
+
+    window.onload = () => {
+        if(state.theme === 'light') document.body.classList.add('light-mode');
+        fetchPrices(); setInterval(fetchPrices, 5000); updateUI(); setInterval(miningLoop, 1000);
+        if(state.miningActive && state.mineEndTime > Date.now()) { document.getElementById('float-mining-btn').classList.add('active-spin'); document.getElementById('hammer-icon').classList.add('hammer-hit'); document.getElementById('btn-text').innerText = "Running"; }
+    };
+    
+    
+    // --- শুধুমাত্র পরিবর্তিত ফাংশনগুলো নিচে দেওয়া হলো (বাকি সব কোড একই থাকবে) ---
+    
+    function finalSelection(coin) {
+    closeModals();
+    state.selectedCoin = coin;
+    
+    if(state.pendingAction === 'deposit') {
+    // Deposit Logic (Unchanged)
+    document.getElementById('dep-coin-name').innerText = coin;
+    document.getElementById('warn-coin').innerText = coin;
+    document.getElementById('qrcode').innerHTML = "";
+    new QRCode(document.getElementById("qrcode"), { text: state.address, width: 140, height: 140 });
+    document.getElementById('w-address-display').innerText = state.address;
+    document.getElementById('depositModal').style.display = 'flex';
+    } else {
+    // Withdraw Logic with dynamic Fee deduction display
+    let feeInAsset = (coin === 'BNB') ? (0.20 / state.prices.BNB) : 0.20;
+    let withdrawable = state.balances[coin] - feeInAsset;
+    
+    // যদি ব্যালেন্স ফি এর চেয়ে কম হয় তবে ০ দেখাবে
+    if (withdrawable < 0) withdrawable = 0;
+    
+    document.getElementById('w-coin-name').innerText = coin;
+    document.getElementById('w-avail').innerText = withdrawable.toFixed(8) + " " + coin;
+    document.getElementById('withdrawModal').style.display = 'flex';
+    }
+    }
+    
+    function setWithdrawMax() {
+    if(state.selectedCoin) {
+    const coin = state.selectedCoin;
+    let feeInAsset = (coin === 'BNB') ? (0.20 / state.prices.BNB) : 0.20;
+    let maxToWithdraw = state.balances[coin] - feeInAsset;
+    
+    if (maxToWithdraw <= 0) {
+    alert("Balance too low to cover $0.20 fee.");
+    document.getElementById('rec-amount').value = 0;
+    } else {
+    document.getElementById('rec-amount').value = maxToWithdraw.toFixed(8);
+    }
+    }
+    }
+    
+    function confirmWithdraw() { 
+    const addr = document.getElementById('rec-address').value;
+    const inputAmount = parseFloat(document.getElementById('rec-amount').value);
+    const coin = state.selectedCoin;
+    
+    if (!addr || addr.length < 25) return alert("Error: Invalid wallet address!");
+    if (isNaN(inputAmount) || inputAmount <= 0) return alert("Error: Enter a valid amount!");
+    
+    let feeInAsset = (coin === 'BNB') ? (0.20 / state.prices.BNB) : 0.20;
+    const totalNeeded = inputAmount + feeInAsset;
+    
+    if (totalNeeded > (state.balances[coin] + 0.00000001)) { // Small buffer for float precision
+    return alert(`Insufficient balance to cover fee!\nRequired: ${totalNeeded.toFixed(8)} ${coin}`);
+    }
+    
+    state.balances[coin] -= totalNeeded;
+    alert(`Withdrawal Success!\nSent: ${inputAmount.toFixed(8)} ${coin}\nNetwork Fee ($0.20): ${feeInAsset.toFixed(8)} ${coin}`);
+    closeModals();
+    updateUI();
+    }
+    
+</script>
+</body>
+</html>
