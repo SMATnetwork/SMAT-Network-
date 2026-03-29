@@ -1,0 +1,288 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SMAT Bridge - Multi-Chain Exchange</title>
+    
+    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><circle cx='50' cy='50' r='48' fill='%23f3ba2f' stroke='black' stroke-width='1'/><text x='50%25' y='55%25' text-anchor='middle' dy='.3em' fill='black' font-family='Courier New, monospace' font-weight='900' font-size='55'>S</text></svg>">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@800&family=Inter:wght@400;600;700&display=swap');
+        :root { --bg: #0b0e11; --text: #ffffff; --card: #1e2329; --border: #3b424a; --input: #2b3139; --yellow: #f0b90b; }
+        body { background-color: var(--bg); color: var(--text); font-family: 'Inter', sans-serif; overflow-x: hidden; }
+        
+        .page-headline { font-family: 'Poppins', sans-serif; font-weight: 800; font-size: 30px; text-align: center; background: linear-gradient(135deg, #ffffff 0%, #f0b90b 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; margin-bottom: 5px; }
+        .bridge-card { background: var(--card); border: 1px solid var(--border); border-radius: 28px; padding: 20px; position: relative; box-shadow: 0 15px 40px rgba(0,0,0,0.4); }
+        .input-box { background: var(--input); border-radius: 20px; padding: 15px; border: 1px solid transparent; }
+        .input-box:focus-within { border-color: var(--yellow); }
+        
+        /* Custom Dropdown Styling */
+        .custom-select { position: relative; width: fit-content; }
+        .select-trigger { background: #3b424a; padding: 6px 12px; border-radius: 12px; display: flex; align-items: center; gap: 8px; font-weight: 700; font-size: 11px; cursor: pointer; border: 1px solid rgba(255,255,255,0.1); transition: 0.2s; }
+        .select-trigger:hover { background: #4b525a; }
+        .options-menu { position: absolute; top: calc(100% + 5px); left: 0; background: #2b3139; border: 1px solid var(--border); border-radius: 12px; width: 160px; display: none; z-index: 100; box-shadow: 0 10px 25px rgba(0,0,0,0.5); overflow: hidden; }
+        .option-item { padding: 10px 12px; display: flex; align-items: center; gap: 10px; cursor: pointer; transition: 0.2s; font-size: 11px; font-weight: 600; }
+        .option-item:hover { background: #3b424a; color: var(--yellow); }
+        .show { display: block !important; }
+
+        .btn-bridge { background: var(--yellow); color: black; width: 100%; padding: 18px; border-radius: 18px; font-weight: 700; font-size: 16px; margin-top: 20px; transition: 0.3s; position: relative; display: flex; justify-content: center; align-items: center; }
+        .btn-loading::after { content: ""; position: absolute; width: 22px; height: 22px; border: 3px solid #000; border-top-color: transparent; border-radius: 50%; animation: spin 0.8s linear infinite; }
+        @keyframes spin { to { transform: rotate(360deg); } }
+
+        .details-box { background: rgba(0,0,0,0.25); border-radius: 16px; border: 1px solid var(--border); padding: 12px; margin-top: 15px; }
+        .nav-item { flex: 1; display: flex; flex-direction: column; align-items: center; gap: 4px; text-decoration: none; }
+        .max-btn { color: var(--yellow); font-weight: 800; margin-left: 6px; cursor: pointer; font-size: 9px; border: 1px solid var(--yellow); padding: 1px 5px; border-radius: 6px; }
+    </style>
+</head>
+<body class="flex justify-center" onclick="closeAllMenus(event)">
+
+<div class="w-full max-w-md min-h-screen pb-32">
+    <div class="pt-8 pb-4 text-center">
+        <h1 class="page-headline">SMAT Bridge</h1>
+        <p class="text-[9px] text-yellow-500 font-bold tracking-[0.2em] uppercase">Multi-Chain Exchange Protocol</p>
+    </div>
+
+    <div class="px-4">
+        <div class="bridge-card">
+            <div class="input-box mb-4">
+                <div class="flex justify-between mb-3">
+                    <div class="flex gap-2">
+                        <div class="custom-select">
+                            <div class="select-trigger" onclick="toggleMenu('src-chain-menu', event)">
+                                <img id="src-chain-img" src="https://cryptologos.cc/logos/binance-coin-bnb-logo.png" class="w-4 h-4">
+                                <span id="src-chain-text">BNB Chain</span>
+                                <i class="fas fa-chevron-down text-[8px]"></i>
+                            </div>
+                            <div id="src-chain-menu" class="options-menu">
+                                <div class="option-item" onclick="selectItem('src-chain', 'BNB', 'BNB Chain', 'https://cryptologos.cc/logos/binance-coin-bnb-logo.png')"><img src="https://cryptologos.cc/logos/binance-coin-bnb-logo.png" class="w-4 h-4"> BNB Chain</div>
+                                <div class="option-item" onclick="selectItem('src-chain', 'ETH', 'Ethereum', 'https://cryptologos.cc/logos/ethereum-eth-logo.png')"><img src="https://cryptologos.cc/logos/ethereum-eth-logo.png" class="w-4 h-4"> Ethereum</div>
+                                <div class="option-item" onclick="selectItem('src-chain', 'SOL', 'Solana', 'https://cryptologos.cc/logos/solana-sol-logo.png')"><img src="https://cryptologos.cc/logos/solana-sol-logo.png" class="w-4 h-4"> Solana</div>
+                                <div class="option-item" onclick="selectItem('src-chain', 'SMAT', 'SMAT Chain', 'data:image/svg+xml,<svg xmlns=\'http://www.w3.org/2000/svg\' viewBox=\'0 0 100 100\'><circle cx=\'50\' cy=\'50\' r=\'48\' fill=\'%23f3ba2f\'/><text x=\'50%25\' y=\'55%25\' text-anchor=\'middle\' dy=\'.3em\' fill=\'black\' font-weight=\'900\' font-size=\'55\'>S</text></svg>')"><img src="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><circle cx='50' cy='50' r='48' fill='%23f3ba2f'/><text x='50%25' y='55%25' text-anchor='middle' dy='.3em' fill='black' font-weight='900' font-size='55'>S</text></svg>" class="w-4 h-4"> SMAT Chain</div>
+                                <div class="option-item" onclick="selectItem('src-chain', 'POL', 'Polygon', 'https://cryptologos.cc/logos/polygon-matic-logo.png')"><img src="https://cryptologos.cc/logos/polygon-matic-logo.png" class="w-4 h-4"> Polygon</div>
+                            </div>
+                        </div>
+
+                        <div class="custom-select">
+                            <div class="select-trigger" onclick="toggleMenu('src-token-menu', event)">
+                                <img id="src-token-img" src="https://cryptologos.cc/logos/binance-coin-bnb-logo.png" class="w-4 h-4">
+                                <span id="src-token-text">BNB</span>
+                                <i class="fas fa-chevron-down text-[8px]"></i>
+                            </div>
+                            <div id="src-token-menu" class="options-menu">
+                                <div class="option-item" onclick="selectItem('src-token', 'BNB', 'BNB', 'https://cryptologos.cc/logos/binance-coin-bnb-logo.png')"><img src="https://cryptologos.cc/logos/binance-coin-bnb-logo.png" class="w-4 h-4"> BNB</div>
+                                <div class="option-item" onclick="selectItem('src-token', 'ETH', 'ETH', 'https://cryptologos.cc/logos/ethereum-eth-logo.png')"><img src="https://cryptologos.cc/logos/ethereum-eth-logo.png" class="w-4 h-4"> ETH</div>
+                                <div class="option-item" onclick="selectItem('src-token', 'SOL', 'SOL', 'https://cryptologos.cc/logos/solana-sol-logo.png')"><img src="https://cryptologos.cc/logos/solana-sol-logo.png" class="w-4 h-4"> SOL</div>
+                                <div class="option-item" onclick="selectItem('src-token', 'SMAT', 'SMAT', 'data:image/svg+xml,<svg xmlns=\'http://www.w3.org/2000/svg\' viewBox=\'0 0 100 100\'><circle cx=\'50\' cy=\'50\' r=\'48\' fill=\'%23f3ba2f\'/><text x=\'50%25\' y=\'55%25\' text-anchor=\'middle\' dy=\'.3em\' fill=\'black\' font-weight=\'900\' font-size=\'55\'>S</text></svg>')"><img src="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><circle cx='50' cy='50' r='48' fill='%23f3ba2f'/><text x='50%25' y='55%25' text-anchor='middle' dy='.3em' fill='black' font-weight='900' font-size='55'>S</text></svg>" class="w-4 h-4"> SMAT</div>
+                                <div class="option-item" onclick="selectItem('src-token', 'USDT', 'USDT', 'https://cryptologos.cc/logos/tether-usdt-logo.png')"><img src="https://cryptologos.cc/logos/tether-usdt-logo.png" class="w-4 h-4"> USDT</div>
+                            </div>
+                        </div>
+                    </div>
+                    <span class="text-[10px] text-gray-500 self-center">
+                        Bal: <span id="src-bal" class="text-white">0.00</span>
+                        <button onclick="setMax()" class="max-btn">MAX</button>
+                    </span>
+                </div>
+                <div class="flex justify-between items-center">
+                    <input id="bridge-amt" type="number" placeholder="0.00" class="bg-transparent text-3xl font-bold outline-none w-full text-white" oninput="calculate()">
+                </div>
+            </div>
+
+            <div class="flex justify-center -my-3 relative z-10">
+                <div class="bg-[#1e2329] p-2 rounded-full border border-gray-700 shadow-lg"><i class="fas fa-random text-yellow-500 text-sm"></i></div>
+            </div>
+
+            <div class="input-box mt-4">
+                <div class="flex justify-between mb-3">
+                    <div class="flex gap-2">
+                         <div class="custom-select">
+                            <div class="select-trigger" onclick="toggleMenu('dst-chain-menu', event)">
+                                <img id="dst-chain-img" src="https://cryptologos.cc/logos/ethereum-eth-logo.png" class="w-4 h-4">
+                                <span id="dst-chain-text">Ethereum</span>
+                                <i class="fas fa-chevron-down text-[8px]"></i>
+                            </div>
+                            <div id="dst-chain-menu" class="options-menu">
+                                <div class="option-item" onclick="selectItem('dst-chain', 'BNB', 'BNB Chain', 'https://cryptologos.cc/logos/binance-coin-bnb-logo.png')"><img src="https://cryptologos.cc/logos/binance-coin-bnb-logo.png" class="w-4 h-4"> BNB Chain</div>
+                                <div class="option-item" onclick="selectItem('dst-chain', 'ETH', 'Ethereum', 'https://cryptologos.cc/logos/ethereum-eth-logo.png')"><img src="https://cryptologos.cc/logos/ethereum-eth-logo.png" class="w-4 h-4"> Ethereum</div>
+                                <div class="option-item" onclick="selectItem('dst-chain', 'SOL', 'Solana', 'https://cryptologos.cc/logos/solana-sol-logo.png')"><img src="https://cryptologos.cc/logos/solana-sol-logo.png" class="w-4 h-4"> Solana</div>
+                                <div class="option-item" onclick="selectItem('dst-chain', 'SMAT', 'SMAT Chain', 'data:image/svg+xml,<svg xmlns=\'http://www.w3.org/2000/svg\' viewBox=\'0 0 100 100\'><circle cx=\'50\' cy=\'50\' r=\'48\' fill=\'%23f3ba2f\'/><text x=\'50%25\' y=\'55%25\' text-anchor=\'middle\' dy=\'.3em\' fill=\'black\' font-weight=\'900\' font-size=\'55\'>S</text></svg>')"><img src="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><circle cx='50' cy='50' r='48' fill='%23f3ba2f'/><text x='50%25' y='55%25' text-anchor='middle' dy='.3em' fill='black' font-weight='900' font-size='55'>S</text></svg>" class="w-4 h-4"> SMAT Chain</div>
+                                <div class="option-item" onclick="selectItem('dst-chain', 'POL', 'Polygon', 'https://cryptologos.cc/logos/polygon-matic-logo.png')"><img src="https://cryptologos.cc/logos/polygon-matic-logo.png" class="w-4 h-4"> Polygon</div>
+                            </div>
+                        </div>
+
+                        <div class="custom-select">
+                            <div class="select-trigger" onclick="toggleMenu('dst-token-menu', event)">
+                                <img id="dst-token-img" src="https://cryptologos.cc/logos/ethereum-eth-logo.png" class="w-4 h-4">
+                                <span id="dst-token-text">ETH</span>
+                                <i class="fas fa-chevron-down text-[8px]"></i>
+                            </div>
+                            <div id="dst-token-menu" class="options-menu">
+                                <div class="option-item" onclick="selectItem('dst-token', 'BNB', 'BNB', 'https://cryptologos.cc/logos/binance-coin-bnb-logo.png')"><img src="https://cryptologos.cc/logos/binance-coin-bnb-logo.png" class="w-4 h-4"> BNB</div>
+                                <div class="option-item" onclick="selectItem('dst-token', 'ETH', 'ETH', 'https://cryptologos.cc/logos/ethereum-eth-logo.png')"><img src="https://cryptologos.cc/logos/ethereum-eth-logo.png" class="w-4 h-4"> ETH</div>
+                                <div class="option-item" onclick="selectItem('dst-token', 'SOL', 'SOL', 'https://cryptologos.cc/logos/solana-sol-logo.png')"><img src="https://cryptologos.cc/logos/solana-sol-logo.png" class="w-4 h-4"> SOL</div>
+                                <div class="option-item" onclick="selectItem('dst-token', 'SMAT', 'SMAT', 'data:image/svg+xml,<svg xmlns=\'http://www.w3.org/2000/svg\' viewBox=\'0 0 100 100\'><circle cx=\'50\' cy=\'50\' r=\'48\' fill=\'%23f3ba2f\'/><text x=\'50%25\' y=\'55%25\' text-anchor=\'middle\' dy=\'.3em\' fill=\'black\' font-weight=\'900\' font-size=\'55\'>S</text></svg>')"><img src="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><circle cx='50' cy='50' r='48' fill='%23f3ba2f'/><text x='50%25' y='55%25' text-anchor='middle' dy='.3em' fill='black' font-weight='900' font-size='55'>S</text></svg>" class="w-4 h-4"> SMAT</div>
+                                <div class="option-item" onclick="selectItem('dst-token', 'USDT', 'USDT', 'https://cryptologos.cc/logos/tether-usdt-logo.png')"><img src="https://cryptologos.cc/logos/tether-usdt-logo.png" class="w-4 h-4"> USDT</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <input id="rec-amt" type="number" placeholder="0.00" class="bg-transparent text-3xl font-bold outline-none w-full text-white/40" readonly>
+            </div>
+
+            <div class="details-box space-y-2.5 text-[10px]">
+                <div class="flex justify-between">
+                    <span class="text-gray-500 font-bold uppercase tracking-tighter">Exchange Rate</span>
+                    <span id="rate-display" class="text-white font-mono tracking-tighter">1 BNB = 0.3064 ETH</span>
+                </div>
+                <div class="flex justify-between">
+                    <span class="text-gray-500 font-bold uppercase tracking-tighter">Bridge Fee (0.25%)</span>
+                    <span id="det-fee" class="text-red-400">0.00 BNB</span>
+                </div>
+                <div class="flex justify-between">
+                    <span class="text-gray-500 font-bold uppercase tracking-tighter">Slippage (0.5%)</span>
+                    <span id="det-slip" class="text-yellow-500">0.00 BNB</span>
+                </div>
+                <div class="flex justify-between pt-2 border-t border-gray-800">
+                    <span class="text-gray-300 font-extrabold uppercase tracking-tighter">Estimated Receipt</span>
+                    <span id="det-total" class="text-green-500 font-extrabold text-sm">0.00 ETH</span>
+                </div>
+            </div>
+
+            <button id="bridge-btn" class="btn-bridge" onclick="runBridge()">CONFIRM BRIDGE</button>
+        </div>
+    </div>
+
+    <div class="fixed bottom-0 left-0 w-full bg-[#1e2329] border-t border-gray-800 px-2 py-3 flex justify-around items-center z-[110]">
+        <a href="Terminal.html" class="nav-item"><i class="fas fa-terminal text-lg text-gray-500"></i><span class="text-[9px] font-bold text-gray-500 uppercase">Terminal</span></a>
+        <a href="index.html" class="nav-item"><i class="fas fa-wallet text-lg text-gray-500"></i><span class="text-[9px] font-bold text-gray-500 uppercase">Exchange</span></a>
+        <a href="Swap.html" class="nav-item"><i class="fas fa-random text-lg text-gray-500"></i><span class="text-[9px] font-bold text-gray-500 uppercase">Swap</span></a>
+        <a href="Bridge.html" class="nav-item"><i class="fas fa-link text-lg text-yellow-500"></i><span class="text-[9px] font-bold text-yellow-500 uppercase">Bridge</span></a>
+        <a href="Ecosystem.html" class="nav-item"><i class="fas fa-layer-group text-lg text-gray-500"></i><span class="text-[9px] font-bold text-gray-500 uppercase">Ecosystems</span></a>
+    </div>
+</div>
+
+<script>
+    // Asset Data
+    const assets = {
+        BNB: { icon: 'https://cryptologos.cc/logos/binance-coin-bnb-logo.png', price: 610 },
+        ETH: { icon: 'https://cryptologos.cc/logos/ethereum-eth-logo.png', price: 3500 },
+        SOL: { icon: 'https://cryptologos.cc/logos/solana-sol-logo.png', price: 185 },
+        POL: { icon: 'https://cryptologos.cc/logos/polygon-matic-logo.png', price: 1.05 },
+        SMAT: { icon: 'data:image/svg+xml,<svg xmlns=\'http://www.w3.org/2000/svg\' viewBox=\'0 0 100 100\'><circle cx=\'50\' cy=\'50\' r=\'48\' fill=\'%23f3ba2f\'/><text x=\'50%25\' y=\'55%25\' text-anchor=\'middle\' dy=\'.3em\' fill=\'black\' font-weight=\'900\' font-size=\'55\'>S</text></svg>', price: 0.00 },
+        USDT: { icon: 'https://cryptologos.cc/logos/tether-usdt-logo.png', price: 1.0 }
+    };
+
+    // Current State
+    let state = {
+        srcChain: 'BNB',
+        srcToken: 'BNB',
+        dstChain: 'ETH',
+        dstToken: 'ETH'
+    };
+
+    let balances = JSON.parse(localStorage.getItem('balances')) || { BNB: 5.0, ETH: 2.0, SOL: 50, SMAT: 10000, POL: 500, USDT: 2500 };
+
+    // Dropdown Logic
+    function toggleMenu(id, e) {
+        e.stopPropagation();
+        closeAllMenus();
+        document.getElementById(id).classList.toggle('show');
+    }
+
+    function closeAllMenus() {
+        document.querySelectorAll('.options-menu').forEach(menu => menu.classList.remove('show'));
+    }
+
+    function selectItem(type, val, label, icon) {
+        const idMap = {
+            'src-chain': 'srcChain',
+            'src-token': 'srcToken',
+            'dst-chain': 'dstChain',
+            'dst-token': 'dstToken'
+        };
+        
+        state[idMap[type]] = val;
+        document.getElementById(`${type}-text`).innerText = label;
+        document.getElementById(`${type}-img`).src = icon;
+        
+        syncData();
+    }
+
+    // Live Prices
+    async function fetchPrices() {
+        try {
+            const symbols = ["BNBUSDT", "ETHUSDT", "SOLUSDT", "MATICUSDT"];
+            for (let s of symbols) {
+                const res = await fetch(`https://api.binance.com/api/v3/ticker/price?symbol=${s}`);
+                const data = await res.json();
+                const key = s.replace('USDT', '').replace('MATIC', 'POL');
+                if(assets[key]) assets[key].price = parseFloat(data.price);
+            }
+            calculate();
+        } catch (e) {}
+    }
+
+    function syncData() {
+        document.getElementById('src-bal').innerText = (balances[state.srcToken] || 0).toFixed(4);
+        calculate();
+    }
+
+    function calculate() {
+        const amt = parseFloat(document.getElementById('bridge-amt').value) || 0;
+        const fromPrice = assets[state.srcToken].price;
+        const toPrice = assets[state.dstToken].price;
+        const rate = fromPrice / toPrice;
+
+        document.getElementById('rate-display').innerText = `1 ${state.srcToken} = ${rate.toFixed(4)} ${state.dstToken}`;
+
+        const fee = amt * 0.0025;
+        const slip = amt * 0.005;
+        const final = (amt - fee - slip) * rate;
+
+        document.getElementById('rec-amt').value = amt > 0 ? final.toFixed(6) : "";
+        document.getElementById('det-fee').innerText = `-${fee.toFixed(6)} ${state.srcToken}`;
+        document.getElementById('det-slip').innerText = `-${slip.toFixed(6)} ${state.srcToken}`;
+        document.getElementById('det-total').innerText = `${amt > 0 ? final.toFixed(6) : '0.00'} ${state.dstToken}`;
+    }
+
+    function setMax() {
+        const bal = balances[state.srcToken] || 0;
+        if(bal <= 0) return;
+        document.getElementById('bridge-amt').value = (bal / 1.0075).toFixed(6);
+        calculate();
+    }
+
+    function runBridge() {
+        const amt = parseFloat(document.getElementById('bridge-amt').value);
+        const btn = document.getElementById('bridge-btn');
+        if(!amt || amt <= 0 || amt > balances[state.srcToken]) return alert("Invalid Balance");
+
+        btn.classList.add('btn-loading');
+        btn.innerText = "";
+
+        setTimeout(() => {
+            const finalRec = parseFloat(document.getElementById('rec-amt').value);
+            balances[state.srcToken] -= amt;
+            balances[state.dstToken] = (balances[state.dstToken] || 0) + finalRec;
+            localStorage.setItem('balances', JSON.stringify(balances));
+
+            btn.classList.remove('btn-loading');
+            btn.classList.add('bg-green-600', 'text-white');
+            btn.innerHTML = `<i class="fas fa-check mr-2"></i> SUCCESS`;
+            syncData();
+
+            setTimeout(() => {
+                btn.classList.remove('bg-green-600', 'text-white');
+                btn.innerText = "CONFIRM BRIDGE";
+                document.getElementById('bridge-amt').value = "";
+                calculate();
+            }, 3000);
+        }, 4000);
+    }
+
+    window.onload = () => { fetchPrices(); syncData(); setInterval(fetchPrices, 15000); };
+</script>
+</body>
+</html>
