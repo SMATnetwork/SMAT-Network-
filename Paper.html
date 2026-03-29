@@ -1,0 +1,355 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>oxSMAT Ecosystem | Professional Layout</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;800&display=swap');
+        body { background-color: #0b0e11; color: white; font-family: 'Plus Jakarta Sans', sans-serif; scroll-behavior: smooth; }
+        .glass-card { background: rgba(30, 35, 41, 0.6); backdrop-filter: blur(10px); border: 1px solid rgba(255,255,255,0.05); border-radius: 20px; }
+        .gold-text { color: #f0b90b; }
+        .formula-box { background: rgba(0,0,0,0.3); border-left: 4px solid #f0b90b; padding: 15px; font-family: 'Courier New', monospace; }
+        
+        /* --- Advanced Animations --- */
+        .chain-rotate { animation: rotate 15s linear infinite; }
+        @keyframes rotate { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+        
+        .pulse-glow { animation: pulseGlow 2s infinite ease-in-out; }
+        @keyframes pulseGlow { 0%, 100% { box-shadow: 0 0 20px rgba(240, 185, 11, 0.2); transform: scale(1); } 50% { box-shadow: 0 0 50px rgba(240, 185, 11, 0.5); transform: scale(1.05); } }
+
+        .trade-flow { animation: slideX 3s infinite linear; }
+        @keyframes slideX { 0% { left: -100%; } 100% { left: 100%; } }
+
+        .radar-line { animation: radarSweep 4s linear infinite; transform-origin: center; }
+        @keyframes radarSweep { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+
+        .float-icon { animation: floatY 3s infinite ease-in-out; }
+        @keyframes floatY { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-15px); } }
+
+        /* [SECURITY LAYER 1] - Disable Selection & Dragging */
+        * {
+            -webkit-user-select: none;
+            -moz-user-select: none;
+            -ms-user-select: none;
+            user-select: none;
+            -webkit-user-drag: none;
+        }
+    </style>
+</head>
+<body class="p-4 md:p-10" oncontextmenu="return false;">
+
+    <div class="max-w-7xl mx-auto">
+        
+        <section class="mb-10">
+            <div class="glass-card p-8 md:p-12 abstract-gradient relative overflow-hidden">
+                <div class="absolute top-0 right-0 w-64 h-64 bg-yellow-500/5 rounded-full blur-3xl"></div>
+                <div class="relative z-10">
+                    <h2 class="text-xs font-black gold-text uppercase tracking-[0.3em] mb-4">Executive Abstract</h2>
+                    <h1 class="text-3xl md:text-5xl font-extrabold mb-6 tracking-tight leading-tight">
+                        oxSMAT: A Self-Sustaining <br><span class="gold-text">Financial Powerhouse</span>
+                    </h1>
+                    <p class="text-gray-400 text-base md:text-lg leading-relaxed max-w-4xl">
+                        The oxSMAT Tokenomics is engineered to create a deflationary, utility-first economic environment. Unlike traditional speculative assets, <b>$SMAT</b> value is anchored to the transaction volume of our proprietary Centralized Exchange (CEX) and the throughput of our native L1 Blockchain. Through a 12-year halving cycle and a unique <b>"Proof-of-Trading"</b> mining mechanism, we ensure that liquidity providers, active traders, and early testnet supporters are mathematically rewarded for their contribution to the ecosystem's growth.
+                    </p>
+                </div>
+            </div>
+        </section>
+
+        <section class="mb-20 grid lg:grid-cols-2 gap-10 items-center">
+            <div class="order-2 lg:order-1">
+                <h2 class="text-2xl font-black mb-6 gold-text uppercase tracking-widest border-l-4 border-yellow-500 pl-4">Core Blockchain Infrastructure</h2>
+                <div class="space-y-4 text-gray-400 text-sm md:text-base leading-relaxed">
+                    <p>The oxSMAT Blockchain operates as a high-performance Layer 1 solution, specifically optimized for high-frequency financial operations and massive scalability. Our infrastructure utilizes an EVM-compatible consensus mechanism, ensuring seamless interoperability with the global decentralized finance (DeFi) landscape. This allows developers to port Ethereum-based dApps effortlessly while enjoying vastly superior performance.</p>
+                    <p>By integrating sub-second block finality and near-zero gas fees, oxSMAT provides the bedrock for our entire decentralized ecosystem. Every transaction on the chain directly feeds into our unique <b>"Proof-of-Trading"</b> mining cycle, creating a sustainable economy where network security and commercial activity grow hand-in-hand. This decentralized ledger is not just a passive record-keeper but an automated engine that manages the 12-year halving protocol and cross-chain liquidity synchronization with military-grade encryption.</p>
+                </div>
+            </div>
+            <div class="order-1 lg:order-2 flex justify-center py-10">
+                <div class="relative w-72 h-72 flex justify-center items-center">
+                    <div class="absolute w-full h-full border-2 border-dashed border-yellow-500/30 rounded-full chain-rotate"></div>
+                    <div class="absolute w-4/5 h-4/5 border border-white/5 rounded-full"></div>
+                    <div class="z-10 bg-[#0b0e11] p-8 rounded-[2rem] border border-yellow-500 pulse-glow">
+                        <i class="fas fa-link text-6xl gold-text"></i>
+                    </div>
+                    <i class="fas fa-shield-alt absolute top-0 right-0 text-2xl gold-text float-icon" style="animation-delay: 0.5s;"></i>
+                    <i class="fas fa-microchip absolute bottom-0 left-0 text-2xl gold-text float-icon" style="animation-delay: 1s;"></i>
+                </div>
+            </div>
+        </section>
+
+        <section class="mb-20 grid lg:grid-cols-2 gap-10 items-center border-t border-white/5 pt-20">
+            <div class="flex justify-center items-center p-8 glass-card h-80 relative overflow-hidden bg-gradient-to-tr from-green-500/5 to-transparent">
+                <div class="w-full space-y-4">
+                    <div class="flex justify-between items-end gap-1 h-32">
+                        <div class="flex-1 bg-red-500/30 rounded-t h-20"></div>
+                        <div class="flex-1 bg-red-500/50 rounded-t h-24"></div>
+                        <div class="flex-1 bg-green-500/50 rounded-t h-28"></div>
+                        <div class="flex-1 bg-green-500/80 rounded-t h-32"></div>
+                        <div class="flex-1 bg-green-500/40 rounded-t h-20"></div>
+                    </div>
+                    <div class="h-1 w-full bg-white/5 relative overflow-hidden">
+                        <div class="absolute top-0 h-full w-20 bg-green-500 trade-flow shadow-[0_0_15px_#22c55e]"></div>
+                    </div>
+                    <div class="text-[10px] font-mono text-center text-gray-500 uppercase tracking-widest">Matching Engine Active: 1M+ TPS</div>
+                </div>
+            </div>
+            <div>
+                <h2 class="text-2xl font-black mb-6 gold-text uppercase tracking-widest border-l-4 border-green-500 pl-4">Institutional Grade CEX</h2>
+                <div class="space-y-4 text-gray-400 text-sm md:text-base leading-relaxed">
+                    <p>The oxSMAT Centralized Exchange (CEX) is the primary liquidity hub and economic engine of our entire ecosystem. Engineered for institutional-grade performance, it features a proprietary matching engine capable of processing millions of transactions per second with ultra-low latency. This ensures that even during periods of extreme market volatility, users can execute trades with precision and zero slippage.</p>
+                    <p>Beyond simple trading, oxSMAT CEX is deeply integrated with our native L1 blockchain to power the <b>Proof-of-Trading</b> reward system. A massive 70% of the annual $SMAT mining supply is distributed directly back to our community based on their trading volume. By combining the speed of a CEX with the transparency of a blockchain-based reward system, we have created a secure, high-yield environment where your trading activity actively builds your portfolio.</p>
+                </div>
+            </div>
+        </section>
+
+        <section class="mb-20 grid lg:grid-cols-2 gap-10 items-center border-t border-white/5 pt-20">
+            <div class="order-2 lg:order-1">
+                <h2 class="text-2xl font-black mb-6 gold-text uppercase tracking-widest border-l-4 border-cyan-500 pl-4">Tracking Coin Terminal</h2>
+                <div class="space-y-4 text-gray-400 text-sm md:text-base leading-relaxed">
+                    <p>The oxSMAT Tracking Terminal is a sophisticated market intelligence platform, designed to be the "Bloomberg of Crypto." Similar to CoinGecko or CoinMarketCap, it monitors the real-time movement of over 10,000+ crypto assets across multiple blockchains. However, it goes further by providing deep-dive liquidity analysis, whale wallet tracking, and institutional-grade data visualization that helps users spot market trends before they happen.</p>
+                    <p>Equipped with proprietary "Alpha Score" algorithms, the terminal identifies trending tokens and high-potential gems using AI-driven sentiment analysis. Whether you are tracking the next big DeFi protocol or monitoring Bitcoin's dominance, the Tracking Terminal offers an all-in-one dashboard with customized alerts, portfolio management tools, and seamless integration with the oxSMAT ecosystem, ensuring you never miss a market opportunity.</p>
+                </div>
+            </div>
+            <div class="order-1 lg:order-2 flex justify-center py-10">
+                <div class="relative w-64 h-64 border-2 border-cyan-500/20 rounded-full flex justify-center items-center bg-cyan-500/5">
+                    <div class="absolute w-full h-0.5 bg-cyan-500/40 radar-line"></div>
+                    <div class="absolute w-2 h-2 bg-cyan-400 rounded-full blur-sm float-icon" style="top:20%; left:30%"></div>
+                    <div class="absolute w-3 h-3 bg-yellow-400 rounded-full blur-sm float-icon" style="top:60%; left:70%; animation-delay: 1.5s"></div>
+                    <i class="fas fa-satellite-dish text-5xl text-cyan-500"></i>
+                </div>
+            </div>
+        </section>
+
+        <section class="mb-20 grid lg:grid-cols-2 gap-10 items-center border-t border-white/5 pt-20">
+            <div class="flex justify-center py-10">
+                <div class="flex gap-6">
+                    <div class="glass-card p-6 flex flex-col items-center float-icon" style="animation-delay: 0.2s;">
+                        <i class="fas fa-seedling text-3xl text-green-500 mb-2"></i>
+                        <span class="text-[10px] font-bold">Seed</span>
+                    </div>
+                    <div class="glass-card p-6 flex flex-col items-center float-icon" style="animation-delay: 0.7s;">
+                        <i class="fas fa-rocket text-3xl gold-text mb-2"></i>
+                        <span class="text-[10px] font-bold">Launch</span>
+                    </div>
+                    <div class="glass-card p-6 flex flex-col items-center float-icon" style="animation-delay: 1.2s;">
+                        <i class="fas fa-hand-holding-usd text-3xl text-blue-500 mb-2"></i>
+                        <span class="text-[10px] font-bold">Scale</span>
+                    </div>
+                </div>
+            </div>
+            <div>
+                <h2 class="text-2xl font-black mb-6 gold-text uppercase tracking-widest border-l-4 border-purple-500 pl-4">oxSMAT Ventures & Labs</h2>
+                <div class="space-y-4 text-gray-400 text-sm md:text-base leading-relaxed">
+                    <p>oxSMAT Lab functions as our premier Venture Capital (VC) and incubation arm, focused on identifying and empowering the next wave of Web3 pioneers. Much like Binance Labs or a16z, oxSMAT Ventures provides early-stage funding, strategic mentorship, and technical auditing to high-potential projects. We believe in building a robust ecosystem, and that starts with investing in builders who are pushing the boundaries of Decentralized Finance (DeFi) and AI integration.</p>
+                    <p>Projects backed by oxSMAT Ventures gain an immediate competitive advantage, including priority listing on our native CEX, direct integration with our Layer 1 blockchain, and access to our global network of liquidity providers. Our goal is to foster a sustainable pipeline of innovation where every incubated project contributes back to the $SMAT ecosystem's value, creating a virtuous cycle of growth, investment, and technological advancement.</p>
+                </div>
+            </div>
+        </section>
+
+        <div class="text-center mb-16">
+            <h2 class="text-4xl font-black uppercase tracking-tighter mb-2 italic">Strategic <span class="gold-text">Tokenomics</span></h2>
+            <div class="inline-block px-6 py-2 bg-yellow-500/10 border border-yellow-500/20 rounded-full">
+                <p class="text-yellow-500 font-bold tracking-widest text-sm">TOTAL SUPPLY: 21,000,000 $SMAT</p>
+            </div>
+        </div>
+
+        <div class="grid lg:grid-cols-12 gap-10 mb-20">
+            <div class="lg:col-span-6 glass-card p-8 flex flex-col items-center">
+                <h3 class="text-lg font-bold mb-6 uppercase gold-text tracking-widest">Distribution</h3>
+                <div style="position: relative; height:350px; width:100%"><canvas id="tokenPieChart"></canvas></div>
+            </div>
+            <div class="lg:col-span-6 glass-card p-8">
+                <h3 class="text-lg font-bold mb-8 uppercase gold-text tracking-widest text-center">Breakdown</h3>
+                <div id="bar-list" class="space-y-4"></div>
+            </div>
+        </div>
+
+        <section class="mb-20">
+            <h2 class="text-3xl font-black mb-8 border-l-4 border-yellow-500 pl-4 uppercase tracking-tight">Mainnet <span class="gold-text">Halving</span></h2>
+            <div class="grid lg:grid-cols-2 gap-8">
+                <div class="glass-card p-8">
+                    <h4 class="text-xl font-bold mb-4 italic">12-Year Mining Protocol</h4>
+                    <p class="text-gray-400 text-sm mb-6 leading-relaxed">According to our strategic roadmap, the oxSMAT Centralized Exchange (CEX) is scheduled to commence its full operational activities in Q2 2028. Simultaneously, the Mainnet Mining protocol will be activated on the very same day the exchange begins its trading operations. This mining ecosystem is designed to be inclusive, rewarding both our Testnet early adopters and active Traders with the opportunity to mine $SMAT tokens through their contribution to the network.</p>
+                    <div class="grid grid-cols-2 gap-4">
+                        <div class="bg-yellow-500/10 p-4 rounded-xl border border-yellow-500/20"><p class="text-xl font-black gold-text">~ 1998 $SMAT</p><span class="text-[10px] ">oxSMAT Exchange Daily Traders</span></div>
+                        <div class="bg-green-500/10 p-4 rounded-xl border border-green-500/20"><p class="text-xl font-black text-green-500">~ 857 $SMAT</p><span class="text-[10px] ">Who one Participate in Testnet Mining</span></div>
+                    </div>
+                </div>
+                <div class="glass-card p-8 flex flex-col justify-center gap-4">
+                    <div class="formula-box text-xs uppercase tracking-tighter">Trader = [Daily Pool ÷ Total Vol] × Your Vol</div>
+                    <div class="formula-box text-xs uppercase tracking-tighter">Tester = [Daily Pool ÷ Total Participants]</div>
+                </div>
+            </div>
+        </section>
+
+        <h2 class="text-2xl font-black mb-10 border-l-4 border-blue-500 pl-4 uppercase">Vesting Schedule</h2>
+        <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-6" id="details-grid"></div>
+
+    </div>
+    
+    <div style="max-w: 7xl; margin: 40px auto; padding: 20px; font-family: 'Plus Jakarta Sans', sans-serif;">
+    <div style="background: rgba(30, 35, 41, 0.6); 
+    backdrop-filter: blur(10px); 
+    border: 1px solid rgba(255,255,255,0.05); 
+    border-radius: 24px; 
+    padding: 40px; 
+    display: grid; 
+    grid-template-columns: 1fr; 
+    gap: 30px; 
+    align-items: center;
+    position: relative;
+    overflow: hidden;">
+    
+    <div style="position: absolute; top: -50px; left: -50px; width: 150px; height: 150px; background: rgba(240, 185, 11, 0.05); border-radius: 50%; filter: blur(40px);"></div>
+    
+    <div style="display: grid; grid-template-columns: 1fr md(2fr); gap: 30px; align-items: center;">
+    
+    <div style="display: flex; justify-content: center; align-items: center; padding: 20px;">
+    <div style="position: relative; width: 120px; height: 140px;">
+    <div style="position: absolute; inset: 0; display: flex; justify-content: center; align-items: center; color: #f0b90b; font-size: 80px; animation: floatShield 3s infinite ease-in-out; z-index: 10;">
+    <i class="fas fa-shield-alt"></i>
+    </div>
+    <div style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 100px; height: 100px; border: 2px solid rgba(34, 197, 94, 0.5); border-radius: 50%; animation: pulseRing 2s infinite ease-in-out;"></div>
+    <div style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 140px; height: 140px; border: 1px solid rgba(240, 185, 11, 0.2); border-radius: 50%; animation: pulseRing 2s infinite ease-in-out; animation-delay: 0.5s;"></div>
+    </div>
+    </div>
+    
+    <div>
+    <h2 style="color: #f0b90b; font-size: 22px; font-weight: 800; text-transform: uppercase; letter-spacing: 2px; margin-bottom: 15px; border-left: 4px solid #f0b90b; padding-left: 15px;">
+    Audits & Protocol Security
+    </h2>
+    
+    <p style="color: #9ca3af; font-size: 14px; line-height: 1.8; text-align: justify; margin-bottom: 20px; max-width: 600px;">
+    Security is the cornerstone of the oxSMAT ecosystem. Our native Layer 1 blockchain infrastructure, smart contracts, and Centralized Exchange (CEX) matching engine undergo rigorous, continuous auditing by industry-leading third-party security firms. These comprehensive audits ensure the immunity of our protocols against re-entrancy attacks, flash loan exploits, and mathematical vulnerabilities within the 12-year halving logic. By prioritizing military-grade encryption and decentralized data integrity, oxSMAT guarantees a transparent, robust, and SAFU environment for all participants.
+    </p>
+    
+    <div style="display: flex; flex-wrap: wrap; gap: 10px; border-top: 1px solid rgba(255,255,255,0.05); padding-top: 15px;">
+    <span style="background: rgba(34, 197, 94, 0.1); color: #22c55e; padding: 5px 12px; border-radius: 6px; font-size: 11px; font-weight: 700; border: 1px solid rgba(34, 197, 94, 0.2); text-transform: uppercase; display: flex; align-items: center; gap: 5px;">
+    <i class="fas fa-check-circle"></i> Continuous Monitoring
+    </span>
+    <span style="background: rgba(240, 185, 11, 0.1); color: #f0b90b; padding: 5px 12px; border-radius: 6px; font-size: 11px; font-weight: 700; border: 1px solid rgba(240, 185, 11, 0.2); text-transform: uppercase; display: flex; align-items: center; gap: 5px;">
+    <i class="fas fa-search"></i> Code Audited
+    </span>
+    </div>
+    </div>
+    </div>
+    </div>
+    </div>
+    
+    <style>
+    @keyframes floatShield {
+    0%, 100% { transform: translateY(0) scale(1); opacity: 0.9; }
+    50% { transform: translateY(-15px) scale(1.05); opacity: 1; color: #ffffff; }
+    }
+    @keyframes pulseRing {
+    0% { transform: translate(-50%, -50%) scale(0.8); opacity: 0.8; }
+    50% { transform: translate(-50%, -50%) scale(1.1); opacity: 0.2; }
+    100% { transform: translate(-50%, -50%) scale(1.3); opacity: 0; }
+    }
+    /* Responsive adjustment */
+    @media (min-width: 768px) {
+    div[style*="grid-template-columns: 1fr"] {
+    grid-template-columns: 1fr 2fr !important;
+    }
+    }
+    </style>
+    
+
+<div class="max-w-7xl mx-auto mt-20 mb-20 px-4">
+    <div style="background: linear-gradient(135deg, rgba(240, 185, 11, 0.1) 0%, rgba(30, 35, 41, 0.9) 100%); 
+                backdrop-filter: blur(15px); 
+                border: 1px solid rgba(255,255,255,0.1); 
+                border-radius: 24px; 
+                padding: 40px; 
+                position: relative; 
+                overflow: hidden;">
+        
+        <div style="position: absolute; bottom: -50px; right: -50px; width: 200px; height: 200px; background: #f0b90b; opacity: 0.05; border-radius: 50%; filter: blur(40px);"></div>
+
+        <div style="position: relative; z-index: 10;">
+            <h2 style="color: #f0b90b; font-size: 24px; font-weight: 800; text-transform: uppercase; letter-spacing: 2px; margin-bottom: 20px; border-left: 4px solid #f0b90b; padding-left: 15px;">
+                Strategic Conclusion
+            </h2>
+            
+            <p style="color: #9ca3af; font-size: 16px; line-height: 1.8; text-align: justify; margin-bottom: 25px;">
+                The oxSMAT ecosystem is meticulously engineered to transcend the boundaries of traditional digital assets, establishing a self-sustaining financial infrastructure. As per our strategic roadmap, the <b>oxSMAT Centralized Exchange (CEX)</b> is scheduled for full operational commencement in <b>Q2 2028</b>. Simultaneously, the <b>Mainnet Mining</b> protocol will be activated, marking a milestone where both <b>Testnet early adopters</b> and <b>active Traders</b> gain the exclusive opportunity to mine $SMAT tokens through direct network contribution. By integrating a 12-year halving cycle with a robust utility-driven model, oxSMAT ensures long-term scarcity and value appreciation. This cohesive blueprint solidifies our commitment to transparency and community-led growth, positioning the oxSMAT ecosystem at the forefront of the global decentralized financial revolution.
+            </p>
+
+            <div style="display: flex; flex-wrap: wrap; gap: 15px; border-top: 1px solid rgba(255,255,255,0.05); margin-top: 20px; padding-top: 20px;">
+                <span style="background: rgba(240, 185, 11, 0.1); color: #f0b90b; padding: 6px 15px; border-radius: 8px; font-size: 12px; font-weight: 700; border: 1px solid rgba(240, 185, 11, 0.2); text-transform: uppercase;">Future Ready</span>
+                <span style="background: rgba(34, 197, 94, 0.1); color: #22c55e; padding: 6px 15px; border-radius: 8px; font-size: 12px; font-weight: 700; border: 1px solid rgba(34, 197, 94, 0.2); text-transform: uppercase;">Community Driven</span>
+                <span style="background: rgba(59, 130, 246, 0.1); color: #3b82f6; padding: 6px 15px; border-radius: 8px; font-size: 12px; font-weight: 700; border: 1px solid rgba(59, 130, 246, 0.2); text-transform: uppercase;">Institutional Security</span>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+
+    <script>
+        const dataConfig = [
+            { label: 'Mainnet Mining', val: 12500000, color: '#f0b90b', desc: '12 Years distribution. 70% to Traders, 30% to Testnet Users.' },
+            { label: 'Testnet Airdrop', val: 1500000, color: '#10b981', desc: 'Fully Unlocked. Reward for early network supporters.' },
+            { label: 'Team', val: 1000000, color: '#ffffff', desc: '3 Months Cliff, 3 Years Linear Unlock.' },
+            { label: 'VCs Fund', val: 1000000, color: '#3b82f6', desc: '3 Months Cliff, 3 Years Linear Unlock.' },
+            { label: 'Exchange Liquidity', val: 1000000, color: '#f43f5e', desc: 'Reserved for Top-Tier Exchange Liquidity.' },
+            { label: 'DAO Incentive', val: 1000000, color: '#8b5cf6', desc: 'Distributed over 11 years for community governance.' },
+            { label: 'Future Dev', val: 750000, color: '#06b6d4', desc: '5 Years Strategic Locking for core R&D.' },
+            { label: 'Pre-Sale', val: 750000, color: '#ec4899', desc: 'Fully Unlocked at TGE for initial investors.' },
+            { label: 'Partnership', val: 750000, color: '#f97316', desc: '3 Years Lock for strategic alliances.' },
+            { label: 'Adviser & Marketing', val: 500000, color: '#a855f7', desc: '3 Years Lock for global branding.' },
+            { label: 'Charity Donation', val: 250000, color: '#4b5563', desc: 'Reserved for global social impact.' }
+        ];
+
+        const total = 21000000;
+        const barList = document.getElementById('bar-list');
+        const detailsGrid = document.getElementById('details-grid');
+
+        dataConfig.forEach(item => {
+            const percent = ((item.val / total) * 100).toFixed(2);
+            barList.innerHTML += `<div class="mb-4"><div class="flex justify-between text-[11px] font-bold uppercase mb-1"><span>${item.label}</span><span style="color: ${item.color}">${item.val.toLocaleString()} (${percent}%)</span></div><div class="w-full h-1.5 bg-gray-800 rounded-full overflow-hidden"><div class="h-full rounded-full transition-all duration-1000" style="width: ${percent}%; background-color: ${item.color}"></div></div></div>`;
+            detailsGrid.innerHTML += `<div class="glass-card p-6 border-t-2" style="border-top-color: ${item.color}"><h4 class="font-bold text-xs uppercase mb-2">${item.label}</h4><p class="text-[11px] text-gray-400 leading-relaxed mb-4">${item.desc}</p><div class="flex justify-between items-center text-[10px] font-mono bg-black/20 p-2 rounded"><span class="gold-text">ALLOCATION</span><span>${item.val.toLocaleString()}</span></div></div>`;
+        });
+
+        const ctx = document.getElementById('tokenPieChart').getContext('2d');
+        new Chart(ctx, {
+            type: 'pie',
+            data: { labels: dataConfig.map(d => d.label), datasets: [{ data: dataConfig.map(d => d.val), backgroundColor: dataConfig.map(d => d.color), borderWidth: 0, hoverOffset: 35 }] },
+            options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, animation: { onComplete: function() { const chart = this; const ctx = chart.ctx; ctx.save(); ctx.font = "bold 9px Plus Jakarta Sans"; ctx.fillStyle = "white"; ctx.textAlign = "center"; chart.data.datasets.forEach((dataset, i) => { chart.getDatasetMeta(i).data.forEach((datapoint, index) => { const { x, y } = datapoint.tooltipPosition(); const p = ((dataConfig[index].val / total) * 100).toFixed(1); if(p > 4) ctx.fillText(p + "%", x, y); }); }); ctx.restore(); } } }
+        });
+
+        // [SECURITY SCRIPTS - PROTECTING SOURCE CODE & CONTENT]
+        
+        // Disable Right Click
+        document.addEventListener('contextmenu', event => event.preventDefault());
+
+        // Disable Shortcuts (F12, Ctrl+Shift+I, Ctrl+U, etc.)
+        document.onkeydown = function(e) {
+            if(e.keyCode == 123) return false; // F12
+            if(e.ctrlKey && e.shiftKey && e.keyCode == 'I'.charCodeAt(0)) return false; // Ctrl+Shift+I
+            if(e.ctrlKey && e.shiftKey && e.keyCode == 'C'.charCodeAt(0)) return false; // Ctrl+Shift+C
+            if(e.ctrlKey && e.shiftKey && e.keyCode == 'J'.charCodeAt(0)) return false; // Ctrl+Shift+J
+            if(e.ctrlKey && e.keyCode == 'U'.charCodeAt(0)) return false; // Ctrl+U
+        };
+
+        // Anti-Debugger Console (Triggers if console is opened)
+        (function() {
+            var counter = 0;
+            setInterval(function() {
+                (function() {
+                    const start = new Date();
+                    debugger;
+                    const end = new Date();
+                    if (end - start > 100) {
+                        document.body.innerHTML = "Security Breach Detected - Access Denied.";
+                    }
+                })();
+                counter++;
+            }, 1000);
+        })();
+    </script>
+</body>
+</html>

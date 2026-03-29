@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SMAT Network | identity Lab</title>
+    <style>
+        :root {
+            --bg: #05070a; --card: rgba(24, 26, 32, 0.9);
+            --accent: #f3ba2f; --text: #eaecef; --dim: #848e9c;
+            --border: rgba(255, 255, 255, 0.1); --up: #0ecb81;
+        }
+        body {
+            margin: 0; background: var(--bg); color: var(--text);
+            font-family: 'Segoe UI', sans-serif; display: flex; 
+            justify-content: center; align-items: center; height: 100vh;
+        }
+        .auth-card {
+            width: 380px; background: var(--card); padding: 35px;
+            border-radius: 24px; border: 1px solid var(--border);
+            box-shadow: 0 20px 50px rgba(0,0,0,0.5); text-align: center;
+        }
+        .logo { font-size: 26px; font-weight: bold; margin-bottom: 25px; color: var(--accent); }
+        .input-box { text-align: left; margin-bottom: 15px; }
+        .input-box label { display: block; font-size: 11px; margin-bottom: 6px; color: var(--dim); }
+        input {
+            width: 100%; padding: 12px; background: rgba(0,0,0,0.3); border: 1px solid var(--border);
+            border-radius: 10px; color: white; outline: none; box-sizing: border-box;
+        }
+        input:focus { border-color: var(--accent); }
+        .btn {
+            width: 100%; padding: 14px; background: var(--accent); color: black;
+            border: none; border-radius: 10px; font-weight: bold; cursor: pointer; margin-top: 15px;
+        }
+        #status-msg { font-size: 12px; margin-top: 15px; color: var(--up); display: none; }
+    </style>
+</head>
+<body>
+
+<div class="auth-card">
+    <div class="logo">SMAT<span>.LAB</span></div>
+    
+    <div class="input-box">
+        <label>Email Address</label>
+        <input type="email" id="test-email" placeholder="test@example.com">
+    </div>
+    <div class="input-box">
+        <label>Security Password</label>
+        <input type="password" id="test-pass" placeholder="Min 8 char, Symbol, Number">
+    </div>
+
+    <button class="btn" onclick="quickSignup()">Create & Login (Auto)</button>
+    <div id="status-msg">✅ Identity Created! Redirecting...</div>
+</div>
+
+<script>
+    // ১. ইউনিক ইভিএম অ্যাড্রেস জেনারেটর
+    function createUniqueEVM() {
+        const hex = '0123456789abcdef';
+        let addr = '0x';
+        for (let i = 0; i < 40; i++) {
+            addr += hex[Math.floor(Math.random() * hex.length)];
+        }
+        return addr;
+    }
+
+    // ২. ইউনিক ইউজার আইডি জেনারেটর
+    function createUID() {
+        return 'SMAT-' + Math.floor(100000 + Math.random() * 900000);
+    }
+
+    function quickSignup() {
+        const email = document.getElementById('test-email').value;
+        const pass = document.getElementById('test-pass').value;
+
+        // পাসওয়ার্ড শর্ত চেক (Regex)
+        const passRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/;
+        
+        if(!email) { alert("দয়া করে ইমেইল দিন।"); return; }
+        if(!passRegex.test(pass)) {
+            alert("পাসওয়ার্ড শর্ত পূরণ করেনি! ৮টি অক্ষর, বড় হাত, সংখ্যা ও চিহ্ন দিন।");
+            return;
+        }
+
+        // ইউজারের জন্য নতুন এবং ইউনিক ডাটা তৈরি
+        const newUserData = {
+            email: email,
+            userId: createUID(),
+            depositAddr: createUniqueEVM(),
+            balanceUSDT: 100.00, // টেস্টিং এর জন্য ফ্রি ব্যালেন্স
+            balanceSMAT: 0.00
+        };
+
+        // LocalStorage এ ডাটা সেভ করা (এটি ব্রাউজারে ফিক্সড থাকবে)
+        localStorage.setItem('smat_user', JSON.stringify(newUserData));
+
+        // সাকসেস মেসেজ দেখানো
+        document.getElementById('status-msg').style.display = "block";
+
+        // সরাসরি টার্মিনালে নিয়ে যাওয়া
+        setTimeout(() => {
+            window.location.href = "terminal.html"; 
+        }, 1200);
+    }
+</script>
+
+</body>
+</html>

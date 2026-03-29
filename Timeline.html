@@ -1,0 +1,251 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>oxSMAT | Strategic Ecosystem Roadmap</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&family=Space+Grotesk:wght@300;500;700&display=swap');
+        
+        body { 
+            background-color: #080a0c; 
+            color: #e2e8f0; 
+            font-family: 'Inter', sans-serif;
+            overflow-x: hidden;
+            line-height: 1.6;
+        }
+
+        h1, h2, h3, .q-title { 
+            font-family: 'Space Grotesk', sans-serif;
+            letter-spacing: -0.02em;
+        }
+
+        .glass-card { 
+            background: rgba(17, 24, 39, 0.7); 
+            backdrop-filter: blur(16px); 
+            border: 1px solid rgba(255, 255, 255, 0.1); 
+            border-radius: 24px; 
+            box-shadow: 0 10px 40px -10px rgba(0,0,0,0.7);
+        }
+
+        /* কিউ কার্ডের জন্য বিশেষ বক্স ডিজাইন */
+        .q-box {
+            border: 1px solid rgba(255, 255, 255, 0.15);
+            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+        
+        .q-box:hover {
+            transform: translateY(-5px);
+            border-color: rgba(240, 185, 11, 0.4);
+            background: rgba(20, 27, 45, 0.9);
+            box-shadow: 0 15px 50px -12px rgba(0, 0, 0, 0.9);
+        }
+
+        .gold-gradient {
+            background: linear-gradient(135deg, #f0b90b 0%, #fab705 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            font-weight: 800;
+        }
+
+        .zigzag-line {
+            position: absolute;
+            left: 50%;
+            width: 2px;
+            height: 100%;
+            background: linear-gradient(to bottom, transparent, rgba(240, 185, 11, 0.3) 15%, rgba(240, 185, 11, 0.3) 85%, transparent);
+            transform: translateX(-50%);
+            z-index: 0;
+        }
+
+        .warning-glow {
+            box-shadow: 0 0 30px rgba(239, 68, 68, 0.15);
+            border: 1px solid rgba(239, 68, 68, 0.4);
+        }
+
+        .q-year { font-size: 1.25rem; letter-spacing: 0.1em; }
+        .q-desc { font-size: 0.95rem; font-weight: 700; color: #fff; }
+        .list-text { font-size: 0.85rem; letter-spacing: 0.02em; }
+
+        * { -webkit-user-select: none; user-select: none; }
+    </style>
+</head>
+<body class="py-16 px-4 md:px-0" oncontextmenu="return false;">
+
+    <div class="max-w-4xl mx-auto">
+        
+        <section class="glass-card p-8 md:p-12 mb-16 border-t-[6px] border-yellow-500">
+            <h1 class="text-4xl md:text-6xl font-black italic mb-8 tracking-tighter leading-none">
+                THE <span class="gold-gradient">oxSMAT</span> VISION
+            </h1>
+            <div class="space-y-6 text-base md:text-lg text-gray-300 leading-relaxed font-light italic opacity-90">
+                <p>oxSMAT is a pioneering decentralized ecosystem designed to redefine the boundaries of Web3 infrastructure. Our mission is to build a high-performance Layer 1 Blockchain, a sophisticated Tracking Terminal, and a Tier-1 Centralized Exchange that operates with unparalleled transparency. We are not just creating a platform; we are architecting a sustainable financial future where security meets scalability. Every milestone in our roadmap is meticulously calculated to ensure long-term stability and value for our community. This is a journey toward a global financial revolution, built on the pillars of innovation and integrity.</p>
+            </div>
+            
+            <div class="mt-10 p-6 rounded-2xl bg-red-500/5 border border-red-500/20">
+                <h3 class="text-red-500 font-bold uppercase text-sm tracking-[0.2em] mb-4 flex items-center">
+                    <i class="fas fa-triangle-exclamation mr-3 text-lg"></i> Strict Protocol Warning
+                </h3>
+                <ul class="text-sm text-red-100/70 space-y-4 list-none italic font-medium">
+                    <li class="flex items-start">👉 <span class="ml-3">This is a **Long-Term Strategic Project**, not a short-term scheme. Development will take significant time.</span></li>
+                    <li class="flex items-start">👉 <span class="ml-3">**Multiple accounts are strictly prohibited.** All user data will be cross-verified and analyzed for fraud.</span></li>
+                    <li class="flex items-start">👉 <span class="ml-3">This is **not a free-for-all mining system**. A minimum stake of **$0.1 (USD)** is required at least once in your mining lifecycle.</span></li>
+                    <li class="flex items-start">👉 <span class="ml-3">Only genuine users committed to the vision should participate. We value quality over quantity.</span></li>
+                </ul>
+            </div>
+        </section>
+
+        <div class="relative pt-10 pb-20">
+            <div class="zigzag-line hidden md:block"></div>
+
+            <div class="relative flex flex-col md:flex-row items-center mb-20">
+                <div class="md:w-1/2 md:pr-14 text-right hidden md:block"></div>
+                <div class="absolute left-1/2 -translate-x-1/2 w-5 h-5 bg-yellow-500 rounded-full shadow-[0_0_20px_#f0b90b] z-10 hidden md:block"></div>
+                <div class="md:w-1/2 md:pl-14">
+                    <div class="glass-card q-box p-7">
+                        <span class="text-yellow-500 font-bold q-year">Q2: 2026</span>
+                        <h4 class="q-desc uppercase mt-2 mb-3">Foundation Phase</h4>
+                        <ul class="list-text text-gray-400 space-y-2">
+                            <li class="flex items-center"><i class="fas fa-microchip mr-3 text-yellow-500/70"></i> Testnet Mining Engine Deployment</li>
+                            <li class="flex items-center"><i class="fas fa-users mr-3 text-yellow-500/70"></i> Aggressive Community Building</li>
+                            <li class="flex items-center"><i class="fas fa-cubes mr-3 text-yellow-500/70"></i> Web3 Core Functionality Integration</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+
+            <div class="relative flex flex-col md:flex-row items-center mb-20">
+                <div class="md:w-1/2 md:pr-14 md:text-right">
+                    <div class="glass-card q-box p-7 border-r-4 border-r-green-500/50">
+                        <span class="text-green-500 font-bold q-year">Q3: 2026</span>
+                        <h4 class="q-desc uppercase mt-2 mb-3">Terminal Launch</h4>
+                        <ul class="list-text text-gray-400 space-y-2">
+                            <li class="flex items-center md:justify-end"><i class="fas fa-terminal mr-3 text-green-500/70"></i> oxSMAT Terminal (Beta) Release</li>
+                            <li class="flex items-center md:justify-end"><i class="fas fa-bullhorn mr-3 text-green-500/70"></i> Community Expansion via KOLs</li>
+                            <li class="flex items-center md:justify-end"><i class="fas fa-network-wired mr-3 text-green-500/70"></i> Web3 Functional Scalability</li>
+                        </ul>
+                    </div>
+                </div>
+                <div class="absolute left-1/2 -translate-x-1/2 w-5 h-5 bg-green-500 rounded-full z-10 hidden md:block"></div>
+                <div class="md:w-1/2 md:pl-14 hidden md:block"></div>
+            </div>
+
+            <div class="relative flex flex-col md:flex-row items-center mb-20">
+                <div class="md:w-1/2 md:pr-14 hidden md:block"></div>
+                <div class="absolute left-1/2 -translate-x-1/2 w-5 h-5 bg-blue-500 rounded-full z-10 hidden md:block"></div>
+                <div class="md:w-1/2 md:pl-14">
+                    <div class="glass-card q-box p-7 border-l-4 border-l-blue-500/50">
+                        <span class="text-blue-500 font-bold q-year">Q4: 2026</span>
+                        <h4 class="q-desc uppercase mt-2 mb-3">Network Expansion</h4>
+                        <ul class="list-text text-gray-400 space-y-2">
+                            <li class="flex items-center"><i class="fas fa-magnifying-glass mr-3 text-blue-500/70"></i> SMAT Explorer Launch (Beta)</li>
+                            <li class="flex items-center"><i class="fas fa-coins mr-3 text-blue-500/70"></i> SMAT Token Development on BNB Chain (BSC)</li>
+                            <li class="flex items-center"><i class="fas fa-handshake mr-3 text-blue-500/70"></i> Negotiations with Tier-1 Exchanges</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+
+            <div class="relative flex flex-col md:flex-row items-center mb-20">
+                <div class="md:w-1/2 md:pr-14 md:text-right">
+                    <div class="glass-card q-box p-7 border-r-4 border-r-orange-500/50">
+                        <span class="text-orange-500 font-bold q-year">Q1: 2027</span>
+                        <h4 class="q-desc uppercase mt-2 mb-3">Pre-Sale Phase</h4>
+                        <ul class="list-text text-gray-400 space-y-2">
+                            <li class="flex items-center md:justify-end"><i class="fas fa-shield mr-3 text-orange-500/70"></i> Node & Validators Calibration</li>
+                            <li class="flex items-center md:justify-end"><i class="fas fa-file-invoice-dollar mr-3 text-orange-500/70"></i> Initial Public Pre-sale Event</li>
+                            <li class="flex items-center md:justify-end"><i class="fas fa-power-off mr-3 text-orange-500/70"></i> Termination of Testnet Mining</li>
+                        </ul>
+                    </div>
+                </div>
+                <div class="absolute left-1/2 -translate-x-1/2 w-5 h-5 bg-orange-500 rounded-full z-10 hidden md:block"></div>
+                <div class="md:w-1/2 md:pl-14 hidden md:block"></div>
+            </div>
+
+            <div class="relative flex flex-col md:flex-row items-center mb-20">
+                <div class="md:w-1/2 md:pr-14 hidden md:block"></div>
+                <div class="absolute left-1/2 -translate-x-1/2 w-5 h-5 bg-purple-500 rounded-full z-10 hidden md:block"></div>
+                <div class="md:w-1/2 md:pl-14">
+                    <div class="glass-card q-box p-7 border-l-4 border-l-purple-500/50">
+                        <span class="text-purple-500 font-bold q-year">Q2: 2027</span>
+                        <h4 class="q-desc uppercase mt-2 mb-3">T1 Listing</h4>
+                        <ul class="list-text text-gray-400 space-y-2">
+                            <li class="flex items-center"><i class="fas fa-gift mr-3 text-purple-500/70"></i>Testnet Mining Token Distribution</li>
+                            <li class="flex items-center"><i class="fas fa-droplet mr-3 text-purple-500/70"></i> Liquidity Pool Management</li>
+                            <li class="flex items-center"><i class="fas fa-chart-line mr-3 text-purple-500/70"></i> Listing SMAT on T1 Exchange (BSC Chain)</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+
+            <div class="relative flex flex-col md:flex-row items-center mb-20">
+                <div class="md:w-1/2 md:pr-14 md:text-right">
+                    <div class="glass-card q-box p-9 border-2 border-yellow-500 bg-yellow-500/5 shadow-[0_0_50px_rgba(240,185,11,0.2)] transform md:scale-105">
+                        <span class="text-yellow-500 font-black text-2xl tracking-tighter">Q1: 2028</span>
+                        <h4 class="text-white font-black uppercase text-lg mt-3 mb-4">The Super Ecosystem</h4>
+                        <ul class="list-text text-gray-200 space-y-3 font-medium">
+                            <li class="flex items-center md:justify-end"><i class="fas fa-link mr-3 text-yellow-500"></i> SMAT Blockchain Explore (L1) Public</li>
+                            <li class="flex items-center md:justify-end"><i class="fas fa-display mr-3 text-yellow-500"></i> Advanced SMAT Terminal</li>
+                            <li class="flex items-center md:justify-end"><i class="fas fa-arrows-rotate mr-3 text-yellow-500"></i> oxSMAT Centralized Exchange (Beta)</li>
+                            <li class="flex items-center md:justify-end"><i class="fas fa-flask mr-3 text-yellow-500"></i> Functional Venture Labs Launch</li>
+                        </ul>
+                    </div>
+                </div>
+                <div class="absolute left-1/2 -translate-x-1/2 w-7 h-7 bg-yellow-500 rounded-full shadow-[0_0_25px_#f0b90b] z-20 hidden md:block"></div>
+                <div class="md:w-1/2 md:pl-14 hidden md:block"></div>
+            </div>
+
+            <div class="relative flex flex-col md:flex-row items-center mb-20">
+                <div class="md:w-1/2 md:pr-14 hidden md:block"></div>
+                <div class="absolute left-1/2 -translate-x-1/2 w-5 h-5 bg-cyan-400 rounded-full z-10 hidden md:block"></div>
+                <div class="md:w-1/2 md:pl-14">
+                    <div class="glass-card q-box p-7 border-l-4 border-l-cyan-400/50">
+                        <span class="text-cyan-400 font-bold q-year">Q2: 2028</span>
+                        <h4 class="q-desc uppercase mt-2 mb-3">Mainnet Migration</h4>
+                        <ul class="list-text text-gray-400 space-y-2">
+                            <li class="flex items-center"><i class="fas fa-right-left mr-3 text-cyan-400/70"></i> BSC SMAT Token Migration to Native SMAT Chain (1:1)</li>
+                            <li class="flex items-center"><i class="fas fa-arrows-rotate mr-3 text-cyan-400/70"></i> oxSMAT Centralized Exchange (Public)</li>
+                           
+                            <li class="flex items-center"><i class="fas fa-hammer mr-3 text-cyan-400/70"></i> Mainnet Mining Activation</li>
+                            <li class="flex items-center"><i class="fas fa-fire mr-3 text-cyan-400/70"></i> Strategic Buy-back & SMAT Rally</li>
+                            <li class="flex items-center"><i class="fas fa-globe mr-3 text-cyan-400/70"></i> Native SMAT Chain Global Listing</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+
+            <div class="text-center relative z-10 mt-12">
+                <div class="inline-block px-12 py-4 glass-card border-yellow-500/30">
+                    <span class="text-gray-500 font-bold text-sm uppercase tracking-[0.6em]">Q3: 2028 & Beyond</span>
+                </div>
+            </div>
+        </div>
+
+        <section class="mt-20 glass-card p-10 warning-glow border-b-4 border-red-600/50">
+            <h2 class="text-red-500 font-black uppercase text-lg mb-6 flex items-center tracking-tight">
+                <i class="fas fa-shield-halved mr-3 text-2xl"></i> Final Advisory & Staking Policy
+            </h2>
+            <div class="text-sm md:text-base text-gray-400 space-y-6 leading-relaxed italic opacity-80 font-light">
+                <p><strong>Long-Term Commitment:</strong> Our developmental process is exhaustive and long-term. If you are seeking immediate returns or "get-rich-quick" schemes, we strongly advise you not to participate in this mining ecosystem. Patience is a prerequisite for our success.</p>
+                <p><strong>Mandatory Staking:</strong> To maintain network integrity and ensure a committed user base, every participant must stake a minimum of **$0.1 USD** (or equivalent) at least once during their entire mining lifecycle. Failure to meet this requirement will result in account disqualification from the Mainnet transition.</p>
+                <p><strong>Not Financial Advice:</strong> We do not provide financial, investment, or legal advice. Crypto mining and blockchain interactions involve risk. Please perform your own thorough research (DYOR) before making any decisions. You are solely responsible for your financial actions.</p>
+            </div>
+            <div class="mt-10 text-center text-[11px] text-gray-600 font-bold uppercase tracking-[0.3em] border-t border-white/5 pt-8">
+                © 2026-2028 oxSMAT Global Infrastructure - All Rights Reserved
+            </div>
+        </section>
+
+    </div>
+
+    <script>
+        document.addEventListener('contextmenu', event => event.preventDefault());
+        document.onkeydown = function(e) {
+            if(e.keyCode == 123) return false;
+            if(e.ctrlKey && e.shiftKey && e.keyCode == 'I'.charCodeAt(0)) return false;
+            if(e.ctrlKey && e.keyCode == 'U'.charCodeAt(0)) return false;
+        };
+    </script>
+</body>
+</html>
