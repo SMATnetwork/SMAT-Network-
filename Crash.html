@@ -21,8 +21,11 @@
         #history-pills { display: flex; gap: 6px; flex-wrap: nowrap; overflow: hidden; padding: 10px 16px; height: 50px; }
         #dots-wrapper { display: flex; gap: 6px; flex-direction: row; justify-content: flex-start; align-items: center; overflow: hidden; width: 100%; }
         .history-dot { width: 15px; height: 15px;padding : 0 5px; border-radius: 50%; flex-shrink: 0; }
-        .dot-red { background: #ef4444; }
-        .dot-green { background: #22c55e; }
+        
+        /* নতুন কালার ডট কন্ডিশন */
+        .dot-white { background: #ffffff; }
+        .dot-purple { background: #a855f7; }
+        .dot-pink { background: #ec4899; }
         .dot-yellow { background: #f0b90b; box-shadow: 0 0 10px #f0b90b; }
         
         .dot-live { 
@@ -77,6 +80,12 @@
         .text-loss { color: #ef4444 !important; }
         .text-wait { color: #5d6670; }
         
+        /* নতুন টেক্সট কালার ক্লাসেস */
+        .text-white-custom { color: #ffffff !important; }
+        .text-purple-custom { color: #a855f7 !important; }
+        .text-pink-custom { color: #ec4899 !important; }
+        .text-yellow-custom { color: #f0b90b !important; }
+
         #countdown-overlay { position: absolute; inset: 0; background: rgba(11,14,17,0.95); z-index: 100; display: none; flex-direction: column; align-items: center; justify-content: center; }
         .no-scrollbar::-webkit-scrollbar { display: none; }
         .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
@@ -238,52 +247,29 @@
         updateActiveCount();
     }
 
-    // --- Strict 6-Hour Bubble Logic (GMT+6) ---
     function checkBubble() {
         const now = new Date();
         const utc = now.getTime() + (now.getTimezoneOffset() * 60000);
         const bdTime = new Date(utc + (3600000 * 6));
-        
         const hours = bdTime.getHours();
         const minutes = bdTime.getMinutes();
         const seconds = bdTime.getSeconds();
-        
-        // নির্দিষ্ট সময়: সকাল ৮, দুপুর ২, রাত ৮, রাত ২ (স্লট)
         const targetHours = [8, 14, 20, 2];
         const bubble = document.getElementById('s-bubble');
-        
-        // ইউনিক স্লট আইডি (তারিখ-ঘণ্টা) যাতে ওই ঘণ্টায় একবার ফাটলে আর না আসে
         const currentSlotID = `${bdTime.getDate()}-${hours}`;
         const lastClaimedSlot = localStorage.getItem('lastClaimedSlot');
 
-        // যদি ঘড়িতে একদম 00 মিনিট হয় এবং স্লট ম্যাচ করে
         if (targetHours.includes(hours) && minutes === 0 && lastClaimedSlot !== currentSlotID) {
-            // কেবল প্রথম ১৫ সেকেন্ডের মধ্যে স্ক্রিনে দেখাবে
             if (seconds < 15) {
-                if (bubble.style.display !== 'block') {
-                    showBubble();
-                }
-            } else {
-                hideBubble();
-            }
+                if (bubble.style.display !== 'block') showBubble();
+            } else { hideBubble(); }
         } else {
-            // কোনো কারণে হাইড না হলে নিশ্চিত করা
-            if (bubble.style.display === 'block' && (minutes > 0 || seconds >= 15)) {
-                hideBubble();
-            }
+            if (bubble.style.display === 'block' && (minutes > 0 || seconds >= 15)) hideBubble();
         }
     }
 
-    function showBubble() { 
-        const bubble = document.getElementById('s-bubble'); 
-        bubble.style.top = "30%"; 
-        bubble.style.left = "10%"; 
-        bubble.style.display = 'block'; 
-    }
-
-    function hideBubble() {
-        document.getElementById('s-bubble').style.display = 'none';
-    }
+    function showBubble() { const bubble = document.getElementById('s-bubble'); bubble.style.top = "30%"; bubble.style.left = "10%"; bubble.style.display = 'block'; }
+    function hideBubble() { document.getElementById('s-bubble').style.display = 'none'; }
 
     function popBubble() {
         if (dailyTotalBet >= 500) {
@@ -291,23 +277,17 @@
             const utc = now.getTime() + (now.getTimezoneOffset() * 60000);
             const bdTime = new Date(utc + (3600000 * 6));
             const currentSlotID = `${bdTime.getDate()}-${bdTime.getHours()}`;
-            
             hideBubble();
-            // স্লট সেভ করে রাখা যাতে ওই ঘণ্টায় আর বাবল না আসে
             localStorage.setItem('lastClaimedSlot', currentSlotID);
-            
             smatBalance += 1.0;
             updateUI();
-            
             const msg = document.getElementById('pop-msg');
             msg.style.display = 'block';
             setTimeout(() => { msg.style.display = 'none'; }, 3000);
-        } else {
-            alert("Requirement: 500 SMAT Daily Betting to unlock!");
-        }
+        } else { alert("Requirement: 500 SMAT Daily Betting to unlock!"); }
     }
 
-    setInterval(checkBubble, 1000); // প্রতি ১ সেকেন্ডে নিখুঁত সময় চেক হবে
+    setInterval(checkBubble, 1000);
 
     function renderDots() { 
         const wrapper = document.getElementById('dots-wrapper'); 
@@ -319,7 +299,13 @@
         }
         [...crashHistoryDots].reverse().slice(0, 24).forEach(val => { 
             const dot = document.createElement('div'); 
-            let colorCls = val >= 10 ? 'dot-yellow' : (val >= 2 ? 'dot-green' : 'dot-red'); 
+            // নতুন কালার লজিক অ্যাপ্লাইড
+            let colorCls = 'dot-white';
+            if (val >= 10) colorCls = 'dot-yellow';
+            else if (val >= 2) colorCls = 'dot-pink';
+            else if (val >= 1.5) colorCls = 'dot-purple';
+            else colorCls = 'dot-white';
+
             dot.className = `history-dot ${colorCls}`; 
             wrapper.appendChild(dot); 
         }); 
@@ -429,8 +415,7 @@
         if(isRunning) return;
         const val = parseFloat(document.getElementById('bet-amount').value);
         if(smatBalance < val) return alert("Low Balance!");
-        betAmt=val; smatBalance-=val; 
-        dailyTotalBet += val;
+        betAmt=val; smatBalance-=val; dailyTotalBet += val;
         hasBet=true; updateUI();
         document.getElementById('action-btn').innerText = "WAITING..."; document.getElementById('action-btn').disabled = true; renderBets();
     }
@@ -500,7 +485,14 @@
 
         const pillContainer = document.getElementById('history-pills');
         const pill = document.createElement('div');
-        let pillColor = result >= 10 ? 'pill-yellow' : (result >= 2 ? 'text-green-500' : 'text-red-500');
+        
+        // নতুন পিল কালার লজিক অ্যাপ্লাইড
+        let pillColor = 'text-white-custom';
+        if (result >= 10) pillColor = 'text-yellow-custom';
+        else if (result >= 2) pillColor = 'text-pink-custom';
+        else if (result >= 1.5) pillColor = 'text-purple-custom';
+        else pillColor = 'text-white-custom';
+
         pill.className = `px-3 py-1 rounded-md text-[10px] font-black border border-gray-800 shrink-0 ${pillColor}`;
         pill.innerText = result.toFixed(2)+"x";
         pillContainer.prepend(pill);
