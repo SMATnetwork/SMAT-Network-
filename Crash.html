@@ -10,12 +10,12 @@
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;900&display=swap');
         
         body { background-color: #0b0e11; color: white; font-family: 'Inter', sans-serif; transition: 0.3s; overflow-x: hidden; width: 100%; }
-        .app-container { width: 100%; max-width: 100%; margin: auto; min-height: 100vh; background: #0b0e11; border-left: 1px solid #23272c; border-right: 1px solid #23272c; padding-bottom: 50px; }
+        .app-container { width: 100%; max-width: resposive; margin: auto; min-height: 100vh; background: #0b0e11; border-left: 1px solid #23272c; border-right: 1px solid #23272c; padding-bottom: 50px; }
         .s-logo-wrapper { position: relative; width: 45px; height: 45px; background: radial-gradient(circle, #f0b90b 0%, #cc9900 100%); border-radius: 50%; display: flex; align-items: center; justify-content: center; border: 2px solid rgba(255, 255, 255, 0.2); box-shadow: 0 0 15px rgba(240, 185, 11, 0.5), inset 0 0 8px rgba(0,0,0,0.3); margin-right: 12px; }    
         .s-logo-inner { font-family: 'Inter', sans-serif; font-weight: 900; font-size: 28px; color: white; text-shadow: 1px 2px 4px rgba(0,0,0,0.3); position: relative; z-index: 2; }       
         .header-title { font-size: 20px; font-weight: 900; letter-spacing: -0.5px; line-height: 1; text-transform: uppercase;}
 
-        .game-screen { height: 320px; background: #161a1e; border: 1px solid #2d3339; border-radius: 12px; position: relative; overflow: hidden; margin: 0 16px; transition: all 0.5s ease; }
+        .game-screen { height: 40vh; /* ফিক্সড pixels এর বদলে vh ব্যবহার */ min-height: 280px; background: #161a1e; border: 1px solid #2d3339; border-radius: 12px; position: relative; overflow: hidden; margin: 0 16px; transition: all 0.5s ease; }
         
         #multiplier { 
             position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); 
@@ -109,7 +109,6 @@
             animation: popIn 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
         }
 
-        /* --- 1.00x Crash Popup Style --- */
         #eaten-popup { 
             position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); 
             width: 85%; max-width: 280px; background: #ef4444; color: white; padding: 15px; 
@@ -144,7 +143,7 @@
 
 <div id="eaten-popup">
     <div class="text-xl font-black italic">Jojo Took All!</div>
-    <div class="text-[10px] mt-1 opacity-80 uppercase tracking-tighter">Insta-Crash @ 1.00x</div>
+    <div class="text-[10px] mt-1 opacity-80 uppercase tracking-tighter">Yahoooo....</div>
 </div>
 
 <div class="app-container">
@@ -172,9 +171,15 @@
 
     <div class="px-4 mb-3 flex justify-between items-center relative z-10">
         <div class="bg-black/40 px-3 py-1 rounded-lg border border-gray-800">
-            <span class="text-[9px] text-gray-500 font-bold uppercase">ID: </span>
-            <span id="game-id-display" class="text-[10px] font-black text-blue-400">#100000</span>
+            <span class="text-[9px] text-gray-500 font-bold uppercase">Bank: </span>
+            <span id="bank-display" class="text-[10px] font-black text-blue-400">10000.0000</span>
         </div>
+        
+        <div class="bg-black/40 px-3 py-1 rounded-lg border border-gray-800">
+            <span class="text-[9px] text-gray-500 font-bold uppercase">ID: </span>
+            <span id="game-id-display" class="text-[10px] font-black text-white">#100000</span>
+        </div>
+        
         <div class="bg-black/40 px-3 py-1 rounded-lg border border-gray-800 text-right">
             <span class="text-[9px] text-gray-500 font-bold uppercase">Pool: </span>
             <span id="total-pool-display" class="text-[10px] font-black text-yellow-500">0.000000</span>
@@ -270,6 +275,7 @@
 
 <script>
     let smatBalance = parseFloat(localStorage.getItem('smatBalance')) || 1000.000000;
+    let bankBalance = parseFloat(localStorage.getItem('bankBalance')) || 10000.0000;
     let dailyTotalBet = parseFloat(localStorage.getItem('dailyTotalBet')) || 0;
     let lastDailyReset = localStorage.getItem('lastDailyReset') || Date.now();
     let gameId = parseInt(localStorage.getItem('gameId')) || 100000;
@@ -289,6 +295,9 @@
     let showAllPlayers = false;
     let crashHistoryDots = JSON.parse(localStorage.getItem('crashHistoryDots')) || [];
     
+    // ডবল বেট প্রোটেকশন ফ্ল্যাগ
+    let isProcessingBet = false;
+
     let isMuted = localStorage.getItem('isMuted') === 'true';
     const audioContext = new (window.AudioContext || window.webkitAudioContext)();
 
@@ -314,16 +323,18 @@
 
     function multiplyBet(factor) {
         let currentBet = parseFloat(document.getElementById('bet-amount').value);
-        document.getElementById('bet-amount').value = (currentBet * factor).toFixed(2);
+        document.getElementById('bet-amount').value = (currentBet * factor).toFixed(6);
     }
 
     function updateUI() { 
         document.getElementById('balance-display').innerText = smatBalance.toFixed(6) + " SMAT"; 
+        document.getElementById('bank-display').innerText = bankBalance.toFixed(4);
         document.getElementById('game-id-display').innerText = "#" + gameId;
         let totalPool = fakePool + (hasBet ? betAmt : 0);
         document.getElementById('total-pool-display').innerText = totalPool.toFixed(6);
 
         localStorage.setItem('smatBalance', smatBalance); 
+        localStorage.setItem('bankBalance', bankBalance);
         localStorage.setItem('gameId', gameId);
         localStorage.setItem('dailyTotalBet', dailyTotalBet);
         renderDots(); 
@@ -493,6 +504,8 @@
 
     function prepareRound() {
         isRunning=false; hasCashed=false; isGameOver=false; flightSeconds=0;
+        isProcessingBet = false; // রাউন্ড শেষে প্রসেসিং ফ্ল্যাগ রিসেট
+        
         document.querySelectorAll('.vfx-layer').forEach(l=>l.style.opacity="0");
         document.getElementById('cloud-layer').style.opacity = "0";
         document.querySelectorAll('.char-layer').forEach(c=>c.style.display="none");
@@ -515,24 +528,42 @@
     }
 
     function placeBet() {
-        if(isRunning) return;
+        // ডবল বেট ও রানিং গেম চেক
+        if(isRunning || hasBet || isProcessingBet) return;
+        
         const val = parseFloat(document.getElementById('bet-amount').value);
+        if(isNaN(val) || val <= 0) return alert("Invalid Bet Amount!");
         if(smatBalance < val) return alert("Low Balance!");
-        betAmt=val; smatBalance-=val; dailyTotalBet += val;
-        hasBet=true; 
+
+        // লকিং শুরু
+        isProcessingBet = true;
+        const actionBtn = document.getElementById('action-btn');
+        actionBtn.innerText = "PROCESSING...";
+        actionBtn.disabled = true;
+
+        // ব্যালেন্স ও স্টেট আপডেট
+        betAmt = val; 
+        smatBalance -= val; 
+        dailyTotalBet += val;
+        hasBet = true; 
+        
         updateUI(); 
-        document.getElementById('action-btn').innerText = "WAITING..."; document.getElementById('action-btn').disabled = true; renderBets();
+        actionBtn.innerText = "WAITING..."; 
+        renderBets();
     }
 
     function startFlight() {
         isRunning=true; currentMultiplier=1.00; crashAt=calculateCrashPoint();
         renderDots();
         
-        // --- 1.00x Instant Crash Check ---
         if (crashAt <= 1.00) { 
             const eaten = document.getElementById('eaten-popup');
             eaten.style.display = 'block';
             setTimeout(() => { eaten.style.display = 'none'; }, 3000);
+            
+            if(hasBet) bankBalance += betAmt;
+            players.forEach(p => bankBalance += p.bet);
+            
             doCrash(); 
             return; 
         }
@@ -542,7 +573,12 @@
         const originLight = document.getElementById('origin-light');
         const gridBg = document.getElementById('grid-bg');
         originLight.style.display = 'block';
-        if(hasBet){ btn.disabled=false; btn.onclick=manualCashOut; btn.className="w-full bg-green-500 text-black py-4 rounded-xl font-black text-xl shadow-xl"; }
+        
+        if(hasBet){ 
+            btn.disabled=false; 
+            btn.onclick=manualCashOut; 
+            btn.className="w-full bg-green-500 text-black py-4 rounded-xl font-black text-xl shadow-xl"; 
+        }
         
         gameLoop = setInterval(()=>{
             currentMultiplier += (currentMultiplier < 10 ? 0.01 : currentMultiplier * 0.005);
@@ -556,6 +592,8 @@
             players.forEach(p => {
                 if (!p.won && currentMultiplier >= p.target) {
                     p.won = true;
+                    bankBalance -= (p.bet * p.target - p.bet);
+                    updateUI();
                     renderBets(); 
                 }
             });
@@ -585,29 +623,57 @@
     }
     
     function manualCashOut() {
+        // ক্যাশ আউট বাটন লক এবং স্টেট চেক
         if(!hasBet || hasCashed || !isRunning) return;
+        
+        hasCashed = true; // দ্রুত ফ্ল্যাগ পরিবর্তন যাতে ডবল ট্রানজ্যাকশন না হয়
         const winAmount = (betAmt * currentMultiplier);
+        const profit = winAmount - betAmt;
+        
         localStorage.setItem('lastCash', currentMultiplier.toFixed(2));
-        smatBalance += winAmount; hasCashed=true; updateUI();
+        smatBalance += winAmount; 
+        bankBalance -= profit;
+        
+        updateUI();
         const popup = document.getElementById('cashout-popup');
         document.getElementById('cashout-msg-amount').innerText = winAmount.toFixed(6) + " SMAT";
         popup.style.display = 'block';
         setTimeout(() => { popup.style.display = 'none'; }, 3000);
-        document.getElementById('action-btn').innerText = "WINNER!"; document.getElementById('action-btn').disabled = true; renderBets();
+        
+        const actionBtn = document.getElementById('action-btn');
+        actionBtn.innerText = "WINNER!"; 
+        actionBtn.disabled = true; 
+        renderBets();
     }
 
     function doCrash() {
-        clearInterval(gameLoop); isRunning=false; isGameOver=true;
+        if(!isRunning && !isGameOver) return; // একাধিকবার ক্রাশ ফাংশন কল হওয়া রোধ
+        
+        clearInterval(gameLoop); 
+        isRunning=false; 
+        isGameOver=true;
+        
+        if (hasBet && !hasCashed) {
+            bankBalance += betAmt;
+        }
+        players.forEach(p => {
+            if(!p.won) bankBalance += p.bet;
+        });
+
         const result = parseFloat(currentMultiplier.toFixed(2));
         const m = document.getElementById('multiplier');
         m.innerText = "CRASHED"; m.style.color = "#ef4444"; m.classList.add('crashed-text'); 
         document.getElementById('plane').style.opacity="0"; 
         document.querySelectorAll('.char-layer').forEach(c=>c.style.display="none");
         document.getElementById('grid-bg').classList.remove('moving-bg');
+        
         crashHistoryDots.push(result);
         if(crashHistoryDots.length > 50) crashHistoryDots.shift();
         localStorage.setItem('crashHistoryDots', JSON.stringify(crashHistoryDots));
-        gameId++; renderDots(); renderBets();
+        
+        gameId++; 
+        renderDots(); 
+        renderBets();
         
         const pillContainer = document.getElementById('history-pills');
         const pill = document.createElement('div');
@@ -619,14 +685,22 @@
         
         setTimeout(()=>{
             const actionBtn = document.getElementById('action-btn');
-            actionBtn.innerText = "PLACE BET"; actionBtn.disabled = false; actionBtn.onclick = placeBet;
+            actionBtn.innerText = "PLACE BET"; 
+            actionBtn.disabled = false; 
+            actionBtn.onclick = placeBet;
             actionBtn.className = "w-full bg-yellow-500 text-black py-4 rounded-xl font-black text-xl shadow-lg";
-            hasBet = false; betAmt = 0;
+            
+            // স্টেট রিসেট
+            hasBet = false; 
+            betAmt = 0;
+            isProcessingBet = false;
+            
             prepareRound();
         }, 4000);
     }
 
     window.onload = () => { updateUI(); prepareRound(); checkBubble(); };
 </script>
+
 </body>
 </html>
