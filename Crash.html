@@ -44,10 +44,10 @@
         .dot-green { background-color: #008000; }
         .dot-yellow { background-color: #FFFF00; box-shadow: 0 0 8px #FFFF00; }
 
-        .pill-white { border: 3px solid #FFFFFF !important; color: #FFFFFF; }
-        .pill-gray { border: 3px solid #808080 !important; color: #808080; }
-        .pill-green { border: 3px solid #008000 !important; color: #008000; }
-        .pill-yellow { border: 3px solid #FFFF00 !important; color: #FFFF00; }
+        .pill-white { border: 0px solid #FFFFFF !important; color: #FFFFFF; }
+        .pill-gray { border: 0px solid #808080 !important; color: #808080; }
+        .pill-green { border: 0px solid #008000 !important; color: #008000; }
+        .pill-yellow { border: 0px solid #FFFF00 !important; color: #FFFF00; }
         
         .dot-live { background: rgba(255, 255, 255, 0.2); border: 1px dashed rgba(255, 255, 255, 0.4); animation: dotPulse 1s infinite alternate; filter: blur(1px); order: -1; }
         @keyframes dotPulse { from { opacity: 0.3; transform: scale(0.8); } to { opacity: 0.7; transform: scale(1.1); } }
@@ -172,7 +172,7 @@
     <div class="px-4 mb-3 flex justify-between items-center relative z-10">
         <div class="bg-black/40 px-3 py-1 rounded-lg border border-gray-800">
             <span class="text-[9px] text-gray-500 font-bold uppercase">Bank: </span>
-            <span id="bank-display" class="text-[10px] font-black text-blue-400">1000000.0000</span>
+            <span id="bank-display" class="text-[10px] font-black text-blue-400">10000.0000</span>
         </div>
         
         <div class="bg-black/40 px-3 py-1 rounded-lg border border-gray-800">
@@ -553,20 +553,24 @@
     }
 
     function startFlight() {
-        isRunning=true; currentMultiplier=1.00; crashAt=calculateCrashPoint();
-        renderDots();
-        
-        if (crashAt <= 1.00) { 
-            const eaten = document.getElementById('eaten-popup');
-            eaten.style.display = 'block';
-            setTimeout(() => { eaten.style.display = 'none'; }, 3000);
-            
-            if(hasBet) bankBalance += betAmt;
-            players.forEach(p => bankBalance += p.bet);
-            
-            doCrash(); 
-            return; 
-        }
+    isRunning = true; 
+    currentMultiplier = 1.00; 
+    crashAt = calculateCrashPoint();
+    renderDots();
+    
+    
+    if (crashAt <= 1.00) { 
+    const eaten = document.getElementById('eaten-popup');
+    eaten.style.display = 'block';
+    setTimeout(() => { eaten.style.display = 'none'; }, 3000);
+    
+    
+    
+    doCrash();
+    return; 
+    }
+   
+    
 
         const plane = document.getElementById('plane'); plane.style.opacity="1";
         const btn=document.getElementById('action-btn');
@@ -577,8 +581,12 @@
         if(hasBet){ 
             btn.disabled=false; 
             btn.onclick=manualCashOut; 
-            btn.className="w-full bg-green-500 text-black py-4 rounded-xl font-black text-xl shadow-xl"; 
-        }
+            btn.className = "w-full bg-green-500 text-black py-4 rounded-xl font-black text-xl shadow-xl"; 
+            } else {
+            btn.disabled = true;
+            btn.innerText = "BET RUNNING...";
+            btn.className = "w-full bg-gray-700 text-gray-400 py-4 rounded-xl font-black text-xl cursor-not-allowed";
+            }
         
         gameLoop = setInterval(()=>{
             currentMultiplier += (currentMultiplier < 10 ? 0.01 : currentMultiplier * 0.005);
@@ -647,14 +655,21 @@
     }
 
     function doCrash() {
-        if(!isRunning && !isGameOver) return; // একাধিকবার ক্রাশ ফাংশন কল হওয়া রোধ
+        if(!isRunning && !isGameOver) return;
         
         clearInterval(gameLoop); 
         isRunning=false; 
         isGameOver=true;
         
+        // বাটন লক করা
+        const actionBtn = document.getElementById('action-btn');
+        actionBtn.disabled = true;
+        actionBtn.innerText = "NEXT";
+        actionBtn.className = "w-full bg-black-600 text-white py-4 rounded-xl font-black text-xl";
+        
         if (hasBet && !hasCashed) {
             bankBalance += betAmt;
+            hasBet = false;
         }
         players.forEach(p => {
             if(!p.won) bankBalance += p.bet;
@@ -690,13 +705,13 @@
             actionBtn.onclick = placeBet;
             actionBtn.className = "w-full bg-yellow-500 text-black py-4 rounded-xl font-black text-xl shadow-lg";
             
-            // স্টেট রিসেট
+            
             hasBet = false; 
             betAmt = 0;
             isProcessingBet = false;
             
             prepareRound();
-        }, 4000);
+        }, 1000);
     }
 
     window.onload = () => { updateUI(); prepareRound(); checkBubble(); };
