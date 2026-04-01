@@ -37,22 +37,12 @@
             padding: 0;
         }
 
-        /* Responsive Container */
+        /* Full Width Responsive Container - কোনো লিমিটেশন ছাড়া */
         .app-container {
             width: 100%;
-            max-width: 500px;
-            margin: 0 auto;
             min-height: 100vh;
             position: relative;
             background-color: var(--bg);
-        }
-
-        @media (min-width: 768px) {
-            .app-container {
-                border-left: 1px solid var(--border);
-                border-right: 1px solid var(--border);
-                box-shadow: 0 0 50px rgba(0,0,0,0.5);
-            }
         }
 
         p, h1, h2, h3, h4, span, label, i:not(.fa-hammer):not(.fa-plus):not(.fa-paper-plane) { color: var(--text); transition: 0.3s; }
@@ -90,16 +80,10 @@
         
         .btc-s { width: 32px; height: 32px; background: var(--logo-bg); color: black !important; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: 900; font-family: 'Courier New', monospace; font-size: 20px; position: relative; box-shadow: 0 0 10px rgba(240, 185, 11, 0.5); flex-shrink: 0; }
         
+        /* ফ্লোটিং বাটন সবসময় স্ক্রিনের ডানদিকে নির্দিষ্ট দূরত্বে থাকবে */
         .mining-btn { position: fixed; right: 20px; bottom: 100px; width: 70px; height: 70px; background: linear-gradient(45deg, #f0b90b, #f8d33a); border-radius: 50%; display: flex; flex-direction: column; align-items: center; justify-content: center; z-index: 90; border: 3px solid #000; cursor: pointer; }
         .refer-btn { position: fixed; right: 20px; bottom: 180px; width: 50px; height: 50px; background: #1e2329; border: 2px solid #f0b90b; border-radius: 50%; display: flex; align-items: center; justify-content: center; z-index: 90; cursor: pointer; }
         
-        /* Adjusting positions for large screens to stay inside the container */
-        @media (min-width: 500px) {
-            .mining-btn, .refer-btn {
-                right: calc(50% - 240px);
-            }
-        }
-
         .mining-btn * { color: black !important; }
         .active-spin { animation: spin 4s linear infinite; }
         @keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
@@ -111,7 +95,7 @@
         .nav-item { flex: 1; display: flex; flex-direction: column; align-items: center; gap: 4px; }
         .stat-box { background: rgba(0,0,0,0.2); border: 1px solid var(--border); border-radius: 12px; padding: 10px; }
 
-        /* Smallest phone fix */
+        /* ছোট ফোনের জন্য বিশেষ অ্যাডজাস্টমেন্ট */
         @media (max-width: 360px) {
             .wallet-card h1 { font-size: 1.5rem; }
             .p-6 { padding: 1rem; }
@@ -119,7 +103,7 @@
         }
     </style>
 </head>
-<body class="flex justify-center">
+<body>
 
 <div class="app-container">
     <div id="float-refer-btn" class="refer-btn" onclick="openReferList()">
@@ -138,7 +122,7 @@
                 <div class="btc-s">S</div>
                 <div>
                     <p class="text-[10px] text-gray-500 font-bold uppercase">ID: SMAT-4491</p>
-                    <p class="text-sm font-semibold">SMAT Exchange</p>
+                    <p class="text-sm font-semibold">SMAT Coin Mining</p>
                 </div>
             </div>
             <i class="fas fa-cog text-lg cursor-pointer" onclick="openSettings()"></i>
@@ -183,7 +167,7 @@
 
         <div class="mt-8 px-4">
             <h3 class="text-[10px] font-bold text-gray-500 uppercase mb-4 tracking-widest">Assets List</h3>
-            <div id="assets-list" class="space-y-3"></div>
+            <div id="assets-list" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3"></div>
         </div>
 
         <div id="referListModal" class="modal"><div class="modal-content !text-left">
@@ -222,12 +206,24 @@
         <div id="settingsModal" class="modal"><div class="modal-content text-left"><h3 class="font-bold mb-4">Settings</h3><select id="curr-select" onchange="updateCurrency()" class="w-full p-3 mb-6 text-sm rounded-xl outline-none"></select><button onclick="toggleTheme()" class="w-full p-4 bg-gray-500/20 rounded-xl mb-4 border border-gray-700 flex justify-between items-center"><span id="theme-text">Switch Theme</span><i class="fas fa-adjust"></i></button><button onclick="closeModals()" class="w-full bg-yellow-500 text-black py-3 rounded-xl font-bold">Close</button></div></div>
         <div id="coinSelectModal" class="modal"><div class="modal-content !p-0"><div id="coin-list-ui" class="p-2"></div><button onclick="closeModals()" class="p-4 w-full text-xs">Cancel</button></div></div>
 
+        
+        
+        
+        
         <div class="fixed bottom-0 left-0 w-full bg-[var(--card)] border-t border-[var(--border)] px-2 py-3 flex justify-around items-center z-[110] shadow-[0_-5px_25px_rgba(0,0,0,0.4)]">
-            <a href="Terminal.html" class="nav-item group"><i class="fas fa-terminal text-lg text-gray-500 group-hover:text-yellow-500"></i><span class="text-[9px] font-bold text-gray-500 uppercase">Terminal</span></a>
-            <a href="index.html" class="nav-item"><i class="fas fa-wallet text-lg text-yellow-500"></i><span class="text-[9px] font-bold text-yellow-500 uppercase">Exchange</span></a>
+            <a href="Terminal.html" class="nav-item group"><i class="fas fa-search text-lg text-gray-500 group-hover:text-yellow-500"></i><span class="text-[9px] font-bold text-gray-500 uppercase">Terminal</span></a>
+            <a href="index.html" class="nav-item"><i class="fas fa-wallet text-lg text-yellow-500"></i><span class="text-[9px] font-bold text-gray-500 uppercase">Exchange</span></a>
             <a href="Swap.html" class="nav-item group"><i class="fas fa-random text-lg text-gray-500 group-hover:text-yellow-500"></i><span class="text-[9px] font-bold text-gray-500 uppercase">Swap</span></a>
-            <a href="Bridge.html" class="nav-item"><i class="fas fa-link text-lg text-yellow-500"></i><span class="text-[9px] font-bold text-yellow-500 uppercase">Bridge</span></a>
+            <a href="Crash.html" class="nav-item"><i class="fas fa-rocket text-lg text-yellow-500"></i><span class="text-[9px] font-bold text-gray-500 uppercase">Crash</span></a>
         </div>
+    
+    
+    
+    
+    
+    
+    
+    
     </div>
 </div>
 
