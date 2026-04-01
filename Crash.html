@@ -466,9 +466,9 @@
     function generateFakePlayers() {
         players = []; fakePool = 0;
         const names = ["Alpha", "Bull", "Whale", "Rich", "Satoshi", "Trade", "Dexter", "Moon"];
-        const count = Math.floor(Math.random() * 20 + 20);
+        const count = Math.floor(Math.random() * 20 + 500);
         for(let i=0; i<count; i++) {
-            let pBet = (Math.random() * 600 + 5).toFixed(6);
+            let pBet = (Math.random() * 10 + 5).toFixed(6);
             let pTarget = (1.1 + Math.random() * (Math.random() > 0.9 ? 10 : 3)).toFixed(2);
             players.push({ name: names[Math.floor(Math.random()*names.length)] + "-" + Math.floor(Math.random()*99), bet: parseFloat(pBet), target: parseFloat(pTarget), won: false, isUser: false });
             fakePool += parseFloat(pBet);
