@@ -298,6 +298,7 @@
     let over2xStreak = 0;
     let under2xStreak = 0;
     let showAllPlayers = false;
+    let visiblePlayersCount = 10; // নতুন ১০ জন করে দেখানোর জন্য গ্লোবাল ভেরিয়েবল
     let crashHistoryDots = JSON.parse(localStorage.getItem('crashHistoryDots')) || [];
     let isProcessingBet = false;
     let isMuted = localStorage.getItem('isMuted') === 'true';
@@ -483,21 +484,65 @@
         document.getElementById('active-count').innerText = `${cashed}/${total} Players`;
     }
 
-    function toggleMore() { showAllPlayers = !showAllPlayers; document.getElementById('more-btn').innerHTML = showAllPlayers ? `Show Less <i class="fas fa-chevron-up ml-1"></i>` : `Show More <i class="fas fa-chevron-down ml-1"></i>`; renderBets(); }
-
+    function toggleMore() {
+        // প্রতি ক্লিকে ১০ জন করে বাড়বে
+        visiblePlayersCount += 10;
+        
+        // যদি মোট প্লেয়ার সংখ্যা ছাড়িয়ে যায় তবে রিসেট হয়ে ১০ এ আসবে
+        if (visiblePlayersCount > players.length + 1) {
+            visiblePlayersCount = 10;
+        }
+        
+        renderBets();
+    }
+    
     function renderBets() {
         const list = document.getElementById('live-bet-list');
-        list.innerHTML = "";
         let userBetObj = hasBet ? { name: "YOU", bet: betAmt, isUser: true, won: hasCashed } : null;
         let sortedPlayers = [...players].sort((a, b) => b.bet - a.bet);
         let displayList = userBetObj ? [userBetObj, ...sortedPlayers] : sortedPlayers;
-        if (displayList.length > 10) { document.getElementById('more-btn').style.display = 'block'; if (!showAllPlayers) displayList = displayList.slice(0, 10); } else { document.getElementById('more-btn').style.display = 'none'; }
-        displayList.forEach(p => {
+
+        const moreBtn = document.getElementById('more-btn');
+
+        if (displayList.length > 10) { 
+            moreBtn.style.display = 'block'; 
+            // বাটন টেক্সট আপডেট
+            if (visiblePlayersCount >= displayList.length) {
+                moreBtn.innerHTML = `Show Less <i class="fas fa-chevron-up ml-1"></i>`;
+            } else {
+                moreBtn.innerHTML = `Show More (${visiblePlayersCount}/${displayList.length}) <i class="fas fa-chevron-down ml-1"></i>`;
+            }
+            // লিমিট অনুযায়ী ডাটা স্লাইস করা
+            displayList = displayList.slice(0, visiblePlayersCount);
+        } else { 
+            moreBtn.style.display = 'none'; 
+        }
+
+        // পারফরম্যান্স বুস্ট করার জন্য map() ব্যবহার
+        const htmlRows = displayList.map(p => {
             let pCol = "text-wait", mDisp = "-", pDisp = "-";
-            if(p.won) { pCol="text-win"; const m = p.isUser ? localStorage.getItem('lastCash') : p.target; mDisp=m+"x"; pDisp="+"+(p.bet*m - p.bet).toFixed(4); }
-            else if(isGameOver) { pCol="text-loss"; mDisp="0.00x"; pDisp="-"+p.bet.toFixed(4); }
-            list.innerHTML += `<div class="bet-row"><span class="player-name ${p.isUser?'text-yellow-500':''}">${p.isUser ? '<i class="fas fa-user-circle mr-1"></i>' : ''}${p.name}</span><span class="bet-value">${p.bet.toFixed(4)}</span><span class="mult-value ${pCol}">${mDisp}</span><span class="profit-value ${pCol}">${pDisp}</span></div>`;
-        });
+            if(p.won) { 
+                pCol="text-win"; 
+                const m = p.isUser ? localStorage.getItem('lastCash') : p.target; 
+                mDisp=m+"x"; 
+                pDisp="+"+(p.bet*m - p.bet).toFixed(4); 
+            }
+            else if(isGameOver) { 
+                pCol="text-loss"; 
+                mDisp="0.00x"; 
+                pDisp="-"+p.bet.toFixed(4); 
+            }
+            return `<div class="bet-row">
+                <span class="player-name ${p.isUser?'text-yellow-500':''}">
+                    ${p.isUser ? '<i class="fas fa-user-circle mr-1"></i>' : ''}${p.name}
+                </span>
+                <span class="bet-value">${p.bet.toFixed(4)}</span>
+                <span class="mult-value ${pCol}">${mDisp}</span>
+                <span class="profit-value ${pCol}">${pDisp}</span>
+            </div>`;
+        }).join("");
+
+        list.innerHTML = htmlRows;
         updateActiveCount();
     }
 
@@ -525,6 +570,7 @@
         document.getElementById('origin-light').style.display = 'none';
         document.getElementById('grid-bg').classList.remove('moving-bg');
         let t = 10; document.getElementById('timer-num').innerText = t;
+        visiblePlayersCount = 10; // নতুন রাউন্ডে লিস্ট রিসেট
         generateFakePlayers(); document.getElementById('countdown-overlay').style.display='flex';
         updateUI();
         const timer = setInterval(()=>{ 
@@ -579,15 +625,15 @@
             yLabels.innerHTML = `<span>${currentMultiplier.toFixed(1)}x</span><span>${(currentMultiplier+0.2).toFixed(1)}x</span><span>${(currentMultiplier+0.4).toFixed(1)}x</span><span><span>${(currentMultiplier+0.6).toFixed(1)}x</span><span>${(currentMultiplier+0.8).toFixed(1)}x</span>`;
             
             if(moveX >= maxMoveX || currentMultiplier >= 10) { 
-            gridBg.classList.add('moving-bg'); 
-            document.getElementById('cloud-layer').style.opacity = "0.4";
-            document.getElementById('cloud-layer').classList.add('moving-clouds');
+                document.getElementById('grid-bg').classList.add('moving-bg'); 
+                document.getElementById('cloud-layer').style.opacity = "0.4";
+                document.getElementById('cloud-layer').classList.add('moving-clouds');
             }
             
             let autoVal = parseFloat(document.getElementById('auto-cashout').value) || Infinity;
             if(hasBet && !hasCashed && currentMultiplier >= autoVal) manualCashOut();
-            }, 60);
-            }
+        }, 60);
+    }
     
     function manualCashOut() {
         if(!hasBet || hasCashed || !isRunning) return;
@@ -623,7 +669,6 @@
         localStorage.setItem('crashHistoryDots', JSON.stringify(crashHistoryDots));
         gameId++; renderDots(); renderBets();
 
-        // হিস্টোরি পিলস লজিক
         const pillContainer = document.getElementById('history-pills');
         const pill = document.createElement('div');
         pill.className = `history-pill-item ${getPillColor(result)}`;
@@ -642,6 +687,7 @@
 
     window.onload = () => { updateUI(); prepareRound(); checkBubble(); };
 </script>
+
 
 </body>
 </html>
