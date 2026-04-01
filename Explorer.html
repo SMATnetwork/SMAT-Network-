@@ -2,10 +2,15 @@
 <html lang="bn">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>SMAT EXPLORER | LIVE FIXED</title>
     <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;700;900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    
+    
     <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap');
+        
         :root {
             --bg: #f0f2f5; --card: #ffffff; --accent: #e3a300;
             --text: #1e2329; --dim: #5d6673; --border: #dcdfe4;
@@ -17,10 +22,19 @@
             --text: #ffffff; --dim: #b0b8c1; --border: #2b2f36;
         }
 
+        /* 📱 রেসপন্সিভ কোর সেটিংস */
         body { 
             margin: 0; background: var(--bg); color: var(--text); 
             font-family: 'Montserrat', sans-serif; transition: 0.3s; 
-            overflow-x: hidden; font-variant: all-small-caps; letter-spacing: 0.5px;
+            overflow-x: hidden; width: 100%; font-variant: all-small-caps; letter-spacing: 0.5px;
+        }
+
+        .container {
+            max-width: 1300px;
+            margin: 0 auto 50px;
+            padding: 0 15px;
+            box-sizing: border-box;
+            width: 100%;
         }
 
         /* 📋 Copy Button Style */
@@ -40,7 +54,12 @@
         }
 
         /* 🖼️ Header */
-        .header { background: var(--card); padding: 15px 30px; display: flex; align-items: center; justify-content: space-between; border-bottom: 3px solid var(--border); box-shadow: 0 4px 15px rgba(0,0,0,0.05); position: relative; }
+        .header { 
+            background: var(--card); padding: 15px 20px; 
+            display: flex; align-items: center; justify-content: space-between; 
+            border-bottom: 3px solid var(--border); box-shadow: 0 4px 15px rgba(0,0,0,0.05); 
+            position: sticky; top: 0; z-index: 1000; flex-wrap: wrap; gap: 10px;
+        }
         .logo-container { display: flex; align-items: center; gap: 12px; }
         .s-logo-base { background: var(--accent); border-radius: 50%; display: flex; align-items: center; justify-content: center; color: white; font-weight: 900; position: relative; font-variant: normal; border: 2px solid rgba(255,255,255,0.2); box-shadow: 0 0 10px var(--accent); }
         .s-logo-base::before, .s-logo-base::after { content: ''; position: absolute; background: white; left: 50%; transform: translateX(-50%); }
@@ -49,13 +68,14 @@
         .header-logo::before { top: -2px; } .header-logo::after { bottom: -2px; }
         .main-title { margin: 0; letter-spacing: 1px; font-size: 22px; font-weight: 900; color: var(--text); }
 
-        .search-bar-top input { flex: 1; padding: 10px 15px; border-radius: 8px; border: 2px solid var(--border); background: var(--bg); color: var(--text); outline: none; font-family: 'Montserrat', sans-serif; font-variant: all-small-caps; font-size: 16px; font-weight: 700; }
+        .search-bar-top { flex: 1; min-width: 250px; }
+        .search-bar-top input { width: 100%; padding: 10px 15px; border-radius: 8px; border: 2px solid var(--border); background: var(--bg); color: var(--text); outline: none; font-family: 'Montserrat', sans-serif; font-variant: all-small-caps; font-size: 16px; font-weight: 700; }
 
         .menu-btn { cursor: pointer; padding: 5px; display: flex; flex-direction: column; gap: 4px; margin-left: 15px; }
         .menu-btn div { width: 5px; height: 5px; background: var(--text); border-radius: 50%; }
 
         .nav-menu { 
-            position: absolute; top: 70px; right: 30px; background: var(--card); 
+            position: absolute; top: 70px; right: 20px; background: var(--card); 
             border: 2px solid var(--border); border-radius: 12px; width: 180px; 
             box-shadow: 0 10px 25px rgba(0,0,0,0.2); display: none; z-index: 1000; overflow: hidden;
         }
@@ -64,19 +84,23 @@
             display: block; padding: 12px 20px; color: var(--text); text-decoration: none; 
             font-weight: 700; border-bottom: 1px solid var(--border); transition: 0.2s;
         }
-        .nav-menu a:last-child { border-bottom: none; }
         .nav-menu a:hover { background: var(--accent); color: white; }
 
         @keyframes fadeIn { from { opacity: 0; transform: translateY(-10px); } to { opacity: 1; transform: translateY(0); } }
 
-        .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); max-width: 1300px; margin: 20px auto; gap: 15px; padding: 0 20px; }
+        /* 📊 Stats Grid */
+        .stats-grid { 
+            display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); 
+            max-width: 1300px; margin: 20px auto; gap: 15px; padding: 0 20px; 
+        }
         .stat-card { background: var(--card); border: 1px solid var(--border); padding: 20px; border-radius: 12px; text-align: center; }
         .stat-value { font-size: 20px; font-weight: 900; color: var(--accent); transition: color 0.2s; }
 
-        .orbit-section { text-align: left; margin: 40px 0; padding-left: 50px; }
+        /* 🌌 Orbit Section */
+        .orbit-section { text-align: left; margin: 40px 0; padding-left: 50px; position: relative; overflow: hidden; }
         .orbit-header-container { display: flex; align-items: center; gap: 10px; margin-bottom: 20px; }
         .orbit-header { font-size: 24px; font-weight: 900; color: var(--accent); margin: 0; }
-        .orbit-container { height: 400px; position: relative; display: flex; justify-content: center; align-items: center; margin-left: -50px; }
+        .orbit-container { height: 400px; position: relative; display: flex; justify-content: center; align-items: center; margin-left: -50px; transition: 0.3s; }
         .orbit-circle { position: absolute; width: 350px; height: 350px; border: 2px dashed var(--border); border-radius: 50%; animation: spin 80s linear infinite; }
         .center-logo { width: 70px; height: 70px; font-size: 35px; z-index: 20; }
         .center-logo::before, .center-logo::after { width: 4px; height: 8px; }
@@ -86,13 +110,14 @@
 
         @keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
 
-        .container { max-width: 1300px; margin: 0 auto 50px; padding: 0 20px; }
+        /* 📦 Tables */
         .box { background: var(--card); border: 1px solid var(--border); border-radius: 12px; overflow: hidden; margin-bottom: 30px; box-shadow: 0 5px 15px rgba(0,0,0,0.05); }
         .box-header { padding: 15px 20px; border-bottom: 2px solid var(--border); font-weight: 900; color: var(--accent); font-size: 20px; display: flex; justify-content: space-between; align-items: center;}
-        .table-wrapper { width: 100%; overflow-x: auto; }
+        
+        .table-wrapper { width: 100%; overflow-x: auto; -webkit-overflow-scrolling: touch; border-radius: 8px; }
         table { width: 100%; border-collapse: collapse; min-width: 1050px; table-layout: fixed; }
-        th { padding: 15px; font-size: 14px; font-weight: 900; color: var(--dim); text-align: left; background: rgba(0,0,0,0.01); border-bottom: 2px solid var(--border); }
-        td { padding: 15px; border-bottom: 1px solid var(--border); font-size: 13px; font-weight: 900; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        th { padding:15px; font-size: 14px; font-weight: 900; color: var(--dim); text-align: left; background: rgba(0,0,0,0.01); border-bottom: 15px solid var(--border); }
+        td { padding:15px; border-bottom: 1px solid var(--border); font-size: 13px; font-weight: 900; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 
         th:nth-child(1), td:nth-child(1) { width: 18%; }
         th:nth-child(2), td:nth-child(2) { width: 22%; }
@@ -100,21 +125,15 @@
         th:nth-child(4), td:nth-child(4) { width: 27%; }
         th:nth-child(5), td:nth-child(5) { width: 20%; }
 
-        .sender-tag { color: #ff6b6b; font-size: 11px; margin-left: 5px; }
-        .receiver-tag { color: #51cf66; font-size: 11px; margin-left: 5px; }
-
         .clickable { cursor: pointer; color: var(--accent); }
         .clickable:hover { text-decoration: underline; }
 
         .block-s-logo { width: 18px; height: 18px; font-size: 10px; animation: spin 3s linear infinite; vertical-align: middle; margin-right: 8px; display: inline-flex; }
-        .block-s-logo::before, .block-s-logo::after { width: 1px; height: 3px; }
-        .block-s-logo::before { top: -1px; } .block-s-logo::after { bottom: -1px; }
-
         .tg-icon { width: 18px; animation: spin 3.5s linear infinite; vertical-align: middle; margin-right: 8px; display: inline-block; }
-        .time-counter { font-size: 13px; color: var(--dim); font-weight: 700; font-variant: normal; }
-        .badge-hot { background: rgba(227, 163, 0, 0.1); border: 2px solid var(--accent); padding: 3px 8px; border-radius: 6px; color: var(--accent); font-size: 12px; }
+        .time-counter { font-size: 13px; color: var(--dim); font-weight: 700; }
+        .val-glow-btn { padding: 4px 10px; border-radius: 6px; font-size: 11px; font-weight: 900; color: #1e2329; }
 
-        /* 🔄 Overlay Loader */
+        /* 🔄 Loader Overlay */
         #search-overlay {
             position: fixed; top:0; left:0; width:100%; height:100%; background: rgba(0,0,0,0.7);
             z-index: 20000; display: none; flex-direction: column; align-items: center; justify-content: center;
@@ -122,8 +141,9 @@
         .loader-spin { width: 50px; height: 50px; border: 5px solid #f3f3f3; border-top: 5px solid var(--accent); border-radius: 50%; animation: spin 1s linear infinite; }
         .success-check { font-size: 50px; color: #51cf66; display: none; }
 
+        /* 🦶 Footer */
         footer { background: var(--card); border-top: 3px solid var(--border); padding: 50px 20px 20px; margin-top: 50px; color: var(--text); }
-        .footer-grid { max-width: 1300px; margin: 0 auto; display: grid; grid-template-columns: 1.5fr 1fr 1fr 1fr; gap: 40px; padding-bottom: 40px; }
+        .footer-grid { max-width: 1300px; margin: 0 auto; display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 40px; padding-bottom: 40px; }
         .footer-brand .s-logo-base { width: 40px; height: 40px; font-size: 22px; margin-bottom: 15px; }
         .footer-brand p { font-size: 14px; color: var(--dim); line-height: 1.6; }
         .footer-column h4 { color: var(--accent); font-size: 18px; margin-bottom: 20px; text-transform: uppercase; }
@@ -131,8 +151,17 @@
         .footer-links li { margin-bottom: 12px; }
         .footer-links a { text-decoration: none; color: var(--dim); font-size: 14px; font-weight: 700; transition: 0.3s; }
         .footer-links a:hover { color: var(--accent); padding-left: 5px; }
-        .footer-bottom { max-width: 1300px; margin: 0 auto; padding-top: 20px; border-top: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; font-size: 12px; color: var(--dim); }
-        @media (max-width: 768px) { .footer-grid { grid-template-columns: 1fr 1fr; } .footer-brand { grid-column: span 2; } }
+        .footer-bottom { max-width: 1300px; margin: 0 auto; padding-top: 20px; border-top: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; font-size: 12px; color: var(--dim); flex-wrap: wrap; gap: 10px; }
+        .footer-grid i {padding : 8px;background :none;font-size:10px;}
+        /* 📱 ছোট ফোনের জন্য স্পেশাল ফিক্স */
+        @media (max-width: 600px) {
+            .orbit-container { transform: scale(0.65); height: 280px; margin-left: 0; }
+            .orbit-section { padding-left: 15px; text-align: center; }
+            .orbit-header-container { justify-content: center; }
+            .header { padding: 10px; }
+            .main-title { font-size: 18px; }
+            .search-bar-top { order: 3; width: 100%; min-width: 100%; }
+        }
     </style>
 </head>
 <body>
@@ -162,8 +191,8 @@
         <a href="#token">Token</a>
         <a href="#stat">Stat</a>
         <a href="#ecosystem">Ecosystem</a>
-        <a href="index.html">Airdrop</a>
-        <a href="Crash.html">API</a>
+        <a href="Mining.html">Airdrop</a>
+        <a href="Crash.html">Crash Casino</a>
         <a href="#api">API</a>
         <a href="#top-holder">Top Holder</a>
     </div>
@@ -221,39 +250,37 @@
             <h2 style="font-size: 20px; margin: 10px 0;">SMAT NETWORK</h2>
             <p>Smat Explore is a Block Explorer and Analytics Platform for SMAT Network, a decentralized smart contracts platform.</p>
         </div>
-        
         <div class="footer-column">
             <h4>Products</h4>
             <ul class="footer-links">
-                <li><a href="index.html">SMAT Wallet</a></li>
-                <li><a href="#">Mainnet</a></li>
-                <li><a href="#">Testnet Faucet</a></li>
-                <li><a href="Terminal.html">SMAT Exchange</a></li>
+                <li><i class="fas fa-wallet text-lg text-yellow-500"></i><a href="home.html">SMAT Exchange</a></li>
+                <li><i class="fas fa-search text-lg text-yellow-500"></i><a href="Explorer.html">SMAT Blockchain</a></li>
+                <li><i class="fas fa-rocket text-lg text-yellow-500"></i><a href="Crash.html">SMAT Crash Casino</a></li>
+                <li><i class="fas fa-exchange text-lg text-yellow-500"></i><a href="Swap.html">SMAT Swap/Bridge</a></li>
+                <li><i class="fas fa-faucet text-lg text-yellow-500"></i><a href="Faucet.html">SMAT Faucet</a></li>
+                <li><i class="fas fa-terminal text-lg text-yellow-500"></i><a href="Terminal.html">SMAT Terminal</a></li>
             </ul>
         </div>
-
         <div class="footer-column">
             <h4>Resources</h4>
             <ul class="footer-links">
-                <li><a href="#">API Documentation</a></li>
-                <li><a href="Paper.html">Whitepaper</a></li>
-                <li><a href="Timeline.html">RoadMap</a></li>
-                <li><a href="#">Network Status</a></li>
-                <li><a href="#">GitHub Repo</a></li>
+                <li><i class="fas fa-file-alt text-lg text-yellow-500"></i><a href="Paper.html">SMAT Whitepaper</a></li>
+                <li><i class="fas fa-stopwatch text-lg text-yellow-500"></i><a href="Timeline.html">SMAT RoadMap</a></li>
+                <li><i class="fas fa-hammer text-lg text-yellow-500"></i><a href="index.html">SMAT Mining</a></li>
+                <li><i class="fas fa-question-circle text-lg text-yellow-500"></i><a href="Faq.html">SMAT FAQ</a></li>
             </ul>
         </div>
-
         <div class="footer-column">
             <h4>Community</h4>
             <ul class="footer-links">
-                <li><a href="#">Telegram Group</a></li>
-                <li><a href="#">Twitter (X)</a></li>
-                <li><a href="#">Discord Server</a></li>
-                <li><a href="#">Medium Blog</a></li>
+                <li><i class="fab fa-telegram"></i><a href="#">SMAT Telegram Group</a></li>
+                <li><i class="fab fa-telegram"></i><a href="#">SMAT Telegram Channel</a></li>
+                <li><i class="fab fa-twitter"></i><a href="#">Twitter (Formally X)</a></li>
+                <li><i class="fab fa-discord"></i><a href="#">SMAT Discord</a></li>
+                <li><i class="fab fa-github"></i><a href="#">SMAT Github Repo</a></li>
             </ul>
         </div>
     </div>
-
     <div class="footer-bottom">
         <div>© 2026 SMAT NETWORK | Built by Blockchain Developers</div>
         <div>Donation: <span style="color:var(--accent); cursor:pointer;" onclick="copyToClipboard('0xSmatNetworkDonationAddress123456789')">0xSmat...Network</span></div>
@@ -267,14 +294,10 @@
     const allValidators = ["Low inFo", "Betting R2", "ZoloU", "bdHub", "777Hash", "SMAT DAO", "GoodFi", "Fenton", "SMAT Lab", "HelloBTU", "DeepFest", "NanoGame", "BcGame", "Shadow", "CocoFi", "PacoReach", "Smat Venture", "Newborn", "VooeLee", "InterSaw", "TradeFi"];
     const glowPastelColors = ["#dae9ff", "#e0ffea", "#fffbe0", "#ffe0f5", "#e0fffb", "#f2e0ff"];
     const tgColors = ["#26A5E4", "#FF5733", "#33FF57", "#FFB833", "#A833FF", "#FF33A8", "#00F2FF"];
-    const hotNames = ["smat hot - 1", "smat hot - 2", "smat hot - 3"];
     
-    // ডাটা স্টোর করার জন্য অ্যারে
     let blocksData = [];
-    let transactionHistory = []; // আসল ট্রানজেকশন এখানে জমা থাকবে
-    let hotCooldown = 0;
+    let transactionHistory = [];
 
-    // 📋 Copy Logic
     function copyToClipboard(text) {
         navigator.clipboard.writeText(text).then(() => {
             const toast = document.getElementById('copy-toast');
@@ -288,19 +311,17 @@
     function toggleMode() { document.body.classList.toggle('dark-mode'); }
     function toggleMenu() { document.getElementById('navMenu').classList.toggle('active'); }
 
-    // 🪙 Binance WebSocket for BCH/USDT - 8 Decimal Live Price
+    // 🪙 Binance WebSocket
     const binanceWS = new WebSocket('wss://stream.binance.com:9443/ws/zecusdt@ticker');
     binanceWS.onmessage = (event) => {
         const data = JSON.parse(event.data);
         if (data.c) {
             const currentPrice = parseFloat(data.c).toFixed(4);
             const priceEl = document.getElementById('stat-price');
-            
             if (lastPrice > 0) {
                 if (parseFloat(currentPrice) > parseFloat(lastPrice)) priceEl.style.color = 'var(--up)';
                 else if (parseFloat(currentPrice) < parseFloat(lastPrice)) priceEl.style.color = 'var(--down)';
             }
-            
             priceEl.innerText = `$${currentPrice}`;
             lastPrice = currentPrice;
             setTimeout(() => { priceEl.style.color = 'var(--accent)'; }, 500);
@@ -326,19 +347,16 @@
         document.getElementById('stat-active').innerText = `${count}/21 online`;
     }
 
-    // 🔍 উন্নত সার্চ লজিক (শুধুমাত্র বিদ্যমান ডাটা খুঁজবে)
     function triggerSearch(query) {
         const overlay = document.getElementById('search-overlay');
         overlay.style.display = 'flex';
         document.getElementById('main-loader').style.display = 'block';
         document.getElementById('main-check').style.display = 'none';
         document.getElementById('search-msg').innerText = "VERIFYING ON SMAT NETWORK...";
-
         setTimeout(() => {
             document.getElementById('main-loader').style.display = 'none';
             document.getElementById('main-check').style.display = 'block';
             document.getElementById('search-msg').innerText = "DATA VERIFIED!";
-            
             setTimeout(() => {
                 overlay.style.display = 'none';
                 processSearchResult(query.toLowerCase().trim());
@@ -347,38 +365,16 @@
     }
 
     function processSearchResult(query) {
-        const orbitSection = document.getElementById('orbit-area');
-        const blockBox = document.getElementById('block-box');
-        const txnBox = document.getElementById('txn-box');
+        document.getElementById('orbit-area').style.display = 'none';
+        document.getElementById('block-box').style.display = 'none';
         const tBody = document.getElementById('txn-body');
-        const pageInfo = document.getElementById('page-info');
-        const boxHeader = txnBox.querySelector('.box-header span');
-
-        orbitSection.style.display = 'none';
-        blockBox.style.display = 'none';
         tBody.innerHTML = '';
-        
-        const filtered = transactionHistory.filter(tx => 
-            tx.hash.toLowerCase().includes(query) || 
-            tx.from.toLowerCase().includes(query) || 
-            tx.to.toLowerCase().includes(query) ||
-            tx.block.toString() === query
-        );
-
-        boxHeader.innerText = `🔍 SEARCH RESULTS FOR: ${query.slice(0,10)}...`;
-
+        const filtered = transactionHistory.filter(tx => tx.hash.includes(query) || tx.from.includes(query) || tx.to.includes(query) || tx.block.toString() === query);
         if(filtered.length > 0) {
-            const displayLimit = Math.min(filtered.length, 25);
-            for(let i=0; i < displayLimit; i++) {
-                renderRow(tBody, filtered[i]);
-            }
-            pageInfo.innerText = filtered.length > 25 ? `SHOWING 25 OF ${filtered.length} (NEXT PAGE AVAILABLE)` : `TOTAL ${filtered.length} FOUND`;
-            pageInfo.style.display = 'inline';
+            filtered.slice(0, 25).forEach(tx => renderRow(tBody, tx));
         } else {
-            tBody.innerHTML = `<tr><td colspan="5" style="text-align:center; padding:50px; color:var(--dim);">NO TRANSACTION DATA FOUND IN RECENT HISTORY</td></tr>`;
-            pageInfo.style.display = 'none';
+            tBody.innerHTML = `<tr><td colspan="5" style="text-align:center; padding:50px;">NO DATA FOUND</td></tr>`;
         }
-        window.scrollTo({ top: 100, behavior: 'smooth' });
     }
 
     function renderRow(target, data) {
@@ -386,63 +382,40 @@
         const randTGColor = tgColors[Math.floor(Math.random()*tgColors.length)];
         row.innerHTML = `
             <td><svg class="tg-icon" style="fill:${randTGColor}" viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm4.64 6.8c-.15 1.58-.8 5.42-1.13 7.19-.14.75-.42 1-.68 1.03-.58.05-1.02-.38-1.58-.75-.88-.58-1.38-.94-2.23-1.5-.99-.65-.35-1.01.22-1.59.15-.15 2.71-2.48 2.76-2.69a.2.2 0 00-.05-.18c-.06-.05-.14-.03-.21-.02-.09.02-1.49.95-4.22 2.79-.4.27-.76.41-1.08.4-.35-.01-1.02-.2-1.52-.37-.61-.21-1.1-.32-1.05-.67.02-.18.27-.37.75-.56 2.93-1.27 4.88-2.11 5.86-2.52 2.79-1.16 3.37-1.36 3.75-1.36.08 0 .27.02.39.12.1.08.13.19.14.27-.01.06.01.24 0 .33z"/></svg>
-                <span class="clickable" onclick="triggerSearch('${data.hash}')">${data.hash.slice(0, 10)}...</span> ${copySVG(data.hash)}</td>
+            <span class="clickable" onclick="triggerSearch('${data.hash}')">${data.hash.slice(0, 10)}...</span> ${copySVG(data.hash)}</td>
             <td><span class="clickable" onclick="triggerSearch('${data.from}')">${data.from.slice(0, 10)}...</span> ${copySVG(data.from)}</td>
             <td><span class="clickable" style="color:var(--up)" onclick="triggerSearch('${data.to}')">${data.to.slice(0, 10)}...</span> ${copySVG(data.to)}</td>
-            <td><b>${data.amount} SMAT</b></td><td style="color:var(--up)">SUCCESS</td>
-        `;
+            <td><b>${data.amount} SMAT</b></td><td style="color:var(--up)">SUCCESS</td>`;
         target.appendChild(row);
     }
 
     function generateLiveFeed() {
         if(document.getElementById('block-box').style.display === 'none') return;
-
         blockHeight++;
         const vol = 50 + (Math.random() * 450);
         blocksData.unshift({ id: blockHeight, timestamp: Date.now() });
-        if(blocksData.length > 10) blocksData.pop();
-
         const newTxnsCount = Math.floor(Math.random() * 4) + 1; 
         txsTotal += newTxnsCount;
         document.getElementById('stat-txs-count').innerText = txsTotal.toLocaleString();
         document.getElementById('stat-blocks').innerText = blockHeight.toLocaleString();
-
         const bBody = document.getElementById('block-body');
         const bRow = document.createElement('tr');
-        bRow.innerHTML = `
-            <td><div class="s-logo-base block-s-logo">S</div><span class="clickable" style="color:var(--block-id-color)" onclick="triggerSearch('${blockHeight}')">${blockHeight}</span></td>
-            <td><span class="val-glow-btn" style="background:${glowPastelColors[Math.floor(Math.random()*6)]}">${allValidators[Math.floor(Math.random()*21)]}</span></td>
-            <td>${newTxnsCount}</td>
-            <td style="color:var(--up)">${(vol * 0.00001).toFixed(8)} SMAT</td>
-            <td class="time-counter" id="time-count-${blockHeight}">just now</td>
-        `;
+        
+        // ফিক্সড লাইন: এখানে onclick="triggerSearch('${blockHeight}')" যোগ করা হয়েছে
+        bRow.innerHTML = `<td><div class="s-logo-base block-s-logo">S</div><span class="clickable" style="color:var(--block-id-color)" onclick="triggerSearch('${blockHeight}')">${blockHeight}</span></td><td><span class="val-glow-btn" style="background:${glowPastelColors[Math.floor(Math.random()*6)]}">${allValidators[Math.floor(Math.random()*21)]}</span></td><td>${newTxnsCount}</td><td>${(vol * 0.00001).toFixed(8)} SMAT</td><td class="time-counter" id="time-count-${blockHeight}">just now</td>`;
+        
         bBody.insertBefore(bRow, bBody.firstChild);
         if(bBody.children.length > 10) bBody.removeChild(bBody.lastChild);
-
         for(let i=0; i<newTxnsCount; i++) {
-            const txObj = {
-                hash: "0x" + Math.random().toString(16).slice(2, 40),
-                from: "0x" + Math.random().toString(16).slice(2, 40),
-                to: "0x" + Math.random().toString(16).slice(2, 40),
-                amount: (Math.random() * vol).toFixed(8),
-                block: blockHeight
-            };
-            
+            const txObj = { hash: "0x"+Math.random().toString(16).slice(2,40), from: "0x"+Math.random().toString(16).slice(2,40), to: "0x"+Math.random().toString(16).slice(2,40), amount: (Math.random()*vol).toFixed(8), block: blockHeight };
             transactionHistory.unshift(txObj);
-            if(transactionHistory.length > 1000) transactionHistory.pop(); 
-
-            const tBody = document.getElementById('txn-body');
-            renderRow(tBody, txObj);
-            tBody.insertBefore(tBody.lastChild, tBody.firstChild);
-            if(tBody.children.length > 25) tBody.removeChild(tBody.lastChild);
+            renderRow(document.getElementById('txn-body'), txObj);
+            if(document.getElementById('txn-body').children.length > 25) document.getElementById('txn-body').removeChild(document.getElementById('txn-body').lastChild);
         }
     }
 
     document.getElementById('globalSearch').addEventListener('keypress', function(e) {
-        if (e.key === 'Enter' && this.value.trim() !== "") {
-            triggerSearch(this.value.trim());
-            this.value = "";
-        }
+        if (e.key === 'Enter' && this.value.trim() !== "") { triggerSearch(this.value.trim()); this.value = ""; }
     });
 
     updateOrbit();
@@ -451,9 +424,8 @@
     setInterval(() => {
         const now = Date.now();
         blocksData.forEach(block => {
-            const diff = Math.floor((now - block.timestamp) / 1000);
             const el = document.getElementById(`time-count-${block.id}`);
-            if (el) el.innerText = diff <= 0 ? "just now" : `${diff}s ago`;
+            if (el) { const diff = Math.floor((now - block.timestamp) / 1000); el.innerText = diff <= 0 ? "just now" : `${diff}s ago`; }
         });
     }, 1000);
     for(let i=0; i<3; i++) generateLiveFeed();
