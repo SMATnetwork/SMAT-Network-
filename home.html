@@ -1,0 +1,479 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SMAT Pro Exchange - Professional Edition</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800;900&family=Roboto+Mono:wght@500;700&display=swap');
+        body { background-color: #ffffff; color: #1e2329; font-family: 'Inter', sans-serif; overflow-x: hidden; -webkit-tap-highlight-color: transparent; }
+        .page { display: none; min-height: 100vh; padding-bottom: 110px; }
+        .page-active { display: block; }
+        .tab-active { color: #1e2329 !important; border-bottom: 3px solid #f0b90b; }
+        .nav-item-active { color: #f0b90b !important; font-weight: 900; }
+        .no-scrollbar::-webkit-scrollbar { display: none; }
+        @keyframes slideUp { from { transform: translateY(100%); } to { transform: translateY(0); } }
+        .animate-slide-up { animation: slideUp 0.3s cubic-bezier(0.4, 0, 0.2, 1); }
+        .chain-btn-active { border-color: #f0b90b !important; background-color: #fff9e6 !important; color: #f0b90b !important; }
+        .order-bar-red { background: rgba(246, 70, 93, 0.12); position: absolute; right: 0; top: 0; bottom: 0; z-index: 0; transition: width 0.4s; }
+        .order-bar-green { background: rgba(46, 189, 133, 0.12); position: absolute; right: 0; top: 0; bottom: 0; z-index: 0; transition: width 0.4s; }
+        
+        /* Updated Buy/Sell Toggle Buttons */
+        .trade-mode-btn { 
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); 
+            border-radius: 14px; 
+            font-weight: 800; 
+            text-transform: uppercase; 
+            letter-spacing: 0.5px;
+            border: 1px solid transparent;
+        }
+        .buy-active { 
+            background: #2ebd85 !important; 
+            color: white !important; 
+            box-shadow: 0 4px 12px rgba(46, 189, 133, 0.4);
+            transform: scale(1.02);
+        }
+        .sell-active { 
+            background: #f6465d !important; 
+            color: white !important; 
+            box-shadow: 0 4px 12px rgba(246, 70, 93, 0.4);
+            transform: scale(1.02);
+        }
+        .btn-inactive {
+            color: #707a8a !important;
+            background: transparent;
+        }
+    </style>
+</head>
+<body>
+
+    <section id="page-home" class="page page-active">
+        <header class="p-4 flex items-center justify-between sticky top-0 bg-white z-50">
+            <div onclick="openProfileAction()" class="w-10 h-10 bg-[#f0b90b] rounded-full flex items-center justify-center font-black cursor-pointer shadow-lg text-white text-xl">S</div>
+            <div class="font-black text-2xl italic tracking-tighter text-[#f0b90b]">SMAT Exchange </div>
+            <div class="relative"><i class="fas fa-bell text-gray-400 text-xl"></i><span class="absolute -top-1 -right-1 bg-red-500 w-2 h-2 rounded-full"></span></div>
+        </header>
+
+        <div class="px-4 py-5">
+            <div class="bg-gradient-to-br from-gray-900 via-gray-800 to-black rounded-[35px] p-7 text-white shadow-2xl relative overflow-hidden">
+                <div class="absolute -right-10 -top-10 w-40 h-40 bg-yellow-400 opacity-10 rounded-full blur-3xl"></div>
+                <p class="text-[11px] font-black opacity-50 uppercase tracking-widest">Total Estimated Balance</p>
+                <div class="flex items-baseline gap-2 mt-1">
+                    <h1 class="text-3xl font-black" id="home-total-bdt">৳0.00</h1>
+                    <span class="text-xs text-green-400 font-bold">+2.45%</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="px-4 mt-2">
+            <div class="flex gap-6 border-b border-gray-100 mb-5 text-xs font-black text-gray-400 overflow-x-auto no-scrollbar uppercase tracking-tighter">
+                <span onclick="setMarketTab('all')" id="m-all" class="pb-3 cursor-pointer tab-active whitespace-nowrap transition-all">Hot List</span>
+                <span onclick="setMarketTab('gainer')" id="m-gainer" class="pb-3 cursor-pointer whitespace-nowrap transition-all">Top Gainers</span>
+                <span onclick="setMarketTab('loser')" id="m-loser" class="pb-3 cursor-pointer whitespace-nowrap transition-all">Top Losers</span>
+                <span onclick="setMarketTab('new')" id="m-new" class="pb-3 cursor-pointer whitespace-nowrap transition-all">New Listing</span>
+            </div>
+            <div id="home-market-list" class="space-y-6"></div>
+        </div>
+    </section>
+
+    
+    
+    
+    
+    
+    
+    
+    <section id="page-trade" class="page bg-white">
+        <header class="p-4 border-b flex justify-between items-center bg-white sticky top-0 z-50">
+            <div class="flex items-center gap-3 relative">
+                <i class="fas fa-bars text-gray-400" onclick="togglePairSelector()"></i>
+                <div onclick="togglePairSelector()" class="flex items-center gap-2 cursor-pointer">
+                    <h2 id="current-trade-pair" class="text-xl font-black uppercase italic tracking-tighter">SMAT/USDT</h2>
+                    <span id="trade-change-pill" class="text-[10px] bg-red-50 text-red-500 px-2 py-0.5 rounded font-black">-1.28%</span>
+                </div>
+                <div id="pair-dropdown" class="absolute top-12 left-0 bg-white shadow-2xl border border-gray-100 rounded-3xl py-3 w-64 hidden z-[100] animate-slide-up"></div>
+            </div>
+            <i class="fas fa-chart-bar text-gray-400"></i>
+        </header>
+        
+        <div class="p-4 grid grid-cols-12 gap-5">
+            <div class="col-span-5 font-mono text-[10px] space-y-1">
+                <div class="flex justify-between text-gray-400 font-bold mb-2 uppercase tracking-tighter"><span>Price</span><span>Amt</span></div>
+                <div id="asks-list" class="flex flex-col-reverse"></div>
+                <div class="py-4 border-y border-gray-50 text-center">
+                    <p id="trade-live-price" class="text-lg font-black text-red-500 leading-none">0.0000</p>
+                    <p class="text-[9px] text-gray-400 mt-1">৳ <span id="trade-bdt-price">0.00</span></p>
+                </div>
+                <div id="bids-list"></div>
+            </div>
+
+            <div class="col-span-7 space-y-4">
+                <div class="flex bg-[#f5f5f5] rounded-2xl p-1 shadow-inner border border-gray-100">
+                    <button id="btn-buy-mode" onclick="setTradeMode('buy')" class="flex-1 py-3 text-[11px] trade-mode-btn">Buy</button>
+                    <button id="btn-sell-mode" onclick="setTradeMode('sell')" class="flex-1 py-3 text-[11px] trade-mode-btn">Sell</button>
+                </div>
+                
+                <div class="space-y-3">
+                    <div class="bg-gray-100 px-4 py-3 rounded-2xl">
+                        <span class="text-[9px] font-black text-gray-400 uppercase block">Price</span>
+                        <input type="number" id="trade-input-price" class="w-full bg-transparent font-black text-sm outline-none mt-1">
+                    </div>
+                    <div class="bg-gray-100 px-4 py-3 rounded-2xl">
+                        <span class="text-[9px] font-black text-gray-400 uppercase block">Amount</span>
+                        <input type="number" id="trade-input-amount" class="w-full bg-transparent font-black text-sm outline-none mt-1" placeholder="0.00">
+                    </div>
+                </div>
+                <div class="flex justify-between text-[10px] font-black px-1 text-gray-400">
+                    <span>Avbl: <span class="text-black" id="trade-available">0.00</span> <span id="trade-asset-unit">USDT</span></span>
+                    <i class="fas fa-plus-circle text-[#f0b90b]"></i>
+                </div>
+                <button id="main-trade-btn" onclick="executeTrade()" class="w-full text-white font-black py-5 rounded-[22px] uppercase text-xs mt-2 shadow-lg active:scale-95 transition-all">Trade</button>
+            </div>
+        </div>
+    </section>
+
+    
+    
+    
+    
+    
+    
+    <section id="page-wallet" class="page p-4 bg-gray-50/20">
+        <div class="bg-gradient-to-tr from-[#f0b90b] to-[#fcd535] rounded-[40px] p-8 mb-8 shadow-2xl text-black relative">
+            <p class="text-[12px] font-black uppercase opacity-60 tracking-widest">Unified Balance</p>
+            <h1 class="text-3xl font-black mt-2" id="wallet-total-bdt">৳0.00</h1>
+        </div>
+
+        <div class="grid grid-cols-3 gap-4 mb-10">
+            <button onclick="openWalletAction('deposit')" class="bg-white p-5 rounded-[30px] flex flex-col items-center gap-2 shadow-sm text-[10px] font-black active:scale-95 transition-all"><i class="fas fa-arrow-down text-[#f0b90b] text-lg"></i>Deposit</button>
+            <button onclick="openWalletAction('withdraw')" class="bg-white p-5 rounded-[30px] flex flex-col items-center gap-2 shadow-sm text-[10px] font-black active:scale-95 transition-all"><i class="fas fa-arrow-up text-lg"></i>Withdraw</button>
+            <button onclick="openWalletAction('transfer')" class="bg-white p-5 rounded-[30px] flex flex-col items-center gap-2 shadow-sm text-[10px] font-black active:scale-95 transition-all"><i class="fas fa-exchange-alt text-lg"></i>Transfer</button>
+        </div>
+
+        <h3 class="font-black text-xs uppercase mb-5 px-1 tracking-widest text-gray-400 italic">Portfolio Assets</h3>
+        <div id="wallet-assets" class="space-y-4"></div>
+    </section>
+
+    <div id="global-modal" class="fixed inset-0 bg-black/70 z-[200] hidden flex items-end">
+        <div class="bg-white w-full rounded-t-[45px] p-8 animate-slide-up max-h-[92vh] overflow-y-auto">
+            <div class="flex justify-between items-center mb-8">
+                <h2 id="modal-title" class="text-2xl font-black uppercase tracking-tighter italic">Action</h2>
+                <div onclick="closeModal()" class="w-10 h-10 bg-gray-100 rounded-full flex items-center justify-center cursor-pointer"><i class="fas fa-times text-gray-400"></i></div>
+            </div>
+            <div id="modal-content"></div>
+        </div>
+    </div>
+
+    <nav class="fixed bottom-0 left-0 right-0 bg-white border-t flex justify-around py-5 z-50 shadow-2xl">
+        <div onclick="showPage('home')" id="nav-home" class="flex flex-col items-center gap-1 cursor-pointer nav-item-active"><i class="fas fa-home text-lg"></i><span class="text-[9px] font-black uppercase">Home</span></div>
+        <div onclick="showPage('trade')" id="nav-trade" class="flex flex-col items-center gap-1 text-gray-300 cursor-pointer"><i class="fas fa-sync text-lg"></i><span class="text-[9px] font-black uppercase">Trade</span></div>
+        <div onclick="alert('Launching soon!')" class="flex flex-col items-center gap-1 text-gray-300 cursor-pointer"><div class="w-12 h-12 bg-yellow-400 rounded-full flex items-center justify-center -mt-10 border-4 border-white shadow-xl text-black"><i class="fas fa-bolt text-lg"></i></div><span class="text-[9px] font-black uppercase">Rocket</span></div>
+        <div onclick="showPage('wallet')" id="nav-wallet" class="flex flex-col items-center gap-1 text-gray-300 cursor-pointer"><i class="fas fa-wallet text-lg"></i><span class="text-[9px] font-black uppercase">Wallet</span></div>
+    </nav>
+
+    
+    
+    <script>
+        // --- DATA ---
+        let currentPair = 'SMAT';
+        let tradeMode = 'buy';
+        let bdtRate = 124.80;
+        let marketTab = 'all';
+        let selectedAsset = 'SMAT';
+        let selectedChain = '';
+
+        let balances = { SMAT: 25800.0, BTC: 0.0845, ETH: 2.51, BNB: 15.2, TON: 720.0, USDT: 450.00 };
+        let coins = [
+            { id: 'SMAT', name: 'SMAT Token', price: 5.1202, change: -1.28, isNew: true },
+            { id: 'BTC', name: 'Bitcoin', price: 67339.47, change: 0.96, isNew: false },
+            { id: 'ETH', name: 'Ethereum', price: 3450.15, change: 0.84, isNew: false },
+            { id: 'BNB', name: 'BNB Coin', price: 610.66, change: 2.89, isNew: false },
+            { id: 'TON', name: 'Toncoin', price: 5.42, change: 8.91, isNew: true },
+            { id: 'USDT', name: 'Tether', price: 1.00, change: 0.00, isNew: false }
+        ];
+
+        // --- NAVIGATION & TABS ---
+        function showPage(pId) {
+            document.querySelectorAll('.page').forEach(p => p.classList.remove('page-active'));
+            document.getElementById(`page-${pId}`).classList.add('page-active');
+            document.querySelectorAll('nav div').forEach(d => { d.classList.add('text-gray-300'); d.classList.remove('nav-item-active'); });
+            document.getElementById(`nav-${pId}`).classList.add('nav-item-active', 'text-black');
+            if(pId === 'wallet') renderWallet();
+            if(pId === 'trade') updateTradeUI();
+        }
+
+        function setMarketTab(tab) {
+            marketTab = tab;
+            document.querySelectorAll('[id^="m-"]').forEach(el => el.classList.remove('tab-active'));
+            document.getElementById(`m-${tab}`).classList.add('tab-active');
+            renderHomeMarket();
+        }
+
+        function selectNewPair(id) {
+            currentPair = id;
+            selectedAsset = id;
+            document.getElementById('pair-dropdown').classList.add('hidden');
+            showPage('trade');
+            updateTradeUI();
+        }
+
+        // --- RENDER FUNCTIONS ---
+        function renderHomeMarket() {
+            const container = document.getElementById('home-market-list');
+            let filtered = [...coins].filter(c => c.id !== 'USDT');
+            if(marketTab === 'gainer') filtered.sort((a,b) => b.change - a.change);
+            else if(marketTab === 'loser') filtered.sort((a,b) => a.change - b.change);
+            else if(marketTab === 'new') filtered = filtered.filter(c => c.isNew);
+
+            container.innerHTML = filtered.map(c => `
+                <div onclick="selectNewPair('${c.id}')" class="flex justify-between items-center cursor-pointer active:opacity-60 transition">
+                    <div class="flex items-center gap-4">
+                        <div class="w-11 h-11 bg-gray-100 rounded-2xl flex items-center justify-center font-black uppercase text-xs">${c.id[0]}</div>
+                        <div><p class="font-black text-sm uppercase">${c.id}/USDT</p></div>
+                    </div>
+                    <div class="flex items-center gap-6">
+                        <div class="text-right">
+                            <p class="font-black text-sm font-mono">${c.price.toFixed(c.price < 10 ? 4 : 2)}</p>
+                            <p class="text-[9px] text-gray-400 font-bold">৳${(c.price * bdtRate).toFixed(2)}</p>
+                        </div>
+                        <div class="w-20 py-2.5 rounded-xl font-black text-xs text-center ${c.change >= 0 ? 'text-green-500 bg-green-50' : 'text-red-500 bg-red-50'}">${c.change}%</div>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        // --- TRADE ENGINE ---
+        function updateTradeUI() {
+            const coin = coins.find(c => c.id === currentPair);
+            document.getElementById('current-trade-pair').innerText = `${currentPair}/USDT`;
+            document.getElementById('trade-input-price').value = coin.price.toFixed(4);
+            document.getElementById('trade-change-pill').innerText = `${coin.change}%`;
+            document.getElementById('trade-change-pill').className = `text-[10px] px-2 py-0.5 rounded font-black ${coin.change >= 0 ? 'bg-green-50 text-green-500' : 'bg-red-50 text-red-500'}`;
+            setTradeMode(tradeMode);
+            updateOrderBook();
+        }
+
+        function setTradeMode(mode) {
+            tradeMode = mode;
+            const btnB = document.getElementById('btn-buy-mode');
+            const btnS = document.getElementById('btn-sell-mode');
+            const mainBtn = document.getElementById('main-trade-btn');
+            
+            // Apply new inactive styling
+            btnB.classList.remove('buy-active');
+            btnS.classList.remove('sell-active');
+            btnB.classList.add('btn-inactive');
+            btnS.classList.add('btn-inactive');
+
+            if(mode === 'buy') {
+                btnB.classList.add('buy-active');
+                btnB.classList.remove('btn-inactive');
+                mainBtn.style.backgroundColor = "#2ebd85";
+                document.getElementById('trade-available').innerText = balances.USDT.toFixed(2);
+                document.getElementById('trade-asset-unit').innerText = 'USDT';
+            } else {
+                btnS.classList.add('sell-active');
+                btnS.classList.remove('btn-inactive');
+                mainBtn.style.backgroundColor = "#f6465d";
+                document.getElementById('trade-available').innerText = (balances[currentPair] || 0).toFixed(2);
+                document.getElementById('trade-asset-unit').innerText = currentPair;
+            }
+            mainBtn.innerText = `${mode} ${currentPair}`;
+        }
+
+        function updateOrderBook() {
+            const coin = coins.find(c => c.id === currentPair);
+            document.getElementById('trade-live-price').innerText = coin.price.toFixed(4);
+            document.getElementById('trade-live-price').className = `text-lg font-black leading-none ${coin.change >=0 ? 'text-green-500' : 'text-red-500'}`;
+            document.getElementById('trade-bdt-price').innerText = (coin.price * bdtRate).toFixed(2);
+
+            const gen = (type) => Array(7).fill(0).map(() => {
+                let p = (coin.price + (Math.random() - 0.5) * 0.02).toFixed(4);
+                let a = (Math.random() * 2).toFixed(3);
+                let w = Math.floor(Math.random() * 90);
+                return `<div class="relative flex justify-between py-1 z-10 px-1">
+                    <div class="${type === 'ask' ? 'order-bar-red' : 'order-bar-green'}" style="width: ${w}%"></div>
+                    <span class="${type === 'ask' ? 'text-red-500' : 'text-green-500'} font-bold z-10">${p}</span>
+                    <span class="text-gray-500 font-bold z-10">${a}</span>
+                </div>`;
+            }).join('');
+            document.getElementById('asks-list').innerHTML = gen('ask');
+            document.getElementById('bids-list').innerHTML = gen('bid');
+        }
+
+        // --- UPDATED MODALS LOGIC ---
+        function updateWithdrawReceiving() {
+            const input = document.getElementById('wd-amt');
+            const receiveDisplay = document.getElementById('wd-receive-amt');
+            let val = parseFloat(input.value) || 0;
+            let fee = selectedAsset === 'USDT' ? 1.0 : 0.002;
+            let net = Math.max(0, val - fee);
+            receiveDisplay.innerText = net.toFixed(selectedAsset === 'USDT' ? 2 : 5) + " " + selectedAsset;
+        }
+
+        function openWalletAction(type) {
+            const modal = document.getElementById('global-modal');
+            const content = document.getElementById('modal-content');
+            document.getElementById('modal-title').innerText = `${type} Assets`;
+            modal.classList.remove('hidden');
+
+            const chains = selectedAsset === 'SMAT' ? ['BSC20', 'SMAT20'] : ['BEP20', 'TRC20', 'ERC20'];
+            if(!selectedChain || !chains.includes(selectedChain)) selectedChain = chains[0];
+
+            if(type === 'deposit') {
+                content.innerHTML = `
+                    <div class="space-y-5">
+                        <div>
+                            <label class="text-[10px] font-black text-gray-400 uppercase">Select Asset</label>
+                            <select onchange="selectedAsset=this.value; openWalletAction('deposit')" class="w-full mt-2 p-4 bg-gray-100 rounded-2xl font-black text-xs outline-none">
+                                ${coins.map(c => `<option value="${c.id}" ${selectedAsset === c.id ? 'selected' : ''}>${c.id} - ${c.name}</option>`).join('')}
+                            </select>
+                        </div>
+                        <div>
+                            <label class="text-[10px] font-black text-gray-400 uppercase">Select Network</label>
+                            <div class="flex gap-2 mt-2">
+                                ${chains.map(c => `<button onclick="selectedChain='${c}'; openWalletAction('deposit')" class="flex-1 py-3 rounded-xl border-2 text-[10px] font-black transition-all ${selectedChain === c ? 'chain-btn-active' : 'border-transparent bg-gray-100'}">${c}</button>`).join('')}
+                            </div>
+                        </div>
+                        <div class="flex flex-col items-center py-6 bg-gray-50 rounded-[35px] border-2 border-dashed border-gray-100">
+                            <img src="https://api.qrserver.com/v1/create-qr-code/?size=140x140&data=${selectedAsset}_${selectedChain}_ADDR" class="bg-white p-2 rounded-xl shadow-sm">
+                            <p class="mt-4 text-[9px] font-black text-gray-400 uppercase tracking-widest">Network: ${selectedChain}</p>
+                            <div class="flex items-center gap-3 mt-2">
+                                <span class="text-xs font-black">0x71C7656E...F6d8976F</span>
+                                <i onclick="alert('Address Copied!')" class="fas fa-copy text-yellow-500 cursor-pointer"></i>
+                            </div>
+                        </div>
+                    </div>`;
+            } else if(type === 'withdraw') {
+                let avbl = balances[selectedAsset] || 0;
+                let fee = selectedAsset === 'USDT' ? 1.0 : 0.002;
+                content.innerHTML = `
+                    <div class="space-y-4">
+                        <select onchange="selectedAsset=this.value; openWalletAction('withdraw')" class="w-full p-4 bg-gray-100 rounded-2xl font-black text-xs outline-none">
+                            ${Object.keys(balances).map(k => `<option value="${k}" ${selectedAsset === k ? 'selected' : ''}>${k} (Avbl: ${balances[k]})</option>`).join('')}
+                        </select>
+                        <div class="flex gap-2 mt-1">
+                            ${chains.map(c => `<button onclick="selectedChain='${c}'; openWalletAction('withdraw')" class="flex-1 py-3 rounded-xl border-2 text-[10px] font-black transition-all ${selectedChain === c ? 'chain-btn-active' : 'border-transparent bg-gray-100'}">${c}</button>`).join('')}
+                        </div>
+                        <input type="text" placeholder="Recipient Address" class="w-full p-5 bg-gray-100 rounded-2xl font-black text-xs outline-none border-2 border-transparent focus:border-yellow-400 transition">
+                        <div class="relative">
+                            <input type="number" id="wd-amt" oninput="updateWithdrawReceiving()" placeholder="Amount" class="w-full p-5 bg-gray-100 rounded-2xl font-black text-xs outline-none">
+                            <span onclick="document.getElementById('wd-amt').value=${avbl}; updateWithdrawReceiving();" class="absolute right-5 top-1/2 -translate-y-1/2 text-xs font-black text-yellow-500 cursor-pointer">MAX</span>
+                        </div>
+                        <div class="bg-gray-50 p-4 rounded-2xl text-[10px] font-black space-y-1">
+                            <div class="flex justify-between uppercase"><span>Network Fee</span><span>${fee} ${selectedAsset}</span></div>
+                            <div class="flex justify-between uppercase text-gray-400"><span>You will receive</span><span class="text-black" id="wd-receive-amt">0.00 ${selectedAsset}</span></div>
+                        </div>
+                        <button onclick="alert('Withdrawal request sent!')" class="w-full bg-black text-white font-black py-5 rounded-[25px] uppercase text-xs shadow-xl transition">Withdraw ${selectedAsset}</button>
+                    </div>`;
+            } else if(type === 'transfer') {
+                content.innerHTML = `
+                    <div class="space-y-5">
+                        <div class="bg-blue-50 p-4 rounded-2xl flex gap-3 border border-blue-100">
+                            <i class="fas fa-user-friends text-blue-600"></i>
+                            <p class="text-[10px] font-bold text-blue-800 uppercase italic leading-tight">Internal Transfer: Send assets instantly between SMAT PRO IDs with zero network fees.</p>
+                        </div>
+                        <div>
+                            <label class="text-[10px] font-black text-gray-400 uppercase">Select Asset</label>
+                            <select onchange="selectedAsset=this.value" class="w-full mt-2 p-4 bg-gray-100 rounded-2xl font-black text-xs outline-none">
+                                ${Object.keys(balances).map(k => `<option value="${k}" ${selectedAsset === k ? 'selected' : ''}>${k} (Avbl: ${balances[k]})</option>`).join('')}
+                            </select>
+                        </div>
+                        <input type="text" placeholder="Recipient UID (e.g. 562910447)" class="w-full p-5 bg-gray-100 rounded-2xl font-black text-xs outline-none">
+                        <div class="relative">
+                            <input type="number" id="tr-amt" placeholder="Transfer Amount" class="w-full p-5 bg-gray-100 rounded-2xl font-black text-xs outline-none">
+                            <span onclick="document.getElementById('tr-amt').value=${balances[selectedAsset] || 0}" class="absolute right-5 top-1/2 -translate-y-1/2 text-xs font-black text-yellow-500 cursor-pointer">MAX</span>
+                        </div>
+                        <button onclick="alert('Internal Transfer Success!')" class="w-full bg-[#f0b90b] text-black font-black py-5 rounded-[25px] uppercase text-xs shadow-xl active:scale-95 transition-all">Confirm Transfer</button>
+                    </div>`;
+            }
+        }
+
+        // --- PROFILE SECTION ---
+        function openProfileAction() {
+            const modal = document.getElementById('global-modal');
+            const content = document.getElementById('modal-content');
+            document.getElementById('modal-title').innerText = "Account Center";
+            modal.classList.remove('hidden');
+
+            content.innerHTML = `
+                <div class="flex items-center gap-5 p-6 bg-gradient-to-tr from-gray-50 to-white rounded-[35px] border border-gray-100 shadow-sm">
+                    <div class="w-20 h-20 bg-[#f0b90b] rounded-full flex items-center justify-center font-black text-3xl shadow-lg border-4 border-white text-white">U</div>
+                    <div>
+                        <p class="font-black text-xl italic uppercase">User_Pro_789<i class="fas fa-check-circle text-blue-500 ml-2 text-sm"></i></p>
+                        <p class="text-[10px] text-gray-400 font-black tracking-widest mt-1 uppercase">UID: 562910447</p>
+                    </div>
+                </div>
+                <div class="grid grid-cols-2 gap-3 mt-4">
+                    <div class="p-5 bg-gray-50 rounded-3xl text-center"><p class="text-[9px] font-black text-gray-400 uppercase mb-1">Status</p><p class="font-black text-sm text-green-500 uppercase">Verified</p></div>
+                    <div class="p-5 bg-gray-50 rounded-3xl text-center"><p class="text-[9px] font-black text-gray-400 uppercase mb-1">VIP Tier</p><p class="font-black text-sm">LVL 2</p></div>
+                </div>
+                <div class="space-y-3 mt-4">
+                    <div class="flex justify-between items-center p-5 bg-gray-50 rounded-[25px]"><div class="flex items-center gap-3"><i class="fas fa-shield-alt text-green-500"></i><span class="text-xs font-black uppercase tracking-tighter">Security Settings</span></div><i class="fas fa-chevron-right text-gray-300"></i></div>
+                    <div class="flex justify-between items-center p-5 bg-gray-50 rounded-[25px]"><div class="flex items-center gap-3"><i class="fas fa-cog text-gray-400"></i><span class="text-xs font-black uppercase tracking-tighter">General Settings</span></div><i class="fas fa-chevron-right text-gray-300"></i></div>
+                </div>
+                <button onclick="location.reload()" class="w-full py-5 text-red-500 font-black text-xs uppercase tracking-[4px] mt-4 border-t border-gray-50">Log Out Account</button>
+            `;
+        }
+
+        // --- UTILS ---
+        function closeModal() { document.getElementById('global-modal').classList.add('hidden'); }
+        
+        function calculatePortfolio() {
+            let total = 0;
+            Object.keys(balances).forEach(k => {
+                let c = coins.find(coin => coin.id === k);
+                total += balances[k] * (c ? c.price : 1) * bdtRate;
+            });
+            document.getElementById('wallet-total-bdt').innerText = `৳${total.toLocaleString(undefined, {maximumFractionDigits: 0})}`;
+            document.getElementById('home-total-bdt').innerText = `৳${total.toLocaleString(undefined, {maximumFractionDigits: 2})}`;
+        }
+
+        function renderWallet() {
+            const container = document.getElementById('wallet-assets');
+            container.innerHTML = Object.keys(balances).map(k => {
+                let coin = coins.find(c => c.id === k);
+                let val = balances[k] * (coin ? coin.price : 1) * bdtRate;
+                return `
+                    <div class="bg-white p-5 rounded-[30px] flex justify-between items-center shadow-sm border border-gray-100">
+                        <div class="flex items-center gap-4">
+                            <div class="w-11 h-11 bg-gray-50 rounded-xl flex items-center justify-center font-black uppercase text-xs">${k[0]}</div>
+                            <div><p class="font-black text-sm uppercase">${k}</p><p class="text-[10px] text-gray-400 font-bold">${balances[k]} ${k}</p></div>
+                        </div>
+                        <div class="text-right">
+                            <p class="font-black text-sm">৳${val.toLocaleString(undefined, {maximumFractionDigits: 0})}</p>
+                        </div>
+                    </div>`;
+            }).join('');
+        }
+
+        function togglePairSelector() {
+            const dd = document.getElementById('pair-dropdown');
+            dd.classList.toggle('hidden');
+            dd.innerHTML = coins.map(c => `
+                <div onclick="selectNewPair('${c.id}')" class="px-5 py-4 hover:bg-gray-50 font-black text-xs flex justify-between items-center cursor-pointer border-b border-gray-50">
+                    <span>${c.id}/USDT</span>
+                    <span class="${c.change >= 0 ? 'text-green-500' : 'text-red-500'}">${c.change}%</span>
+                </div>
+            `).join('');
+        }
+
+        function executeTrade() { alert(`${tradeMode.toUpperCase()} Order Submitted!`); }
+
+        // --- REALTIME UPDATES ---
+        setInterval(() => {
+            coins.forEach(c => {
+                c.price += (Math.random() - 0.5) * (c.price * 0.001);
+                c.change = (parseFloat(c.change) + (Math.random() - 0.5) * 0.02).toFixed(2);
+            });
+            renderHomeMarket();
+            if(document.getElementById('page-trade').classList.contains('page-active')) updateOrderBook();
+            calculatePortfolio();
+        }, 1500);
+
+        window.onload = () => { renderHomeMarket(); calculatePortfolio(); };
+    </script>
+</body>
+</html>
