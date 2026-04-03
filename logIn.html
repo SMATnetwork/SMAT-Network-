@@ -68,7 +68,8 @@
         }
 
         label {
-            display: block;
+            display: flex;
+            justify-content: space-between;
             font-size: 13px;
             margin-bottom: 8px;
             color: var(--text-muted);
@@ -91,6 +92,11 @@
             box-shadow: 0 0 10px rgba(243, 186, 47, 0.1);
         }
 
+        .pass-hint {
+            font-size: 10px;
+            color: var(--text-muted);
+        }
+
         button {
             width: 100%;
             padding: 16px;
@@ -105,7 +111,14 @@
             box-shadow: 0 4px 15px rgba(243, 186, 47, 0.2);
         }
 
-        button:hover {
+        button:disabled {
+            background-color: #474d57;
+            color: #848e9c;
+            cursor: not-allowed;
+            box-shadow: none;
+        }
+
+        button:hover:not(:disabled) {
             background-color: var(--primary-hover);
             transform: translateY(-2px);
             box-shadow: 0 6px 20px rgba(243, 186, 47, 0.3);
@@ -156,8 +169,11 @@
     </div>
 
     <div class="input-group">
-        <label>Password</label>
-        <input type="password" id="password" placeholder="••••••••">
+        <label>
+            Password 
+            <span id="passStatus" class="pass-hint"></span>
+        </label>
+        <input type="password" id="password" placeholder="••••••••" oninput="validatePassword()">
     </div>
 
     <button id="btn" onclick="handleAuth()">Login</button>
@@ -174,7 +190,6 @@
   import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
   import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, sendEmailVerification, sendPasswordResetEmail } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
 
-  // Firebase Configuration
   const firebaseConfig = {
     apiKey: "AIzaSyAMxtJedkehhxJRMPZLjhpKHqneHEWsGlE",
     authDomain: "smat-exchange.firebaseapp.com",
@@ -190,7 +205,33 @@
 
   let isLogin = true;
 
-  // Toggle between Login and Register
+  // Password Validation Logic
+  window.validatePassword = () => {
+    const pass = document.getElementById('password').value;
+    const status = document.getElementById('passStatus');
+    const submitBtn = document.getElementById('btn');
+    
+    // Regex: At least 8 chars, 1 letter and 1 number
+    const regex = /^(?=.*[A-Za-z])(?=.*\d)[A-Za-z\d]{8,}$/;
+
+    if (pass === "") {
+        status.innerText = "";
+        submitBtn.disabled = false; // Allow empty check during login (Firebase handles it)
+        return;
+    }
+
+    if (regex.test(pass)) {
+        status.innerText = "✓ Strong";
+        status.style.color = "#00ff88";
+        submitBtn.disabled = false;
+    } else {
+        status.innerText = "Min 8 chars, Letter & Number";
+        status.style.color = "#ff4d4d";
+        // Only disable on Register mode to enforce security
+        if(!isLogin) submitBtn.disabled = true;
+    }
+  };
+
   window.toggleForm = () => {
     isLogin = !isLogin;
     document.getElementById('title').innerText = isLogin ? "Sign In" : "Register";
@@ -198,9 +239,10 @@
     document.getElementById('btn').innerText = isLogin ? "Login" : "Create Account";
     document.getElementById('toggleLink').innerText = isLogin ? "Create account" : "Already have an account? Sign In";
     document.getElementById('message').style.display = "none";
+    document.getElementById('passStatus').innerText = "";
+    document.getElementById('btn').disabled = false;
   };
 
-  // Main Authentication Logic
   window.handleAuth = async () => {
     const email = document.getElementById('email').value;
     const pass = document.getElementById('password').value;
@@ -214,24 +256,20 @@
 
     try {
       if (isLogin) {
-        // Login Logic
         const userCredential = await signInWithEmailAndPassword(auth, email, pass);
         
         if (userCredential.user.emailVerified) {
-          msgBox.style.color = "#00ff88";
-          msgBox.innerText = "Login successful! Redirecting...";
+          localStorage.setItem('isLoggedIn', 'true');
+          localStorage.setItem('userEmail', email);
           
-          // Redirecting to trade.html
-          setTimeout(() => {
-              window.location.href = "Trade.html"; 
-          }, 1000);
+          // Redirecting to home.html (Corrected path)
+          window.location.href = "home.html"; 
           
         } else {
           msgBox.style.color = "#f3ba2f";
           msgBox.innerText = "Please verify your email first!";
         }
       } else {
-        // Registration Logic
         const user = await createUserWithEmailAndPassword(auth, email, pass);
         await sendEmailVerification(user.user);
         msgBox.style.color = "#00ff88";
@@ -243,7 +281,6 @@
     }
   };
 
-  // Password Reset
   window.resetPass = async () => {
     const email = document.getElementById('email').value;
     if(!email) return alert("Enter email first.");
