@@ -91,7 +91,7 @@
 
         /* Coin List */
         .coin-list { padding: 5px 15px; }
-        .coin-row { display: flex; justify-content: space-between; align-items: center; padding: 18px 0; border-bottom: 1px solid rgba(255,255,255,0.03); }
+        .coin-row { display: flex; justify-content: space-between; align-items: center; padding: 18px 0; border-bottom: 1px solid rgba(255,255,255,0.03); cursor: pointer; }
         .coin-icon { width: 38px; height: 38px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: bold; font-size: 14px; }
         .percent-box { display: inline-block; padding: 6px 12px; border-radius: 8px; font-weight: 700; font-size: 13px; min-width: 75px; margin-top: 4px; }
 
@@ -204,13 +204,20 @@
     </footer>
 
     <script>
-        const marketData = [
-            { name: 'SMAT Coin', symbol: 'SMAT', price: 1.2694, change: +5.42, balanceKey: 'smatBalance', tag: 'new', color: '#f3ba2f' },
-            { name: 'Tether', symbol: 'USDT', price: 1.0000, change: 0.00, balanceKey: 'usdtBalance', tag: 'hot', color: '#26a17b' },
-            { name: 'BNB', symbol: 'BNB', price: 588.20, change: -1.45, balanceKey: 'bnbBalance', tag: 'hot', color: '#F3BA2F' }
-        ];
+        // ১. মার্কেট ডেটা লজিক (মার্কেট স্ট্যাটস থেকে লাইভ ডাটা কল করা)
+        function getMarketData() {
+            const stats = JSON.parse(localStorage.getItem('marketStats') || '[]');
+            // যদি লোকাল স্টোরেজে ডেটা না থাকে তবে ডিফল্ট ডেটা ব্যবহার হবে
+            if (stats.length === 0) {
+                return [
+                    { sym: 'SMAT', name: 'SMAT Coin', price: 1.2694, change: 5.42, vol: 150000, startPrice: 1.20, tag: 'new', color: '#f3ba2f' },
+                    { sym: 'USDT', name: 'Tether', price: 1.0000, change: 0.00, vol: 5000000, startPrice: 1.00, tag: 'hot', color: '#26a17b' },
+                    { sym: 'BNB', name: 'BNB', price: 588.20, change: -1.45, vol: 8500, startPrice: 595.00, tag: 'hot', color: '#F3BA2F' }
+                ];
+            }
+            return stats;
+        }
 
-        // 1. Auth & Mode Setup
         let isUserLoggedIn = localStorage.getItem('isLoggedIn') === 'true';
 
         function checkAuth(e) {
@@ -226,43 +233,49 @@
             location.reload();
         }
 
-        // 2. Sidebar UI Update
         function toggleSidebar() {
             document.getElementById('sidebar').classList.toggle('active');
             document.getElementById('overlay').style.display = 
                 document.getElementById('sidebar').classList.contains('active') ? 'block' : 'none';
         }
 
-        // 3. Render Market
         function switchTab(element, category) {
             document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
             element.classList.add('active');
             renderCoins(category);
         }
 
+        // ২. ডাইনামিক রেন্ডারিং এবং ট্রেড রিডিরেকশন
         function renderCoins(filter = 'hot') {
             const container = document.getElementById('coinContainer');
             container.innerHTML = '';
-            let filtered = filter === 'hot' ? marketData : 
-                           filter === 'gainer' ? marketData.filter(c => c.change > 0) :
-                           filter === 'loser' ? marketData.filter(c => c.change < 0) :
-                           marketData.filter(c => c.tag === 'new');
+            const liveData = getMarketData();
+
+            let filtered = filter === 'hot' ? liveData : 
+                           filter === 'gainer' ? liveData.filter(c => ((c.price - c.startPrice)/c.startPrice*100) > 0) :
+                           filter === 'loser' ? liveData.filter(c => ((c.price - c.startPrice)/c.startPrice*100) < 0) :
+                           liveData.filter(c => c.tag === 'new');
 
             filtered.forEach(coin => {
-                const isUp = coin.change >= 0;
+                const currentPrice = parseFloat(coin.price);
+                const change = ((currentPrice - coin.startPrice) / coin.startPrice * 100).toFixed(2);
+                const isUp = change >= 0;
+                const volInUsdt = (coin.vol * currentPrice);
+                const color = coin.color || '#f3ba2f';
+
                 container.innerHTML += `
-                    <div class="coin-row">
+                    <div class="coin-row" onclick="window.location.href='Trade.html?coin=${coin.sym}'">
                         <div style="display:flex; align-items:center; gap:12px;">
-                            <div class="coin-icon" style="background:${coin.color}22; color:${coin.color}">${coin.symbol[0]}</div>
+                            <div class="coin-icon" style="background:${color}22; color:${color}">${coin.sym[0]}</div>
                             <div>
-                                <div style="font-weight:bold">${coin.symbol}/USDT</div>
-                                <div style="font-size:12px; color:var(--text-sec)">Vol $${(Math.random()*5).toFixed(2)}M</div>
+                                <div style="font-weight:bold">${coin.sym}/USDT</div>
+                                <div style="font-size:12px; color:var(--text-sec)">Vol $${volInUsdt >= 1000 ? (volInUsdt / 1000).toFixed(2) + "K" : volInUsdt.toFixed(2)}</div>
                             </div>
                         </div>
                         <div style="text-align:right">
-                            <div style="font-weight:bold; font-size:16px">$${coin.price.toFixed(4)}</div>
+                            <div style="font-weight:bold; font-size:16px">$${currentPrice.toFixed(4)}</div>
                             <div class="percent-box" style="background:${isUp ? '#0ecb8122' : '#f6465d22'}; color:${isUp ? 'var(--up)' : 'var(--down)'}">
-                                ${isUp ? '+' : ''}${coin.change}%
+                                ${isUp ? '+' : ''}${change}%
                             </div>
                         </div>
                     </div>
@@ -271,12 +284,13 @@
             updatePortfolio();
         }
 
-        // 4. Portfolio (Zero if logged out)
         function updatePortfolio() {
             let total = 0;
             if(isUserLoggedIn) {
-                marketData.forEach(coin => {
-                    let bal = parseFloat(localStorage.getItem(coin.balanceKey)) || 0;
+                const liveData = getMarketData();
+                liveData.forEach(coin => {
+                    let balKey = coin.sym.toLowerCase() + "Balance";
+                    let bal = parseFloat(localStorage.getItem(balKey)) || 0;
                     total += (bal * coin.price);
                 });
                 document.getElementById('totalValue').innerText = total.toFixed(2);
@@ -287,7 +301,6 @@
             }
         }
 
-        // 5. KYC & ID
         function handleKYC() {
             const nid = document.getElementById('nidNumber').value;
             const front = document.getElementById('nidFront').files[0];
@@ -303,22 +316,24 @@
 
         function updateKYCUI() {
             if(localStorage.getItem('kycStatus') === 'pending') {
-                document.getElementById('kycForm').style.display = 'none';
-                document.getElementById('kycPendingNotice').style.display = 'block';
+                const kycForm = document.getElementById('kycForm');
+                const kycPendingNotice = document.getElementById('kycPendingNotice');
+                if(kycForm) kycForm.style.display = 'none';
+                if(kycPendingNotice) kycPendingNotice.style.display = 'block';
                 const badge = document.getElementById('kycBadge');
-                badge.innerText = 'Pending';
-                badge.className = 'status-badge status-pending';
+                if(badge) {
+                    badge.innerText = 'Pending';
+                    badge.className = 'status-badge status-pending';
+                }
             }
         }
 
-        // Initialization
         window.onload = () => {
             if(isUserLoggedIn) {
                 document.getElementById('loggedInContent').style.display = 'block';
                 document.getElementById('loggedOutContent').style.display = 'none';
                 document.getElementById('emailDisplay').innerText = localStorage.getItem('userEmail') || "user@example.com";
                 
-                // SMAT ID Logic
                 if(!localStorage.getItem('mySmatID')) {
                     let lastID = parseInt(localStorage.getItem('globalUserCount') || 100000);
                     let newID = lastID + 1;
@@ -332,6 +347,8 @@
                 document.getElementById('loggedOutContent').style.display = 'block';
             }
             renderCoins('hot');
+            // ১ সেকেন্ড পর পর অটো রিফ্রেশ যাতে দাম ও ভলিউম সিঙ্ক থাকে
+            setInterval(() => renderCoins(document.querySelector('.tab.active').innerText.toLowerCase()), 2000);
         };
     </script>
 </body>
