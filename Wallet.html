@@ -50,11 +50,7 @@
 
         .btn-full { width: 100%; padding: 16px; background: var(--primary); border: none; border-radius: 10px; font-weight: 700; font-size: 16px; cursor: pointer; color: #000; }
 
-        /* Footer */
-        .footer { position: fixed; bottom: 0; width: 100%; height: 65px; background: #181a20; display: flex; justify-content: space-around; align-items: center; border-top: 1px solid var(--border); z-index: 900; }
-        .f-item { text-decoration: none; color: var(--text-sec); text-align: center; font-size: 10px; flex: 1; }
-        .f-item.active { color: var(--primary); }
-        .f-item i { display: block; font-size: 18px; margin-bottom: 3px; }
+        
     </style>
 </head>
 <body>
@@ -86,11 +82,31 @@
         <div id="sheet_content"></div>
     </div>
 
-    <footer class="footer">
-        <a href="Home.html" class="f-item"><i class="fas fa-home"></i>Home</a>
-        <a href="Trade.html" class="f-item"><i class="fas fa-chart-line"></i>Trade</a>
-        <a href="Explore.html" class="f-item"><i class="fas fa-compass"></i>Explore</a>
-        <a href="Wallet.html" class="f-item active"><i class="fas fa-wallet"></i>Wallet</a>
+    <style>
+
+/* Footer */
+        .footer { position: fixed; bottom: 0; width: 100%; height: 70px; background: #181a20; display: flex; justify-content: space-around; align-items: center; border-top: 1px solid #2b3139; z-index: 3000; }
+        .f-nav { text-decoration: none; color: var(--text-sec); text-align: center; font-size: 10px; flex: 1; }
+        .f-nav i { display: block; font-size: 20px; margin-bottom: 4px; }
+        .f-nav.active { color: var(--primary); }
+        .u-curve { position: relative; top: -20px; width: 70px; height: 70px; display: flex; justify-content: center; align-items: center; }
+        .spin-circle { position: absolute; width: 66px; height: 66px; border: 2px dashed var(--primary); border-radius: 50%; animation: spin 4s linear infinite; }
+        .crash-link { width: 55px; height: 55px; background: var(--primary); border-radius: 50%; color: black; font-weight: 900; font-size: 10px; display: flex; align-items: center; justify-content: center; text-decoration: none; z-index: 5; }
+        @keyframes spin { 100% { transform: rotate(360deg); } }
+
+        .up { color: var(--up); }
+        .down { color: var(--down); }
+</style>
+
+<footer class="footer">
+        <a href="home.html" class="f-nav"><i class="fas fa-home"></i>Home</a>
+        <a href="Trade.html" class="f-nav active"><i class="fas fa-chart-line"></i>Trade</a>
+        <div class="u-curve">
+            <div class="spin-circle"></div>
+            <a href="Crash.html" class="crash-link">CRASH</a>
+        </div>
+        <a href="index.html" class="f-nav"><i class="fas fa-compass"></i>Explore</a>
+        <a href="Explorer.html" class="f-nav"><i class="fas fa-wallet"></i>Explore</a>
     </footer>
 
     <script>
