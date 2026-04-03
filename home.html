@@ -184,10 +184,10 @@
     </div>
 
     <div class="market-tabs">
-        <div class="tab active" onclick="switchTab(this, 'hot')">Hot</div>
-        <div class="tab" onclick="switchTab(this, 'gainer')">Gainers</div>
-        <div class="tab" onclick="switchTab(this, 'loser')">Losers</div>
-        <div class="tab" onclick="switchTab(this, 'new')">New</div>
+        <div class="tab active" id="tab-hot" onclick="switchTab(this, 'hot')">Hot</div>
+        <div class="tab" id="tab-gainer" onclick="switchTab(this, 'gainer')">Gainers</div>
+        <div class="tab" id="tab-loser" onclick="switchTab(this, 'loser')">Losers</div>
+        <div class="tab" id="tab-new" onclick="switchTab(this, 'new')">New</div>
     </div>
 
     <div class="coin-list" id="coinContainer"></div>
@@ -204,10 +204,10 @@
     </footer>
 
     <script>
-        // ১. মার্কেট ডেটা লজিক (মার্কেট স্ট্যাটস থেকে লাইভ ডাটা কল করা)
+        let currentActiveTab = 'hot';
+
         function getMarketData() {
             const stats = JSON.parse(localStorage.getItem('marketStats') || '[]');
-            // যদি লোকাল স্টোরেজে ডেটা না থাকে তবে ডিফল্ট ডেটা ব্যবহার হবে
             if (stats.length === 0) {
                 return [
                     { sym: 'SMAT', name: 'SMAT Coin', price: 1.2694, change: 5.42, vol: 150000, startPrice: 1.20, tag: 'new', color: '#f3ba2f' },
@@ -240,22 +240,30 @@
         }
 
         function switchTab(element, category) {
+            currentActiveTab = category;
             document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
             element.classList.add('active');
             renderCoins(category);
         }
 
-        // ২. ডাইনামিক রেন্ডারিং এবং ট্রেড রিডিরেকশন
         function renderCoins(filter = 'hot') {
             const container = document.getElementById('coinContainer');
-            container.innerHTML = '';
+            if (!container) return;
+            
             const liveData = getMarketData();
+            let filtered = [];
 
-            let filtered = filter === 'hot' ? liveData : 
-                           filter === 'gainer' ? liveData.filter(c => ((c.price - c.startPrice)/c.startPrice*100) > 0) :
-                           filter === 'loser' ? liveData.filter(c => ((c.price - c.startPrice)/c.startPrice*100) < 0) :
-                           liveData.filter(c => c.tag === 'new');
+            if (filter === 'hot') {
+                filtered = liveData.filter(c => c.tag === 'hot' || c.sym === 'SMAT');
+            } else if (filter === 'gainer') {
+                filtered = liveData.filter(c => ((c.price - c.startPrice)/c.startPrice) > 0);
+            } else if (filter === 'loser') {
+                filtered = liveData.filter(c => ((c.price - c.startPrice)/c.startPrice) < 0);
+            } else if (filter === 'new') {
+                filtered = liveData.filter(c => c.tag === 'new');
+            }
 
+            let htmlContent = '';
             filtered.forEach(coin => {
                 const currentPrice = parseFloat(coin.price);
                 const change = ((currentPrice - coin.startPrice) / coin.startPrice * 100).toFixed(2);
@@ -263,7 +271,7 @@
                 const volInUsdt = (coin.vol * currentPrice);
                 const color = coin.color || '#f3ba2f';
 
-                container.innerHTML += `
+                htmlContent += `
                     <div class="coin-row" onclick="window.location.href='Trade.html?coin=${coin.sym}'">
                         <div style="display:flex; align-items:center; gap:12px;">
                             <div class="coin-icon" style="background:${color}22; color:${color}">${coin.sym[0]}</div>
@@ -281,6 +289,7 @@
                     </div>
                 `;
             });
+            container.innerHTML = htmlContent;
             updatePortfolio();
         }
 
@@ -294,10 +303,6 @@
                     total += (bal * coin.price);
                 });
                 document.getElementById('totalValue').innerText = total.toFixed(2);
-                document.getElementById('pnlValue').innerText = "+$0.00";
-            } else {
-                document.getElementById('totalValue').innerText = "0.00";
-                document.getElementById('pnlValue').innerText = "+$0.00";
             }
         }
 
@@ -305,11 +310,7 @@
             const nid = document.getElementById('nidNumber').value;
             const front = document.getElementById('nidFront').files[0];
             const back = document.getElementById('nidBack').files[0];
-            
-            if(nid.length < 5 || !front || !back) {
-                return alert("Please enter NID and upload both photos.");
-            }
-
+            if(nid.length < 5 || !front || !back) return alert("Please enter NID and upload both photos.");
             localStorage.setItem('kycStatus', 'pending');
             updateKYCUI();
         }
@@ -332,24 +333,31 @@
             if(isUserLoggedIn) {
                 document.getElementById('loggedInContent').style.display = 'block';
                 document.getElementById('loggedOutContent').style.display = 'none';
-                document.getElementById('emailDisplay').innerText = localStorage.getItem('userEmail') || "user@example.com";
+                const userEmail = localStorage.getItem('userEmail') || "user@example.com";
+                document.getElementById('emailDisplay').innerText = userEmail;
                 
-                if(!localStorage.getItem('mySmatID')) {
+                // Unique SMAT ID logic per Email
+                let userSpecificIDKey = 'smatID_' + userEmail; 
+                if(!localStorage.getItem(userSpecificIDKey)) {
                     let lastID = parseInt(localStorage.getItem('globalUserCount') || 100000);
                     let newID = lastID + 1;
-                    localStorage.setItem('mySmatID', 'SMAT' + newID);
+                    localStorage.setItem(userSpecificIDKey, 'SMAT' + newID);
                     localStorage.setItem('globalUserCount', newID);
                 }
-                document.getElementById('smatID').innerText = localStorage.getItem('mySmatID');
+                document.getElementById('smatID').innerText = localStorage.getItem(userSpecificIDKey);
                 updateKYCUI();
             } else {
                 document.getElementById('loggedInContent').style.display = 'none';
                 document.getElementById('loggedOutContent').style.display = 'block';
             }
             renderCoins('hot');
-            // ১ সেকেন্ড পর পর অটো রিফ্রেশ যাতে দাম ও ভলিউম সিঙ্ক থাকে
-            setInterval(() => renderCoins(document.querySelector('.tab.active').innerText.toLowerCase()), 2000);
+            
+            // Fixed Interval: Updates based on currentActiveTab
+            setInterval(() => {
+                renderCoins(currentActiveTab);
+            }, 2000);
         };
     </script>
 </body>
 </html>
+
