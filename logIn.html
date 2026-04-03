@@ -1,107 +1,267 @@
 <!DOCTYPE html>
-<html lang="bn">
+<html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>SMAT Network | identity Lab</title>
+    <title>SMAT Exchange | Secure Access</title>
     <style>
         :root {
-            --bg: #05070a; --card: rgba(24, 26, 32, 0.9);
-            --accent: #f3ba2f; --text: #eaecef; --dim: #848e9c;
-            --border: rgba(255, 255, 255, 0.1); --up: #0ecb81;
+            --primary: #f3ba2f;
+            --primary-hover: #dbc03d;
+            --bg: #0b0e11;
+            --card-bg: #1e2329;
+            --input-bg: #2b3139;
+            --text-main: #eaecef;
+            --text-muted: #848e9c;
+            --border: #474d57;
+            --shadow: 0 12px 40px rgba(0, 0, 0, 0.6);
         }
+
+        * { 
+            box-sizing: border-box; 
+            transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+            outline: none !important; /* সকল প্রকার বিশ্রী আউটলাইন বন্ধ */
+            -webkit-tap-highlight-color: transparent; /* মোবাইলে ট্যাপ করলে আসা নীল রং বন্ধ */
+        }
+
         body {
-            margin: 0; background: var(--bg); color: var(--text);
-            font-family: 'Segoe UI', sans-serif; display: flex; 
-            justify-content: center; align-items: center; height: 100vh;
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', Roboto, sans-serif;
+            background-color: var(--bg);
+            background-image: radial-gradient(circle at 50% 50%, #181a20 0%, #0b0e11 100%);
+            color: var(--text-main);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
         }
-        .auth-card {
-            width: 380px; background: var(--card); padding: 35px;
-            border-radius: 24px; border: 1px solid var(--border);
-            box-shadow: 0 20px 50px rgba(0,0,0,0.5); text-align: center;
+
+        .auth-container {
+            width: 92%;
+            max-width: 380px;
+            background: var(--card-bg);
+            padding: 45px 35px;
+            border-radius: 24px;
+            box-shadow: var(--shadow);
+            text-align: center;
+            border: 1px solid rgba(255, 255, 255, 0.04);
         }
-        .logo { font-size: 26px; font-weight: bold; margin-bottom: 25px; color: var(--accent); }
-        .input-box { text-align: left; margin-bottom: 15px; }
-        .input-box label { display: block; font-size: 11px; margin-bottom: 6px; color: var(--dim); }
+
+        h2 {
+            font-size: 26px;
+            font-weight: 700;
+            margin: 0 0 10px 0;
+            color: var(--text-main);
+            letter-spacing: -0.5px;
+        }
+
+        p.subtitle {
+            color: var(--text-muted);
+            font-size: 14px;
+            margin-bottom: 35px;
+        }
+
+        .input-group {
+            text-align: left;
+            margin-bottom: 22px;
+        }
+
+        label {
+            display: block;
+            font-size: 13px;
+            margin-bottom: 8px;
+            color: var(--text-muted);
+            font-weight: 500;
+        }
+
         input {
-            width: 100%; padding: 12px; background: rgba(0,0,0,0.3); border: 1px solid var(--border);
-            border-radius: 10px; color: white; outline: none; box-sizing: border-box;
+            width: 100%;
+            padding: 15px 18px;
+            background-color: var(--input-bg);
+            border: 1.5px solid transparent;
+            border-radius: 12px;
+            color: white;
+            font-size: 15px;
         }
-        input:focus { border-color: var(--accent); }
-        .btn {
-            width: 100%; padding: 14px; background: var(--accent); color: black;
-            border: none; border-radius: 10px; font-weight: bold; cursor: pointer; margin-top: 15px;
+
+        input:focus {
+            border-color: var(--primary);
+            background-color: #1e2329;
+            box-shadow: 0 0 10px rgba(243, 186, 47, 0.1);
         }
-        #status-msg { font-size: 12px; margin-top: 15px; color: var(--up); display: none; }
+
+        /* প্রিমিয়াম বাটন ডিজাইন */
+        button {
+            width: 100%;
+            padding: 16px;
+            background-color: var(--primary);
+            color: #000;
+            border: none;
+            border-radius: 12px;
+            font-size: 16px;
+            font-weight: 700;
+            cursor: pointer;
+            margin-top: 15px;
+            box-shadow: 0 4px 15px rgba(243, 186, 47, 0.2);
+        }
+
+        button:hover {
+            background-color: var(--primary-hover);
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(243, 186, 47, 0.3);
+        }
+
+        button:active {
+            transform: translateY(0);
+        }
+
+        .footer-links {
+            margin-top: 30px;
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        /* সুন্দর টেক্সট বাটন */
+        .toggle-link {
+            color: var(--primary);
+            text-decoration: none;
+            font-size: 14px;
+            cursor: pointer;
+            font-weight: 600;
+            display: inline-block;
+            align-self: center;
+        }
+
+        .toggle-link:hover {
+            color: #fff;
+            filter: drop-shadow(0 0 5px rgba(243, 186, 47, 0.5));
+        }
+
+        .forgot-pass {
+            color: var(--text-muted);
+            font-size: 13px;
+            cursor: pointer;
+            text-decoration: none;
+        }
+
+        .forgot-pass:hover {
+            color: var(--text-main);
+        }
+
+        .msg {
+            margin-top: 20px;
+            padding: 12px;
+            border-radius: 10px;
+            font-size: 13px;
+            display: none;
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+        }
+
+        @media (max-width: 480px) {
+            .auth-container { padding: 40px 25px; }
+            h2 { font-size: 24px; }
+        }
     </style>
 </head>
 <body>
 
-<div class="auth-card">
-    <div class="logo">SMAT<span>.LAB</span></div>
-    
-    <div class="input-box">
+<div class="auth-container">
+    <h2 id="title">Sign In</h2>
+    <p class="subtitle" id="subtitle">Log in to continue your trade</p>
+
+    <div class="input-group">
         <label>Email Address</label>
-        <input type="email" id="test-email" placeholder="test@example.com">
-    </div>
-    <div class="input-box">
-        <label>Security Password</label>
-        <input type="password" id="test-pass" placeholder="Min 8 char, Symbol, Number">
+        <input type="email" id="email" placeholder="email@example.com">
     </div>
 
-    <button class="btn" onclick="quickSignup()">Create & Login (Auto)</button>
-    <div id="status-msg">✅ Identity Created! Redirecting...</div>
+    <div class="input-group">
+        <label>Password</label>
+        <input type="password" id="password" placeholder="••••••••">
+    </div>
+
+    <button id="btn" onclick="handleAuth()">Login</button>
+
+    <div id="message" class="msg"></div>
+
+    <div class="footer-links">
+        <div class="toggle-link" id="toggleLink" onclick="toggleForm()">Create account</div>
+        <div class="forgot-pass" onclick="resetPass()">Forgot password?</div>
+    </div>
 </div>
 
-<script>
-    // ১. ইউনিক ইভিএম অ্যাড্রেস জেনারেটর
-    function createUniqueEVM() {
-        const hex = '0123456789abcdef';
-        let addr = '0x';
-        for (let i = 0; i < 40; i++) {
-            addr += hex[Math.floor(Math.random() * hex.length)];
+<script type="module">
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+  import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, sendEmailVerification, sendPasswordResetEmail } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+
+  const firebaseConfig = {
+    apiKey: "AIzaSyAMxtJedkehhxJRMPZLjhpKHqneHEWsGlE",
+    authDomain: "smat-exchange.firebaseapp.com",
+    projectId: "smat-exchange",
+    storageBucket: "smat-exchange.firebasestorage.app",
+    messagingSenderId: "836334569396",
+    appId: "1:836334569396:web:679effe640b3453412d4e1",
+    measurementId: "G-FCE3H3F18V"
+  };
+
+  const app = initializeApp(firebaseConfig);
+  const auth = getAuth(app);
+
+  let isLogin = true;
+
+  window.toggleForm = () => {
+    isLogin = !isLogin;
+    document.getElementById('title').innerText = isLogin ? "Sign In" : "Register";
+    document.getElementById('subtitle').innerText = isLogin ? "Log in to continue your trade" : "Get your free SMAT account";
+    document.getElementById('btn').innerText = isLogin ? "Login" : "Create Account";
+    document.getElementById('toggleLink').innerText = isLogin ? "Create account" : "Sign in instead";
+    document.getElementById('message').style.display = "none";
+  };
+
+  window.handleAuth = async () => {
+    const email = document.getElementById('email').value;
+    const pass = document.getElementById('password').value;
+    const msgBox = document.getElementById('message');
+    
+    if(!email || !pass) return alert("Please fill all fields");
+
+    msgBox.style.display = "block";
+    msgBox.innerText = "Loading...";
+
+    try {
+      if (isLogin) {
+        const user = await signInWithEmailAndPassword(auth, email, pass);
+        if (user.user.emailVerified) {
+          msgBox.style.color = "#00ff88";
+          msgBox.innerText = "Login successful!";
+        } else {
+          msgBox.style.color = "#f3ba2f";
+          msgBox.innerText = "Verify your email first!";
         }
-        return addr;
+      } else {
+        const user = await createUserWithEmailAndPassword(auth, email, pass);
+        await sendEmailVerification(user.user);
+        msgBox.style.color = "#00ff88";
+        msgBox.innerText = "Link sent to your email!";
+      }
+    } catch (e) {
+      msgBox.style.color = "#ff4d4d";
+      msgBox.innerText = e.message;
     }
+  };
 
-    // ২. ইউনিক ইউজার আইডি জেনারেটর
-    function createUID() {
-        return 'SMAT-' + Math.floor(100000 + Math.random() * 900000);
+  window.resetPass = async () => {
+    const email = document.getElementById('email').value;
+    if(!email) return alert("Enter email first.");
+    try {
+        await sendPasswordResetEmail(auth, email);
+        alert("Reset link sent!");
+    } catch (e) {
+        alert(e.message);
     }
-
-    function quickSignup() {
-        const email = document.getElementById('test-email').value;
-        const pass = document.getElementById('test-pass').value;
-
-        // পাসওয়ার্ড শর্ত চেক (Regex)
-        const passRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/;
-        
-        if(!email) { alert("দয়া করে ইমেইল দিন।"); return; }
-        if(!passRegex.test(pass)) {
-            alert("পাসওয়ার্ড শর্ত পূরণ করেনি! ৮টি অক্ষর, বড় হাত, সংখ্যা ও চিহ্ন দিন।");
-            return;
-        }
-
-        // ইউজারের জন্য নতুন এবং ইউনিক ডাটা তৈরি
-        const newUserData = {
-            email: email,
-            userId: createUID(),
-            depositAddr: createUniqueEVM(),
-            balanceUSDT: 100.00, // টেস্টিং এর জন্য ফ্রি ব্যালেন্স
-            balanceSMAT: 0.00
-        };
-
-        // LocalStorage এ ডাটা সেভ করা (এটি ব্রাউজারে ফিক্সড থাকবে)
-        localStorage.setItem('smat_user', JSON.stringify(newUserData));
-
-        // সাকসেস মেসেজ দেখানো
-        document.getElementById('status-msg').style.display = "block";
-
-        // সরাসরি টার্মিনালে নিয়ে যাওয়া
-        setTimeout(() => {
-            window.location.href = "terminal.html"; 
-        }, 1200);
-    }
+  };
 </script>
 
 </body>
