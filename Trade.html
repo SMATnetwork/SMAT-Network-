@@ -177,6 +177,9 @@
     function init() {
         if(!localStorage.getItem('usdtBalance')) localStorage.setItem('usdtBalance', '1000.0000');
         coins.forEach(c => { if(!localStorage.getItem(c.key)) localStorage.setItem(c.key, '0.0000'); });
+document.getElementById('chartLink').onclick = () => {
+    window.location.href = 'market_chat.html?coin=' + activeCoin.sym;
+};
         
         checkDailyReset();
         connectBinance(); 
