@@ -388,6 +388,50 @@
     }
 
     loadAssets();
+
+    // SMAT লাইভ প্রাইস আপডেট ফাংশন
+    function updateSmatLive() {
+        const marketData = JSON.parse(localStorage.getItem('marketStats'));
+        if (marketData) {
+            const smat = marketData.find(c => c.sym === 'SMAT');
+            if (smat) {
+                // টেবিলের প্রথম রো (SMAT) খুঁজে বের করা
+                const tbody = document.getElementById('crypto-table');
+                const firstRow = tbody.querySelector('tr');
+                
+                if (firstRow && firstRow.innerHTML.includes('SMAT')) {
+                    const priceTd = firstRow.cells[2];
+                    const changeTd = firstRow.cells[3];
+                    const volTd = firstRow.cells[5];
+
+                    // দাম আপডেট
+                    const oldPrice = parseFloat(priceTd.innerText.replace(/[$,]/g, '')) || 0;
+                    const newPrice = smat.price;
+
+                    if (newPrice !== oldPrice && oldPrice !== 0) {
+                        firstRow.classList.add(newPrice > oldPrice ? 'flash-up' : 'flash-down');
+                        setTimeout(() => firstRow.classList.remove('flash-up', 'flash-down'), 600);
+                    }
+
+                    priceTd.innerHTML = `<span style="font-family:monospace; font-weight:700; font-size:15px;">$${formatPrice(newPrice)}</span>`;
+                    
+                    // পরিবর্তন (%) আপডেট
+                    const change = ((newPrice - smat.startPrice) / smat.startPrice * 100).toFixed(2);
+                    changeTd.innerText = `${change >= 0 ? '+' : ''}${change}%`;
+                    changeTd.className = change >= 0 ? 'up' : 'down';
+
+                    // ভলিউম আপডেট
+                    volTd.innerText = `$${formatVol(smat.vol * newPrice)}`;
+                }
+            }
+        }
+    }
+
+    // প্রতি ১ সেকেন্ডে SMAT এর দাম চেক করবে
+    setInterval(updateSmatLive, 1000);
+
+
+
 </script>
 
 </body>
