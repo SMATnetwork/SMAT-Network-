@@ -17,7 +17,6 @@
             --shadow: 0 12px 40px rgba(0, 0, 0, 0.6);
         }
 
-        /* কমন স্টাইল */
         * { 
             box-sizing: border-box; 
             transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
@@ -38,36 +37,60 @@
             min-height: 100vh;
         }
 
-        /* কার্ড ডিজাইন */
-        .container-box {
+        .auth-container {
             width: 92%;
             max-width: 380px;
             background: var(--card-bg);
-            padding: 40px 30px;
+            padding: 45px 35px;
             border-radius: 24px;
             box-shadow: var(--shadow);
-            border: 1px solid rgba(255, 255, 255, 0.04);
             text-align: center;
+            border: 1px solid rgba(255, 255, 255, 0.04);
         }
 
-        h2 { font-size: 26px; margin-bottom: 10px; color: var(--text-main); }
-        .subtitle { color: var(--text-muted); font-size: 14px; margin-bottom: 30px; }
+        h2 {
+            font-size: 26px;
+            font-weight: 700;
+            margin: 0 0 10px 0;
+            color: var(--text-main);
+            letter-spacing: -0.5px;
+        }
 
-        /* ইনপুট স্টাইল */
-        .input-group { text-align: left; margin-bottom: 20px; }
-        label { display: block; font-size: 13px; margin-bottom: 8px; color: var(--text-muted); }
+        .subtitle {
+            color: var(--text-muted);
+            font-size: 14px;
+            margin-bottom: 35px;
+        }
+
+        .input-group {
+            text-align: left;
+            margin-bottom: 22px;
+        }
+
+        label {
+            display: block;
+            font-size: 13px;
+            margin-bottom: 8px;
+            color: var(--text-muted);
+            font-weight: 500;
+        }
+
         input {
             width: 100%;
-            padding: 15px;
+            padding: 15px 18px;
             background-color: var(--input-bg);
             border: 1.5px solid transparent;
             border-radius: 12px;
             color: white;
             font-size: 15px;
         }
-        input:focus { border-color: var(--primary); background-color: #1e2329; }
 
-        /* বাটন ডিজাইন */
+        input:focus {
+            border-color: var(--primary);
+            background-color: #1e2329;
+            box-shadow: 0 0 10px rgba(243, 186, 47, 0.1);
+        }
+
         button {
             width: 100%;
             padding: 16px;
@@ -78,76 +101,80 @@
             font-size: 16px;
             font-weight: 700;
             cursor: pointer;
-            margin-top: 10px;
+            margin-top: 15px;
             box-shadow: 0 4px 15px rgba(243, 186, 47, 0.2);
         }
-        button:hover { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(243, 186, 47, 0.3); }
 
-        .btn-secondary { background: #474d57; color: white; margin-top: 15px; }
-
-        /* ড্যাশবোর্ড বিশেষ স্টাইল */
-        #dashBox { display: none; text-align: left; }
-        .balance-card {
-            background: linear-gradient(135deg, #2b3139 0%, #1e2329 100%);
-            padding: 20px;
-            border-radius: 16px;
-            margin: 20px 0;
-            border: 1px solid var(--border);
+        button:hover {
+            background-color: var(--primary-hover);
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(243, 186, 47, 0.3);
         }
-        .balance-amount { font-size: 30px; font-weight: 700; color: var(--primary); margin: 5px 0; }
 
-        /* ফুটার লিঙ্ক */
-        .footer-links { margin-top: 25px; display: flex; flex-direction: column; gap: 12px; }
-        .toggle-link { color: var(--primary); cursor: pointer; font-size: 14px; font-weight: 600; }
-        .logout-link { color: #ff4d4d; cursor: pointer; font-size: 13px; margin-top: 20px; display: block; text-align: center; }
-        .msg { margin-top: 15px; font-size: 13px; display: none; }
+        .footer-links {
+            margin-top: 30px;
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        .toggle-link {
+            color: var(--primary);
+            font-size: 14px;
+            cursor: pointer;
+            font-weight: 600;
+            text-decoration: none;
+        }
+
+        .toggle-link:hover { color: #fff; }
+
+        .forgot-pass {
+            color: var(--text-muted);
+            font-size: 13px;
+            cursor: pointer;
+        }
+
+        .msg {
+            margin-top: 20px;
+            padding: 12px;
+            border-radius: 10px;
+            font-size: 13px;
+            display: none;
+            background: rgba(255, 255, 255, 0.03);
+        }
     </style>
 </head>
 <body>
 
-    <div class="container-box" id="authBox">
-        <h2 id="title">Sign In</h2>
-        <p class="subtitle" id="subtitle">Log in to continue your trade</p>
-        
-        <div class="input-group">
-            <label>Email Address</label>
-            <input type="email" id="email" placeholder="email@example.com">
-        </div>
-        <div class="input-group">
-            <label>Password</label>
-            <input type="password" id="password" placeholder="••••••••">
-        </div>
+<div class="auth-container">
+    <h2 id="title">Sign In</h2>
+    <p class="subtitle" id="subtitle">Log in to your SMAT account</p>
 
-        <button id="btn" onclick="handleAuth()">Login</button>
-        <div id="message" class="msg"></div>
-
-        <div class="footer-links">
-            <div class="toggle-link" id="toggleLink" onclick="toggleForm()">Create account</div>
-            <div style="color:var(--text-muted); font-size:13px; cursor:pointer" onclick="resetPass()">Forgot password?</div>
-        </div>
+    <div class="input-group">
+        <label>Email Address</label>
+        <input type="email" id="email" placeholder="email@example.com">
     </div>
 
-    <div class="container-box" id="dashBox">
-        <h2 style="font-size: 22px;">Assets Overview</h2>
-        <p id="userEmailDisplay" style="color: var(--text-muted); font-size: 13px; margin-bottom: 20px;"></p>
-        
-        <div class="balance-card">
-            <p style="font-size: 13px; margin: 0; color: var(--text-muted);">Total Balance (USDT)</p>
-            <div class="balance-amount">0.00</div>
-            <p style="font-size: 12px; color: #00ff88; margin: 0;">≈ 0.00 BDT</p>
-        </div>
-
-        <button onclick="alert('Deposit System logic is being added...')">Deposit</button>
-        <button class="btn-secondary" onclick="alert('Withdrawals are currently locked.')">Withdraw</button>
-
-        <span class="logout-link" onclick="location.reload()">Secure Logout</span>
+    <div class="input-group">
+        <label>Password</label>
+        <input type="password" id="password" placeholder="••••••••">
     </div>
+
+    <button id="btn" onclick="handleAuth()">Login</button>
+
+    <div id="message" class="msg"></div>
+
+    <div class="footer-links">
+        <div class="toggle-link" id="toggleLink" onclick="toggleForm()">Create account</div>
+        <div class="forgot-pass" onclick="resetPass()">Forgot password?</div>
+    </div>
+</div>
 
 <script type="module">
   import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
   import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, sendEmailVerification, sendPasswordResetEmail } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
 
-  // আপনার আসল ফায়ারবেস কনফিগ
+  // Firebase Configuration
   const firebaseConfig = {
     apiKey: "AIzaSyAMxtJedkehhxJRMPZLjhpKHqneHEWsGlE",
     authDomain: "smat-exchange.firebaseapp.com",
@@ -163,16 +190,17 @@
 
   let isLogin = true;
 
-  // ফর্ম টগল ফাংশন
+  // Toggle between Login and Register
   window.toggleForm = () => {
     isLogin = !isLogin;
     document.getElementById('title').innerText = isLogin ? "Sign In" : "Register";
+    document.getElementById('subtitle').innerText = isLogin ? "Log in to your SMAT account" : "Join the SMAT ecosystem today";
     document.getElementById('btn').innerText = isLogin ? "Login" : "Create Account";
-    document.getElementById('toggleLink').innerText = isLogin ? "Create account" : "Sign in instead";
+    document.getElementById('toggleLink').innerText = isLogin ? "Create account" : "Already have an account? Sign In";
     document.getElementById('message').style.display = "none";
   };
 
-  // মেইন অথেনটিকেশন ফাংশন
+  // Main Authentication Logic
   window.handleAuth = async () => {
     const email = document.getElementById('email').value;
     const pass = document.getElementById('password').value;
@@ -186,23 +214,28 @@
 
     try {
       if (isLogin) {
-        // লগইন লজিক
+        // Login Logic
         const userCredential = await signInWithEmailAndPassword(auth, email, pass);
+        
         if (userCredential.user.emailVerified) {
-          // সফল হলে ড্যাশবোর্ড দেখাও
-          document.getElementById('authBox').style.display = 'none';
-          document.getElementById('dashBox').style.display = 'block';
-          document.getElementById('userEmailDisplay').innerText = userCredential.user.email;
+          msgBox.style.color = "#00ff88";
+          msgBox.innerText = "Login successful! Redirecting...";
+          
+          // Redirecting to trade.html
+          setTimeout(() => {
+              window.location.href = "trade.html"; 
+          }, 1000);
+          
         } else {
           msgBox.style.color = "#f3ba2f";
           msgBox.innerText = "Please verify your email first!";
         }
       } else {
-        // রেজিস্ট্রেশন লজিক
+        // Registration Logic
         const user = await createUserWithEmailAndPassword(auth, email, pass);
         await sendEmailVerification(user.user);
         msgBox.style.color = "#00ff88";
-        msgBox.innerText = "Verification link sent to your email!";
+        msgBox.innerText = "Verification link sent! Check your Gmail.";
       }
     } catch (e) {
       msgBox.style.color = "#ff4d4d";
@@ -210,15 +243,16 @@
     }
   };
 
-  // পাসওয়ার্ড রিসেট
+  // Password Reset
   window.resetPass = async () => {
     const email = document.getElementById('email').value;
     if(!email) return alert("Enter email first.");
     try {
         await sendPasswordResetEmail(auth, email);
-        alert("Reset link sent!");
+        alert("Password reset link sent to your email!");
     } catch (e) { alert(e.message); }
   };
 </script>
+
 </body>
 </html>
