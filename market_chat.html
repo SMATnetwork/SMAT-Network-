@@ -1,0 +1,253 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Trading Pro - Live Market</title>
+    <script src="https://cdn.jsdelivr.net/npm/apexcharts"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        :root {
+            --bg: #0b0e11;
+            --card: #181a20;
+            --up: #00c087;
+            --down: #cf304a;
+            --text: #eaecef;
+            --text-dim: #848e9c;
+        }
+
+        body {
+            margin: 0; background: var(--bg); color: var(--text);
+            font-family: 'Segoe UI', Tahoma, sans-serif;
+            display: flex; justify-content: center;
+        }
+
+        .app {
+            width: 100%; max-width: 480px; min-height: 100vh;
+            background: var(--bg); display: flex; flex-direction: column;
+        }
+
+        /* Header */
+        .header { padding: 15px; border-bottom: 1px solid #2b2f36; }
+        .pair-title { font-size: 20px; font-weight: bold; margin-bottom: 5px; }
+        .price-row { display: flex; align-items: baseline; gap: 10px; }
+        .main-price { font-size: 28px; font-weight: 600; }
+        .stats-mini { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; font-size: 11px; color: var(--text-dim); margin-top: 10px; }
+
+        /* Chart Area */
+        #lineChart { width: 100%; height: 250px; margin: 10px 0; }
+
+        /* Order Book Section */
+        .order-book-container { padding: 15px; background: var(--card); border-radius: 20px 20px 0 0; flex-grow: 1; }
+        .ob-header { display: flex; justify-content: space-between; font-size: 12px; color: var(--text-dim); margin-bottom: 10px; }
+        .ob-row { display: flex; justify-content: space-between; font-size: 13px; padding: 3px 0; position: relative; }
+        .ob-row span:first-child { flex: 1; }
+        .ob-row span:last-child { flex: 1; text-align: right; }
+        
+        .bid-price { color: var(--up); }
+        .ask-price { color: var(--down); }
+
+        /* Progress Bar (Buy vs Sell) */
+        .market-depth-bar { height: 4px; display: flex; margin: 15px 0; border-radius: 2px; overflow: hidden; }
+        .buy-side { background: var(--up); width: 60%; transition: 0.5s; }
+        .sell-side { background: var(--down); width: 40%; transition: 0.5s; }
+
+        /* Footer Buttons */
+        .footer-actions {
+            display: grid; grid-template-columns: 1fr 1fr; gap: 12px;
+            padding: 15px; background: var(--card); position: sticky; bottom: 0;
+        }
+        .btn { padding: 14px; border: none; border-radius: 10px; font-weight: bold; font-size: 16px; cursor: pointer; }
+        .btn-buy { background: var(--up); color: white; }
+        .btn-sell { background: var(--down); color: white; }
+
+        .up { color: var(--up); }
+        .down { color: var(--down); }
+    </style>
+</head>
+<body>
+
+<div class="app">
+    <div class="header">
+        <div class="pair-title" id="pairLabel">BNB/USDT</div>
+        <div class="price-row">
+            <div class="main-price" id="topPrice">0.00</div>
+            <div id="topChange" class="up">0.00%</div>
+        </div>
+        <div class="stats-mini">
+            <div>24h High <span id="h24" style="color:white">0.00</span></div>
+            <div>24h Vol <span id="v24" style="color:white">0.00</span></div>
+        </div>
+    </div>
+
+    <div id="lineChart"></div>
+
+    <div class="order-book-container">
+        <div style="font-weight: bold; margin-bottom: 15px;">Order Book</div>
+        <div class="ob-header">
+            <span>Price(USDT)</span>
+            <span>Amount</span>
+        </div>
+        
+        <div id="askList"></div>
+        
+        <div style="text-align: center; margin: 10px 0; font-size: 18px; font-weight: bold;" id="midPrice">0.00</div>
+        
+        <div id="bidList"></div>
+
+        <div class="market-depth-bar">
+            <div class="buy-side" id="buyBar"></div>
+            <div class="sell-side" id="sellBar"></div>
+        </div>
+    </div>
+
+    <div class="footer-actions">
+    <button class="btn btn-buy" onclick="window.location.href='Trade.html?side=buy'">Buy</button>
+    
+    <button class="btn btn-sell" onclick="window.location.href='Trade.html?side=sell'">Sell</button>
+    </div>
+    
+</div>
+
+<script>
+    let lineChart;
+    let priceData = [];
+    const urlParams = new URLSearchParams(window.location.search);
+    const sym = urlParams.get('coin') || 'BNB';
+
+    function init() {
+        // পেয়ার লেবেল সেট করা
+        const pairLabelEl = document.getElementById('pairLabel');
+        if(pairLabelEl) pairLabelEl.innerText = sym + "/USDT";
+        
+        setupChart();
+        updateTick();
+        
+        // প্রতি ২ সেকেন্ড পর পর ডাটা রিফ্রেশ হবে
+        setInterval(updateTick, 1000);
+    }
+
+    function setupChart() {
+        const options = {
+            series: [{ name: 'Price', data: priceData }],
+            chart: { 
+                type: 'area', 
+                height: 250, 
+                toolbar: { show: false }, 
+                animations: { enabled: true }, 
+                sparkline: { enabled: false } 
+            },
+            dataLabels: { enabled: false },
+            stroke: { curve: 'smooth', width: 2, colors: ['#f0b90b'] },
+            fill: { 
+                type: 'gradient', 
+                gradient: { shadeIntensity: 1, opacityFrom: 0.4, opacityTo: 0, stops: [0, 90, 100] } 
+            },
+            xaxis: { type: 'datetime', labels: { show: false }, axisBorder: { show: false } },
+            yaxis: { opposite: true, labels: { style: { colors: '#555' } } },
+            grid: { borderColor: '#1e2226', strokeDashArray: 3 }
+        };
+        lineChart = new ApexCharts(document.querySelector("#lineChart"), options);
+        lineChart.render();
+    }
+
+    function updateTick() {
+        // ১. লোকাল মার্কেট ডেটা রিড করা (মার্কেট পেজের সাথে সিঙ্ক)
+        const stats = JSON.parse(localStorage.getItem('marketStats') || '[]');
+        const coin = stats.find(c => c.sym === sym);
+        if(!coin) return;
+
+        const p = parseFloat(coin.price);
+        const change = ((p - coin.startPrice) / coin.startPrice * 100).toFixed(2);
+
+        // ২. UI এলিমেন্ট আপডেট
+        if(document.getElementById('topPrice')) document.getElementById('topPrice').innerText = p.toFixed(4);
+        if(document.getElementById('midPrice')) document.getElementById('midPrice').innerText = p.toFixed(4);
+        
+        const changeEl = document.getElementById('topChange');
+        if(changeEl) {
+            changeEl.innerText = (change >= 0 ? "+" : "") + change + "%";
+            changeEl.className = change >= 0 ? 'up' : 'down';
+        }
+
+        if(document.getElementById('h24')) document.getElementById('h24').innerText = (p * 1.02).toFixed(4);
+        
+        // --- Vol (USDT) এ দেখানোর জন্য আপডেট ---
+        const volInUsdt = (coin.vol * p); // কয়েনের পরিমাণকে বর্তমান দাম দিয়ে গুণ করা হলো
+        if(document.getElementById('v24')) {
+            document.getElementById('v24').innerText = "$" + (volInUsdt >= 1000 ? (volInUsdt / 1000).toFixed(2) + "K" : volInUsdt.toFixed(2));
+        }
+
+        // ৩. চার্ট আপডেট
+        const now = new Date().getTime();
+        priceData.push({ x: now, y: p });
+        if(priceData.length > 20) priceData.shift();
+        lineChart.updateSeries([{ data: priceData }]);
+
+        // ৪. অর্ডার বুক আপডেট (একই প্রাইস এগ্রিগেশন লজিকসহ)
+        renderOrderBookFromMarket();
+    }
+
+    function renderOrderBookFromMarket() {
+        const allBooks = JSON.parse(localStorage.getItem('orderBooks') || '{}');
+        const book = allBooks[sym] || { bids: [], asks: [] };
+
+        // --- এগ্রিগেশন লজিক: একই প্রাইসের অর্ডারগুলোকে যোগ করা ---
+        const aggregate = (orders) => {
+            const grouped = {};
+            orders.forEach(o => {
+                const price = parseFloat(o.p).toFixed(4);
+                const amount = parseFloat(o.a);
+                if (grouped[price]) grouped[price] += amount;
+                else grouped[price] = amount;
+            });
+            return Object.keys(grouped).map(p => ({ p, a: grouped[p] }));
+        };
+
+        const askHtml = [];
+        const bidHtml = [];
+
+        // ৫টি সেল অর্ডার (Asks) - লাল রং
+        let aggregatedAsks = aggregate(book.asks).sort((a, b) => parseFloat(a.p) - parseFloat(b.p)).slice(0, 5).reverse();
+        aggregatedAsks.forEach(order => {
+            askHtml.push(`<div class="ob-row"><span class="ask-price">${order.p}</span><span>${order.a.toFixed(2)}</span></div>`);
+        });
+
+        // ৫টি বাই অর্ডার (Bids) - সবুজ রং
+        let aggregatedBids = aggregate(book.bids).sort((a, b) => parseFloat(b.p) - parseFloat(a.p)).slice(0, 5);
+        aggregatedBids.forEach(order => {
+            bidHtml.push(`<div class="ob-row"><span class="bid-price">${order.p}</span><span>${order.a.toFixed(2)}</span></div>`);
+        });
+
+        const askListEl = document.getElementById('askList');
+        const bidListEl = document.getElementById('bidList');
+        if(askListEl) askListEl.innerHTML = askHtml.join('');
+        if(bidListEl) bidListEl.innerHTML = bidHtml.join('');
+
+        // Strength Bar আপডেট (ভলিউম ভিত্তিক)
+        const totalAsks = aggregatedAsks.reduce((sum, o) => sum + o.a, 0);
+        const totalBids = aggregatedBids.reduce((sum, o) => sum + o.a, 0);
+        const total = totalAsks + totalBids;
+        
+        const buyBar = document.getElementById('buyBar');
+        const sellBar = document.getElementById('sellBar');
+        if(buyBar && sellBar) {
+            const buyPower = total > 0 ? Math.floor((totalBids / total) * 100) : 50;
+            buyBar.style.width = buyPower + "%";
+            sellBar.style.width = (100 - buyPower) + "%";
+        }
+    }
+
+    // বাটন ক্লিক ফাংশন (মার্কেটে ফেরত যাওয়ার জন্য)
+    function goToTrade(side) {
+        window.location.href = `Trade.html?side=${side}&coin=${sym}`;
+    }
+
+    window.onload = init;
+</script>
+
+
+
+
+</body>
+</html>
