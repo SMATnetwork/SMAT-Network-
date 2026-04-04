@@ -4,50 +4,58 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>SMAT CEX | Professional Trade Engine</title>
+    <script src="coins.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
         :root {
             --bg: #0b0e11; --card: #1e2329; --primary: #f0b90b;
-            --up: #0ecb81; --down: #f6465d; --text-sec: #848e9c;
+            --up: #0ecb81; --down: #f6465d; --text-sec: #848e9c; --border: #2b3139;
         }
         * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Inter', sans-serif; -webkit-tap-highlight-color: transparent; }
-        body { background: var(--bg); color: white; overflow-x: hidden; padding-bottom: 80px; }
+        body { background: var(--bg); color: white; overflow-x: hidden; padding-bottom: 85px; }
 
         /* Header */
-        .header { display: flex; justify-content: space-between; align-items: center; padding: 12px 15px; border-bottom: 1px solid #2b3139; background: var(--bg); position: sticky; top: 0; z-index: 1000; }
+        .header { display: flex; justify-content: space-between; align-items: center; padding: 12px 15px; border-bottom: 1px solid var(--border); background: var(--bg); position: sticky; top: 0; z-index: 1000; }
         .pair-selector { display: flex; align-items: center; gap: 8px; cursor: pointer; font-size: 18px; font-weight: bold; }
         
         /* Popup Pair List */
-        .overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); z-index: 2000; display: none; }
-        .popup-card { background: var(--bg); width: 92%; max-width: 400px; margin: 50px auto; border-radius: 12px; border: 1px solid #333; overflow-y: auto; max-height: 80vh; }
-        .pair-row { padding: 15px; border-bottom: 1px solid #2b3139; cursor: pointer; display: flex; justify-content: space-between; }
+        .overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.85); z-index: 2000; display: none; backdrop-filter: blur(4px); }
+        .popup-card { background: var(--card); width: 92%; max-width: 400px; margin: 60px auto; border-radius: 16px; border: 1px solid var(--border); overflow: hidden; }
+        .popup-header { padding: 15px; background: #181a20; border-bottom: 1px solid var(--border); font-weight: bold; }
+        .pair-row { padding: 16px 20px; border-bottom: 1px solid var(--border); cursor: pointer; display: flex; justify-content: space-between; transition: 0.2s; }
+        .pair-row:active { background: #2b3139; }
 
         /* Trading Layout */
         .trade-grid { display: grid; grid-template-columns: 1.1fr 0.9fr; gap: 10px; padding: 10px; }
-        .side-tabs { display: flex; background: #2b3139; border-radius: 4px; margin-bottom: 12px; height: 36px; overflow: hidden; }
-        .tab-btn { flex: 1; border: none; background: none; color: var(--text-sec); font-weight: bold; cursor: pointer; }
+        .side-tabs { display: flex; background: #2b3139; border-radius: 6px; margin-bottom: 12px; height: 38px; overflow: hidden; padding: 2px; }
+        .tab-btn { flex: 1; border: none; background: none; color: var(--text-sec); font-weight: bold; cursor: pointer; border-radius: 4px; transition: 0.3s; }
         .tab-btn.active.buy { background: var(--up); color: white; }
         .tab-btn.active.sell { background: var(--down); color: white; }
 
-        .input-box { background: var(--card); border: 1px solid #333; border-radius: 4px; margin-bottom: 8px; padding: 10px; display: flex; align-items: center; }
-        .input-box input { background: none; border: none; color: white; width: 100%; outline: none; font-size: 16px; }
+        .input-box { background: var(--card); border: 1px solid var(--border); border-radius: 8px; margin-bottom: 8px; padding: 12px; display: flex; align-items: center; }
+        .input-box input { background: none; border: none; color: white; width: 100%; outline: none; font-size: 16px; font-weight: 600; }
+        .input-box span { font-size: 12px; color: var(--text-sec); font-weight: bold; }
         
-        .pct-row { display: flex; gap: 5px; margin: 10px 0; }
-        .pct-btn { flex: 1; background: #2b3139; border: none; color: white; padding: 6px; border-radius: 4px; font-size: 11px; }
+        .pct-row { display: flex; gap: 6px; margin: 12px 0; }
+        .pct-btn { flex: 1; background: #2b3139; border: none; color: var(--text-sec); padding: 7px; border-radius: 4px; font-size: 11px; font-weight: 600; }
+        .pct-btn:active { background: var(--primary); color: #000; }
 
-        .btn-action { width: 100%; padding: 14px; border: none; border-radius: 6px; font-weight: bold; margin-top: 10px; cursor: pointer; }
+        .btn-action { width: 100%; padding: 15px; border: none; border-radius: 8px; font-weight: 800; margin-top: 10px; cursor: pointer; font-size: 15px; transition: 0.2s; }
+        .btn-action:active { transform: scale(0.98); }
         .buy-bg { background: var(--up); color: white; }
         .sell-bg { background: var(--down); color: white; }
 
         /* Order Book */
-        .ob-list { height: 180px; overflow: hidden; font-size: 11px; }
-        .ob-row { display: flex; justify-content: space-between; padding: 4px 0; }
-        .mid-price { text-align: center; padding: 10px 0; border-top: 1px solid #2b3139; border-bottom: 1px solid #2b3139; margin: 5px 0; }
+        .ob-list { height: 190px; overflow: hidden; font-size: 12px; font-family: 'Courier New', monospace; }
+        .ob-row { display: flex; justify-content: space-between; padding: 4px 0; position: relative; }
+        .ob-row .depth { position: absolute; right: 0; top: 0; height: 100%; opacity: 0.15; z-index: 1; }
+        .mid-price { text-align: center; padding: 12px 0; border-top: 1px solid var(--border); border-bottom: 1px solid var(--border); margin: 8px 0; }
+        #livePrice { font-weight: 800; font-size: 20px; transition: 0.3s; }
 
         /* Footer */
-        .footer { position: fixed; bottom: 0; width: 100%; height: 70px; background: #181a20; display: flex; justify-content: space-around; align-items: center; border-top: 1px solid #2b3139; z-index: 3000; }
+        .footer { position: fixed; bottom: 0; width: 100%; height: 75px; background: #181a20; display: flex; justify-content: space-around; align-items: center; border-top: 1px solid var(--border); z-index: 3000; }
         .f-nav { text-decoration: none; color: var(--text-sec); text-align: center; font-size: 10px; flex: 1; }
-        .f-nav i { display: block; font-size: 20px; margin-bottom: 4px; }
+        .f-nav i { display: block; font-size: 22px; margin-bottom: 5px; }
         .f-nav.active { color: var(--primary); }
     </style>
 </head>
@@ -55,16 +63,19 @@
 
     <header class="header">
         <div class="pair-selector" onclick="togglePopup(true)">
-            <span id="currentPairDisplay">---/USDT</span> <i class="fas fa-caret-down"></i>
+            <span id="currentPairDisplay">---/USDT</span> <i class="fas fa-caret-down" style="font-size: 12px; color: var(--primary);"></i>
         </div>
         <div class="header-tools">
-            <i class="fas fa-chart-line" id="chartBtn" style="color:var(--primary); cursor:pointer"></i>
-            <i class="fas fa-bell"></i>
+            <i class="fas fa-chart-bar" style="margin-right: 15px; color: var(--text-sec);"></i>
+            <i class="fas fa-ellipsis-v" style="color: var(--text-sec);"></i>
         </div>
     </header>
 
     <div id="pairPopup" class="overlay" onclick="togglePopup(false)">
-        <div class="popup-card" onclick="event.stopPropagation()" id="pairList"></div>
+        <div class="popup-card" onclick="event.stopPropagation()">
+            <div class="popup-header">Select Market</div>
+            <div id="pairList"></div>
+        </div>
     </div>
 
     <main class="trade-grid">
@@ -73,29 +84,49 @@
                 <button id="btnBuy" class="tab-btn active buy" onclick="setSide('buy')">Buy</button>
                 <button id="btnSell" class="tab-btn sell" onclick="setSide('sell')">Sell</button>
             </div>
+            
             <div class="input-box">
-                <input type="number" id="priceInp" placeholder="Price">
+                <input type="number" id="priceInp" step="0.0001" oninput="updateTotal()">
                 <span>USDT</span>
             </div>
+            
             <div class="input-box">
                 <input type="number" id="amountInp" placeholder="Amount" oninput="updateTotal()">
                 <span id="assetUnit">---</span>
             </div>
+
             <div class="pct-row">
                 <button class="pct-btn" onclick="applyPct(25)">25%</button>
                 <button class="pct-btn" onclick="applyPct(50)">50%</button>
+                <button class="pct-btn" onclick="applyPct(75)">75%</button>
                 <button class="pct-btn" onclick="applyPct(100)">100%</button>
             </div>
-            <p style="font-size: 11px;">Avbl: <span id="balanceDisplay">0.00</span> <span id="balanceUnit">USDT</span></p>
-            <p style="font-size: 13px; margin: 10px 0;">Total: <span id="totalDisplay" style="color:var(--primary)">0.00</span> USDT</p>
+
+            <div style="display: flex; justify-content: space-between; font-size: 11px; color: var(--text-sec); margin-bottom: 15px;">
+                <span>Available</span>
+                <span><b id="balanceDisplay" style="color: white;">0.00</b> <span id="balanceUnit">USDT</span></span>
+            </div>
+
+            <p style="font-size: 12px; margin-bottom: 5px; color: var(--text-sec);">Max Buy/Sell Total</p>
+            <div style="font-size: 16px; font-weight: bold; margin-bottom: 15px;">
+                <span id="totalDisplay" style="color:var(--primary)">0.00</span> <small>USDT</small>
+            </div>
+
             <button id="actionBtn" class="btn-action buy-bg" onclick="executeOrder()">Buy ---</button>
         </section>
 
         <section>
-            <div id="asks" class="ob-list"></div>
-            <div class="mid-price">
-                <h2 id="livePrice">0.0000</h2>
+            <div style="display: flex; justify-content: space-between; font-size: 10px; color: var(--text-sec); margin-bottom: 8px;">
+                <span>Price</span>
+                <span>Amount</span>
             </div>
+            <div id="asks" class="ob-list"></div>
+            
+            <div class="mid-price">
+                <div id="livePrice">0.0000</div>
+                <div id="priceConverted" style="font-size: 10px; color: var(--text-sec);">$0.00</div>
+            </div>
+            
             <div id="bids" class="ob-list"></div>
         </section>
     </main>
@@ -103,23 +134,19 @@
     <footer class="footer">
         <a href="Home.html" class="f-nav"><i class="fas fa-home"></i>Home</a>
         <a href="Trade.html" class="f-nav active"><i class="fas fa-chart-line"></i>Trade</a>
+        <a href="Explorer.html" class="f-nav"><i class="fas fa-compass"></i>Explore</a>
         <a href="Wallet.html" class="f-nav"><i class="fas fa-wallet"></i>Wallet</a>
     </footer>
 
     <script>
-        // ১. ডাটা লোডিং (এটি Home.html এর মতই একই ডাটা ব্যবহার করবে)
-        const DEFAULT_COINS = [
-            { sym: 'SMAT', name: 'SMAT Coin', price: 1.2694, startPrice: 1.20, color: '#f3ba2f' },
-            { sym: 'BNB', name: 'Binance', price: 588.20, startPrice: 595.00, color: '#f3ba2f' },
-            { sym: 'BTC', name: 'Bitcoin', price: 68450.00, startPrice: 67000.00, color: '#f7931a' }
-        ];
-
-        let coins = JSON.parse(localStorage.getItem('marketStats')) || DEFAULT_COINS;
+        // coins.js থেকে ডাটা আনা (GLOBAL_COINS গ্লোবাল ভেরিয়েবল)
+        let coins = JSON.parse(localStorage.getItem('marketStats')) || GLOBAL_COINS;
         let activeCoin = coins[0];
         let tradeSide = 'buy';
+        let ws = null;
 
         function init() {
-            // URL থেকে কয়েন চেক করা (যেমন Trade.html?coin=ETH)
+            // URL চেক (e.g. Trade.html?coin=BTC)
             const params = new URLSearchParams(window.location.search);
             const coinSym = params.get('coin');
             if(coinSym) {
@@ -128,24 +155,24 @@
             }
             
             refreshUI();
-            connectWebsocket();
-            startPriceEngine();
+            connectMarketStream();
+            startOrderBookEngine();
         }
 
         function refreshUI() {
             document.getElementById('currentPairDisplay').innerText = activeCoin.sym + "/USDT";
             document.getElementById('assetUnit').innerText = activeCoin.sym;
             document.getElementById('actionBtn').innerText = (tradeSide === 'buy' ? 'Buy ' : 'Sell ') + activeCoin.sym;
-            document.getElementById('priceInp').value = activeCoin.price.toFixed(4);
-            document.getElementById('chartBtn').onclick = () => window.location.href = 'market_chat.html?coin=' + activeCoin.sym;
+            document.getElementById('priceInp').value = activeCoin.price.toFixed(activeCoin.price < 1 ? 4 : 2);
             updateBalance();
-            updateOrderBook();
+            updateTotal();
         }
 
         function updateBalance() {
-            const key = tradeSide === 'buy' ? 'usdtBalance' : (activeCoin.sym.toLowerCase() + 'Balance');
+            // Buy এর সময় USDT ব্যালেন্স, Sell এর সময় ওই কয়েনের ব্যালেন্স
+            const key = tradeSide === 'buy' ? 'usdtBalance' : activeCoin.key;
             const bal = localStorage.getItem(key) || "0.00";
-            document.getElementById('balanceDisplay').innerText = parseFloat(bal).toFixed(4);
+            document.getElementById('balanceDisplay').innerText = parseFloat(bal).toLocaleString();
             document.getElementById('balanceUnit').innerText = tradeSide === 'buy' ? 'USDT' : activeCoin.sym;
         }
 
@@ -162,8 +189,10 @@
             if(show) {
                 document.getElementById('pairList').innerHTML = coins.map(c => `
                     <div class="pair-row" onclick="selectCoin('${c.sym}')">
-                        <b>${c.sym}/USDT</b>
-                        <span>$${c.price.toFixed(2)}</span>
+                        <div>
+                            <b style="font-size:15px">${c.sym}</b><small style="color:var(--text-sec)">/USDT</small>
+                        </div>
+                        <span style="color:var(--up); font-weight:bold">$${c.price.toLocaleString()}</span>
                     </div>
                 `).join('');
             }
@@ -173,7 +202,9 @@
         function selectCoin(sym) {
             activeCoin = coins.find(c => c.sym === sym);
             togglePopup(false);
+            if(ws) ws.close(); // আগের কানেকশন বন্ধ
             refreshUI();
+            connectMarketStream();
         }
 
         function updateTotal() {
@@ -182,51 +213,96 @@
             document.getElementById('totalDisplay').innerText = (p * a).toFixed(2);
         }
 
-        // লিকুইডিটি ও প্রাইস ইঞ্জিন
-        function startPriceEngine() {
-            setInterval(() => {
-                if(activeCoin.sym === 'SMAT') {
-                    activeCoin.price += (Math.random() * 0.002 - 0.001);
-                    document.getElementById('livePrice').innerText = activeCoin.price.toFixed(4);
-                }
-                updateOrderBook();
-            }, 3000);
+        function applyPct(pct) {
+            const key = tradeSide === 'buy' ? 'usdtBalance' : activeCoin.key;
+            const bal = parseFloat(localStorage.getItem(key)) || 0;
+            const price = parseFloat(document.getElementById('priceInp').value) || activeCoin.price;
+            
+            if(tradeSide === 'buy') {
+                const totalSpend = bal * (pct / 100);
+                document.getElementById('amountInp').value = (totalSpend / price).toFixed(4);
+            } else {
+                document.getElementById('amountInp').value = (bal * (pct / 100)).toFixed(4);
+            }
+            updateTotal();
         }
 
-        function updateOrderBook() {
-            const asks = document.getElementById('asks');
-            const bids = document.getElementById('bids');
-            
-            let askHTML = '', bidHTML = '';
-            for(let i=0; i<7; i++) {
-                let pAsk = activeCoin.price + (Math.random() * 0.05);
-                let pBid = activeCoin.price - (Math.random() * 0.05);
-                askHTML += `<div class="ob-row"><span style="color:var(--down)">${pAsk.toFixed(4)}</span><span>${(Math.random()*10).toFixed(2)}</span></div>`;
-                bidHTML += `<div class="ob-row"><span style="color:var(--up)">${pBid.toFixed(4)}</span><span>${(Math.random()*10).toFixed(2)}</span></div>`;
+        // রিয়েল-টাইম মার্কেট কানেকশন
+        function connectMarketStream() {
+            const priceEl = document.getElementById('livePrice');
+            const convEl = document.getElementById('priceConverted');
+
+            if(activeCoin.sym === 'SMAT') {
+                // SMAT এর জন্য লোকাল সিমুলেশন
+                setInterval(() => {
+                    const change = (Math.random() * 0.002 - 0.001);
+                    activeCoin.price += change;
+                    priceEl.innerText = activeCoin.price.toFixed(4);
+                    priceEl.style.color = change >= 0 ? 'var(--up)' : 'var(--down)';
+                    convEl.innerText = '$' + activeCoin.price.toFixed(4);
+                }, 2000);
+            } else {
+                // অন্য কয়েনের জন্য বাইন্যান্স ওয়েব সকেট
+                ws = new WebSocket(`wss://stream.binance.com:9443/ws/${activeCoin.sym.toLowerCase()}usdt@ticker`);
+                ws.onmessage = (e) => {
+                    const data = JSON.parse(e.data);
+                    const newPrice = parseFloat(data.c);
+                    const oldPrice = activeCoin.price;
+                    activeCoin.price = newPrice;
+                    
+                    priceEl.innerText = newPrice.toLocaleString(undefined, {minimumFractionDigits: 2});
+                    priceEl.style.color = newPrice >= oldPrice ? 'var(--up)' : 'var(--down)';
+                    convEl.innerText = '$' + newPrice.toLocaleString();
+                };
             }
-            asks.innerHTML = askHTML;
-            bids.innerHTML = bidHTML;
-            document.getElementById('livePrice').innerText = activeCoin.price.toFixed(4);
+        }
+
+        function startOrderBookEngine() {
+            setInterval(() => {
+                const asks = document.getElementById('asks');
+                const bids = document.getElementById('bids');
+                
+                let askHTML = '', bidHTML = '';
+                for(let i=0; i<6; i++) {
+                    const pAsk = activeCoin.price + (Math.random() * (activeCoin.price * 0.001 * i));
+                    const pBid = activeCoin.price - (Math.random() * (activeCoin.price * 0.001 * i));
+                    const amt = (Math.random() * 5).toFixed(3);
+                    const depth = Math.random() * 100;
+
+                    askHTML = `<div class="ob-row"><span style="color:var(--down)">${pAsk.toFixed(activeCoin.price < 1 ? 4 : 2)}</span><span>${amt}</span><div class="depth" style="width:${depth}%; background:var(--down)"></div></div>` + askHTML;
+                    bidHTML += `<div class="ob-row"><span style="color:var(--up)">${pBid.toFixed(activeCoin.price < 1 ? 4 : 2)}</span><span>${amt}</span><div class="depth" style="width:${depth}%; background:var(--up)"></div></div>`;
+                }
+                asks.innerHTML = askHTML;
+                bids.innerHTML = bidHTML;
+            }, 1000);
         }
 
         function executeOrder() {
             const amount = parseFloat(document.getElementById('amountInp').value);
-            if(!amount || amount <= 0) return alert("Enter Amount");
-            
-            // এখানে আপনি আপনার ট্রেড লজিক বা সাকসেস মেসেজ দিতে পারেন
-            alert(tradeSide.toUpperCase() + " Order Placed Successfully!");
-        }
+            const price = parseFloat(document.getElementById('priceInp').value);
+            const total = amount * price;
 
-        // বাইনান্স থেকে রিয়েল টাইম ডাটা (ঐচ্ছিক)
-        function connectWebsocket() {
-            if(activeCoin.sym !== 'SMAT') {
-                const ws = new WebSocket(`wss://stream.binance.com:9443/ws/${activeCoin.sym.toLowerCase()}usdt@ticker`);
-                ws.onmessage = (e) => {
-                    const data = JSON.parse(e.data);
-                    activeCoin.price = parseFloat(data.c);
-                    document.getElementById('livePrice').innerText = activeCoin.price.toFixed(2);
-                };
+            if(!amount || amount <= 0) return alert("Please enter a valid amount");
+
+            // সিম্পল ট্রেড লজিক
+            const balanceKey = tradeSide === 'buy' ? 'usdtBalance' : activeCoin.key;
+            const currentBal = parseFloat(localStorage.getItem(balanceKey)) || 0;
+
+            if(tradeSide === 'buy') {
+                if(total > currentBal) return alert("Insufficient USDT Balance!");
+                localStorage.setItem('usdtBalance', (currentBal - total).toFixed(2));
+                const targetBal = parseFloat(localStorage.getItem(activeCoin.key)) || 0;
+                localStorage.setItem(activeCoin.key, (targetBal + amount).toFixed(4));
+            } else {
+                if(amount > currentBal) return alert(`Insufficient ${activeCoin.sym} Balance!`);
+                localStorage.setItem(activeCoin.key, (currentBal - amount).toFixed(4));
+                const usdtBal = parseFloat(localStorage.getItem('usdtBalance')) || 0;
+                localStorage.setItem('usdtBalance', (usdtBal + total).toFixed(2));
             }
+
+            alert(`${tradeSide.toUpperCase()} Order for ${amount} ${activeCoin.sym} executed!`);
+            updateBalance();
+            refreshUI();
         }
 
         window.onload = init;
