@@ -32,14 +32,14 @@ const GLOBAL_COINS = [
         networks: ['BEP20'] 
     },
     { 
-        sym: 'BTC', 
-        name: 'Bitcoin', 
-        price: 68500.00, 
-        startPrice: 67000.00, 
-        key: 'btcBalance', 
-        color: '#f7931a', 
-        networks: ['BTC', 'BEP20'] 
-    }
+    sym: 'BTC', 
+    name: 'Bitcoin', 
+    price: 68500.00, 
+    startPrice: 67200.00, 
+    color: '#f7931a', 
+    key: 'btcBalance' 
+},
+
     /* নতুন কয়েন এড করার নিয়ম:
     নিচের ফরম্যাটে শুধু কমা দিয়ে বসিয়ে দেবেন:
     { 
