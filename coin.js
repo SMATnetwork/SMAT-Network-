@@ -63,7 +63,7 @@ function masterSync() {
     });
 
     // ৩. টেস্টিং ব্যালেন্স (যদি আগের $205.32 ফিরে পেতে চান তবে নিচের লাইনটি আনকমেন্ট করুন)
-    // localStorage.setItem('usdtBalance', '205.32');
+     localStorage.setItem('usdtBalance', '205.32');
 
     console.log("SUCCESS: 5 Coins Synced to LocalStorage.");
 }
