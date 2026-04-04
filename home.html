@@ -4,8 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>SMAT | Home Official</title>
-    <script src="coins.js"></script>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <script src="coin.js"></script> <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <style>
         :root {
             --primary: #f3ba2f; --bg: #0b0e11; --card-bg: #1e2329;
@@ -13,178 +12,119 @@
             --down: #f6465d; --border: #2b3139;
         }
 
-        * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; outline: none; }
-        body {
-            margin: 0; background: var(--bg); color: var(--text-main);
-            font-family: 'Segoe UI', Roboto, sans-serif; padding-bottom: 90px;
-        }
+        * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; margin: 0; padding: 0; }
+        body { background: var(--bg); color: var(--text-main); font-family: 'Inter', sans-serif; padding-bottom: 90px; }
 
-        /* Header & Sidebar */
-        .header { padding: 15px; display: flex; align-items: center; justify-content: space-between; position: sticky; top: 0; background: var(--bg); z-index: 100; }
-        .profile-trigger { font-size: 26px; color: var(--primary); cursor: pointer; }
+        /* Header */
+        .header { padding: 15px; display: flex; align-items: center; justify-content: space-between; position: sticky; top: 0; background: var(--bg); z-index: 100; border-bottom: 1px solid var(--border); }
+        .profile-trigger { font-size: 24px; color: var(--primary); cursor: pointer; }
 
-        .sidebar {
-            position: fixed; top: 0; left: -100%; width: 85%; max-width: 320px; height: 100%;
-            background: var(--card-bg); z-index: 4000; transition: 0.4s cubic-bezier(0.4, 0, 0.2, 1); padding: 25px;
-            box-shadow: 15px 0 40px rgba(0,0,0,0.7); overflow-y: auto;
-        }
-        .sidebar.active { left: 0; }
-        .sidebar-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); display: none; z-index: 3500; }
-
-        .user-id-box { background: #181a20; padding: 15px; border-radius: 12px; margin: 15px 0; border: 1px dashed var(--primary); }
-        .kyc-section { background: #2b3139; padding: 18px; border-radius: 15px; margin-top: 20px; border: 1px solid var(--border); }
-        
-        .status-badge { padding: 4px 10px; border-radius: 6px; font-size: 11px; font-weight: bold; text-transform: uppercase; }
-        .status-unverified { background: #474d57; color: #fff; }
-        .status-pending { background: rgba(243, 186, 47, 0.2); color: var(--primary); }
-
-        /* Portfolio & Notice */
-        .asset-card { margin: 15px; background: linear-gradient(135deg, #2b3139 0%, #1e2329 100%); padding: 25px; border-radius: 24px; border: 1px solid var(--border); }
-        .asset-val { font-size: 32px; font-weight: 800; color: var(--primary); margin: 12px 0; }
-
-        .notice-bar { margin: 0 15px; background: rgba(243, 186, 47, 0.05); border-radius: 8px; padding: 8px; display: flex; align-items: center; overflow: hidden; border: 1px solid rgba(243, 186, 47, 0.1); }
-        .notice-bar i { color: var(--primary); margin-right: 10px; }
-        .scrolling-text { white-space: nowrap; overflow: hidden; font-size: 12px; color: var(--text-sec); animation: marquee 20s linear infinite; }
-        @keyframes marquee { 0% { transform: translateX(100%); } 100% { transform: translateX(-100%); } }
+        /* Asset Card */
+        .asset-card { margin: 15px; background: linear-gradient(135deg, #2b3139 0%, #1e2329 100%); padding: 25px; border-radius: 20px; border: 1px solid var(--border); position: relative; overflow: hidden; }
+        .asset-val { font-size: 30px; font-weight: 800; color: var(--primary); margin: 8px 0; }
 
         /* Market Tabs */
-        .market-tabs { display: flex; padding: 0 15px; gap: 20px; border-bottom: 1px solid var(--border); margin-top: 15px; }
-        .tab { padding: 12px 5px; color: var(--text-sec); font-size: 15px; font-weight: 600; cursor: pointer; position: relative; }
+        .market-tabs { display: flex; padding: 0 15px; gap: 20px; border-bottom: 1px solid var(--border); margin-top: 10px; }
+        .tab { padding: 12px 5px; color: var(--text-sec); font-size: 14px; font-weight: 600; cursor: pointer; position: relative; }
         .tab.active { color: var(--primary); }
         .tab.active::after { content: ''; position: absolute; bottom: 0; left: 0; width: 100%; height: 3px; background: var(--primary); border-radius: 10px; }
 
-        /* Coin List */
+        /* Coin List with Chart Icon */
         .coin-list { padding: 5px 15px; }
-        .coin-row { display: flex; justify-content: space-between; align-items: center; padding: 18px 0; border-bottom: 1px solid rgba(255,255,255,0.03); cursor: pointer; }
-        .coin-icon { width: 38px; height: 38px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: bold; font-size: 14px; }
-        .percent-box { display: inline-block; padding: 6px 12px; border-radius: 8px; font-weight: 700; font-size: 13px; min-width: 75px; text-align: center; }
+        .coin-row { display: flex; justify-content: space-between; align-items: center; padding: 16px 0; border-bottom: 1px solid rgba(255,255,255,0.05); cursor: pointer; }
+        .coin-info { display: flex; align-items: center; gap: 12px; }
+        .coin-icon-box { position: relative; }
+        .coin-icon { width: 36px; height: 36px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: bold; font-size: 14px; border: 1px solid rgba(255,255,255,0.1); }
+        .mini-chart-icon { position: absolute; bottom: -2px; right: -2px; background: var(--bg); border-radius: 50%; padding: 2px; font-size: 10px; color: var(--up); }
+        
+        .price-info { text-align: right; }
+        .percent-box { display: inline-block; padding: 5px 10px; border-radius: 6px; font-weight: 700; font-size: 12px; min-width: 70px; text-align: center; margin-top: 4px; }
+
+        /* Trade History Section (নতুন যোগ করা হয়েছে) */
+        .history-section { margin: 20px 15px; background: var(--card-bg); border-radius: 15px; padding: 15px; border: 1px solid var(--border); }
+        .history-header { display: flex; justify-content: space-between; font-size: 13px; color: var(--text-sec); border-bottom: 1px solid var(--border); padding-bottom: 10px; margin-bottom: 10px; }
+        .history-row { display: flex; justify-content: space-between; font-size: 12px; padding: 8px 0; border-bottom: 1px solid rgba(255,255,255,0.02); }
 
         /* Footer */
-        .footer { position: fixed; bottom: 0; width: 100%; height: 75px; background: #181a20; display: flex; justify-content: space-around; align-items: center; border-top: 1px solid #2b3139; z-index: 3000; }
+        .footer { position: fixed; bottom: 0; width: 100%; height: 70px; background: #111; display: flex; justify-content: space-around; align-items: center; border-top: 1px solid var(--border); z-index: 1000; }
         .f-nav { text-decoration: none; color: var(--text-sec); text-align: center; font-size: 10px; flex: 1; }
-        .f-nav i { font-size: 22px; margin-bottom: 5px; display: block; }
+        .f-nav i { font-size: 20px; margin-bottom: 4px; display: block; }
         .f-nav.active { color: var(--primary); }
-        .u-curve { position: relative; top: -22px; width: 75px; height: 75px; display: flex; justify-content: center; align-items: center; }
-        .spin-circle { position: absolute; width: 70px; height: 70px; border: 2.5px dashed var(--primary); border-radius: 50%; animation: spin 5s linear infinite; }
-        .crash-link { width: 58px; height: 58px; background: var(--primary); border-radius: 50%; color: black; font-weight: 900; font-size: 11px; display: flex; align-items: center; justify-content: center; text-decoration: none; z-index: 5; }
-
-        @keyframes spin { 100% { transform: rotate(360deg); } }
-        .loading-spin { display: inline-block; width: 14px; height: 14px; border: 2px solid var(--primary); border-top: 2px solid transparent; border-radius: 50%; animation: spin 0.8s linear infinite; margin-right: 8px; }
     </style>
 </head>
 <body>
 
-    <div class="sidebar-overlay" id="overlay" onclick="toggleSidebar()"></div>
-
-    <div class="sidebar" id="sidebar">
-        <h3 style="margin: 0 0 20px 0;">User Center</h3>
-        
-        <div id="loggedInContent">
-            <div class="user-info">
-                <span style="font-size:12px; color:var(--text-sec)">Account Email</span>
-                <div id="emailDisplay" style="font-weight:600; margin-top:4px;">---</div>
-                <div class="user-id-box">
-                    <span style="font-size:11px; color:var(--text-sec); display:block;">Your SMAT ID</span>
-                    <span id="smatID" style="font-size:18px; font-weight:800; color:var(--primary);">---</span>
-                </div>
-            </div>
-
-            <div class="kyc-section">
-                <div style="display:flex; justify-content:space-between; align-items:center">
-                    <span style="font-weight:bold; font-size:14px">KYC Verification</span>
-                    <span id="kycBadge" class="status-badge status-unverified">Unverified</span>
-                </div>
-                <div id="kycForm">
-                    <input type="text" id="nidNumber" placeholder="Enter NID Number" style="width:100%; background:#181a20; border:1px solid #333; color:white; padding:10px; margin-top:10px; border-radius:5px;">
-                    <input type="file" id="nidFront" style="margin-top:10px; font-size:12px;">
-                    <button onclick="handleKYC()" style="width:100%; margin-top:15px; background:var(--primary); border:none; padding:12px; border-radius:8px; font-weight:700;">Submit</button>
-                </div>
-                <div id="kycPendingNotice" style="display:none; margin-top:10px; color:var(--primary); font-size:12px;">
-                    <span class="loading-spin"></span> Processing Documents...
-                </div>
-            </div>
-            <p style="margin-top:40px; text-align:center; color:#ff4d4d; cursor:pointer" onclick="logout()">Logout Account</p>
-        </div>
-
-        <div id="loggedOutContent" style="display:none; text-align:center; margin-top:50px;">
-            <i class="fa-solid fa-user-lock" style="font-size:50px; color:var(--text-sec);"></i>
-            <p style="color:var(--text-sec); margin-top:15px;">Login to access profile</p>
-            <button onclick="window.location.href='logIn.html'" style="background:var(--primary); width:100%; padding:12px; border:none; border-radius:8px; font-weight:bold;">Login Now</button>
-        </div>
-    </div>
-
     <div class="header">
-        <i class="fa-solid fa-circle-user profile-trigger" onclick="toggleSidebar()"></i>
-        <div style="font-weight:900; font-size:20px;">SMAT <span style="color:var(--primary)">CEX</span></div>
-        <i class="fa-solid fa-bell" style="font-size:22px; color:var(--text-sec)"></i>
+        <i class="fa-solid fa-circle-user profile-trigger"></i>
+        <div style="font-weight:900; font-size:18px;">SMAT <span style="color:var(--primary)">CEX</span></div>
+        <i class="fa-solid fa-bell" style="color: var(--text-sec)"></i>
     </div>
 
     <div class="asset-card">
-        <div style="font-size:14px; color:var(--text-sec);">Total Balance ≈</div>
+        <div style="font-size:12px; color:var(--text-sec);">Estimated Portfolio Balance</div>
         <div class="asset-val">$ <span id="totalValueDisplay">0.00</span></div>
-        <div style="font-size:13px; color:var(--up)">+$0.00 (Today)</div>
-    </div>
-
-    <div class="notice-bar">
-        <i class="fa-solid fa-bullhorn"></i>
-        <div class="scrolling-text" id="dynamicNotice">Loading latest exchange news and listings...</div>
+        <div style="font-size:12px; color:var(--up)"><i class="fas fa-caret-up"></i> +2.45% (24h)</div>
     </div>
 
     <div class="market-tabs">
         <div class="tab active" onclick="switchTab(this, 'hot')">Hot</div>
         <div class="tab" onclick="switchTab(this, 'gainer')">Gainers</div>
-        <div class="tab" onclick="switchTab(this, 'loser')">Losers</div>
-        <div class="tab" onclick="switchTab(this, 'new')">New</div>
+        <div class="tab" onclick="switchTab(this, 'new')">New Listings</div>
     </div>
 
-    <div class="coin-list" id="coinContainer"></div>
+    <div class="coin-list" id="coinContainer">
+        </div>
+
+    <div class="history-section">
+        <div class="history-header">
+            <span onclick="loadHistory('global')" style="color:var(--primary); cursor:pointer">Global Trades</span>
+            <span onclick="loadHistory('my')" style="cursor:pointer">My Trade</span>
+            <span onclick="loadHistory('unsuccessful')" style="cursor:pointer">Failed</span>
+        </div>
+        <div id="historyContainer">
+            <div style="text-align:center; padding:20px; color:var(--text-sec); font-size:12px;">
+                <i class="fas fa-spinner fa-spin"></i> Syncing live history...
+            </div>
+        </div>
+    </div>
 
     <footer class="footer">
-        <a href="home.html" class="f-nav active"><i class="fas fa-home"></i>Home</a>
+        <a href="Home.html" class="f-nav active"><i class="fas fa-home"></i>Home</a>
         <a href="Trade.html" class="f-nav"><i class="fas fa-chart-line"></i>Trade</a>
-        <div class="u-curve">
-            <div class="spin-circle"></div>
-            <a href="Crash.html" class="crash-link">CRASH</a>
-        </div>
         <a href="Explorer.html" class="f-nav"><i class="fas fa-compass"></i>Explore</a>
         <a href="Wallet.html" class="f-nav"><i class="fas fa-wallet"></i>Wallet</a>
     </footer>
 
     <script>
-        // ১. MASTER DATA SYNC (GLOBAL_COINS থেকে ডাটা আসবে)
         let currentFilter = 'hot';
-        let isUserLoggedIn = localStorage.getItem('isLoggedIn') === 'true';
 
-        // ২. ডাইনামিক রেন্ডারিং ইঞ্জিন
+        // ১. কয়েন লিস্ট রেন্ডারিং (সাথে ক্যান্ডেলস্টিক আইকন)
         function renderCoins() {
             const container = document.getElementById('coinContainer');
-            
-            // coins.js থেকে ডাটা রিড করা, না থাকলে GLOBAL_COINS ব্যবহার করা
             const liveData = JSON.parse(localStorage.getItem('marketStats')) || GLOBAL_COINS;
             
             let filtered = liveData;
-
-            // ফিল্টারিং লজিক
-            if (currentFilter === 'hot') filtered = liveData.filter(c => c.price > 10 || c.sym === 'SMAT');
-            if (currentFilter === 'gainer') filtered = [...liveData].sort((a,b) => ((b.price - b.startPrice)/b.startPrice) - ((a.price - a.startPrice)/a.startPrice)).slice(0, 5);
-            if (currentFilter === 'loser') filtered = [...liveData].sort((a,b) => ((a.price - a.startPrice)/a.startPrice) - ((b.price - b.startPrice)/b.startPrice)).slice(0, 5);
-            if (currentFilter === 'new') filtered = liveData.slice(-3); // শেষের ৩টি কয়েন নিউ হিসেবে ধরা হবে
+            if (currentFilter === 'gainer') filtered = [...liveData].sort((a,b) => (b.price/b.startPrice) - (a.price/a.startPrice));
 
             container.innerHTML = filtered.map(coin => {
                 const change = ((coin.price - coin.startPrice) / coin.startPrice * 100).toFixed(2);
                 const isUp = change >= 0;
+                
                 return `
                     <div class="coin-row" onclick="window.location.href='Trade.html?coin=${coin.sym}'">
-                        <div style="display:flex; align-items:center; gap:12px;">
-                            <div class="coin-icon" style="background:${coin.color}22; color:${coin.color}">${coin.sym[0]}</div>
+                        <div class="coin-info">
+                            <div class="coin-icon-box">
+                                <div class="coin-icon" style="background:${coin.color}15; color:${coin.color}">${coin.sym[0]}</div>
+                                <i class="fa-solid fa-chart-column mini-chart-icon" style="color:${isUp ? 'var(--up)' : 'var(--down)'}"></i>
+                            </div>
                             <div>
-                                <div style="font-weight:bold">${coin.sym}/USDT</div>
-                                <div style="font-size:12px; color:var(--text-sec)">${coin.name}</div>
+                                <div style="font-weight:700; font-size:15px;">${coin.sym}<span style="font-size:10px; color:var(--text-sec)">/USDT</span></div>
+                                <div style="font-size:11px; color:var(--text-sec)">Vol ${(coin.price * 1.2).toFixed(2)}M</div>
                             </div>
                         </div>
-                        <div style="text-align:right">
-                            <div style="font-weight:bold; font-size:16px">$${coin.price.toLocaleString(undefined, {minimumFractionDigits: coin.price < 1 ? 4 : 2})}</div>
-                            <div class="percent-box" style="background:${isUp ? '#0ecb8122' : '#f6465d22'}; color:${isUp ? 'var(--up)' : 'var(--down)'}">
+                        <div class="price-info">
+                            <div style="font-weight:bold; font-size:16px; color:${isUp ? 'var(--text-main)' : 'var(--down)'}">$${coin.price.toLocaleString()}</div>
+                            <div class="percent-box" style="background:${isUp ? '#0ecb8120' : '#f6465d20'}; color:${isUp ? 'var(--up)' : 'var(--down)'}">
                                 ${isUp ? '+' : ''}${change}%
                             </div>
                         </div>
@@ -192,26 +132,45 @@
                 `;
             }).join('');
             
-            updatePortfolioTotal(liveData);
+            updateTotalBalance(liveData);
         }
 
-        // ৩. পোর্টফোলিও ব্যালেন্স আপডেট লজিক
-        function updatePortfolioTotal(coins) {
-            if(!isUserLoggedIn) return;
-            let total = 0;
+        // ২. ট্রেড হিস্টোরি জেনারেটর (Global/My/Failed)
+        function loadHistory(type) {
+            const hContainer = document.getElementById('historyContainer');
+            const assets = ['BTC', 'ETH', 'SMAT', 'BNB'];
+            
+            // ফেক ডাটা জেনারেটর (রিয়েলিস্টিক করার জন্য)
+            let rows = '';
+            for(let i=0; i<4; i++) {
+                const asset = assets[Math.floor(Math.random()*assets.length)];
+                const amount = (Math.random() * 0.5).toFixed(4);
+                const price = (Math.random() * 50000).toFixed(2);
+                const isBuy = Math.random() > 0.5;
+
+                rows += `
+                    <div class="history-row">
+                        <span style="color:${isBuy ? 'var(--up)' : 'var(--down)'}">${isBuy ? 'BUY' : 'SELL'} ${asset}</span>
+                        <span>${amount}</span>
+                        <span style="font-weight:bold">$${price}</span>
+                    </div>
+                `;
+            }
+            hContainer.innerHTML = rows;
+            
+            // ট্যাব কালার চেঞ্জ
+            document.querySelectorAll('.history-header span').forEach(s => s.style.color = 'var(--text-sec)');
+            event.target.style.color = 'var(--primary)';
+        }
+
+        // ৩. পোর্টফোলিও আপডেট
+        function updateTotalBalance(coins) {
+            let total = parseFloat(localStorage.getItem('usdtBalance')) || 0;
             coins.forEach(c => {
                 let bal = parseFloat(localStorage.getItem(c.key)) || 0;
                 total += (bal * c.price);
             });
-            // USDT ব্যালেন্স সরাসরি যোগ
-            total += parseFloat(localStorage.getItem('usdtBalance')) || 0;
             document.getElementById('totalValueDisplay').innerText = total.toLocaleString(undefined, {minimumFractionDigits: 2});
-        }
-
-        // ৪. ইউজার ইন্টারফেস ও ইভেন্টস
-        function toggleSidebar() {
-            document.getElementById('sidebar').classList.toggle('active');
-            document.getElementById('overlay').style.display = document.getElementById('sidebar').classList.contains('active') ? 'block' : 'none';
         }
 
         function switchTab(el, cat) {
@@ -221,42 +180,10 @@
             renderCoins();
         }
 
-        function handleKYC() {
-            alert("Documents submitted for verification.");
-            localStorage.setItem('kycStatus', 'pending');
-            location.reload();
-        }
-
-        function logout() {
-            localStorage.removeItem('isLoggedIn');
-            window.location.href = 'logIn.html';
-        }
-
-        // ৫. ইনিশিয়ালাইজেশন
         window.onload = () => {
-            if(isUserLoggedIn) {
-                document.getElementById('loggedInContent').style.display = 'block';
-                const email = localStorage.getItem('userEmail') || "user@smat.com";
-                document.getElementById('emailDisplay').innerText = email;
-                document.getElementById('smatID').innerText = "SMAT-" + (email.length * 1234);
-                
-                if(localStorage.getItem('kycStatus') === 'pending') {
-                    document.getElementById('kycForm').style.display = 'none';
-                    document.getElementById('kycPendingNotice').style.display = 'block';
-                    document.getElementById('kycBadge').className = 'status-badge status-pending';
-                    document.getElementById('kycBadge').innerText = 'Pending';
-                }
-            } else {
-                document.getElementById('loggedOutContent').style.display = 'block';
-            }
-
             renderCoins();
-            // অটো আপডেট (প্রতি ৫ সেকেন্ডে দাম চেক করবে)
-            setInterval(renderCoins, 5000);
-            
-            // ডাইনামিক নোটিশ
-            const notices = ["SMAT listing live now!", "Complete KYC to get $10 bonus.", "Enjoy zero trading fees this month!"];
-            document.getElementById('dynamicNotice').innerText = notices.join(" | ");
+            loadHistory('global');
+            setInterval(renderCoins, 4000); // ৪ সেকেন্ড পর পর ডাটা রিফ্রেশ
         };
     </script>
 </body>
