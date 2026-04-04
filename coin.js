@@ -1,5 +1,5 @@
 /**
- * SMAT CEX - Final Sync Configuration
+ * SMAT CEX - Final Bulletproof Configuration
  */
 
 const GLOBAL_COINS = [
@@ -50,20 +50,23 @@ const GLOBAL_COINS = [
     }
 ];
 
-// এটি পুরনো সব মেমোরি ক্লিয়ার করে নতুন করে লিস্ট তৈরি করবে
-function forceSyncData() {
-    localStorage.removeItem('marketStats'); // পুরনো লিস্ট ডিলিট
-    localStorage.setItem('marketStats', JSON.stringify(GLOBAL_COINS)); // নতুন ৫টি কয়েনসহ লিস্ট সেভ
+// ডাটা সিঙ্ক করার মাস্টার ফাংশন
+function masterSync() {
+    // ১. সবসময় নতুন ডাটা দিয়ে রিপ্লেস করা (Force Sync)
+    localStorage.setItem('marketStats', JSON.stringify(GLOBAL_COINS));
     
-    // ব্যালেন্স কিউ তৈরি (যদি না থাকে)
+    // ২. প্রতিটি কয়েনের জন্য ডিফল্ট ব্যালেন্স চেক (না থাকলে ০ করে দেওয়া)
     GLOBAL_COINS.forEach(coin => {
         if (!localStorage.getItem(coin.key)) {
             localStorage.setItem(coin.key, "0.00");
         }
     });
-    
-    console.log("System Re-Synced with 5 Coins!");
+
+    // ৩. টেস্টিং ব্যালেন্স (যদি আগের $205.32 ফিরে পেতে চান তবে নিচের লাইনটি আনকমেন্ট করুন)
+    // localStorage.setItem('usdtBalance', '205.32');
+
+    console.log("SUCCESS: 5 Coins Synced to LocalStorage.");
 }
 
-// রান করুন
-forceSyncData();
+// ফাইল লোড হওয়ার সাথে সাথে রান হবে
+masterSync();
