@@ -117,7 +117,7 @@
     <div class="sidebar-overlay" id="overlay" onclick="toggleSidebar()"></div>
 
     <div class="sidebar" id="sidebar">
-        <h3 style="margin: 0 0 20px 0; font-size: 20px;">User Center</h3>
+        <h3 style="margin: 0 0 20px 0; font-size: 20px;">Profile</h3>
         
         <div id="loggedInContent">
             <div class="user-info">
@@ -165,7 +165,7 @@
     <div class="header">
         <i class="fa-solid fa-circle-user profile-trigger" onclick="toggleSidebar()"></i>
         <div style="font-weight: 900; font-size: 20px;">SMAT <span style="color:var(--primary)">Exchange</span></div>
-        <i class="fa-solid fa-bell" style="font-size:22px; color:var(--text-sec)"></i>
+        <i class="fa-solid fa-bell" style="font-size:22px; color:var(--text-sec)" onclick="checkAuth(event)"></i>
     </div>
 
     <div class="asset-card">
@@ -200,7 +200,7 @@
             <div class="spin-circle"></div>
             <a href="Crash.html" class="crash-link" onclick="checkAuth(event)">CRASH</a>
         </div>
-        <a href="Explorer.html" class="f-nav"><i class="fas fa-compass"></i>Explore</a>
+        <a href="Explorer.html" class="f-nav" onclick="checkAuth(event)"><i class="fas fa-compass"></i>Explore</a>
         <a href="Wallet.html" class="f-nav" onclick="checkAuth(event)"><i class="fas fa-wallet"></i>Wallet</a>
     </footer>
 
@@ -208,27 +208,36 @@
         let currentActiveTab = 'hot';
         let isUserLoggedIn = localStorage.getItem('isLoggedIn') === 'true';
 
-        // ১. কয়েন ডাটা ম্যানেজমেন্ট (গিটহাব সিঙ্ক নিশ্চিত করতে)
+        // ডাটা ম্যানেজমেন্ট
         function getMarketData() {
             let stats = JSON.parse(localStorage.getItem('marketStats'));
-            
-            // যদি coin.js এর GLOBAL_COINS এর লেন্থ লোকাল স্টোরেজের চেয়ে বেশি হয়, তবে আপডেট হবে (নতুন কয়েন পুশ করলে)
             if (typeof GLOBAL_COINS !== 'undefined') {
                 if (!stats || stats.length !== GLOBAL_COINS.length) {
-                    stats = GLOBAL_COINS;
+                    stats = JSON.parse(JSON.stringify(GLOBAL_COINS));
                     localStorage.setItem('marketStats', JSON.stringify(stats));
+                } else {
+                    stats.forEach((s) => {
+                        const gc = GLOBAL_COINS.find(c => c.sym === s.sym);
+                        if(gc) {
+                            s.price = gc.price;
+                            s.vol = gc.vol;
+                            s.tag = gc.tag;
+                        }
+                    });
                 }
             }
-            
             return stats || [];
         }
 
+        // লগইন চেক ফাংশন
         function checkAuth(e) {
             if(!isUserLoggedIn) {
-                e.preventDefault();
-                alert("Please Login to access this feature.");
+                if(e) e.preventDefault();
+                alert("Access Denied! Please Login first.");
                 toggleSidebar();
+                return false;
             }
+            return true;
         }
 
         function logout() {
@@ -249,6 +258,7 @@
             renderCoins(category);
         }
 
+        // কয়েন রেন্ডারিং (Hot ট্যাবে Top 10 Volume লজিক যুক্ত)
         function renderCoins(filter = 'hot') {
             const container = document.getElementById('coinContainer');
             if (!container) return;
@@ -256,43 +266,40 @@
             const liveData = getMarketData();
             let filtered = [];
 
-            // ২. সংশোধিত ফিল্টারিং লজিক (Hot এবং New নিশ্চিত করতে)
             if (filter === 'hot') {
-                // Hot ট্যাবে সেই কয়েনগুলো থাকবে যেগুলোর tag 'hot' অথবা ম্যানুয়ালি গুরুত্বপূর্ণ (যেমন SMAT, BNB)
-                filtered = liveData.filter(c => c.tag === 'hot' || c.sym === 'SMAT' || c.sym === 'BNB');
+                // Volume অনুযায়ী বড় থেকে ছোট ক্রমানুসারে সাজানো এবং টপ ১০ বাছাই করা
+                filtered = [...liveData].sort((a, b) => (parseFloat(b.vol) || 0) - (parseFloat(a.vol) || 0)).slice(0, 10);
             } else if (filter === 'gainer') {
                 filtered = [...liveData].sort((a, b) => {
-                    let changeA = ((a.price - a.startPrice) / a.startPrice);
-                    let changeB = ((b.price - b.startPrice) / b.startPrice);
-                    return changeB - changeA;
+                    let chA = ((a.price - a.startPrice) / a.startPrice);
+                    let chB = ((b.price - b.startPrice) / b.startPrice);
+                    return chB - chA;
                 }).filter(c => c.price > c.startPrice);
             } else if (filter === 'loser') {
                 filtered = [...liveData].sort((a, b) => {
-                    let changeA = ((a.price - a.startPrice) / a.startPrice);
-                    let changeB = ((b.price - b.startPrice) / b.startPrice);
-                    return changeA - changeB;
+                    let chA = ((a.price - a.startPrice) / a.startPrice);
+                    let chB = ((b.price - b.startPrice) / b.startPrice);
+                    return chA - chB;
                 }).filter(c => c.price < c.startPrice);
             } else if (filter === 'new') {
-                // New ট্যাবে শুধু সেই কয়েনগুলো যাবে যেগুলোর tag 'new'
                 filtered = liveData.filter(c => c.tag === 'new');
             }
 
             let htmlContent = '';
             filtered.forEach(coin => {
-                const currentPrice = parseFloat(coin.price);
-                const change = ((currentPrice - coin.startPrice) / coin.startPrice * 100).toFixed(2);
+                const currentPrice = parseFloat(coin.price || 0);
+                const startPrice = parseFloat(coin.startPrice || currentPrice);
+                const change = startPrice === 0 ? "0.00" : ((currentPrice - startPrice) / startPrice * 100).toFixed(2);
                 const isUp = parseFloat(change) >= 0;
-                
-                // ভলিউম আপডেট লজিক (coin.vol সরাসরি coin.js থেকে আসে)
                 const volValue = parseFloat(coin.vol || 0);
                 const color = coin.color || '#f3ba2f';
 
                 htmlContent += `
-                    <div class="coin-row" onclick="window.location.href='Trade.html?coin=${coin.sym}'">
+                    <div class="coin-row" onclick="if(checkAuth(event)) window.location.href='Trade.html?coin=${coin.sym}'">
                         <div style="display:flex; align-items:center; gap:12px;">
                             <div class="coin-icon" style="background:${color}22; color:${color}">${coin.sym[0]}</div>
                             <div>
-                                <div style="font-weight:bold">${coin.sym}/USDT</div>
+                                <div style="font-weight:bold">${coin.sym}</div>
                                 <div style="font-size:12px; color:var(--text-sec)">Vol ${volValue >= 1000 ? (volValue / 1000).toFixed(2) + "K" : volValue.toFixed(2)}</div>
                             </div>
                         </div>
@@ -306,9 +313,8 @@
                 `;
             });
 
-            // যদি ফিল্টারে কিছু না থাকে তবে মেসেজ দেখাবে
             if(filtered.length === 0) {
-                htmlContent = `<p style="text-align:center; color:var(--text-sec); margin-top:20px;">No coins found in ${filter} section</p>`;
+                htmlContent = `<p style="text-align:center; color:var(--text-sec); margin-top:20px; font-size:13px;">No coins available.</p>`;
             }
 
             container.innerHTML = htmlContent;
@@ -322,9 +328,8 @@
                 liveData.forEach(coin => {
                     let balKey = coin.key || (coin.sym.toLowerCase() + "Balance");
                     let bal = parseFloat(localStorage.getItem(balKey)) || 0;
-                    total += (bal * coin.price);
+                    total += (bal * (coin.price || 0));
                 });
-                // USDT balance যোগ করা
                 total += parseFloat(localStorage.getItem('usdtBalance')) || 0;
                 document.getElementById('totalValue').innerText = total.toLocaleString(undefined, {minimumFractionDigits: 2});
             }
@@ -374,13 +379,8 @@
                 document.getElementById('loggedOutContent').style.display = 'block';
             }
             
-            // প্রাথমিক রেন্ডার
             renderCoins('hot');
-            
-            // ৩. রিয়েল টাইম আপডেট ইন্টারভাল
-            setInterval(() => {
-                renderCoins(currentActiveTab);
-            }, 2000);
+            setInterval(() => { renderCoins(currentActiveTab); }, 2000);
         };
     </script>
 </body>
