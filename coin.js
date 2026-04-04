@@ -12,6 +12,15 @@ const GLOBAL_COINS = [
         color: '#26a17b',
         networks: ['BEP20', 'TRC20']
     },
+   {
+        sym: 'SUI',
+        name: 'SUI Coin',
+        price: 1.30,
+        startPrice: 1.100,
+        key: 'suiBalance',
+        color: '#26a17b',
+        networks: ['BEP20', 'TRC20']
+    },
   {
         sym: 'TON',
         name: 'Toncoin',
