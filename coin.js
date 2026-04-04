@@ -4,54 +4,42 @@
  */
 
 const GLOBAL_COINS = [
-    { 
-        sym: 'USDT', 
-        name: 'Tether', 
-        price: 1.0, 
-        startPrice: 1.0, 
-        key: 'usdtBalance', 
-        color: '#26a17b', 
-        networks: ['BEP20', 'TRC20', 'ERC20'] 
+    {
+        sym: 'SMAT',
+        name: 'SMAT Coin',
+        price: 0.8540,
+        startPrice: 0.8200,
+        key: 'smatBalance',
+        color: '#f3ba2f',
+        networks: ['SMAT Chain', 'BEP20']
     },
-    { 
-        sym: 'SMAT', 
-        name: 'SMAT Coin', 
-        price: 1.25, 
-        startPrice: 1.20, 
-        key: 'smatBalance', 
-        color: '#f3ba2f', 
-        networks: ['SMAT Chain', 'BEP20'] 
+    {
+        sym: 'BNB',
+        name: 'Binance',
+        price: 590.50,
+        startPrice: 595.00,
+        key: 'bnbBalance',
+        color: '#f3ba2f',
+        networks: ['BEP20']
     },
-    { 
-        sym: 'BNB', 
-        name: 'Binance', 
-        price: 590.50, 
-        startPrice: 595.00, 
-        key: 'bnbBalance', 
-        color: '#f3ba2f', 
-        networks: ['BEP20'] 
+    {
+        sym: 'BTC',
+        name: 'Bitcoin',
+        price: 68500.00,
+        startPrice: 67200.00,
+        color: '#f7931a',
+        key: 'btcBalance',
+        networks: ['Bitcoin', 'BEP20']
     },
-    { 
-    sym: 'BTC', 
-    name: 'Bitcoin', 
-    price: 68500.00, 
-    startPrice: 67200.00, 
-    color: '#f7931a', 
-    key: 'btcBalance' 
-},
-
-    /* নতুন কয়েন এড করার নিয়ম:
-    নিচের ফরম্যাটে শুধু কমা দিয়ে বসিয়ে দেবেন:
-    { 
-        sym: 'ETH', 
-        name: 'Ethereum', 
-        price: 3500.00, 
-        startPrice: 3450.00, 
-        key: 'ethBalance', 
-        color: '#627eea', 
-        networks: ['ERC20', 'BEP20'] 
+    {
+        sym: 'ETH',
+        name: 'Ethereum',
+        price: 3500.00,
+        startPrice: 3450.00,
+        key: 'ethBalance',
+        color: '#627eea',
+        networks: ['ERC20', 'BEP20']
     }
-    */
 ];
 
 // মার্কেট ডাটা সিঙ্ক করার ফাংশন (এটি সব পেজে রিয়েল-টাইম প্রাইস আপডেট রাখবে)
