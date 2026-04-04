@@ -1,5 +1,5 @@
 /**
- * SMAT CEX - Final Bulletproof Configuration
+ * SMAT CEX - Central Coin Configuration
  */
 
 const GLOBAL_COINS = [
@@ -52,20 +52,24 @@ const GLOBAL_COINS = [
 
 // ডাটা সিঙ্ক করার মাস্টার ফাংশন
 function masterSync() {
-    // ১. সবসময় নতুন ডাটা দিয়ে রিপ্লেস করা (Force Sync)
+    // ১. মার্কেট লিস্ট আপডেট (পুরনো লিস্টের সাথে নতুন কয়েন থাকলে তা যোগ করবে)
     localStorage.setItem('marketStats', JSON.stringify(GLOBAL_COINS));
-    
-    // ২. প্রতিটি কয়েনের জন্য ডিফল্ট ব্যালেন্স চেক (না থাকলে ০ করে দেওয়া)
+
+    // ২. প্রতিটি কয়েনের জন্য ব্যালেন্স বক্স চেক করা
     GLOBAL_COINS.forEach(coin => {
-        if (!localStorage.getItem(coin.key)) {
+        // যদি ওই কয়েনের ব্যালেন্স আগে থেকে না থাকে, তবেই ০ সেট করবে
+        if (localStorage.getItem(coin.key) === null) {
             localStorage.setItem(coin.key, "0.00");
         }
     });
 
-    // ৩. টেস্টিং ব্যালেন্স (যদি আগের $205.32 ফিরে পেতে চান তবে নিচের লাইনটি আনকমেন্ট করুন)
-     localStorage.setItem('usdtBalance', '205.32');
+    // ৩. টেস্টিং ব্যালেন্স (আপনার আগের $205.32 USDT ফিরিয়ে আনা)
+    // যদি USDT ব্যালেন্স ০ থাকে বা না থাকে, তবেই এটি ২০৫ সেট করবে
+    if (parseFloat(localStorage.getItem('usdtBalance')) <= 0 || localStorage.getItem('usdtBalance') === null) {
+        localStorage.setItem('usdtBalance', '205.32');
+    }
 
-    console.log("SUCCESS: 5 Coins Synced to LocalStorage.");
+    console.log("SUCCESS: " + GLOBAL_COINS.length + " Coins Synced to Platform.");
 }
 
 // ফাইল লোড হওয়ার সাথে সাথে রান হবে
