@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>SMAT | Home Official</title>
+    <script src="coins.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <style>
         :root {
@@ -150,27 +151,24 @@
     </footer>
 
     <script>
-        // ১. মাস্টার ডাটাবেস সিমুলেশন (এডমিন প্যানেলের বদলে এখান থেকে ডাটা আসবে)
-        const DEFAULT_COINS = [
-            { sym: 'SMAT', name: 'SMAT Coin', price: 1.2694, startPrice: 1.20, tag: 'new', color: '#f3ba2f' },
-            { sym: 'BNB', name: 'Binance', price: 588.20, startPrice: 595.00, tag: 'hot', color: '#f3ba2f' },
-            { sym: 'BTC', name: 'Bitcoin', price: 68450.00, startPrice: 67000.00, tag: 'hot', color: '#f7931a' },
-            { sym: 'ETH', name: 'Ethereum', price: 3450.15, startPrice: 3550.00, tag: 'hot', color: '#627eea' }
-        ];
-
+        // ১. MASTER DATA SYNC (GLOBAL_COINS থেকে ডাটা আসবে)
         let currentFilter = 'hot';
         let isUserLoggedIn = localStorage.getItem('isLoggedIn') === 'true';
 
         // ২. ডাইনামিক রেন্ডারিং ইঞ্জিন
         function renderCoins() {
             const container = document.getElementById('coinContainer');
-            const liveData = JSON.parse(localStorage.getItem('marketStats')) || DEFAULT_COINS;
+            
+            // coins.js থেকে ডাটা রিড করা, না থাকলে GLOBAL_COINS ব্যবহার করা
+            const liveData = JSON.parse(localStorage.getItem('marketStats')) || GLOBAL_COINS;
             
             let filtered = liveData;
-            if (currentFilter === 'hot') filtered = liveData.filter(c => c.tag === 'hot' || c.sym === 'SMAT');
-            if (currentFilter === 'gainer') filtered = liveData.filter(c => c.price > c.startPrice);
-            if (currentFilter === 'loser') filtered = liveData.filter(c => c.price < c.startPrice);
-            if (currentFilter === 'new') filtered = liveData.filter(c => c.tag === 'new');
+
+            // ফিল্টারিং লজিক
+            if (currentFilter === 'hot') filtered = liveData.filter(c => c.price > 10 || c.sym === 'SMAT');
+            if (currentFilter === 'gainer') filtered = [...liveData].sort((a,b) => ((b.price - b.startPrice)/b.startPrice) - ((a.price - a.startPrice)/a.startPrice)).slice(0, 5);
+            if (currentFilter === 'loser') filtered = [...liveData].sort((a,b) => ((a.price - a.startPrice)/a.startPrice) - ((b.price - b.startPrice)/b.startPrice)).slice(0, 5);
+            if (currentFilter === 'new') filtered = liveData.slice(-3); // শেষের ৩টি কয়েন নিউ হিসেবে ধরা হবে
 
             container.innerHTML = filtered.map(coin => {
                 const change = ((coin.price - coin.startPrice) / coin.startPrice * 100).toFixed(2);
@@ -185,7 +183,7 @@
                             </div>
                         </div>
                         <div style="text-align:right">
-                            <div style="font-weight:bold; font-size:16px">$${coin.price.toFixed(coin.price < 1 ? 4 : 2)}</div>
+                            <div style="font-weight:bold; font-size:16px">$${coin.price.toLocaleString(undefined, {minimumFractionDigits: coin.price < 1 ? 4 : 2})}</div>
                             <div class="percent-box" style="background:${isUp ? '#0ecb8122' : '#f6465d22'}; color:${isUp ? 'var(--up)' : 'var(--down)'}">
                                 ${isUp ? '+' : ''}${change}%
                             </div>
@@ -202,12 +200,12 @@
             if(!isUserLoggedIn) return;
             let total = 0;
             coins.forEach(c => {
-                let bal = parseFloat(localStorage.getItem(c.sym.toLowerCase() + 'Balance')) || 0;
+                let bal = parseFloat(localStorage.getItem(c.key)) || 0;
                 total += (bal * c.price);
             });
-            // USDT ব্যালেন্স যোগ করা
+            // USDT ব্যালেন্স সরাসরি যোগ
             total += parseFloat(localStorage.getItem('usdtBalance')) || 0;
-            document.getElementById('totalValueDisplay').innerText = total.toFixed(2);
+            document.getElementById('totalValueDisplay').innerText = total.toLocaleString(undefined, {minimumFractionDigits: 2});
         }
 
         // ৪. ইউজার ইন্টারফেস ও ইভেন্টস
@@ -230,7 +228,7 @@
         }
 
         function logout() {
-            localStorage.clear();
+            localStorage.removeItem('isLoggedIn');
             window.location.href = 'logIn.html';
         }
 
@@ -257,7 +255,7 @@
             setInterval(renderCoins, 5000);
             
             // ডাইনামিক নোটিশ
-            const notices = ["SMAT listing live in 24h!", "New TRC20 rewards active.", "Complete KYC to get $10 bonus."];
+            const notices = ["SMAT listing live now!", "Complete KYC to get $10 bonus.", "Enjoy zero trading fees this month!"];
             document.getElementById('dynamicNotice').innerText = notices.join(" | ");
         };
     </script>
