@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>SMAT | Home Official</title>
     <script src="coin.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
@@ -206,26 +206,22 @@
 
     <script>
         let currentActiveTab = 'hot';
+        let isUserLoggedIn = localStorage.getItem('isLoggedIn') === 'true';
 
-        // ১. সরাসরি coin.js এর GLOBAL_COINS বা marketStats থেকে ডাটা নেওয়ার ফাংশন
+        // ১. কয়েন ডাটা ম্যানেজমেন্ট (গিটহাব সিঙ্ক নিশ্চিত করতে)
         function getMarketData() {
-            // প্রথমে localStorage চেক করবে, না থাকলে coin.js এর GLOBAL_COINS নিবে
-            const stats = JSON.parse(localStorage.getItem('marketStats'));
+            let stats = JSON.parse(localStorage.getItem('marketStats'));
             
-            // যদি coin.js লোড হয়ে থাকে এবং GLOBAL_COINS থাকে, তবে সেটিই রিটার্ন করবে
-            if (!stats && typeof GLOBAL_COINS !== 'undefined') {
-                return GLOBAL_COINS;
+            // যদি coin.js এর GLOBAL_COINS এর লেন্থ লোকাল স্টোরেজের চেয়ে বেশি হয়, তবে আপডেট হবে (নতুন কয়েন পুশ করলে)
+            if (typeof GLOBAL_COINS !== 'undefined') {
+                if (!stats || stats.length !== GLOBAL_COINS.length) {
+                    stats = GLOBAL_COINS;
+                    localStorage.setItem('marketStats', JSON.stringify(stats));
+                }
             }
             
-            // যদি কোনোটিই না থাকে তবেই আপনার দেওয়া হার্ডকোডেড ডিফল্ট ডাটা নিবে
-            return stats || [
-                { sym: 'SMAT', name: 'SMAT Coin', price: 1.2694, change: 5.42, vol: 150000, startPrice: 1.20, tag: 'new', color: '#f3ba2f' },
-                { sym: 'USDT', name: 'Tether', price: 1.0000, change: 0.00, vol: 5000000, startPrice: 1.00, tag: 'hot', color: '#26a17b' },
-                { sym: 'BNB', name: 'BNB', price: 588.20, change: -1.45, vol: 8500, startPrice: 595.00, tag: 'hot', color: '#F3BA2F' }
-            ];
+            return stats || [];
         }
-
-        let isUserLoggedIn = localStorage.getItem('isLoggedIn') === 'true';
 
         function checkAuth(e) {
             if(!isUserLoggedIn) {
@@ -260,14 +256,24 @@
             const liveData = getMarketData();
             let filtered = [];
 
-            // ফিল্টারিং লজিক (আপনার আগের কোডের মতোই)
+            // ২. সংশোধিত ফিল্টারিং লজিক (Hot এবং New নিশ্চিত করতে)
             if (filter === 'hot') {
-                filtered = liveData.filter(c => c.tag === 'hot' || c.sym === 'SMAT');
+                // Hot ট্যাবে সেই কয়েনগুলো থাকবে যেগুলোর tag 'hot' অথবা ম্যানুয়ালি গুরুত্বপূর্ণ (যেমন SMAT, BNB)
+                filtered = liveData.filter(c => c.tag === 'hot' || c.sym === 'SMAT' || c.sym === 'BNB');
             } else if (filter === 'gainer') {
-                filtered = liveData.filter(c => ((c.price - c.startPrice)/c.startPrice) > 0);
+                filtered = [...liveData].sort((a, b) => {
+                    let changeA = ((a.price - a.startPrice) / a.startPrice);
+                    let changeB = ((b.price - b.startPrice) / b.startPrice);
+                    return changeB - changeA;
+                }).filter(c => c.price > c.startPrice);
             } else if (filter === 'loser') {
-                filtered = liveData.filter(c => ((c.price - c.startPrice)/c.startPrice) < 0);
+                filtered = [...liveData].sort((a, b) => {
+                    let changeA = ((a.price - a.startPrice) / a.startPrice);
+                    let changeB = ((b.price - b.startPrice) / b.startPrice);
+                    return changeA - changeB;
+                }).filter(c => c.price < c.startPrice);
             } else if (filter === 'new') {
+                // New ট্যাবে শুধু সেই কয়েনগুলো যাবে যেগুলোর tag 'new'
                 filtered = liveData.filter(c => c.tag === 'new');
             }
 
@@ -275,8 +281,10 @@
             filtered.forEach(coin => {
                 const currentPrice = parseFloat(coin.price);
                 const change = ((currentPrice - coin.startPrice) / coin.startPrice * 100).toFixed(2);
-                const isUp = change >= 0;
-                const volInUsdt = (coin.vol * currentPrice);
+                const isUp = parseFloat(change) >= 0;
+                
+                // ভলিউম আপডেট লজিক (coin.vol সরাসরি coin.js থেকে আসে)
+                const volValue = parseFloat(coin.vol || 0);
                 const color = coin.color || '#f3ba2f';
 
                 htmlContent += `
@@ -285,7 +293,7 @@
                             <div class="coin-icon" style="background:${color}22; color:${color}">${coin.sym[0]}</div>
                             <div>
                                 <div style="font-weight:bold">${coin.sym}/USDT</div>
-                                <div style="font-size:12px; color:var(--text-sec)">Vol $${volInUsdt >= 1000 ? (volInUsdt / 1000).toFixed(2) + "K" : volInUsdt.toFixed(2)}</div>
+                                <div style="font-size:12px; color:var(--text-sec)">Vol ${volValue >= 1000 ? (volValue / 1000).toFixed(2) + "K" : volValue.toFixed(2)}</div>
                             </div>
                         </div>
                         <div style="text-align:right">
@@ -297,20 +305,27 @@
                     </div>
                 `;
             });
+
+            // যদি ফিল্টারে কিছু না থাকে তবে মেসেজ দেখাবে
+            if(filtered.length === 0) {
+                htmlContent = `<p style="text-align:center; color:var(--text-sec); margin-top:20px;">No coins found in ${filter} section</p>`;
+            }
+
             container.innerHTML = htmlContent;
             updatePortfolio();
         }
 
         function updatePortfolio() {
             let total = 0;
+            const liveData = getMarketData();
             if(isUserLoggedIn) {
-                const liveData = getMarketData();
                 liveData.forEach(coin => {
-                    // coin.js এর কি (key) অনুযায়ী ব্যালেন্স লোড
                     let balKey = coin.key || (coin.sym.toLowerCase() + "Balance");
                     let bal = parseFloat(localStorage.getItem(balKey)) || 0;
                     total += (bal * coin.price);
                 });
+                // USDT balance যোগ করা
+                total += parseFloat(localStorage.getItem('usdtBalance')) || 0;
                 document.getElementById('totalValue').innerText = total.toLocaleString(undefined, {minimumFractionDigits: 2});
             }
         }
@@ -359,12 +374,13 @@
                 document.getElementById('loggedOutContent').style.display = 'block';
             }
             
+            // প্রাথমিক রেন্ডার
             renderCoins('hot');
             
-            // সিঙ্ক ইন্টারভাল
+            // ৩. রিয়েল টাইম আপডেট ইন্টারভাল
             setInterval(() => {
                 renderCoins(currentActiveTab);
-            }, 3000);
+            }, 2000);
         };
     </script>
 </body>
