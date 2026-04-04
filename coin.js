@@ -4,76 +4,148 @@
 
 const GLOBAL_COINS = [
     {
+        sym: 'SMAT',
+        name: 'SMAT Native Coin',
+        price: 10.00,
+        startPrice: 12.30,
+        key: 'smatBalance',
+        color: '#26a17b',
+        networks: ['SMAT Chain', 'BNB Smart Chain']
+    },
+   {
         sym: 'USDT',
-        name: 'Tether USD',
+        name: 'USDT Stablecoin',
         price: 1.00,
         startPrice: 1.00,
         key: 'usdtBalance',
         color: '#26a17b',
-        networks: ['BEP20', 'TRC20']
+        networks: ['BSC20', 'ERC20']
     },
    {
         sym: 'USDC',
-        name: 'USDC Token',
+        name: 'USDC Stablecoin',
         price: 1.00,
         startPrice: 1.00,
         key: 'usdcBalance',
         color: '#26a17b',
-        networks: ['BEP20', 'TRC20']
-    },
-   {
-        sym: 'SUI',
-        name: 'SUI Coin',
-        price: 1.30,
-        startPrice: 1.100,
-        key: 'suiBalance',
-        color: '#26a17b',
-        networks: ['BEP20', 'TRC20']
+        networks: ['BSC20', 'ERC20']
     },
   {
-        sym: 'TON',
-        name: 'Toncoin',
-        price: 1.50,
-        startPrice: 1.50,
-        key: 'tonBalance',
-        color: '#26a17b',
-        networks: ['BEP20', 'TON']
-    },
-    {
-        sym: 'SMAT',
-        name: 'SMAT Coin',
-        price: 1.8540,
-        startPrice: 1.5200,
-        key: 'smatBalance',
-        color: '#f3ba2f',
-        networks: ['SMAT Chain', 'BEP20']
-    },
-    {
         sym: 'BNB',
-        name: 'Binance',
-        price: 590.50,
-        startPrice: 595.00,
+        name: 'Binance coin',
+        price: 588.00,
+        startPrice: 590.20,
         key: 'bnbBalance',
-        color: '#f3ba2f',
-        networks: ['BEP20']
+        color: '#26a17b',
+        networks: ['BSC20', 'ERC20']
     },
     {
         sym: 'BTC',
         name: 'Bitcoin',
-        price: 68500.00,
-        startPrice: 67200.00,
-        color: '#f7931a',
+        price: 61000.00,
+        startPrice: 63000.5200,
         key: 'btcBalance',
-        networks: ['Bitcoin', 'BEP20']
+        color: '#f3ba2f',
+        networks: ['BSC20', 'ERC20']
     },
     {
         sym: 'ETH',
         name: 'Ethereum',
-        price: 3500.00,
-        startPrice: 3450.00,
+        price: 1932.50,
+        startPrice: 1897.00,
         key: 'ethBalance',
+        color: '#f3ba2f',
+        networks: ['BSC20','ERC20']
+    },
+    {
+        sym: 'SOL',
+        name: 'Solana',
+        price: 162.00,
+        startPrice: 169.00,
+        color: '#f7931a',
+        key: 'solBalance',
+        networks: ['ERC20', 'BSC20']
+    },
+ {
+        sym: 'POL',
+        name: 'Polygon',
+        price: 0.090,
+        startPrice: 0.103,
+        color: '#f7931a',
+        key: 'polBalance',
+        networks: ['POS', 'BSC20']
+    },
+ {
+        sym: 'LTC',
+        name: 'Litecoin',
+        price: 162.00,
+        startPrice: 169.00,
+        color: '#f7931a',
+        key: 'ltcBalance',
+        networks: ['ERC20', 'Litecoin','BSC20']
+    },
+ {
+        sym: 'ETC',
+        name: 'Ethereum Classic',
+        price: 16.00,
+        startPrice: 16.00,
+        color: '#f7931a',
+        key: 'etcBalance',
+        networks: ['ERC20', 'BSC20']
+    },
+ {
+        sym: 'XRP',
+        name: 'Ripple',
+        price: 1.69,
+        startPrice: 1.73,
+        color: '#f7931a',
+        key: 'xrpBalance',
+        networks: ['ERC20','Ripple', 'BSC20']
+    },
+ {
+        sym: 'TRX',
+        name: 'Tronix',
+        price: 0.17,
+        startPrice: 0.179,
+        color: '#f7931a',
+        key: 'trxBalance',
+        networks: ['TRC20','ERC20', 'BSC20']
+    },
+ {
+        sym: 'SUI',
+        name: 'SUI Coin',
+        price: 2.00,
+        startPrice: 2.00,
+        color: '#f7931a',
+        key: 'suiBalance',
+        networks: ['SUI','ERC20', 'BSC20']
+    },
+ {
+        sym: 'TON',
+        name: 'Toncoin',
+        price: 2.00,
+        startPrice: 1.80,
+        color: '#f7931a',
+        key: 'tonBalance',
+        networks: ['TON Network','ERC20', 'BSC20']
+    },
+ {
+        sym: 'XLM',
+        name: 'Monero',
+        price: 0.25,
+        startPrice: 0.27,
+        color: '#f7931a',
+        key: 'xlmBalance',
+        networks: ['ERC20', 'BSC20']
+    },
+    {
+        sym: 'Doge',
+        name: 'Dogecoin',
+        price: 0.10,
+        startPrice: 0.13,
+        key: 'dogeBalance',
         color: '#627eea',
-        networks: ['ERC20', 'BEP20']
+        networks: ['ERC20', 'BSC20']
     }
 ];
 
