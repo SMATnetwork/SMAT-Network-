@@ -13,6 +13,15 @@ const GLOBAL_COINS = [
         networks: ['BEP20', 'TRC20']
     },
    {
+        sym: 'USDC',
+        name: 'USDC Token',
+        price: 1.00,
+        startPrice: 1.00,
+        key: 'usdcBalance',
+        color: '#26a17b',
+        networks: ['BEP20', 'TRC20']
+    },
+   {
         sym: 'SUI',
         name: 'SUI Coin',
         price: 1.30,
