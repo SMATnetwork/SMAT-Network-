@@ -42,21 +42,46 @@ const GLOBAL_COINS = [
     }
 ];
 
-// মার্কেট ডাটা সিঙ্ক করার ফাংশন (এটি সব পেজে রিয়েল-টাইম প্রাইস আপডেট রাখবে)
+/**
+ * মার্কেট ডাটা সিঙ্ক করার ফাংশন
+ * এটি ব্রাউজারের পুরনো ডাটা মুছে নতুন কয়েনগুলো (BTC, ETH) ইনজেক্ট করবে।
+ */
 function initializeMarketData() {
-    if (!localStorage.getItem('marketStats')) {
+    // বর্তমান লোকাল স্টোরেজ ডাটা নেওয়া
+    let storedData = localStorage.getItem('marketStats');
+    
+    if (!storedData) {
+        // যদি একদমই ডাটা না থাকে
         localStorage.setItem('marketStats', JSON.stringify(GLOBAL_COINS));
     } else {
-        // যদি আগে থেকেই ডাটা থাকে, তবে নতুন কয়েনগুলো চেক করে এড করা
-        let currentStats = JSON.parse(localStorage.getItem('marketStats'));
+        let currentStats = JSON.parse(storedData);
+        
+        // নতুন কয়েনগুলো (যেমন BTC, ETH) লুপ চালিয়ে চেক করা
         GLOBAL_COINS.forEach(newCoin => {
-            const exists = currentStats.find(c => c.sym === newCoin.sym);
-            if (!exists) {
+            const index = currentStats.findIndex(c => c.sym === newCoin.sym);
+            if (index === -1) {
+                // যদি কয়েনটি লিস্টে না থাকে, তবে যোগ করো
                 currentStats.push(newCoin);
+            } else {
+                // যদি কয়েন থাকে, তবে তার প্রাইস বা নেটওয়ার্ক আপডেট করো (যাতে coin.js এর ডাটাই মেইন থাকে)
+                currentStats[index].name = newCoin.name;
+                currentStats[index].price = newCoin.price;
+                currentStats[index].networks = newCoin.networks;
             }
         });
+        
+        // আপডেট করা লিস্টটি আবার সেভ করা
         localStorage.setItem('marketStats', JSON.stringify(currentStats));
     }
+    
+    // ব্যালেন্স কিউ (Key) চেক করা যাতে Wallet-এ এরর না আসে
+    GLOBAL_COINS.forEach(coin => {
+        if (!localStorage.getItem(coin.key)) {
+            localStorage.setItem(coin.key, "0.00");
+        }
+    });
+
+    console.log("SMAT Engine: Assets Synced Successfully.");
 }
 
 // ফাইলটি লোড হওয়ার সাথে সাথে রান করবে
