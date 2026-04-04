@@ -12,11 +12,20 @@ const GLOBAL_COINS = [
         color: '#26a17b',
         networks: ['BEP20', 'TRC20']
     },
+  {
+        sym: 'TON',
+        name: 'Toncoin',
+        price: 1.50,
+        startPrice: 1.50,
+        key: 'tonBalance',
+        color: '#26a17b',
+        networks: ['BEP20', 'TON']
+    },
     {
         sym: 'SMAT',
         name: 'SMAT Coin',
-        price: 0.8540,
-        startPrice: 0.8200,
+        price: 1.8540,
+        startPrice: 1.5200,
         key: 'smatBalance',
         color: '#f3ba2f',
         networks: ['SMAT Chain', 'BEP20']
