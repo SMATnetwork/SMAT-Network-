@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>SMAT CEX | Live Market Analysis</title>
+    <script src="coins.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/apexcharts"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <style>
@@ -12,40 +13,41 @@
             --down: #f6465d; --text: #eaecef; --text-dim: #848e9c; --primary: #f3ba2f;
         }
 
-        body { margin: 0; background: var(--bg); color: var(--text); font-family: 'Segoe UI', sans-serif; }
+        body { margin: 0; background: var(--bg); color: var(--text); font-family: 'Segoe UI', sans-serif; overflow-x: hidden; }
         .app { width: 100%; max-width: 480px; margin: 0 auto; min-height: 100vh; display: flex; flex-direction: column; }
 
         /* Header */
         .header { padding: 20px 15px; border-bottom: 1px solid #2b3139; }
-        .back-btn { color: var(--text-dim); margin-bottom: 10px; cursor: pointer; display: inline-block; }
-        .pair-title { font-size: 22px; font-weight: 800; margin-bottom: 5px; }
+        .back-btn { color: var(--text-dim); margin-bottom: 10px; cursor: pointer; display: inline-block; font-size: 14px; }
+        .pair-title { font-size: 24px; font-weight: 800; margin-bottom: 5px; }
         .price-row { display: flex; align-items: baseline; gap: 12px; }
-        .main-price { font-size: 32px; font-weight: 700; color: var(--text); }
+        .main-price { font-size: 34px; font-weight: 700; color: var(--text); transition: 0.3s; }
         .stats-mini { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; font-size: 12px; color: var(--text-dim); margin-top: 15px; }
 
         /* Chart */
-        #lineChart { width: 100%; height: 280px; background: var(--bg); }
+        #lineChart { width: 100%; height: 300px; background: var(--bg); margin-top: 10px; }
 
         /* Order Book */
-        .order-book-container { padding: 20px 15px; background: var(--card); border-radius: 25px 25px 0 0; flex-grow: 1; margin-top: 10px; }
-        .ob-header { display: flex; justify-content: space-between; font-size: 12px; color: var(--text-dim); margin-bottom: 12px; font-weight: bold; }
-        .ob-row { display: flex; justify-content: space-between; font-size: 13px; padding: 5px 0; }
+        .order-book-container { padding: 25px 15px; background: var(--card); border-radius: 30px 30px 0 0; flex-grow: 1; margin-top: 15px; border-top: 1px solid #2b3139; }
+        .ob-header { display: flex; justify-content: space-between; font-size: 11px; color: var(--text-dim); margin-bottom: 12px; font-weight: bold; text-transform: uppercase; }
+        .ob-row { display: flex; justify-content: space-between; font-size: 13px; padding: 6px 0; font-family: 'Inter', sans-serif; }
         .ask-price { color: var(--down); font-weight: 600; }
         .bid-price { color: var(--up); font-weight: 600; }
 
         /* Depth Bar */
-        .market-depth-bar { height: 6px; display: flex; margin: 20px 0; border-radius: 10px; overflow: hidden; background: #2b3139; }
+        .market-depth-bar { height: 8px; display: flex; margin: 20px 0; border-radius: 4px; overflow: hidden; background: #2b3139; }
         .buy-side { background: var(--up); width: 50%; transition: 0.8s cubic-bezier(0.4, 0, 0.2, 1); }
         .sell-side { background: var(--down); width: 50%; transition: 0.8s cubic-bezier(0.4, 0, 0.2, 1); }
 
-        /* Footer */
+        /* Footer Actions */
         .footer-actions {
             display: grid; grid-template-columns: 1fr 1fr; gap: 15px;
-            padding: 15px; background: var(--card); position: sticky; bottom: 0; border-top: 1px solid #2b3139;
+            padding: 15px 20px 25px 20px; background: var(--card); position: sticky; bottom: 0; border-top: 1px solid #2b3139; z-index: 100;
         }
-        .btn { padding: 16px; border: none; border-radius: 12px; font-weight: 800; font-size: 16px; cursor: pointer; text-transform: uppercase; }
-        .btn-buy { background: var(--up); color: white; box-shadow: 0 4px 15px rgba(14, 203, 129, 0.3); }
-        .btn-sell { background: var(--down); color: white; box-shadow: 0 4px 15px rgba(246, 70, 93, 0.3); }
+        .btn { padding: 16px; border: none; border-radius: 12px; font-weight: 800; font-size: 16px; cursor: pointer; text-transform: uppercase; transition: 0.2s; }
+        .btn:active { transform: scale(0.96); }
+        .btn-buy { background: var(--up); color: white; box-shadow: 0 4px 15px rgba(14, 203, 129, 0.2); }
+        .btn-sell { background: var(--down); color: white; box-shadow: 0 4px 15px rgba(246, 70, 93, 0.2); }
 
         .up { color: var(--up) !important; }
         .down { color: var(--down) !important; }
@@ -55,22 +57,22 @@
 
 <div class="app">
     <div class="header">
-        <div class="back-btn" onclick="history.back()"><i class="fas fa-chevron-left"></i> Market</div>
+        <div class="back-btn" onclick="history.back()"><i class="fas fa-arrow-left"></i> Markets</div>
         <div class="pair-title" id="pairLabel">---/USDT</div>
         <div class="price-row">
             <div class="main-price" id="topPrice">0.0000</div>
-            <div id="topChange" style="font-weight: bold;">0.00%</div>
+            <div id="topChange" style="font-weight: bold; font-size: 14px;">0.00%</div>
         </div>
         <div class="stats-mini">
-            <div>24h High <span id="h24" style="color:var(--text); margin-left:5px;">0.00</span></div>
-            <div>24h Vol(USDT) <span id="v24" style="color:var(--text); margin-left:5px;">$0.00</span></div>
+            <div>24h High <span id="h24" style="color:var(--text); margin-left:5px; font-weight: 600;">0.00</span></div>
+            <div>24h Vol(USDT) <span id="v24" style="color:var(--text); margin-left:5px; font-weight: 600;">$0.00</span></div>
         </div>
     </div>
 
     <div id="lineChart"></div>
 
     <div class="order-book-container">
-        <div style="font-weight: 800; margin-bottom: 15px; font-size: 16px;">Order Book</div>
+        <div style="font-weight: 800; margin-bottom: 20px; font-size: 18px;">Market Trades</div>
         <div class="ob-header">
             <span>Price (USDT)</span>
             <span>Amount</span>
@@ -78,13 +80,13 @@
         
         <div id="askList"></div>
         
-        <div style="text-align: center; margin: 15px 0; font-size: 24px; font-weight: 800; border-top: 1px solid #2b3139; border-bottom: 1px solid #2b3139; padding: 10px 0;" id="midPrice">0.0000</div>
+        <div style="text-align: center; margin: 15px 0; font-size: 26px; font-weight: 800; border-top: 1px solid #2b3139; border-bottom: 1px solid #2b3139; padding: 12px 0;" id="midPrice">0.0000</div>
         
         <div id="bidList"></div>
 
-        <div style="display:flex; justify-content: space-between; font-size: 11px; color: var(--text-dim); margin-top: 20px;">
-            <span>Buy Strength</span>
-            <span>Sell Strength</span>
+        <div style="display:flex; justify-content: space-between; font-size: 11px; color: var(--text-dim); margin-top: 25px; font-weight: 600;">
+            <span>BUY STRENGTH</span>
+            <span>SELL STRENGTH</span>
         </div>
         <div class="market-depth-bar">
             <div class="buy-side" id="buyBar"></div>
@@ -103,81 +105,90 @@
     let priceData = [];
     const urlParams = new URLSearchParams(window.location.search);
     const sym = urlParams.get('coin') || 'SMAT';
+    
+    // coins.js থেকে ডাটা রিড করা
+    let coins = JSON.parse(localStorage.getItem('marketStats')) || GLOBAL_COINS;
+    let activeCoin = coins.find(c => c.sym === sym.toUpperCase()) || coins[0];
 
     function init() {
-        document.getElementById('pairLabel').innerText = sym + "/USDT";
+        document.getElementById('pairLabel').innerText = activeCoin.sym + "/USDT";
         setupChart();
         updateMarketData();
-        // প্রতি ১ সেকেন্ডে ডাটা আপডেট হবে যাতে রিয়েল-টাইম মনে হয়
-        setInterval(updateMarketData, 1000);
+        
+        // রিয়েল-টাইম ডাটা সিঙ্ক (মার্কেট মুভমেন্ট সিমুলেশন সহ)
+        setInterval(updateMarketData, 2000);
     }
 
     function setupChart() {
         const options = {
             series: [{ name: 'Price', data: [] }],
             chart: { 
-                type: 'area', height: 280, 
+                type: 'area', height: 300, 
                 toolbar: { show: false }, 
                 animations: { enabled: true, easing: 'linear', dynamicAnimation: { speed: 1000 } },
-                sparkline: { enabled: false }
+                sparkline: { enabled: false },
+                background: 'transparent'
             },
-            colors: [sym === 'SMAT' ? '#f3ba2f' : '#f0b90b'],
+            theme: { mode: 'dark' },
+            colors: [activeCoin.sym === 'SMAT' ? '#f3ba2f' : '#0ecb81'],
             stroke: { curve: 'smooth', width: 3 },
-            fill: { type: 'gradient', gradient: { shadeIntensity: 1, opacityFrom: 0.4, opacityTo: 0.05, stops: [0, 90, 100] } },
+            fill: { 
+                type: 'gradient', 
+                gradient: { shadeIntensity: 1, opacityFrom: 0.45, opacityTo: 0.05, stops: [20, 100] } 
+            },
             dataLabels: { enabled: false },
             xaxis: { type: 'datetime', labels: { show: false }, axisBorder: { show: false }, axisTicks: { show: false } },
-            yaxis: { opposite: true, labels: { style: { colors: '#848e9c' }, formatter: (val) => val.toFixed(2) } },
-            grid: { borderColor: '#1e2226', strokeDashArray: 4 }
+            yaxis: { opposite: true, labels: { style: { colors: '#848e9c', fontSize: '10px' }, formatter: (val) => val.toFixed(activeCoin.price < 1 ? 4 : 2) } },
+            grid: { borderColor: '#1e2226', strokeDashArray: 3 }
         };
         lineChart = new ApexCharts(document.querySelector("#lineChart"), options);
         lineChart.render();
     }
 
     function updateMarketData() {
-        const stats = JSON.parse(localStorage.getItem('marketStats') || '[]');
-        const coin = stats.find(c => c.sym === sym) || { price: 0, startPrice: 0, vol: 0 };
+        // ফ্রেশ ডাটা নেওয়া
+        const stats = JSON.parse(localStorage.getItem('marketStats')) || GLOBAL_COINS;
+        const coin = stats.find(c => c.sym === activeCoin.sym) || activeCoin;
         
         const currentPrice = parseFloat(coin.price);
         const change = ((currentPrice - coin.startPrice) / coin.startPrice * 100).toFixed(2);
         const isUp = change >= 0;
 
         // UI Updates
-        document.getElementById('topPrice').innerText = currentPrice.toFixed(currentPrice < 1 ? 4 : 2);
-        document.getElementById('midPrice').innerText = currentPrice.toFixed(currentPrice < 1 ? 4 : 2);
+        const priceStr = currentPrice.toFixed(currentPrice < 1 ? 4 : 2);
+        document.getElementById('topPrice').innerText = priceStr;
+        document.getElementById('midPrice').innerText = priceStr;
         document.getElementById('midPrice').className = isUp ? 'up' : 'down';
         
         const changeEl = document.getElementById('topChange');
         changeEl.innerText = (isUp ? "+" : "") + change + "%";
         changeEl.className = isUp ? 'up' : 'down';
 
-        document.getElementById('h24').innerText = (currentPrice * 1.05).toFixed(2);
-        const volUsdt = (coin.vol * currentPrice);
-        document.getElementById('v24').innerText = "$" + (volUsdt > 1000 ? (volUsdt/1000).toFixed(1) + "K" : volUsdt.toFixed(2));
+        // 24h High/Vol (সিমুলেশন)
+        document.getElementById('h24').innerText = (currentPrice * 1.025).toFixed(currentPrice < 1 ? 4 : 2);
+        const volUsdt = (currentPrice * 12500.50);
+        document.getElementById('v24').innerText = "$" + (volUsdt / 1000).toFixed(1) + "K";
 
         // Chart Update
         const now = new Date().getTime();
         priceData.push({ x: now, y: currentPrice });
-        if(priceData.length > 30) priceData.shift();
+        if(priceData.length > 20) priceData.shift();
         lineChart.updateSeries([{ data: priceData }]);
 
         // Order Book
-        renderLiveOrderBook();
+        renderLiveOrderBook(currentPrice);
     }
 
-    function renderLiveOrderBook() {
-        // ডাইনামিকলি কিছু ফেক অর্ডার জেনারেট করা (রিয়েল ফিলিংসের জন্য)
-        const stats = JSON.parse(localStorage.getItem('marketStats') || '[]');
-        const coin = stats.find(c => c.sym === sym);
-        const basePrice = coin ? coin.price : 100;
-
+    function renderLiveOrderBook(basePrice) {
         const generateOrders = (type) => {
             let html = '';
             let totalVol = 0;
             for(let i=0; i<5; i++) {
-                const p = type === 'ask' ? basePrice + (Math.random()*0.05) : basePrice - (Math.random()*0.05);
-                const a = (Math.random() * 5 + 0.1).toFixed(2);
+                // রিয়েল ফিলিংসের জন্য ছোট প্রাইজ ডিফারেন্স
+                const p = type === 'ask' ? basePrice + (Math.random() * (basePrice * 0.002)) : basePrice - (Math.random() * (basePrice * 0.002));
+                const a = (Math.random() * 2.5 + 0.05).toFixed(3);
                 totalVol += parseFloat(a);
-                html += `<div class="ob-row"><span class="${type === 'ask' ? 'ask-price' : 'bid-price'}">${p.toFixed(4)}</span><span>${a}</span></div>`;
+                html += `<div class="ob-row"><span class="${type === 'ask' ? 'ask-price' : 'bid-price'}">${p.toFixed(basePrice < 1 ? 4 : 2)}</span><span style="font-weight:500;">${a}</span></div>`;
             }
             return { html, totalVol };
         };
@@ -196,7 +207,7 @@
     }
 
     function goToTrade(side) {
-        window.location.href = `Trade.html?side=${side}&coin=${sym}`;
+        window.location.href = `Trade.html?side=${side}&coin=${activeCoin.sym}`;
     }
 
     window.onload = init;
