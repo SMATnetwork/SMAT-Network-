@@ -24,11 +24,16 @@
 
         * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
         body {
-            margin: 0; background: var(--bg); color: var(--text-main);
-            font-family: 'Inter', 'Segoe UI', Roboto, sans-serif;
-            display: flex; flex-direction: column; height: 100vh; overflow: hidden;
-            position: relative;
-        }
+    margin: 0; 
+    background: var(--bg); 
+    color: var(--text-main);
+    font-family: 'Inter', sans-serif;
+    display: flex; 
+    flex-direction: column; 
+    height: 100dvh; /* vh এর বদলে dvh ব্যবহার করুন */
+    overflow: hidden;
+}
+
 
         /* Header */
         .chat-header {
@@ -75,13 +80,13 @@
             box-shadow: 0 0 30px rgba(240, 185, 11, 0.5); 
         }
 
-        /* Chat Display */
         #chatDisplay {
-            flex: 1; overflow-y: auto; padding: 20px;
-            display: flex; flex-direction: column; gap: 20px;
-            background: linear-gradient(to bottom, #0b0e11, #161a1e);
-            scroll-behavior: smooth;
-        }
+    flex: 1 1 auto; /* এটি বাকি জায়গা দখল করবে */
+    overflow-y: auto;
+    padding: 20px;
+    background: linear-gradient(to bottom, #0b0e11, #161a1e);
+}
+
 
         .msg-row { display: flex; gap: 14px; animation: slideUp 0.3s ease-out; position: relative; }
         @keyframes slideUp { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
@@ -135,9 +140,14 @@
             border: 1px solid var(--chat-bubble); color: white; border-radius: 8px; outline: none;
         }
 
-        /* Input Area */
-        .input-area { padding: 15px 20px; background: var(--card-bg); border-top: 1px solid var(--chat-bubble); }
-        .input-box-wrapper { display: flex; gap: 10px; align-items: center; }
+        .input-area {
+    padding: 15px 20px;
+    background: var(--card-bg);
+    border-top: 1px solid var(--chat-bubble);
+    flex-shrink: 0; /* এটি যাতে ছোট না হয়ে যায় */
+    z-index: 1000;
+}
+
         
         .special-tools { display: flex; gap: 12px; }
         .tool-btn { font-size: 20px; cursor: pointer; transition: 0.2s; }
