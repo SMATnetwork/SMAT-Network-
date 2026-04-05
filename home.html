@@ -194,7 +194,7 @@
     <div class="coin-list" id="coinContainer"></div>
 
     <footer class="footer">
-        <a href="home.html" class="f-nav active"><i class="fas fa-home"></i>Home</a>
+        <a href="Home.html" class="f-nav active"><i class="fas fa-home"></i>Home</a>
         <a href="Trade.html" class="f-nav" onclick="checkAuth(event)"><i class="fas fa-chart-line"></i>Trade</a>
         <div class="u-curve">
             <div class="spin-circle"></div>
@@ -208,15 +208,13 @@
         let currentActiveTab = 'hot';
         let isUserLoggedIn = localStorage.getItem('isLoggedIn') === 'true';
 
-        // ডাটাবেস বা coin.js থেকে রিয়াল টাইম ডাটা সংগ্রহ
+        // ১. ডাটাবেস বা coin.js থেকে রিয়াল টাইম ডাটা সংগ্রহ
         function getMarketData() {
-            if (typeof GLOBAL_COINS !== 'undefined') {
-                return GLOBAL_COINS;
-            }
-            return JSON.parse(localStorage.getItem('marketStats')) || [];
+            // coin.js এর GLOBAL_COINS সরাসরি ব্যবহার করবে
+            return (typeof GLOBAL_COINS !== 'undefined') ? GLOBAL_COINS : (JSON.parse(localStorage.getItem('marketStats')) || []);
         }
 
-        // অথেনটিকেশন চেক
+        // ২. অথেনটিকেশন চেক
         function checkAuth(e) {
             if(!isUserLoggedIn) {
                 if(e) e.preventDefault();
@@ -228,6 +226,7 @@
         }
 
         function logout() {
+            localStorage.clear(); // সব ডাটা ক্লিয়ার করবে সিকিউরিটির জন্য
             localStorage.setItem('isLoggedIn', 'false');
             location.reload();
         }
@@ -245,7 +244,7 @@
             renderCoins(category);
         }
 
-        // কয়েন রেন্ডারিং ইঞ্জিন
+        // ৩. কয়েন রেন্ডারিং ইঞ্জিন (coin.js ভেরিয়েবল অনুযায়ী)
         function renderCoins(filter = 'hot') {
             const container = document.getElementById('coinContainer');
             if (!container) return;
@@ -253,43 +252,43 @@
             const liveData = getMarketData();
             let filtered = [];
 
-            // ১. হট, গেইনার, লুজার এবং নিউ ফিল্টারিং লজিক
+            // ফিল্টারিং লজিক
             if (filter === 'hot') {
-                // Hot: ভলিউম অনুযায়ী টপ ১০টি (সরাসরি coin.js এর symVol লজিক)
                 filtered = [...liveData].sort((a, b) => {
-                    let volA = window[a.sym.toLowerCase() + "Vol"] || 0;
-                    let volB = window[b.sym.toLowerCase() + "Vol"] || 0;
+                    let volA = parseFloat(window[a.sym.toLowerCase() + "Vol"]) || 0;
+                    let volB = parseFloat(window[b.sym.toLowerCase() + "Vol"]) || 0;
                     return volB - volA;
                 }).slice(0, 10);
             } else if (filter === 'gainer') {
-                // Gainers: যাদের দাম বেড়েছে
-                filtered = [...liveData]
-                    .filter(c => c.price > c.startPrice)
-                    .sort((a, b) => ((b.price - b.startPrice)/b.startPrice) - ((a.price - a.startPrice)/a.startPrice));
+                filtered = [...liveData].sort((a, b) => {
+                    let priceA = window[a.sym.toLowerCase() + "Val"] || a.price;
+                    let priceB = window[b.sym.toLowerCase() + "Val"] || b.price;
+                    return (priceB - b.price) - (priceA - a.price);
+                });
             } else if (filter === 'loser') {
-                // Losers: যাদের দাম কমেছে
-                filtered = [...liveData]
-                    .filter(c => c.price < c.startPrice)
-                    .sort((a, b) => ((a.price - a.startPrice)/a.startPrice) - ((b.price - b.startPrice)/b.startPrice));
+                filtered = [...liveData].sort((a, b) => {
+                    let priceA = window[a.sym.toLowerCase() + "Val"] || a.price;
+                    let priceB = window[b.sym.toLowerCase() + "Val"] || b.price;
+                    return (priceA - a.price) - (priceB - b.price);
+                });
             } else if (filter === 'new') {
-                // New: একদম নতুন অ্যাড হওয়া ৫টি
-                filtered = [...liveData].reverse().slice(0, 5);
+                filtered = [...liveData].slice(-5).reverse();
             }
 
             let htmlContent = '';
             filtered.forEach(coin => {
                 const currentPrice = window[coin.sym.toLowerCase() + "Val"] || coin.price;
-                const startPrice = coin.startPrice || currentPrice;
-                const change = startPrice === 0 ? "0.00" : ((currentPrice - startPrice) / startPrice * 100).toFixed(2);
+                const startPrice = coin.price; // coin.js এর ডিফল্ট প্রাইসকে স্টার্টিং ধরা হয়েছে
+                const change = ((currentPrice - startPrice) / startPrice * 100).toFixed(2);
                 const isUp = parseFloat(change) >= 0;
                 
-                // লগো পাথ: assets/logos/sym.png
+                // লগো পাথ: assets/logos/sym.png (coin.js এ যেভাবে সেট করা আছে)
                 const logoSrc = `assets/logos/${coin.sym.toLowerCase()}.png`;
 
                 htmlContent += `
                     <div class="coin-row" onclick="if(checkAuth(event)) window.location.href='Trade.html?coin=${coin.sym}'">
                         <div style="display:flex; align-items:center; gap:12px;">
-                            <img src="${logoSrc}" class="coin-icon" onerror="this.src='https://via.placeholder.com/40?text=${coin.sym[0]}'">
+                            <img src="${logoSrc}" class="coin-icon" onerror="this.src='https://via.placeholder.com/40?text=${coin.sym[0].toUpperCase()}'">
                             <div>
                                 <div style="font-weight:bold">${coin.sym.toUpperCase()}</div>
                                 <div style="font-size:12px; color:var(--text-sec)">${coin.name}</div>
@@ -308,12 +307,11 @@
             updatePortfolio();
         }
 
-        // রিয়াল ব্যালেন্স ক্যালকুলেশন (symBalance ব্যবহার করে)
+        // ৪. রিয়াল ব্যালেন্স ক্যালকুলেশন (symBalance ব্যবহার করে)
         async function updatePortfolio() {
             let totalEquity = 0;
             const totalDisplay = document.getElementById('totalValue');
             
-            // ইউজার লগইন না থাকলে ব্যালেন্স ০.০০
             if(!isUserLoggedIn) {
                 totalDisplay.innerText = "0.00";
                 return;
@@ -321,13 +319,13 @@
 
             const liveData = getMarketData();
             liveData.forEach(coin => {
-                // রিয়াল ব্যালেন্স: symBalance (যা coin.js থেকে ৫০০ ভ্যালু নিয়ে আসছে)
+                // coin.js এর উইন্ডো ভেরিয়েবল থেকে সরাসরি ডাটা নেওয়া
                 let balance = window[coin.sym.toLowerCase() + "Balance"] || 0;
                 let price = window[coin.sym.toLowerCase() + "Val"] || coin.price;
                 totalEquity += (balance * price);
             });
 
-            totalDisplay.innerText = totalEquity.toLocaleString(undefined, {minimumFractionDigits: 2});
+            totalDisplay.innerText = totalEquity.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2});
         }
 
         function handleKYC() {
@@ -346,6 +344,12 @@
             }
         }
 
+        // ৫. মাস্টার লোড (ইঞ্জিন রেডি হওয়ার পর)
+        window.addEventListener('smat_engine_ready', () => {
+            console.log("Home Sync: SMAT Engine Connected.");
+            renderCoins(currentActiveTab);
+        });
+
         window.onload = () => {
             if(isUserLoggedIn) {
                 document.getElementById('loggedInContent').style.display = 'block';
@@ -358,10 +362,13 @@
                 document.getElementById('loggedOutContent').style.display = 'block';
             }
             
-            // ইনিশিয়াল রেন্ডার
+            // রেন্ডার কল
             renderCoins('hot');
-            // ডাটা রিফ্রেশ ইন্টারভাল
-            setInterval(() => { renderCoins(currentActiveTab); }, 3000);
+            
+            // রিয়াল-টাইম রিফ্রেশ (প্রতি ৩ সেকেন্ডে)
+            setInterval(() => { 
+                renderCoins(currentActiveTab); 
+            }, 3000);
         };
     </script>
 </body>
