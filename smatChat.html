@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>SMAT | Premium Chat</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <style>
@@ -22,26 +22,18 @@
             --drop-cyan: #00ffcc;
         }
 
-        /* Responsive Base */
+        /* Responsive Fixes */
         * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
         
         body {
             margin: 0; background: var(--bg); color: var(--text-main);
             font-family: 'Inter', 'Segoe UI', Roboto, sans-serif;
             display: flex; flex-direction: column; 
-            height: 100vh; height: 100dvh; /* dvh for dynamic mobile height */
+            height: 100vh; height: 100dvh; /* dvh ensures perfect mobile height */
             overflow: hidden; position: relative;
         }
-.app-container { 
-            width: 100%;             
-            min-height: 100vh;       
-            background: #0b0e11; 
-            padding-bottom: 50px;
-            margin: 0;               
-            box-sizing: border-box;  
-        }
 
-        /* Header - Fixed height */
+        /* Header - Flex Shrink 0 ensures it stays fixed height */
         .chat-header {
             padding: 12px 15px; background: var(--card-bg); border-bottom: 2px solid var(--primary);
             display: flex; justify-content: space-between; align-items: center; 
@@ -49,7 +41,7 @@
         }
         .header-title { font-size: 18px; font-weight: 900; letter-spacing: 1px; color: var(--primary); }
 
-        /* Jojo Timer - Positioned relative to header */
+        /* Jojo Timer - Adjusted position */
         #jojoTimer {
             position: absolute; top: 65px; right: 15px;
             background: rgba(30, 35, 41, 0.95); border: 1px solid var(--primary);
@@ -58,7 +50,7 @@
             box-shadow: 0 4px 10px rgba(0,0,0,0.5); z-index: 999;
         }
 
-        /* S-Bubble Logic */
+        /* S-Bubble Logic Styles */
         #s-bubble { 
             position: fixed; width: 60px; height: 60px; z-index: 9999; cursor: pointer; display: none; 
             animation: floatBubble 10s ease-in-out infinite; 
@@ -78,7 +70,7 @@
             box-shadow: 0 0 30px rgba(240, 185, 11, 0.5); 
         }
 
-        /* Chat Display - Takes remaining space */
+        /* Chat Display - flex: 1 makes it take all remaining space */
         #chatDisplay {
             flex: 1; overflow-y: auto; padding: 15px;
             display: flex; flex-direction: column; gap: 15px;
@@ -115,7 +107,7 @@
         .bubble.mentioned-active { border-left: 3px solid var(--mention-green); background: rgba(14, 203, 129, 0.1); }
         .special-msg { border: 1px solid var(--rain-blue); background: rgba(0, 210, 255, 0.05) !important; }
 
-        /* Input Area - Sticks to bottom */
+        /* Input Area - Sticks to the bottom */
         .input-area { 
             padding: 10px 15px; background: var(--card-bg); 
             border-top: 1px solid var(--chat-bubble); flex-shrink: 0;
@@ -137,12 +129,12 @@
         }
 
         .send-btn {
-            background: var(--primary); border: none; width: 38px; height: 38px;
+            background: var(--primary); border: none; width: 40px; height: 40px;
             border-radius: 10px; color: #000; cursor: pointer; font-size: 16px;
             display: flex; align-items: center; justify-content: center; flex-shrink: 0;
         }
 
-        /* Modal Responsiveness */
+        /* Modals */
         .modal {
             display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
             background: rgba(0,0,0,0.9); z-index: 5000; justify-content: center; align-items: center;
@@ -152,9 +144,17 @@
             width: 90%; max-width: 380px; border: 1px solid var(--primary);
             max-height: 80vh; overflow-y: auto;
         }
+        
+        .modal-box input, .modal-box select {
+            width: 100%; padding: 10px; margin: 8px 0; background: #181a20;
+            border: 1px solid var(--chat-bubble); color: white; border-radius: 8px; outline: none;
+        }
 
-        .btn-panel { padding: 4px 8px; border-radius: 5px; font-weight: 900; font-size: 10px; cursor: pointer; border: none; }
         .claim-btn { background: var(--drop-cyan); border: none; padding: 8px; width: 100%; border-radius: 6px; color: #000; font-weight: 900; margin-top: 8px; cursor: pointer; }
+        .claim-btn:disabled { background: #363c44; color: #848e9c; cursor: not-allowed; }
+
+        .btn-panel { padding: 4px 8px; border-radius: 6px; font-weight: 900; font-size: 10px; cursor: pointer; border: none; }
+        .leader-item { display: flex; justify-content: space-between; padding: 8px; border-bottom: 1px solid #333; }
     </style>
 </head>
 <body>
@@ -172,7 +172,7 @@
 
     <div id="leaderboardModal" class="modal">
         <div class="modal-box">
-            <h2 style="color:var(--primary); text-align: center; font-size: 18px;"><i class="fa-solid fa-trophy"></i> Crash Top Earners</h2>
+            <h2 style="color:var(--primary); text-align: center; font-size: 18px;"><i class="fa-solid fa-trophy"></i> Top Earners</h2>
             <div id="leaderboardBody"></div>
             <button onclick="closeModal('leaderboardModal')" style="width:100%; margin-top:15px; background:var(--primary); border:none; padding:10px; border-radius:8px; font-weight: 800;">CLOSE</button>
         </div>
@@ -216,7 +216,7 @@
             <i class="fa-solid fa-crown" style="color: var(--gold); cursor: pointer; font-size: 18px;" onclick="openLeaderboard()"></i>
             <button id="banListBtn" class="btn-panel" style="display:none; background: var(--danger); color: white;" onclick="openBanList()">LIST</button>
             <button id="superAdminBtn" class="btn-panel" style="display:none; background: var(--primary); color: black;" onclick="openModal('adminModal')">ADMIN</button>
-            <a href="home.html" style="color:var(--text-sec); font-size: 20px; margin-left: 2px;"><i class="fa-solid fa-circle-xmark"></i></a>
+            <a href="Home.html" style="color:var(--text-sec); font-size: 20px; margin-left: 2px;"><i class="fa-solid fa-circle-xmark"></i></a>
         </div>
     </div>
 
@@ -276,9 +276,7 @@
             if (active) {
                 timerDiv.style.display = 'block';
                 document.getElementById('jojoClock').innerText = bdTime.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit', second:'2-digit', hour12: true});
-            } else {
-                timerDiv.style.display = 'none';
-            }
+            } else { timerDiv.style.display = 'none'; }
 
             const targetHours = [8, 14, 20, 2];
             const bubble = document.getElementById('s-bubble');
@@ -326,7 +324,7 @@
         function openLeaderboard() {
             const winners = [{id: "SMAT982341", profit: 1250.50},{id: "SMAT129384", profit: 980.20},{id: "SMAT556677", profit: 850.00}];
             document.getElementById('leaderboardBody').innerHTML = winners.map((w, i) => `
-                <div class="leader-item"><div class="leader-rank">#${i + 1}</div><div class="leader-name">${w.id}</div><div class="leader-win">$${w.profit.toFixed(2)}</div></div>
+                <div class="leader-item"><div style="color:var(--primary); font-weight:900;">#${i + 1}</div><div>${w.id}</div><div style="color:var(--admin-color); font-weight:800;">$${w.profit.toFixed(2)}</div></div>
             `).join('');
             openModal('leaderboardModal');
         }
