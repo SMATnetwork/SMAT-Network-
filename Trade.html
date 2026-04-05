@@ -6,22 +6,21 @@
     <title>SMAT CEX | Professional Trade Engine</title>
     <script src="coin.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><circle cx='50' cy='50' r='50' fill='%23f3ba2f'/><text x='50%25' y='55%25' text-anchor='middle' dy='.3em' fill='black' font-family='Courier New, monospace' font-weight='900' font-size='60'>S</text></svg>">
     
     <style>
         :root {
             --bg: #0b0e11; --card: #1e2329; --primary: #f0b90b;
             --up: #0ecb81; --down: #f6465d; --text-sec: #848e9c;
+            --border: #2b3139;
         }
         * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Inter', sans-serif; -webkit-tap-highlight-color: transparent; }
-        body { background: var(--bg); color: white; overflow-x: hidden; }
+        body { background: var(--bg); color: white; overflow-x: hidden; padding-bottom: 80px; }
 
-        /* Header */
-        .header { display: flex; justify-content: space-between; align-items: center; padding: 12px 15px; border-bottom: 1px solid #2b3139; background: var(--bg); position: sticky; top: 0; z-index: 1000; }
-        .pair-selector { display: flex; align-items: center; gap: 8px; cursor: pointer; font-size: 18px; font-weight: bold; }
-        .header-tools { display: flex; gap: 18px; color: var(--text-sec); font-size: 18px; }
-
-        /* Full Page Popup Drawer */
+        /* Header & Common Styles */
+        .header { display: flex; justify-content: space-between; align-items: center; padding: 12px 15px; border-bottom: 1px solid var(--border); background: var(--bg); position: sticky; top: 0; z-index: 1000; }
+        .pair-selector { display: flex; align-items: center; gap: 8px; cursor: pointer; font-size: 18px; font-weight: bold; text-transform: uppercase; }
+        
+        /* Popup Overlay */
         .overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: var(--bg); z-index: 4000; display: none; flex-direction: column; }
         .popup-header { padding: 15px; display: flex; align-items: center; gap: 15px; border-bottom: 1px solid #2b3139; }
         .popup-header i { font-size: 20px; cursor: pointer; }
@@ -40,55 +39,57 @@
 
         .pair-list-scroll { overflow-y: auto; flex: 1; padding-bottom: 20px; }
         .pair-row { padding: 15px 20px; border-bottom: 1px solid #1e2329; cursor: pointer; display: flex; justify-content: space-between; align-items: center; }
-        .pair-row:active { background: #1e2329; }
         .p-info { display: flex; align-items: center; gap: 15px; }
-        .p-logo { width: 38px; height: 38px; background: var(--primary); border-radius: 50%; color: black; display: flex; align-items: center; justify-content: center; font-weight: bold; font-size: 16px; overflow: hidden; }
+        .p-logo { width: 32px; height: 32px; background: var(--primary); border-radius: 50%; color: black; display: flex; align-items: center; justify-content: center; font-weight: bold; overflow: hidden; }
         .p-logo img { width: 100%; height: 100%; object-fit: cover; }
 
-        /* Trade Grid */
-        .trade-grid { display: grid; grid-template-columns: 1.1fr 0.9fr; gap: 10px; padding: 10px; }
+        /* Trade Layout */
+        .trade-grid { display: grid; grid-template-columns: 1.1fr 0.9fr; gap: 12px; padding: 12px; }
         .side-tabs { display: flex; background: #2b3139; border-radius: 4px; margin-bottom: 12px; height: 36px; overflow: hidden; }
         .tab-btn { flex: 1; border: none; background: none; color: var(--text-sec); font-weight: bold; cursor: pointer; }
         .tab-btn.active.buy { background: var(--up); color: white; }
         .tab-btn.active.sell { background: var(--down); color: white; }
 
-        .input-box { background: var(--card); border: 1px solid #333; border-radius: 4px; margin-bottom: 8px; padding: 10px; display: flex; align-items: center; }
+        .input-box { background: var(--card); border: 1px solid #333; border-radius: 4px; margin-bottom: 8px; padding: 10px; display: flex; align-items: center; position: relative; }
         .input-box input { background: none; border: none; color: white; width: 100%; outline: none; font-size: 16px; }
         .input-box span { font-size: 12px; color: var(--text-sec); }
 
+        .fee-info { font-size: 10px; color: var(--text-sec); margin: 5px 0; display: flex; justify-content: space-between; }
         .pct-row { display: flex; gap: 5px; margin: 10px 0; }
-        .pct-btn { flex: 1; background: #2b3139; border: none; color: white; padding: 6px; border-radius: 4px; font-size: 11px; cursor: pointer; }
+        .pct-btn { flex: 1; background: #2b3139; border: none; color: white; padding: 6px; border-radius: 4px; font-size: 11px; }
 
-        .btn-action { width: 100%; padding: 14px; border: none; border-radius: 6px; font-weight: bold; font-size: 16px; margin-top: 10px; cursor: pointer; }
+        .btn-action { width: 100%; padding: 14px; border: none; border-radius: 6px; font-weight: bold; font-size: 16px; cursor: pointer; }
         .buy-bg { background: var(--up); color: white; }
         .sell-bg { background: var(--down); color: white; }
 
         /* Order Book */
         .ob-header { display: flex; justify-content: space-between; font-size: 11px; color: var(--text-sec); margin-bottom: 5px; }
-        .ob-list { height: 185px; overflow: hidden; font-size: 11px; }
-        .ob-row { display: flex; justify-content: space-between; padding: 4px 0; position: relative; cursor: pointer; }
-        .mid-price { text-align: center; padding: 12px 0; border-top: 1px solid #2b3139; border-bottom: 1px solid #2b3139; margin: 5px 0; }
-        .user-order-row { background: rgba(240, 185, 11, 0.1); border-left: 2px solid var(--primary); }
+        .ob-list { height: 160px; overflow: hidden; font-size: 12px; }
+        .ob-row { display: flex; justify-content: space-between; padding: 4px 0; position: relative; z-index: 1; }
+        .depth-bar { position: absolute; right: 0; top: 0; bottom: 0; z-index: -1; transition: 0.3s; }
+        .mid-price { text-align: center; padding: 10px 0; border-top: 1px solid var(--border); border-bottom: 1px solid var(--border); margin: 5px 0; }
 
-        /* History */
-        .history-section { padding: 15px; padding-bottom: 100px; }
-        .h-tabs { display: flex; gap: 15px; border-bottom: 1px solid #2b3139; margin-bottom: 10px; }
-        .h-tab { padding: 10px 0; color: var(--text-sec); font-size: 13px; cursor: pointer; }
+        /* History Table */
+        .history-section { padding: 15px; }
+        .h-tabs { display: flex; gap: 15px; border-bottom: 1px solid var(--border); margin-bottom: 10px; }
+        .h-tab { padding: 8px 0; color: var(--text-sec); font-size: 13px; cursor: pointer; }
         .h-tab.active { color: var(--primary); border-bottom: 2px solid var(--primary); }
-        .h-table { width: 100%; border-collapse: collapse; font-size: 11px; }
-        .h-table th { text-align: left; color: var(--text-sec); padding: 8px 0; }
+        .h-table { width: 100%; border-collapse: collapse; font-size: 11px; text-align: left; }
+        .h-table th { color: var(--text-sec); padding: 8px 0; }
         .h-table td { padding: 10px 0; border-bottom: 1px solid #1e2329; }
+        .show-more-container { text-align: center; padding: 15px 0; }
+        .show-more-btn { background: none; border: 1px solid var(--border); color: var(--text-sec); padding: 6px 20px; border-radius: 20px; font-size: 12px; cursor: pointer; }
 
         /* Footer */
-        .footer { position: fixed; bottom: 0; width: 100%; height: 70px; background: #181a20; display: flex; justify-content: space-around; align-items: center; border-top: 1px solid #2b3139; z-index: 3000; }
-        .f-nav { text-decoration: none; color: var(--text-sec); text-align: center; font-size: 10px; flex: 1; }
-        .f-nav i { display: block; font-size: 20px; margin-bottom: 4px; }
+        .footer { position: fixed; bottom: 0; width: 100%; height: 75px; background: #181a20; display: flex; justify-content: space-around; align-items: center; border-top: 1px solid #2b3139; z-index: 3000; }
+        .f-nav { text-decoration: none; color: var(--text-sec); text-align: center; font-size: 10px; flex: 1; display: flex; flex-direction: column; align-items: center; }
+        .f-nav i { font-size: 22px; margin-bottom: 5px; }
         .f-nav.active { color: var(--primary); }
-        .u-curve { position: relative; top: -20px; width: 70px; height: 70px; display: flex; justify-content: center; align-items: center; }
-        .spin-circle { position: absolute; width: 66px; height: 66px; border: 2px dashed var(--primary); border-radius: 50%; animation: spin 4s linear infinite; }
-        .crash-link { width: 55px; height: 55px; background: var(--primary); border-radius: 50%; color: black; font-weight: 900; font-size: 10px; display: flex; align-items: center; justify-content: center; text-decoration: none; z-index: 5; }
+        .u-curve { position: relative; top: -22px; width: 75px; height: 75px; display: flex; justify-content: center; align-items: center; }
+        .spin-circle { position: absolute; width: 70px; height: 70px; border: 2.5px dashed var(--primary); border-radius: 50%; animation: spin 5s linear infinite; }
+        .crash-link { width: 58px; height: 58px; background: var(--primary); border-radius: 50%; color: black; font-weight: 900; font-size: 11px; display: flex; align-items: center; justify-content: center; text-decoration: none; z-index: 5; box-shadow: 0 0 15px rgba(243, 186, 47, 0.4); }
+        
         @keyframes spin { 100% { transform: rotate(360deg); } }
-
         .up { color: var(--up); }
         .down { color: var(--down); }
     </style>
@@ -97,11 +98,11 @@
 
     <header class="header">
         <div class="pair-selector" onclick="togglePopup(true)">
-            <span id="currentPair">SMAT/USDT</span> <i class="fas fa-caret-down"></i>
+            <span id="currentPair">BTC/USDT</span> <i class="fas fa-caret-down"></i>
         </div>
-        <div class="header-tools">
+        <div style="display: flex; gap: 18px; color: var(--text-sec); font-size: 18px;">
+            <i class="fas fa-chart-line" style="color: var(--primary); cursor: pointer;" id="chartRedirect"></i>
             <i class="fas fa-info-circle"></i>
-            <i class="fas fa-chart-line" id="chartLink" style="cursor:pointer; color:var(--primary)"></i>
             <i class="fas fa-bell"></i>
         </div>
     </header>
@@ -109,7 +110,7 @@
     <div id="pairPopup" class="overlay">
         <div class="popup-header">
             <i class="fas fa-arrow-left" onclick="togglePopup(false)"></i>
-            <span style="font-size: 18px; font-weight: bold;">Markets</span>
+            <span style="font-weight: bold;">Markets</span>
         </div>
         <div class="search-container">
             <div class="search-box">
@@ -119,7 +120,6 @@
         </div>
         <div class="market-tabs" id="marketTabs"></div>
         <div class="pair-list-scroll" id="pairListContainer"></div>
-        <div id="pairLoadMore" onclick="loadMorePairs()" style="text-align:center; padding:20px; color:var(--primary); cursor:pointer; font-size:14px; border-top:1px solid #222;">Show More</div>
     </div>
 
     <main class="trade-grid">
@@ -128,23 +128,38 @@
                 <button id="btnBuy" class="tab-btn active buy" onclick="setSide('buy')">Buy</button>
                 <button id="btnSell" class="tab-btn sell" onclick="setSide('sell')">Sell</button>
             </div>
+            
             <div class="input-box">
-                <input type="number" step="0.0001" id="priceInp" placeholder="Price">
+                <input type="number" id="priceInp" step="0.0001" placeholder="Price" oninput="calcTotal()">
                 <span class="activeBase">USDT</span>
             </div>
+            
             <div class="input-box">
-                <input type="number" step="0.0001" id="amountInp" placeholder="Amount" oninput="calcTotal()">
-                <span id="unitAsset">SMAT</span>
+                <input type="number" id="amountInp" step="0.0001" placeholder="Amount" oninput="calcTotal()">
+                <span id="unitAsset">BTC</span>
             </div>
+
             <div class="pct-row">
                 <button class="pct-btn" onclick="applyPct(25)">25%</button>
                 <button class="pct-btn" onclick="applyPct(50)">50%</button>
                 <button class="pct-btn" onclick="applyPct(75)">75%</button>
                 <button class="pct-btn" onclick="applyPct(100)">100%</button>
             </div>
-            <p style="font-size: 11px; margin-bottom: 5px;">Avbl: <span id="avblVal">0.0000</span> <span id="avblUnit">USDT</span></p>
-            <p style="font-size: 13px; margin-bottom: 15px;">Total: <span id="totalVal" style="color:var(--primary)">0.0000</span> <span class="activeBase">USDT</span></p>
-            <button id="mainActionBtn" class="btn-action buy-bg" onclick="processOrder()">Buy SMAT</button>
+
+            <div class="fee-info">
+                <span>Avbl: <b id="avblVal" style="color:white">0.0000</b> <span id="avblUnit">USDT</span></span>
+            </div>
+            <div class="fee-info" style="margin-top: -5px;">
+                <span id="feeLabel">Trade Fee (0.25%):</span>
+                <span id="feeAmount">0.0000</span>
+            </div>
+
+            <div style="background: rgba(255,255,255,0.03); padding: 10px; border-radius: 4px; margin: 10px 0;">
+                <span style="font-size: 11px; color: var(--text-sec);">Est. Total Cost:</span>
+                <div id="totalCost" style="font-size: 16px; font-weight: bold; color: var(--primary);">0.0000 USDT</div>
+            </div>
+
+            <button id="mainActionBtn" class="btn-action buy-bg" onclick="processTrade()">Buy BTC</button>
         </section>
 
         <section>
@@ -152,7 +167,7 @@
             <div id="asks" class="ob-list"></div>
             <div class="mid-price">
                 <h2 id="marketPrice" class="up">0.0000</h2>
-                <small id="bdtPrice" style="color:var(--text-sec)">≈ USD 0.0000</small>
+                <small style="color: var(--text-sec);">Vol: <span id="curVol">0.0</span></small>
             </div>
             <div id="bids" class="ob-list"></div>
         </section>
@@ -160,361 +175,342 @@
 
     <section class="history-section">
         <div class="h-tabs">
-            <div id="tab-global" class="h-tab active" onclick="setHTab('global', this)">Global</div>
-            <div id="tab-my" class="h-tab" onclick="setHTab('my', this)">My Trade</div>
-            <div id="tab-un" class="h-tab" onclick="setHTab('un', this)">Unsuccessful</div>
+            <div id="tab-global" class="h-tab active" onclick="setHTab('global')">Global</div>
+            <div id="tab-my" class="h-tab" onclick="setHTab('my')">My Trade</div>
+            <div id="tab-un" class="h-tab" onclick="setHTab('un')">Unsuccessful</div>
         </div>
         <table class="h-table">
-            <thead id="hHeader"></thead>
+            <thead id="hHead"></thead>
             <tbody id="hBody"></tbody>
         </table>
-        <div id="loadMoreHistory" onclick="loadMoreHistory()" style="text-align:center; padding:15px; color:var(--primary); cursor:pointer; font-size:12px;">Show More</div>
+        <div class="show-more-container" id="showMoreBox" style="display:none">
+            <button class="show-more-btn" onclick="showMoreHistory()">Show More</button>
+        </div>
     </section>
 
     <footer class="footer">
         <a href="home.html" class="f-nav"><i class="fas fa-home"></i>Home</a>
         <a href="Trade.html" class="f-nav active"><i class="fas fa-chart-line"></i>Trade</a>
-        <div class="u-curve">
-            <div class="spin-circle"></div>
-            <a href="Crash.html" class="crash-link">CRASH</a>
-        </div>
-        <a href="index.html" class="f-nav"><i class="fas fa-compass"></i>mining</a>
+        <div class="u-curve"><div class="spin-circle"></div><a href="Crash.html" class="crash-link">CRASH</a></div>
+        <a href="Explorer.html" class="f-nav"><i class="fas fa-compass"></i>Explore</a>
         <a href="Wallet.html" class="f-nav"><i class="fas fa-wallet"></i>Wallet</a>
     </footer>
 
     <script>
-    let coins = JSON.parse(localStorage.getItem('marketStats'));
-    if (!coins && typeof GLOBAL_COINS !== 'undefined') {
-        coins = GLOBAL_COINS;
-    } else if (!coins) {
-        coins = [
-            { name: "SMAT Coin", sym: "SMAT", price: 1.2500, startPrice: 1.2500, vol: 0, key: "smatBalance", lastReset: null, logo: "" },
-            { name: "Binance", sym: "BNB", price: 590.00, startPrice: 590.00, vol: 0, key: "bnbBalance", lastReset: null, logo: "" },
-            { name: "Ethereum", sym: "ETH", price: 2450.00, startPrice: 2450.00, vol: 0, key: "ethBalance", lastReset: null, logo: "" }
-        ];
-    }
-    
-    let orderBooks = JSON.parse(localStorage.getItem('orderBooks')) || {};
-    coins.forEach(c => { if(!orderBooks[c.sym]) orderBooks[c.sym] = { bids: [], asks: [] }; });
-    
-    let activeCoin = coins[0];
-    let tradeSide = 'buy';
-    let activeHTab = 'global';
-    let activeMarket = 'USDT'; 
-    let historyLimit = 10;
-    let pairLimit = 10;
-    const FEE_RATE = 0.0025; 
-    
-    function init() {
-        if(!localStorage.getItem('usdtBalance')) localStorage.setItem('usdtBalance', '1000.0000');
-        if(!localStorage.getItem('usdcBalance')) localStorage.setItem('usdcBalance', '500.0000');
-        if(!localStorage.getItem('smatBalance')) localStorage.setItem('smatBalance', '100.0000');
-        coins.forEach(c => { if(!localStorage.getItem(c.key)) localStorage.setItem(c.key, '0.0000'); });
-        
-        document.getElementById('chartLink').onclick = () => {
-            window.location.href = 'market_chat.html?coin=' + activeCoin.sym;
-        };
-        
-        checkDailyReset();
-        connectBinance(); 
-        startBackgroundEngine();
-        renderMarketTabs(); 
-        refreshUI();
-        renderHistory();
-    }
+        let activeCoin = null;
+        let tradeSide = 'buy';
+        let activeHTab = 'global';
+        let activeMarket = 'USDT';
+        let historyLimit = 10;
+        const FEE_RATE = 0.0025;
 
-    function renderMarketTabs() {
-        const tabContainer = document.getElementById('marketTabs');
-        const markets = ['USDT', 'USDC', 'SMAT'];
-        
-        tabContainer.innerHTML = markets.map(m => {
-            const coinData = coins.find(c => c.sym === m);
-            let logoHtml = `<div class="tab-logo">${m[0]}</div>`; 
-            if (coinData && coinData.logo && coinData.logo !== "") {
-                logoHtml = `<div class="tab-logo"><img src="${coinData.logo}" alt=""></div>`;
-            } else if (m === 'USDT') logoHtml = `<div class="tab-logo" style="background:#26a17b; color:white">T</div>`;
-            else if (m === 'USDC') logoHtml = `<div class="tab-logo" style="background:#2775ca; color:white">C</div>`;
+        let orderBoard = JSON.parse(localStorage.getItem('orderBoard')) || {};
 
-            return `<div class="m-tab ${activeMarket === m ? 'active' : ''}" onclick="setMarketTab('${m}', this)">
-                ${logoHtml} ${m}
-            </div>`;
-        }).join('');
-    }
+        function init() {
+            if (typeof GLOBAL_COINS !== 'undefined') {
+                activeCoin = GLOBAL_COINS[0];
+            }
+            renderMarketTabs();
+            const s = activeCoin.sym.toLowerCase();
+            document.getElementById('priceInp').value = (window[s + "Val"] || activeCoin.price).toFixed(4);
+            
+            refreshUI();
+            
+            setInterval(() => {
+                if(activeCoin) {
+                    matchOrders(activeCoin.sym.toUpperCase());
+                    renderOrderBook();
+                    if(activeHTab === 'global') renderHistory();
+                }
+            }, 2000);
 
-    function togglePopup(s) { 
-        const popup = document.getElementById('pairPopup');
-        if(s) {
-            popup.style.display = 'flex';
-            pairLimit = 10;
+            document.getElementById('chartRedirect').onclick = () => {
+                location.href = `market_chat.html?symbol=${activeCoin.sym.toUpperCase()}&market=${activeMarket}`;
+            };
+        }
+
+        function togglePopup(show) {
+            const popup = document.getElementById('pairPopup');
+            if(show) {
+                popup.style.display = 'flex';
+                renderMarketTabs();
+                renderPairs();
+            } else popup.style.display = 'none';
+        }
+
+        function renderMarketTabs() {
+            const tabContainer = document.getElementById('marketTabs');
+            const markets = ['USDT', 'USDC', 'SMAT'];
+            tabContainer.innerHTML = markets.map(m => `
+                <div class="m-tab ${activeMarket === m ? 'active' : ''}" onclick="setMarketTab('${m}')">
+                    <div class="tab-logo">${m[0]}</div> ${m}
+                </div>
+            `).join('');
+        }
+
+        function setMarketTab(m) {
+            activeMarket = m;
             renderMarketTabs();
             renderPairs();
-        } else popup.style.display = 'none';
-    }
-
-    function setMarketTab(m, el) {
-        activeMarket = m;
-        pairLimit = 10;
-        renderMarketTabs(); 
-        renderPairs();
-        refreshUI(); // মার্কেট পরিবর্তনের সাথে সাথে ব্যালেন্স আপডেট
-    }
-
-    function renderPairs() {
-        const query = document.getElementById('pairSearch').value.toUpperCase();
-        const container = document.getElementById('pairListContainer');
-        let filtered = coins.filter(c => c.sym.includes(query)).filter(c => c.sym !== activeMarket);
-        const displayList = filtered.slice(0, pairLimit);
-        const smatCoin = coins.find(c => c.sym === 'SMAT');
-        const smatUsdtPrice = smatCoin ? smatCoin.price : 1;
-
-        container.innerHTML = displayList.map(c => {
-            const change = ((c.price - c.startPrice) / c.startPrice * 100).toFixed(2);
-            const logoContent = (c.logo && c.logo !== "") ? `<img src="${c.logo}" alt="">` : c.sym[0];
-            const volumeVal = (c.vol && c.vol !== 0) ? (c.vol * c.price).toFixed(2) : "0.00";
-            let displayPrice = (activeMarket === 'SMAT') ? (c.price / smatUsdtPrice) : c.price;
-
-            return `<div class="pair-row" onclick="selectCoin('${c.sym}')">
-            <div class="p-info">
-                <div class="p-logo">${logoContent}</div>
-                <div><b>${c.sym}/${activeMarket}</b><br><small style="color:var(--text-sec)">Vol: $${volumeVal}</small></div>
-            </div>
-            <div style="text-align:right"><b>${displayPrice.toFixed(4)}</b><br><small class="${change >= 0 ? 'up':'down'}">${change}%</small></div>
-            </div>`;
-        }).join('');
-        document.getElementById('pairLoadMore').style.display = filtered.length > pairLimit ? 'block' : 'none';
-    }
-
-    function loadMorePairs() { pairLimit += 10; renderPairs(); }
-    function loadMoreHistory() { historyLimit += 10; renderHistory(); }
-    
-    function setHTab(t, el) { 
-        activeHTab = t; 
-        historyLimit = 10; 
-        document.querySelectorAll('.h-tab').forEach(i => i.classList.remove('active')); 
-        el.classList.add('active'); 
-        renderHistory(); 
-    }
-
-    function renderHistory() {
-        const body = document.getElementById('hBody');
-        const head = document.getElementById('hHeader');
-        if(!body) return;
-        
-        let data = JSON.parse(localStorage.getItem(activeHTab + 'Orders') || '[]').filter(i => i.sym === activeCoin.sym);
-        
-        if(activeHTab === 'un') {
-            head.innerHTML = `<tr><th>Amount</th><th>Price</th><th>Action</th></tr>`;
-            body.innerHTML = data.slice(0, historyLimit).map(i => `<tr><td>${i.a}</td><td>${i.p}</td><td class="down" onclick="cancelOrder(${i.id})">Cancel</td></tr>`).join('');
-        } else {
-            head.innerHTML = `<tr><th>Time</th><th>Amount</th><th>Price</th><th>Total</th></tr>`;
-            body.innerHTML = data.slice(0, historyLimit).map(i => `<tr><td style="color:var(--text-sec); font-size:10px;">${i.time}</td><td class="${i.side==='buy'?'up':'down'}">${i.a}</td><td class="${i.side==='buy'?'up':'down'}">${i.p}</td><td>${i.t}</td></tr>`).join('');
+            updateBalanceDisplay();
         }
-        document.getElementById('loadMoreHistory').style.display = data.length > historyLimit ? 'block' : 'none';
-    }
 
-    function checkDailyReset() {
-        const now = new Date();
-        const utc = now.getTime() + (now.getTimezoneOffset() * 60000);
-        const bdTime = new Date(utc + (3600000 * 6));
-        const todayStr = bdTime.toDateString();
-        if (activeCoin.lastReset !== todayStr && bdTime.getHours() >= 6) {
-            coins.forEach(c => { c.vol = 0; c.startPrice = c.price; c.lastReset = todayStr; });
+        function renderPairs() {
+            const query = document.getElementById('pairSearch').value.toUpperCase();
+            const container = document.getElementById('pairListContainer');
+            let filtered = GLOBAL_COINS.filter(c => c.sym.toUpperCase().includes(query) && c.sym.toUpperCase() !== activeMarket);
+
+            container.innerHTML = filtered.map(c => {
+                const val = window[c.sym.toLowerCase() + "Val"] || c.price;
+                return `
+                <div class="pair-row" onclick="selectCoin('${c.sym}')">
+                    <div class="p-info">
+                        <div class="p-logo"><img src="assets/logos/${c.sym.toLowerCase()}.png" onerror="this.style.display='none'"></div>
+                        <div><b>${c.sym.toUpperCase()}/${activeMarket}</b></div>
+                    </div>
+                    <div style="text-align:right"><b>${val.toFixed(4)}</b></div>
+                </div>`;
+            }).join('');
         }
-    }
-    
-    function connectBinance() {
-        const ws = new WebSocket("wss://stream.binance.com:9443/ws/bnbusdt@ticker");
-        ws.onmessage = (e) => {
-            const data = JSON.parse(e.data);
-            const bnb = coins.find(c => c.sym === "BNB");
-            if(bnb) {
-                bnb.price = parseFloat(data.c);
-                if(activeCoin.sym === "BNB") {
-                    document.getElementById('marketPrice').innerText = bnb.price.toFixed(4);
-                    updateOrderBookUI();
-                }
-            }
-        };
-        ws.onclose = () => setTimeout(connectBinance, 5000);
-    }
-    
-    function startBackgroundEngine() {
-        setInterval(() => {
-            checkDailyReset();
-            coins.forEach(coin => {
-                if(coin.sym === 'SMAT') coin.price += (Math.random() * 0.001 - 0.0005);
-                maintainLiquidity(coin);
-            });
-            updateOrderBookUI();
-            if(document.getElementById('pairPopup').style.display === 'flex') renderPairs();
-        }, 3000);
-    }
-    
-    function maintainLiquidity(coin) {
-        let book = orderBooks[coin.sym];
-        const currentPrice = coin.price;
-        if(book.bids.length < 15) book.bids.push({ p: (currentPrice - (Math.random()*0.02)).toFixed(4), a: (Math.random()*50+10).toFixed(4), type: 'fake' });
-        if(book.asks.length < 15) book.asks.push({ p: (currentPrice + (Math.random()*0.02)).toFixed(4), a: (Math.random()*50+10).toFixed(4), type: 'fake' });
-        book.asks.sort((a,b) => parseFloat(a.p) - parseFloat(b.p));
-        book.bids.sort((a,b) => parseFloat(b.p) - parseFloat(a.p));
-        let tradeAmt = Math.random() * 10;
-        coin.vol = (coin.vol || 0) + tradeAmt;
-        silentGlobalTrade(coin, tradeAmt);
-    }
 
-    function processOrder() {
-        const p = parseFloat(document.getElementById('priceInp').value);
-        let a = parseFloat(document.getElementById('amountInp').value);
-        if(!a || a <= 0 || !p) return;
-        
-        const marketKey = activeMarket.toLowerCase() + 'Balance';
-        const baseBal = parseFloat(localStorage.getItem(marketKey)) || 0;
-        const coinBal = parseFloat(localStorage.getItem(activeCoin.key)) || 0;
-        
-        let subTotal = p * a;
-        let fee = subTotal * FEE_RATE; 
-        let grandTotal = subTotal + fee;
-        
-        if(tradeSide === 'buy' && grandTotal > baseBal) { alert("Insufficient Balance (Including Fee)"); return; }
-        if(tradeSide === 'sell' && a > coinBal) { alert("Insufficient Coins"); return; }
-        
-        if(tradeSide === 'buy') localStorage.setItem(marketKey, (baseBal - grandTotal).toFixed(4));
-        else localStorage.setItem(activeCoin.key, (coinBal - a).toFixed(4));
-
-        // আপনার অর্ডার সরাসরি অর্ডারবুকে (Board) ঢুকিয়ে দেওয়া
-        const orderId = Date.now();
-        if(tradeSide === 'buy') {
-            orderBooks[activeCoin.sym].bids.push({ p: p.toFixed(4), a: a.toFixed(4), id: orderId, user: true });
-        } else {
-            orderBooks[activeCoin.sym].asks.push({ p: p.toFixed(4), a: a.toFixed(4), id: orderId, user: true });
+        function selectCoin(sym) {
+            activeCoin = GLOBAL_COINS.find(c => c.sym === sym);
+            const s = activeCoin.sym.toLowerCase();
+            document.getElementById('priceInp').value = (window[s + "Val"] || activeCoin.price).toFixed(4);
+            togglePopup(false);
+            refreshUI();
         }
-        localStorage.setItem('orderBooks', JSON.stringify(orderBooks));
-        
-        saveOrder('un', a.toFixed(4), p.toFixed(4), grandTotal.toFixed(4), tradeSide, activeCoin.sym, orderId, activeMarket);
-        
-        setHTab('un', document.getElementById('tab-un'));
-        
-        updateBalance();
-        document.getElementById('amountInp').value = "";
-        calcTotal();
-        updateOrderBookUI();
-    }
 
-    function selectCoin(s) { activeCoin = coins.find(c => c.sym === s); refreshUI(); togglePopup(false); historyLimit = 10; renderHistory(); }
-
-    function refreshUI() { 
-        document.getElementById('currentPair').innerText = activeCoin.sym + "/" + activeMarket; 
-        let displayPrice = activeCoin.price;
-        if(activeMarket === 'SMAT') {
-            const smatCoin = coins.find(c => c.sym === 'SMAT');
-            displayPrice = activeCoin.price / (smatCoin ? smatCoin.price : 1);
-        }
-        document.getElementById('priceInp').value = displayPrice.toFixed(4); 
-        document.getElementById('unitAsset').innerText = activeCoin.sym;
-        document.getElementById('mainActionBtn').innerText = (tradeSide === 'buy' ? 'Buy ' : 'Sell ') + activeCoin.sym;
-        document.querySelectorAll('.activeBase').forEach(el => el.innerText = activeMarket);
-        updateBalance(); 
-        calcTotal(); 
-        updateOrderBookUI(); 
-    }
-
-    function updateBalance() { 
-        // Universal Balance: শুধু পেয়ার অনুযায়ী USDT/USDC ব্যালেন্স কী পরিবর্তন হবে সেটা ঠিক করা
-        // কয়েন ব্যালেন্স সব পেয়ারে একই থাকে কারণ key (smatBalance) ইউনিক।
-        const k = tradeSide === 'buy' ? (activeMarket.toLowerCase() + 'Balance') : activeCoin.key; 
-        let currentBal = parseFloat(localStorage.getItem(k)) || 0;
-        document.getElementById('avblVal').innerText = currentBal.toFixed(4); 
-        document.getElementById('avblUnit').innerText = tradeSide === 'buy' ? activeMarket : activeCoin.sym; 
-    }
-
-    function setSide(s) { 
-        tradeSide = s; 
-        document.getElementById('btnBuy').classList.toggle('active', s==='buy'); 
-        document.getElementById('btnSell').classList.toggle('active', s==='sell'); 
-        document.getElementById('mainActionBtn').className = 'btn-action ' + (s === 'buy' ? 'buy-bg' : 'sell-bg');
-        refreshUI();
-    }
-
-    function applyPct(p) { 
-        const k = tradeSide === 'buy' ? (activeMarket.toLowerCase() + 'Balance') : activeCoin.key;
-        const bal = parseFloat(localStorage.getItem(k)) || 0; 
-        const prc = parseFloat(document.getElementById('priceInp').value); 
-        if(!prc || prc <= 0) return; 
-        if(tradeSide === 'buy') {
-            let maxTotal = bal * (p/100);
-            document.getElementById('amountInp').value = (maxTotal / (prc * (1 + FEE_RATE))).toFixed(4);
-        } else document.getElementById('amountInp').value = (bal * (p/100)).toFixed(4); 
-        calcTotal(); 
-    }
-
-    function fillPrice(p) { document.getElementById('priceInp').value = p; calcTotal(); }
-    function calcTotal() { 
-        const p = parseFloat(document.getElementById('priceInp').value || 0); 
-        const a = parseFloat(document.getElementById('amountInp').value || 0); 
-        document.getElementById('totalVal').innerText = (p * a).toFixed(4); 
-    }
-    
-    function saveOrder(type, a, p, t, side, sym, id = null, market = 'USDT') {
-        let list = JSON.parse(localStorage.getItem(type + 'Orders') || '[]');
-        list.unshift({ id: id || Date.now(), a, p, t, side, sym, market, time: new Date().toLocaleTimeString() });
-        if(list.length > 500) list.pop(); 
-        localStorage.setItem(type + 'Orders', JSON.stringify(list));
-        renderHistory();
-    }
-    
-    function updateOrderBookUI() {
-        const asksList = document.getElementById('asks');
-        const bidsList = document.getElementById('bids');
-        let book = orderBooks[activeCoin.sym];
-        if(!book) return;
-        const smatCoin = coins.find(c => c.sym === 'SMAT');
-        const smatPrice = smatCoin ? smatCoin.price : 1;
-        const formatOBPrice = (p) => (activeMarket === 'SMAT') ? (parseFloat(p) / smatPrice).toFixed(4) : parseFloat(p).toFixed(4);
-
-        // ইউজার অর্ডারের জন্য আলাদা স্টাইল মার্ক করা
-        asksList.innerHTML = book.asks.slice(-8).reverse().map(o => `<div class="ob-row ${o.user ? 'user-order-row' : ''}" onclick="fillPrice('${formatOBPrice(o.p)}')"><span class="down">${formatOBPrice(o.p)}</span><span>${o.a}</span></div>`).join('');
-        bidsList.innerHTML = book.bids.slice(0,8).map(o => `<div class="ob-row ${o.user ? 'user-order-row' : ''}" onclick="fillPrice('${formatOBPrice(o.p)}')"><span class="up">${formatOBPrice(o.p)}</span><span>${o.a}</span></div>`).join('');
-        document.getElementById('marketPrice').innerText = formatOBPrice(activeCoin.price);
-    }
-    
-    function cancelOrder(id) {
-        let list = JSON.parse(localStorage.getItem('unOrders') || '[]');
-        const orderToCancel = list.find(i => i.id === id);
-        
-        if (orderToCancel) {
-            if (orderToCancel.side === 'buy') {
-                const marketKey = (orderToCancel.market || 'usdt').toLowerCase() + 'Balance';
-                let currentMarketBal = parseFloat(localStorage.getItem(marketKey)) || 0;
-                localStorage.setItem(marketKey, (currentMarketBal + parseFloat(orderToCancel.t)).toFixed(4));
-                // অর্ডারবুক থেকে সরানো
-                orderBooks[orderToCancel.sym].bids = orderBooks[orderToCancel.sym].bids.filter(b => b.id !== id);
-            } else {
-                const coinObj = coins.find(c => c.sym === orderToCancel.sym);
-                if (coinObj) {
-                    let currentCoinBal = parseFloat(localStorage.getItem(coinObj.key)) || 0;
-                    localStorage.setItem(coinObj.key, (currentCoinBal + parseFloat(orderToCancel.a)).toFixed(4));
-                }
-                // অর্ডারবুক থেকে সরানো
-                orderBooks[orderToCancel.sym].asks = orderBooks[orderToCancel.sym].asks.filter(a => a.id !== id);
-            }
-            localStorage.setItem('orderBooks', JSON.stringify(orderBooks));
-            localStorage.setItem('unOrders', JSON.stringify(list.filter(i => i.id !== id)));
-            updateBalance();
+        function refreshUI() {
+            if(!activeCoin) return;
+            document.getElementById('currentPair').innerText = activeCoin.sym.toUpperCase() + "/" + activeMarket;
+            document.getElementById('unitAsset').innerText = activeCoin.sym.toUpperCase();
+            document.getElementById('mainActionBtn').innerText = (tradeSide === 'buy' ? 'Buy ' : 'Sell ') + activeCoin.sym.toUpperCase();
+            document.querySelectorAll('.activeBase').forEach(el => el.innerText = activeMarket);
+            
+            updateBalanceDisplay();
+            calcTotal();
+            renderOrderBook();
+            historyLimit = 10;
             renderHistory();
-            updateOrderBookUI();
-            alert("Order Cancelled. Funds Refunded.");
         }
-    }
-    
-    function silentGlobalTrade(coin, amt) {
-        let list = JSON.parse(localStorage.getItem('globalOrders') || '[]');
-        list.unshift({ a: amt.toFixed(4), p: coin.price.toFixed(4), t: (amt * coin.price).toFixed(4), side: Math.random() > 0.5 ? 'buy' : 'sell', sym: coin.sym, time: new Date().toLocaleTimeString() });
-        if(list.length > 500) list.pop();
-        localStorage.setItem('globalOrders', JSON.stringify(list));
-        if(activeHTab === 'global') renderHistory();
-    }
-    
-    window.onload = init;
+
+        function updateBalanceDisplay() {
+            if (tradeSide === 'buy') {
+                const bal = parseFloat(localStorage.getItem(activeMarket.toLowerCase() + '_balance')) || 0.00;
+                document.getElementById('avblVal').innerText = bal.toFixed(4);
+                document.getElementById('avblUnit').innerText = activeMarket;
+            } else {
+                const s = activeCoin.sym.toLowerCase();
+                const bal = parseFloat(localStorage.getItem(s + '_balance')) || 0.00;
+                document.getElementById('avblVal').innerText = bal.toFixed(4);
+                document.getElementById('avblUnit').innerText = activeCoin.sym.toUpperCase();
+            }
+        }
+
+        function setSide(side) {
+            tradeSide = side;
+            document.getElementById('btnBuy').classList.toggle('active', side === 'buy');
+            document.getElementById('btnSell').classList.toggle('active', side === 'sell');
+            document.getElementById('mainActionBtn').className = 'btn-action ' + (side === 'buy' ? 'buy-bg' : 'sell-bg');
+            refreshUI();
+        }
+
+        function calcTotal() {
+            const price = parseFloat(document.getElementById('priceInp').value) || 0;
+            const amount = parseFloat(document.getElementById('amountInp').value) || 0;
+            const subtotal = price * amount;
+            const fee = subtotal * FEE_RATE;
+            document.getElementById('feeAmount').innerText = fee.toFixed(4);
+            document.getElementById('totalCost').innerText = (tradeSide === 'buy' ? (subtotal + fee) : subtotal).toFixed(4) + " " + activeMarket;
+        }
+
+        function applyPct(pct) {
+            const avbl = parseFloat(document.getElementById('avblVal').innerText);
+            const price = parseFloat(document.getElementById('priceInp').value);
+            if (!price || price <= 0) return;
+            if (tradeSide === 'buy') {
+                const maxSpend = avbl * (pct / 100);
+                document.getElementById('amountInp').value = (maxSpend / (price * (1 + FEE_RATE))).toFixed(4);
+            } else {
+                document.getElementById('amountInp').value = (avbl * (pct / 100)).toFixed(4);
+            }
+            calcTotal();
+        }
+
+        function renderOrderBook() {
+            const asksList = document.getElementById('asks');
+            const bidsList = document.getElementById('bids');
+            const s = activeCoin.sym.toUpperCase();
+            const pairOrders = orderBoard[s] || { asks: [], bids: [] };
+            
+            const aggregate = (orders) => {
+                const map = {};
+                orders.forEach(o => {
+                    const priceKey = parseFloat(o.p).toFixed(4);
+                    map[priceKey] = (map[priceKey] || 0) + parseFloat(o.a);
+                });
+                return Object.keys(map).map(p => ({ p: parseFloat(p), a: map[p] }));
+            };
+
+            const sortedAsks = aggregate(pairOrders.asks).sort((a, b) => a.p - b.p);
+            const sortedBids = aggregate(pairOrders.bids).sort((a, b) => b.p - a.p);
+
+            const renderRows = (data, type) => data.map(o => `
+                <div class="ob-row" onclick="document.getElementById('priceInp').value='${o.p.toFixed(4)}'; calcTotal();">
+                    <span class="${type === 'ask' ? 'down' : 'up'}">${o.p.toFixed(4)}</span>
+                    <span>${o.a.toFixed(4)}</span>
+                    <div class="depth-bar" style="width: ${Math.min(o.a * 10, 100)}%; background: ${type === 'ask' ? 'rgba(246, 70, 93, 0.1)' : 'rgba(14, 203, 129, 0.1)'};"></div>
+                </div>
+            `).join('');
+
+            asksList.innerHTML = renderRows(sortedAsks.slice(0, 8).reverse(), 'ask');
+            bidsList.innerHTML = renderRows(sortedBids.slice(0, 8), 'bid');
+            document.getElementById('marketPrice').innerText = (window[activeCoin.sym.toLowerCase() + "Val"] || activeCoin.price).toFixed(4);
+        }
+
+        function matchOrders(symbol) {
+            let pair = orderBoard[symbol];
+            if (!pair || pair.asks.length === 0 || pair.bids.length === 0) return;
+            pair.asks.sort((a, b) => a.p - b.p); 
+            pair.bids.sort((a, b) => b.p - a.p); 
+
+            while (pair.asks.length > 0 && pair.bids.length > 0 && parseFloat(pair.bids[0].p) >= parseFloat(pair.asks[0].p)) {
+                let ask = pair.asks[0]; 
+                let bid = pair.bids[0]; 
+                let matchQty = Math.min(ask.a, bid.a);
+                let matchPrice = ask.p; 
+                window[symbol.toLowerCase() + "Val"] = matchPrice;
+
+                if(bid.isUser) {
+                    const coinKey = symbol.toLowerCase() + "_balance";
+                    let currentCoinBal = parseFloat(localStorage.getItem(coinKey)) || 0;
+                    const feeInCoin = matchQty * FEE_RATE;
+                    localStorage.setItem(coinKey, (currentCoinBal + (matchQty - feeInCoin)).toFixed(4));
+                    saveToHistory('my', {time: new Date().toLocaleTimeString(), p: matchPrice, a: matchQty, s: symbol, side: 'buy'});
+                    syncUnsuccessfulOrder(bid.id, matchQty);
+                }
+
+                if(ask.isUser) {
+                    const receivedAmount = matchQty * matchPrice;
+                    const fee = receivedAmount * FEE_RATE;
+                    const balKey = ask.market.toLowerCase() + '_balance';
+                    let currentBal = parseFloat(localStorage.getItem(balKey)) || 0;
+                    localStorage.setItem(balKey, (currentBal + (receivedAmount - fee)).toFixed(4));
+                    saveToHistory('my', {time: new Date().toLocaleTimeString(), p: matchPrice, a: matchQty, s: symbol, side: 'sell'});
+                    syncUnsuccessfulOrder(ask.id, matchQty);
+                }
+
+                saveToHistory('global', {time: new Date().toLocaleTimeString(), p: matchPrice, a: matchQty, s: symbol, side: 'buy'});
+                ask.a -= matchQty; bid.a -= matchQty;
+                if (ask.a <= 0.00000001) pair.asks.shift();
+                if (bid.a <= 0.00000001) pair.bids.shift();
+            }
+            localStorage.setItem('orderBoard', JSON.stringify(orderBoard));
+            updateBalanceDisplay();
+            renderHistory();
+        }
+
+        function syncUnsuccessfulOrder(id, qtyMatched) {
+            let unOrders = JSON.parse(localStorage.getItem('unOrders')) || [];
+            let foundIndex = unOrders.findIndex(o => o.id === id);
+            if (foundIndex !== -1) {
+                unOrders[foundIndex].a -= qtyMatched;
+                if (unOrders[foundIndex].a <= 0.00000001) unOrders.splice(foundIndex, 1);
+                localStorage.setItem('unOrders', JSON.stringify(unOrders));
+            }
+        }
+
+        function processTrade() {
+            const p = parseFloat(document.getElementById('priceInp').value);
+            const a = parseFloat(document.getElementById('amountInp').value);
+            if (isNaN(p) || isNaN(a) || p <= 0 || a <= 0) return alert("Invalid Amount or Price");
+            const s = activeCoin.sym.toUpperCase();
+            const cost = p * a; const fee = cost * FEE_RATE;
+            if (tradeSide === 'buy') {
+                const balKey = activeMarket.toLowerCase() + '_balance';
+                const bal = parseFloat(localStorage.getItem(balKey)) || 0;
+                if (bal < (cost + fee)) return alert("Insufficient Balance!");
+                localStorage.setItem(balKey, (bal - (cost + fee)).toFixed(4));
+            } else {
+                const balKey = activeCoin.sym.toLowerCase() + '_balance';
+                let currentCoinBal = parseFloat(localStorage.getItem(balKey)) || 0;
+                if (currentCoinBal < a) return alert("Insufficient Assets!");
+                localStorage.setItem(balKey, (currentCoinBal - a).toFixed(4));
+            }
+            const orderObj = { id: Date.now(), p: p, a: a, s: s, side: tradeSide, isUser: true, time: new Date().toLocaleTimeString(), market: activeMarket };
+            if (!orderBoard[s]) orderBoard[s] = { asks: [], bids: [] };
+            if (tradeSide === 'buy') orderBoard[s].bids.push(orderObj);
+            else orderBoard[s].asks.push(orderObj);
+            saveToHistory('un', orderObj);
+            localStorage.setItem('orderBoard', JSON.stringify(orderBoard));
+            matchOrders(s);
+            alert("Order Placed!");
+            refreshUI();
+        }
+
+        function setHTab(tab) {
+            activeHTab = tab;
+            historyLimit = 10;
+            document.querySelectorAll('.h-tab').forEach(t => t.classList.remove('active'));
+            document.getElementById('tab-' + tab).classList.add('active');
+            renderHistory();
+        }
+
+        function saveToHistory(type, order) {
+            let key = type + 'Orders';
+            let history = JSON.parse(localStorage.getItem(key)) || [];
+            history.unshift(order);
+            localStorage.setItem(key, JSON.stringify(history.slice(0, 100)));
+        }
+
+        function renderHistory() {
+            const body = document.getElementById('hBody');
+            const head = document.getElementById('hHead');
+            const data = JSON.parse(localStorage.getItem(activeHTab + 'Orders')) || [];
+            const showMoreBtn = document.getElementById('showMoreBox');
+            
+            const visibleData = data.slice(0, historyLimit);
+            showMoreBtn.style.display = data.length > historyLimit ? 'block' : 'none';
+            
+            if (activeHTab === 'un') {
+                head.innerHTML = `<tr><th>Pair</th><th>Price</th><th>Amount</th><th>Status</th></tr>`;
+                body.innerHTML = visibleData.map(o => `<tr><td>${o.s}/${o.market}</td><td>${parseFloat(o.p).toFixed(4)}</td><td>${parseFloat(o.a).toFixed(4)}</td><td class="down" onclick="cancelOrder(${o.id})">Cancel</td></tr>`).join('');
+            } else {
+                head.innerHTML = `<tr><th>Time</th><th>Side</th><th>Price</th><th>Amount</th></tr>`;
+                body.innerHTML = visibleData.map(o => `<tr><td>${o.time}</td><td class="${o.side==='buy'?'up':'down'}">${o.side.toUpperCase()}</td><td>${parseFloat(o.p).toFixed(4)}</td><td>${parseFloat(o.a).toFixed(4)}</td></tr>`).join('');
+            }
+        }
+
+        function showMoreHistory() {
+            historyLimit += 10;
+            renderHistory();
+        }
+
+        function cancelOrder(id) {
+            let history = JSON.parse(localStorage.getItem('unOrders')) || [];
+            const order = history.find(o => o.id === id);
+            if (order) {
+                if (order.side === 'buy') {
+                    const key = order.market.toLowerCase() + '_balance';
+                    const bal = parseFloat(localStorage.getItem(key)) + (order.p * order.a * (1 + FEE_RATE));
+                    localStorage.setItem(key, bal.toFixed(4));
+                } else {
+                    const key = order.s.toLowerCase() + '_balance';
+                    const bal = parseFloat(localStorage.getItem(key)) + order.a;
+                    localStorage.setItem(key, bal.toFixed(4));
+                }
+                if(orderBoard[order.s]) {
+                    orderBoard[order.s].asks = orderBoard[order.s].asks.filter(x => x.id !== id);
+                    orderBoard[order.s].bids = orderBoard[order.s].bids.filter(x => x.id !== id);
+                }
+                localStorage.setItem('orderBoard', JSON.stringify(orderBoard));
+                localStorage.setItem('unOrders', JSON.stringify(history.filter(o => o.id !== id)));
+                refreshUI();
+            }
+        }
+
+        window.onload = init;
     </script>
 </body>
 </html>
