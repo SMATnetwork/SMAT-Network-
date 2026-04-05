@@ -15,14 +15,12 @@
         
         body { background-color: #0b0e11; color: white; font-family: 'Inter', sans-serif; transition: 0.3s; overflow-x: hidden; width: 100%; }
         .app-container { 
-        width: 100%;             /* পুরো ডিসপ্লে জুড়ে থাকবে */
-        min-height: 100vh;       /* স্ক্রিনের উচ্চতা অনুযায়ী অ্যাডজাস্ট হবে */
-        background: #0b0e11; 
-        border-left: none;       /* বর্ডার রাখার দরকার নেই যদি ফুল স্ক্রিন চান */
-        border-right: none; 
-        padding-bottom: 50px;
-        margin: 0;               /* কোনো মার্জিন থাকবে না */
-        box-sizing: border-box;  /* প্যাডিং দিলেও যাতে স্ক্রিনের বাইরে না যায় */
+            width: 100%;             
+            min-height: 100vh;       
+            background: #0b0e11; 
+            padding-bottom: 50px;
+            margin: 0;               
+            box-sizing: border-box;  
         }
         
         .s-logo-wrapper { position: relative; width: 45px; height: 45px; background: radial-gradient(circle, #f0b90b 0%, #cc9900 100%); border-radius: 50%; display: flex; align-items: center; justify-content: center; border: 2px solid rgba(255, 255, 255, 0.2); box-shadow: 0 0 15px rgba(240, 185, 11, 0.5), inset 0 0 8px rgba(0,0,0,0.3); margin-right: 12px; }    
@@ -30,6 +28,29 @@
         .header-title { font-size: 20px; font-weight: 900; letter-spacing: -0.5px; line-height: 1; text-transform: uppercase;}
 
         .game-screen { height: 40vh; min-height: 280px; background: #161a1e; border: 1px solid #2d3339; border-radius: 12px; position: relative; overflow: hidden; margin: 0 16px; transition: all 0.5s ease; }
+        
+        /* চ্যাটিং আইকন স্টাইল */
+        .chat-icon-wrapper {
+            position: absolute;
+            top: 15px;
+            right: 15px;
+            z-index: 110;
+            background: rgba(30, 35, 41, 0.8);
+            width: 35px;
+            height: 35px;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border: 1px solid rgba(240, 185, 11, 0.3);
+            cursor: pointer;
+            transition: 0.3s;
+            text-decoration: none;
+        }
+        .chat-icon-wrapper:hover { background: #f0b90b; }
+        .chat-icon-wrapper:hover i { color: black; }
+        .chat-icon-wrapper i { color: #f0b90b; font-size: 16px; }
+
         #multiplier { 
             position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); 
             font-size: 5rem; font-weight: 900; color: #f0b90b; z-index: 50; 
@@ -37,9 +58,9 @@
             letter-spacing: -2px; transition: font-size 0.2s ease;
         }
         #multiplier.crashed-text { 
-        font-size: 6vw; /* স্ক্রিনের প্রস্থের ৮% হিসেবে ফন্ট সাইজ হবে */
-        letter-spacing: 0; 
-        white-space: nowrap; /* লেখা যাতে ভেঙে নিচে না যায় */
+            font-size: 6vw; 
+            letter-spacing: 0; 
+            white-space: nowrap; 
         }
 
         .char-layer { position: absolute; top: 20px; left: 20px; width: 80px; height: 80px; z-index: 80; display: none; pointer-events: none; }
@@ -48,7 +69,6 @@
 
         #dots-wrapper { display: flex; gap: 6px; flex-direction: row; justify-content: flex-start; align-items: center; overflow: hidden; width: 100%; }
         
-        /* পিলস কন্টেইনার আপডেট: ২ লাইনে ১০টি করে */
         #history-pills {
             display: flex;
             flex-wrap: wrap; 
@@ -61,9 +81,8 @@
             background: none;
         }
         
-        /* প্রতিটি পিলের সাইজ নির্ধারণ */
         .history-pill-item {
-            width: calc(10% - 4px); /* প্রতি লাইনে ১০টি */
+            width: calc(10% - 4px); 
             text-align: center;
             font-size: 9px;
             font-weight: 900;
@@ -202,6 +221,10 @@
     </div>
 
     <div id="screen" class="game-screen shadow-inner">
+        <a href="smatChat.html" class="chat-icon-wrapper">
+            <i class="fas fa-comments"></i>
+        </a>
+
         <div id="char-cat" class="char-layer"><svg viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg"><rect x="10" y="25" width="44" height="22" rx="4" fill="#3B82F6"/> <rect x="12" y="28" width="10" height="8" rx="1" fill="#93C5FD"/> <rect x="24" y="28" width="10" height="8" rx="1" fill="#93C5FD"/> <rect x="36" y="28" width="10" height="8" rx="1" fill="#93C5FD"/> <rect x="48" y="30" width="6" height="12" fill="#1E3A8A"/> <circle cx="18" cy="48" r="5" fill="#111"/> <circle cx="46" cy="48" r="5" fill="#111"/> <rect x="52" y="40" width="3" height="4" fill="#FBBF24"/> </svg></div>
         <div id="char-girl" class="char-layer"><svg viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg"><rect x="8" y="22" width="30" height="24" fill="#EF4444"/> <rect x="38" y="30" width="18" height="16" rx="2" fill="#B91C1C"/> <rect x="42" y="32" width="10" height="6" fill="#FCA5A5"/> <circle cx="15" cy="48" r="6" fill="#111"/> <circle cx="28" cy="48" r="6" fill="#111"/> <circle cx="48" cy="48" r="6" fill="#111"/> <rect x="10" y="25" width="26" height="2" fill="white" opacity="0.3"/> </svg></div>
         <div id="char-fairy" class="char-layer"><svg viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg"><path d="M10,25 L45,25 Q55,25 55,35 L55,46 L10,46 Z" fill="#10B981"/> <rect x="12" y="28" width="8" height="6" fill="#A7F3D0"/> <rect x="24" y="28" width="8" height="6" fill="#A7F3D0"/> <rect x="36" y="28" width="8" height="6" fill="#A7F3D0"/> <rect x="48" y="28" width="5" height="10" fill="#064E3B"/> <circle cx="18" cy="48" r="4" fill="#333"/> <circle cx="28" cy="48" r="4" fill="#333"/> <circle cx="38" cy="48" r="4" fill="#333"/> <circle cx="48" cy="48" r="4" fill="#333"/> <path d="M55,40 L60,42 L55,44 Z" fill="#FCD34D"/> </svg></div>
@@ -280,8 +303,8 @@
 </div>
 
 <script>
-    let smatBalance = parseFloat(localStorage.getItem('smatBalance')) || 100.000000;
-    let bankBalance = parseFloat(localStorage.getItem('bankBalance')) || 1000000.0000;
+    let smatBalance = parseFloat(localStorage.getItem('smatBalance')) || 1000.000000;
+    let bankBalance = parseFloat(localStorage.getItem('bankBalance')) || 10000.0000;
     let dailyTotalBet = parseFloat(localStorage.getItem('dailyTotalBet')) || 0;
     let gameId = parseInt(localStorage.getItem('gameId')) || 100000;
     let currentMultiplier = 1.00;
@@ -298,7 +321,7 @@
     let over2xStreak = 0;
     let under2xStreak = 0;
     let showAllPlayers = false;
-    let visiblePlayersCount = 10; // নতুন ১০ জন করে দেখানোর জন্য গ্লোবাল ভেরিয়েবল
+    let visiblePlayersCount = 10; 
     let crashHistoryDots = JSON.parse(localStorage.getItem('crashHistoryDots')) || [];
     let isProcessingBet = false;
     let isMuted = localStorage.getItem('isMuted') === 'true';
@@ -467,7 +490,7 @@
     function generateFakePlayers() {
         players = []; fakePool = 0;
         const names = ["Alpha", "Bull", "Whale", "Rich", "Satoshi", "Trade", "Dexter", "Moon"];
-        const count = Math.floor(Math.random() * 300 + 800);
+        const count = Math.floor(Math.random() * 200 + 600);
         for(let i=0; i<count; i++) {
             let pBet = (Math.random() * 10 + 5).toFixed(6);
             let pTarget = (1.1 + Math.random() * (Math.random() > 0.9 ? 10 : 3)).toFixed(2);
@@ -485,14 +508,10 @@
     }
 
     function toggleMore() {
-        // প্রতি ক্লিকে ১০ জন করে বাড়বে
         visiblePlayersCount += 10;
-        
-        // যদি মোট প্লেয়ার সংখ্যা ছাড়িয়ে যায় তবে রিসেট হয়ে ১০ এ আসবে
         if (visiblePlayersCount > players.length + 1) {
             visiblePlayersCount = 10;
         }
-        
         renderBets();
     }
     
@@ -506,19 +525,16 @@
 
         if (displayList.length > 10) { 
             moreBtn.style.display = 'block'; 
-            // বাটন টেক্সট আপডেট
             if (visiblePlayersCount >= displayList.length) {
                 moreBtn.innerHTML = `Show Less <i class="fas fa-chevron-up ml-1"></i>`;
             } else {
                 moreBtn.innerHTML = `Show More (${visiblePlayersCount}/${displayList.length}) <i class="fas fa-chevron-down ml-1"></i>`;
             }
-            // লিমিট অনুযায়ী ডাটা স্লাইস করা
             displayList = displayList.slice(0, visiblePlayersCount);
         } else { 
             moreBtn.style.display = 'none'; 
         }
 
-        // পারফরম্যান্স বুস্ট করার জন্য map() ব্যবহার
         const htmlRows = displayList.map(p => {
             let pCol = "text-wait", mDisp = "-", pDisp = "-";
             if(p.won) { 
@@ -570,7 +586,7 @@
         document.getElementById('origin-light').style.display = 'none';
         document.getElementById('grid-bg').classList.remove('moving-bg');
         let t = 10; document.getElementById('timer-num').innerText = t;
-        visiblePlayersCount = 10; // নতুন রাউন্ডে লিস্ট রিসেট
+        visiblePlayersCount = 10; 
         generateFakePlayers(); document.getElementById('countdown-overlay').style.display='flex';
         updateUI();
         const timer = setInterval(()=>{ 
@@ -604,6 +620,7 @@
         document.getElementById('origin-light').style.display = 'block';
         if(hasBet){ btn.disabled=false; btn.onclick=manualCashOut; btn.className = "w-full bg-green-500 text-black py-4 rounded-xl font-black text-xl shadow-xl"; }
         else { btn.disabled = true; btn.innerText = "BET RUNNING..."; btn.className = "w-full bg-gray-700 text-gray-400 py-4 rounded-xl font-black text-xl cursor-not-allowed"; }
+        
         gameLoop = setInterval(()=>{
             currentMultiplier += (currentMultiplier < 10 ? 0.01 : currentMultiplier * 0.005);
             flightSeconds += 0.06; 
@@ -612,9 +629,14 @@
             if(hasBet && !hasCashed) btn.innerText = "CASH OUT: " + (betAmt * currentMultiplier).toFixed(6);
             players.forEach(p => { if (!p.won && currentMultiplier >= p.target) { p.won = true; bankBalance -= (p.bet * p.target - p.bet); updateUI(); renderBets(); } });
             updateCharacters(); 
+            
+            // প্লেনের মুভমেন্ট লিমিট করা যাতে চ্যাট আইকন বা স্ক্রিনের বাইরে না যায়
             let maxMoveX = document.getElementById('screen').clientWidth - 110; 
+            let maxMoveY = 200; // চ্যাট আইকনের নিচে থাকার জন্য উচ্চতা নিয়ন্ত্রণ (200px approx)
+            
             let moveX = Math.min(flightSeconds * 30, maxMoveX);
-            let moveY = Math.min((currentMultiplier - 1) * 50, 240);
+            let moveY = Math.min((currentMultiplier - 1) * 50, maxMoveY); 
+            
             plane.style.transform = `translate(${moveX}px, -${moveY}px)`;
             
             const xLabels = document.getElementById('x-labels');
@@ -687,7 +709,6 @@
 
     window.onload = () => { updateUI(); prepareRound(); checkBubble(); };
 </script>
-
 
 </body>
 </html>
