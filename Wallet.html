@@ -93,28 +93,30 @@
     <div id="sheet" class="sheet"><div id="sheet_content"></div></div>
 
     <footer class="footer">
-        <a href="home.html" class="f-nav"><i class="fas fa-home"></i>Home</a>
+        <a href="Home.html" class="f-nav"><i class="fas fa-home"></i>Home</a>
         <a href="Trade.html" class="f-nav"><i class="fas fa-chart-line"></i>Trade</a>
         <a href="Explorer.html" class="f-nav"><i class="fas fa-compass"></i>Explore</a>
         <a href="Wallet.html" class="f-nav active"><i class="fas fa-wallet"></i>Wallet</a>
     </footer>
 
     <script>
-        let coins = typeof GLOBAL_COINS !== 'undefined' ? GLOBAL_COINS : [];
+        // coin.js থেকে ডাটা রিট্রিভ
+        let coins = (typeof GLOBAL_COINS !== 'undefined') ? GLOBAL_COINS : [];
         let isBalanceHidden = localStorage.getItem('hideBalance') === 'true';
         let transactions = JSON.parse(localStorage.getItem('wallet_history')) || [];
         const WITHDRAW_FEE_USD = 0.25;
 
+        // আপনার সার্ভার অ্যাড্রেস কনফিগারেশন
         const CONFIG = {
-            MY_SMAT_ID: "SMAT882910",
+            MY_SMAT_ID: localStorage.getItem('smatID') || "SMAT882910",
             NETWORKS: { 
                 "BEP20": "0x742d35Cc6634C0532925a3b844Bc454e4438f44e", 
                 "TRC20": "TX9rX9v7P2n8zWbLqA1mX9v7P2n8zWbLqA", 
-                "ERC20": "0x742d35Cc6634C0532925a3b844Bc454e4438f44e" 
+                "ERC20": "0x742d35Cc6634C0532925a3b844Bc454e4438f44e",
+                "SMAT Chain": "smat_chain_internal_address_0x1"
             }
         };
 
-        // --- লগইন চেক ফাংশন ---
         function checkAuth() {
             if(localStorage.getItem('isLoggedIn') !== 'true') {
                 window.location.href = 'logIn.html';
@@ -128,8 +130,14 @@
             renderAssets();
         }
 
+        // coin.js ইঞ্জিন রেডি হলে অটো আপডেট হবে
+        window.addEventListener('smat_engine_ready', () => {
+            coins = GLOBAL_COINS;
+            renderAssets();
+        });
+
         function toggleBalance() {
-            if(!checkAuth()) return; // ক্লিক করলে লগইন চেক
+            if(!checkAuth()) return;
             isBalanceHidden = !isBalanceHidden;
             localStorage.setItem('hideBalance', isBalanceHidden);
             document.getElementById('eye-icon').className = isBalanceHidden ? 'fas fa-eye-slash eye-trigger' : 'fas fa-eye eye-trigger';
@@ -137,7 +145,7 @@
         }
 
         function formatNum(num, dec = 4) {
-            return num.toLocaleString(undefined, { minimumFractionDigits: dec, maximumFractionDigits: dec });
+            return parseFloat(num).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: dec });
         }
 
         function renderAssets() {
@@ -146,21 +154,27 @@
             
             let totalUSD = 0, html = '';
             coins.forEach(coin => {
-                let bal = 0;
-                if(isLoggedIn) {
-                    bal = parseFloat(localStorage.getItem(coin.sym.toLowerCase() + '_balance')) || 0;
-                }
+                const lowSym = coin.sym.toLowerCase();
+                // coin.js এর উইন্ডো ভেরিয়েবল থেকে ব্যালেন্স এবং দাম নেওয়া
+                let bal = window[lowSym + "Balance"] || 0;
+                let price = window[lowSym + "Val"] || coin.price;
                 
-                const usdVal = bal * (coin.price || 1);
+                const usdVal = bal * price;
                 totalUSD += usdVal;
+
                 html += `
                     <div class="asset-item" onclick="proceedToForm('${coin.sym}', 'Withdraw')">
                         <div class="coin-box">
-                            <div class="coin-icon"><img src="assets/logos/${coin.sym.toLowerCase()}.png" onerror="this.src='https://ui-avatars.com/api/?name=${coin.sym}'"></div>
-                            <div><div class="coin-sym">${coin.sym}</div><div style="font-size:11px; color:var(--text-sec)">${coin.name}</div></div>
+                            <div class="coin-icon">
+                                <img src="assets/logos/${lowSym}.png" onerror="this.src='https://ui-avatars.com/api/?name=${coin.sym}'">
+                            </div>
+                            <div>
+                                <div class="coin-sym">${coin.sym}</div>
+                                <div style="font-size:11px; color:var(--text-sec)">${coin.name}</div>
+                            </div>
                         </div>
                         <div style="text-align:right">
-                            <div style="font-weight:700;">${(isBalanceHidden || !isLoggedIn) ? '****' : formatNum(bal, 4)}</div>
+                            <div style="font-weight:700;">${(isBalanceHidden || !isLoggedIn) ? '****' : formatNum(bal, coin.decimal || 4)}</div>
                             <div style="font-size:11px; color:var(--text-sec)">≈ ${(isBalanceHidden || !isLoggedIn) ? '****' : '$' + formatNum(usdVal, 2)}</div>
                         </div>
                     </div>`;
@@ -170,12 +184,17 @@
         }
 
         function openAction(type) {
-            if(!checkAuth()) return; // ক্লিক করলে লগইন চেক
+            if(!checkAuth()) return;
             let html = `<h3 style="margin-bottom:20px; text-transform: uppercase;">Select Asset to ${type}</h3>`;
             coins.forEach(c => {
                 html += `
                     <div class="asset-item" style="border:1px solid var(--border); border-radius:15px; margin-bottom:12px" onclick="proceedToForm('${c.sym}', '${type}')">
-                        <div class="coin-box"><div class="coin-icon" style="width:32px; height:32px;"><img src="assets/logos/${c.sym.toLowerCase()}.png"></div><b class="coin-sym">${c.sym}</b></div>
+                        <div class="coin-box">
+                            <div class="coin-icon" style="width:32px; height:32px;">
+                                <img src="assets/logos/${c.sym.toLowerCase()}.png">
+                            </div>
+                            <b class="coin-sym">${c.sym}</b>
+                        </div>
                         <i class="fas fa-chevron-right"></i>
                     </div>`;
             });
@@ -183,56 +202,62 @@
         }
 
         function proceedToForm(sym, type) {
-            if(!checkAuth()) return; // ক্লিক করলে লগইন চেক
-            const coin = coins.find(c => c.sym === sym);
+            if(!checkAuth()) return;
+            const coin = coins.find(c => c.sym.toLowerCase() === sym.toLowerCase());
             if(type === 'Deposit') { showDepositForm(coin); } else { showWithdrawForm(coin); }
         }
 
         function showDepositForm(coin) {
+            // coin.js থেকে নেটওয়ার্ক লোড
+            const nets = coin.networks || ['BEP20'];
+            let netHtml = nets.map((n, i) => `
+                <div class="net-tag ${i === 0 ? 'active' : ''}" onclick="updateDepositAddr(this, '${n}')">${n}</div>
+            `).join('');
+
             let html = `
                 <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px"><h3>Deposit ${coin.sym.toUpperCase()}</h3><i class="fas fa-times" onclick="closeSheet()"></i></div>
                 <p style="font-size:13px; color:var(--text-sec)">Select Network</p>
-                <div class="net-selector">
-                    <div class="net-tag active" onclick="updateDepositAddr(this, 'BEP20')">BEP20</div>
-                    <div class="net-tag" onclick="updateDepositAddr(this, 'TRC20')">TRC20</div>
-                    <div class="net-tag" onclick="updateDepositAddr(this, 'ERC20')">ERC20</div>
-                </div>
+                <div class="net-selector">${netHtml}</div>
                 <div id="qrcode"></div>
                 <p style="font-size:12px; color:var(--text-sec); text-align:center">Wallet Address</p>
                 <div class="cex-input" style="display:flex; flex-direction:column; gap:10px;">
-                    <span id="addrText" class="full-addr">${CONFIG.NETWORKS.BEP20}</span>
+                    <span id="addrText" class="full-addr">${CONFIG.NETWORKS[nets[0]] || "Address Not Found"}</span>
                     <button style="background:transparent; border:none; color:var(--primary); font-weight:bold; cursor:pointer;" onclick="copyText('addrText')"><i class="fas fa-copy"></i> Copy Address</button>
                 </div>
                 <button class="btn-full" onclick="closeSheet()">Back to Wallet</button>`;
             renderSheet(html);
-            setTimeout(() => generateQR(CONFIG.NETWORKS.BEP20), 50);
+            setTimeout(() => generateQR(CONFIG.NETWORKS[nets[0]] || "N/A"), 50);
         }
 
         function updateDepositAddr(el, chain) {
             document.querySelectorAll('.net-tag').forEach(t => t.classList.remove('active'));
             el.classList.add('active');
-            const addr = CONFIG.NETWORKS[chain];
+            const addr = CONFIG.NETWORKS[chain] || "Contact Support for Address";
             document.getElementById('addrText').innerText = addr;
             generateQR(addr);
         }
 
         function showWithdrawForm(coin) {
-            const bal = parseFloat(localStorage.getItem(coin.sym.toLowerCase() + '_balance')) || 0;
-            const feeInCoin = WITHDRAW_FEE_USD / (coin.price || 1);
+            const lowSym = coin.sym.toLowerCase();
+            const bal = window[lowSym + "Balance"] || 0;
+            const price = window[lowSym + "Val"] || coin.price;
+            const feeInCoin = WITHDRAW_FEE_USD / price;
             const available = Math.max(0, bal - feeInCoin);
+
+            const nets = coin.networks || ['BEP20'];
+            let netHtml = nets.map((n, i) => `
+                <div class="net-tag ${i === 0 ? 'active' : ''}" onclick="toggleActive(this)">${n}</div>
+            `).join('');
 
             let html = `
                 <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px"><h3>Withdraw ${coin.sym.toUpperCase()}</h3><i class="fas fa-times" onclick="closeSheet()"></i></div>
                 <p style="font-size:12px; color:var(--text-sec)">Select Network</p>
-                <div class="net-selector">
-                    <div class="net-tag active" onclick="toggleActive(this)">BEP20</div>
-                    <div class="net-tag" onclick="toggleActive(this)">TRC20</div>
-                </div>
+                <div class="net-selector">${netHtml}</div>
                 <input type="text" id="withAddr" class="cex-input" placeholder="Enter Full Recipient Address">
                 <div style="display:flex; justify-content:space-between; margin-top:10px;"><small>Amount (Fee: ${formatNum(feeInCoin, 4)} ${coin.sym.toUpperCase()})</small><small>Available: ${formatNum(available, 4)}</small></div>
                 <div class="cex-input-box">
                     <input type="number" id="withAmt" class="cex-input" placeholder="Minimum 10">
-                    <span class="max-btn" onclick="document.getElementById('withAmt').value = ${available.toFixed(6)}">MAX</span>
+                    <span class="max-btn" onclick="document.getElementById('withAmt').value = ${available.toFixed(coin.decimal || 4)}">MAX</span>
                 </div>
                 <button class="btn-full" onclick="handleWithdrawSubmit('${coin.sym}', ${feeInCoin})">Confirm Withdrawal</button>`;
             renderSheet(html);
@@ -243,29 +268,32 @@
             const amt = parseFloat(document.getElementById('withAmt').value);
             const addr = document.getElementById('withAddr').value;
             const chain = document.querySelector('.net-tag.active').innerText;
-            const balKey = sym.toLowerCase() + '_balance';
-            const bal = parseFloat(localStorage.getItem(balKey)) || 0;
+            const lowSym = sym.toLowerCase();
+            const bal = window[lowSym + "Balance"] || 0;
 
             const totalToDeduct = amt + fee;
 
-            if(!addr || addr.length < 20) return alert("Please enter a valid full wallet address.");
-            if(isNaN(amt) || amt < 10) return alert("Minimum withdrawal amount is 10 " + sym);
+            if(!addr || addr.length < 10) return alert("Please enter a valid recipient address.");
+            if(isNaN(amt) || amt < 1) return alert("Invalid withdrawal amount.");
             if(totalToDeduct > bal) return alert("Insufficient balance to cover Amount + Fee.");
 
-            localStorage.setItem(balKey, (bal - totalToDeduct).toFixed(6));
+            // ব্যালেন্স আপডেট (window এবং localStorage উভয় জায়গায়)
+            window[lowSym + "Balance"] = bal - totalToDeduct;
+            localStorage.setItem(lowSym + '_balance', (bal - totalToDeduct).toFixed(6));
+            
             saveTx({ type: 'Withdraw', sym: sym.toUpperCase(), amt: amt, chain: chain, addr: addr, status: 'pending' });
             
-            alert("Withdrawal request sent. Total " + formatNum(totalToDeduct, 4) + " " + sym + " has been deducted.");
+            alert("Withdrawal request sent. Total " + formatNum(totalToDeduct, 4) + " " + sym + " deducted.");
             renderAssets();
             closeSheet();
         }
 
         function openTransfer() {
-            if(!checkAuth()) return; // ক্লিক করলে লগইন চেক
+            if(!checkAuth()) return;
             let html = `
                 <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px"><h3>P2P Transfer</h3><i class="fas fa-times" onclick="closeSheet()"></i></div>
                 <p style="font-size:12px; color:var(--text-sec)">Recipient SMAT ID</p>
-                <input type="text" id="p2pid" class="cex-input" placeholder="Enter SMAT ID">
+                <input type="text" id="p2pid" class="cex-input" placeholder="Enter SMAT ID (e.g. SMAT1001)">
                 <p style="font-size:12px; color:var(--text-sec); margin-top:10px;">Select Asset</p>
                 <select id="tCoin" class="cex-input">
                     ${coins.map(c => `<option value="${c.sym}">${c.sym.toUpperCase()}</option>`).join('')}
@@ -280,13 +308,15 @@
             const id = document.getElementById('p2pid').value;
             const sym = document.getElementById('tCoin').value;
             const amt = parseFloat(document.getElementById('tAmt').value);
-            const balKey = sym.toLowerCase() + '_balance';
-            const bal = parseFloat(localStorage.getItem(balKey)) || 0;
+            const lowSym = sym.toLowerCase();
+            const bal = window[lowSym + "Balance"] || 0;
 
             if(!id.startsWith('SMAT')) return alert("Invalid SMAT ID.");
-            if(isNaN(amt) || amt > bal) return alert("Invalid amount or insufficient balance.");
+            if(isNaN(amt) || amt > bal || amt <= 0) return alert("Invalid amount or insufficient balance.");
 
-            localStorage.setItem(balKey, (bal - amt).toFixed(6));
+            window[lowSym + "Balance"] = bal - amt;
+            localStorage.setItem(lowSym + '_balance', (bal - amt).toFixed(6));
+            
             saveTx({ type: 'Transfer', sym: sym.toUpperCase(), amt: amt, chain: 'Internal', addr: id, status: 'success' });
             alert("Transfer Successful!");
             renderAssets();
@@ -300,7 +330,7 @@
         }
 
         function openHistory() {
-            if(!checkAuth()) return; // ক্লিক করলে লগইন চেক
+            if(!checkAuth()) return;
             let html = `
             <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px">
                 <h3>History</h3>
@@ -335,8 +365,10 @@
         }
 
         function generateQR(text) {
-            document.getElementById('qrcode').innerHTML = "";
-            new QRCode(document.getElementById("qrcode"), { text: text, width: 140, height: 140 });
+            const qrBox = document.getElementById('qrcode');
+            if(!qrBox) return;
+            qrBox.innerHTML = "";
+            new QRCode(qrBox, { text: text, width: 140, height: 140 });
         }
 
         function toggleActive(el) {
