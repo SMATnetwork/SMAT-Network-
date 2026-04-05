@@ -206,13 +206,27 @@
 
         let orderBoard = JSON.parse(localStorage.getItem('orderBoard')) || {};
 
+        // --- লগইন চেক ফাংশন ---
+        function checkAuth() {
+            if(localStorage.getItem('isLoggedIn') !== 'true') {
+                window.location.href = 'logIn.html';
+                return false;
+            }
+            return true;
+        }
+
         function init() {
             if (typeof GLOBAL_COINS !== 'undefined') {
                 activeCoin = GLOBAL_COINS[0];
             }
             renderMarketTabs();
-            const s = activeCoin.sym.toLowerCase();
-            document.getElementById('priceInp').value = (window[s + "Val"] || activeCoin.price).toFixed(4);
+            
+            // SMAT প্রাইস কনভার্সন লজিক
+            const smatVal = window["smatVal"] || 1;
+            const coinPrice = window[activeCoin.sym.toLowerCase() + "Val"] || activeCoin.price;
+            const displayPrice = activeMarket === 'SMAT' ? (coinPrice / smatVal) : coinPrice;
+
+            document.getElementById('priceInp').value = displayPrice.toFixed(4);
             
             refreshUI();
             
@@ -225,11 +239,13 @@
             }, 2000);
 
             document.getElementById('chartRedirect').onclick = () => {
+                if(!checkAuth()) return;
                 location.href = `market_chat.html?symbol=${activeCoin.sym.toUpperCase()}&market=${activeMarket}`;
             };
         }
 
         function togglePopup(show) {
+            if(show && !checkAuth()) return; // ক্লিক করলে লগইন চেক
             const popup = document.getElementById('pairPopup');
             if(show) {
                 popup.style.display = 'flex';
@@ -253,15 +269,25 @@
             renderMarketTabs();
             renderPairs();
             updateBalanceDisplay();
+            // মার্কেট চেঞ্জ হলে প্রাইস আপডেট
+            const smatVal = window["smatVal"] || 1;
+            const coinPrice = window[activeCoin.sym.toLowerCase() + "Val"] || activeCoin.price;
+            const displayPrice = activeMarket === 'SMAT' ? (coinPrice / smatVal) : coinPrice;
+            document.getElementById('priceInp').value = displayPrice.toFixed(4);
+            calcTotal();
         }
 
         function renderPairs() {
             const query = document.getElementById('pairSearch').value.toUpperCase();
             const container = document.getElementById('pairListContainer');
+            const smatVal = window["smatVal"] || 1;
+            
             let filtered = GLOBAL_COINS.filter(c => c.sym.toUpperCase().includes(query) && c.sym.toUpperCase() !== activeMarket);
 
             container.innerHTML = filtered.map(c => {
-                const val = window[c.sym.toLowerCase() + "Val"] || c.price;
+                let val = window[c.sym.toLowerCase() + "Val"] || c.price;
+                if(activeMarket === 'SMAT') val = val / smatVal; // SMAT কনভার্সন
+                
                 return `
                 <div class="pair-row" onclick="selectCoin('${c.sym}')">
                     <div class="p-info">
@@ -275,8 +301,11 @@
 
         function selectCoin(sym) {
             activeCoin = GLOBAL_COINS.find(c => c.sym === sym);
-            const s = activeCoin.sym.toLowerCase();
-            document.getElementById('priceInp').value = (window[s + "Val"] || activeCoin.price).toFixed(4);
+            const smatVal = window["smatVal"] || 1;
+            const coinPrice = window[activeCoin.sym.toLowerCase() + "Val"] || activeCoin.price;
+            const displayPrice = activeMarket === 'SMAT' ? (coinPrice / smatVal) : coinPrice;
+            
+            document.getElementById('priceInp').value = displayPrice.toFixed(4);
             togglePopup(false);
             refreshUI();
         }
@@ -326,6 +355,7 @@
         }
 
         function applyPct(pct) {
+            if(!checkAuth()) return;
             const avbl = parseFloat(document.getElementById('avblVal').innerText);
             const price = parseFloat(document.getElementById('priceInp').value);
             if (!price || price <= 0) return;
@@ -343,11 +373,14 @@
             const bidsList = document.getElementById('bids');
             const s = activeCoin.sym.toUpperCase();
             const pairOrders = orderBoard[s] || { asks: [], bids: [] };
+            const smatVal = window["smatVal"] || 1;
             
             const aggregate = (orders) => {
                 const map = {};
                 orders.forEach(o => {
-                    const priceKey = parseFloat(o.p).toFixed(4);
+                    let pVal = parseFloat(o.p);
+                    if(activeMarket === 'SMAT') pVal = pVal / smatVal;
+                    const priceKey = pVal.toFixed(4);
                     map[priceKey] = (map[priceKey] || 0) + parseFloat(o.a);
                 });
                 return Object.keys(map).map(p => ({ p: parseFloat(p), a: map[p] }));
@@ -366,7 +399,10 @@
 
             asksList.innerHTML = renderRows(sortedAsks.slice(0, 8).reverse(), 'ask');
             bidsList.innerHTML = renderRows(sortedBids.slice(0, 8), 'bid');
-            document.getElementById('marketPrice').innerText = (window[activeCoin.sym.toLowerCase() + "Val"] || activeCoin.price).toFixed(4);
+            
+            let mPrice = (window[activeCoin.sym.toLowerCase() + "Val"] || activeCoin.price);
+            if(activeMarket === 'SMAT') mPrice = mPrice / smatVal;
+            document.getElementById('marketPrice').innerText = mPrice.toFixed(4);
         }
 
         function matchOrders(symbol) {
@@ -422,16 +458,28 @@
         }
 
         function processTrade() {
-            const p = parseFloat(document.getElementById('priceInp').value);
+            if(!checkAuth()) return; // ক্লিক করলে লগইন চেক
+            const smatVal = window["smatVal"] || 1;
+            let p = parseFloat(document.getElementById('priceInp').value);
             const a = parseFloat(document.getElementById('amountInp').value);
+            
             if (isNaN(p) || isNaN(a) || p <= 0 || a <= 0) return alert("Invalid Amount or Price");
+            
+            // যদি SMAT মার্কেটে ট্রেড হয়, ইনপুট প্রাইসকে USDT প্রাইসে কনভার্ট করে সেভ করতে হবে যাতে ম্যাচিং ঠিক থাকে
+            if(activeMarket === 'SMAT') p = p * smatVal;
+
             const s = activeCoin.sym.toUpperCase();
             const cost = p * a; const fee = cost * FEE_RATE;
+            
             if (tradeSide === 'buy') {
                 const balKey = activeMarket.toLowerCase() + '_balance';
                 const bal = parseFloat(localStorage.getItem(balKey)) || 0;
-                if (bal < (cost + fee)) return alert("Insufficient Balance!");
-                localStorage.setItem(balKey, (bal - (cost + fee)).toFixed(4));
+                // SMAT মার্কেটে ক্যালকুলেশন ভিন্ন হবে
+                const displayCost = activeMarket === 'SMAT' ? (p/smatVal) * a : cost;
+                const displayFee = displayCost * FEE_RATE;
+                
+                if (bal < (displayCost + displayFee)) return alert("Insufficient Balance!");
+                localStorage.setItem(balKey, (bal - (displayCost + displayFee)).toFixed(4));
             } else {
                 const balKey = activeCoin.sym.toLowerCase() + '_balance';
                 let currentCoinBal = parseFloat(localStorage.getItem(balKey)) || 0;
@@ -450,6 +498,7 @@
         }
 
         function setHTab(tab) {
+            if(!checkAuth()) return;
             activeHTab = tab;
             historyLimit = 10;
             document.querySelectorAll('.h-tab').forEach(t => t.classList.remove('active'));
@@ -469,16 +518,26 @@
             const head = document.getElementById('hHead');
             const data = JSON.parse(localStorage.getItem(activeHTab + 'Orders')) || [];
             const showMoreBtn = document.getElementById('showMoreBox');
+            const smatVal = window["smatVal"] || 1;
             
             const visibleData = data.slice(0, historyLimit);
             showMoreBtn.style.display = data.length > historyLimit ? 'block' : 'none';
             
             if (activeHTab === 'un') {
                 head.innerHTML = `<tr><th>Pair</th><th>Price</th><th>Amount</th><th>Status</th></tr>`;
-                body.innerHTML = visibleData.map(o => `<tr><td>${o.s}/${o.market}</td><td>${parseFloat(o.p).toFixed(4)}</td><td>${parseFloat(o.a).toFixed(4)}</td><td class="down" onclick="cancelOrder(${o.id})">Cancel</td></tr>`).join('');
+                body.innerHTML = visibleData.map(o => {
+                    let displayP = o.p;
+                    if(o.market === 'SMAT') displayP = o.p / smatVal;
+                    return `<tr><td>${o.s}/${o.market}</td><td>${parseFloat(displayP).toFixed(4)}</td><td>${parseFloat(o.a).toFixed(4)}</td><td class="down" onclick="cancelOrder(${o.id})">Cancel</td></tr>`;
+                }).join('');
             } else {
                 head.innerHTML = `<tr><th>Time</th><th>Side</th><th>Price</th><th>Amount</th></tr>`;
-                body.innerHTML = visibleData.map(o => `<tr><td>${o.time}</td><td class="${o.side==='buy'?'up':'down'}">${o.side.toUpperCase()}</td><td>${parseFloat(o.p).toFixed(4)}</td><td>${parseFloat(o.a).toFixed(4)}</td></tr>`).join('');
+                body.innerHTML = visibleData.map(o => {
+                    // হিস্টোরিতেও মার্কেট অনুযায়ী প্রাইস কনভার্ট
+                    let displayP = o.p;
+                    if(activeMarket === 'SMAT') displayP = o.p / smatVal;
+                    return `<tr><td>${o.time}</td><td class="${o.side==='buy'?'up':'down'}">${o.side.toUpperCase()}</td><td>${parseFloat(displayP).toFixed(4)}</td><td>${parseFloat(o.a).toFixed(4)}</td></tr>`;
+                }).join('');
             }
         }
 
@@ -488,12 +547,19 @@
         }
 
         function cancelOrder(id) {
+            if(!checkAuth()) return;
             let history = JSON.parse(localStorage.getItem('unOrders')) || [];
             const order = history.find(o => o.id === id);
+            const smatVal = window["smatVal"] || 1;
+            
             if (order) {
                 if (order.side === 'buy') {
                     const key = order.market.toLowerCase() + '_balance';
-                    const bal = parseFloat(localStorage.getItem(key)) + (order.p * order.a * (1 + FEE_RATE));
+                    // রিফান্ড ক্যালকুলেশন মার্কেট অনুযায়ী
+                    let refundAmt = (order.p * order.a * (1 + FEE_RATE));
+                    if(order.market === 'SMAT') refundAmt = ((order.p/smatVal) * order.a * (1 + FEE_RATE));
+                    
+                    const bal = parseFloat(localStorage.getItem(key)) + refundAmt;
                     localStorage.setItem(key, bal.toFixed(4));
                 } else {
                     const key = order.s.toLowerCase() + '_balance';
