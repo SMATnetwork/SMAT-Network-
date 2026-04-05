@@ -1,175 +1,72 @@
 /**
- * SMAT CEX - Central Coin Configuration
+ * SMAT CEX - Central Data Engine (Server-Ready)
+ * এই ফাইলটি আপনার ডাটাবেস এবং ফ্রন্টএন্ডের মধ্যে কানেকশন রক্ষা করবে।
  */
 
+// ১. আপনার সার্ভারের এপিআই ইউআরএল (ভবিষ্যতে এখানে আপনার ডোমেইন দিবেন)
+const API_CONFIG = {
+    baseUrl: "api/v1", // আপনার সার্ভারের ফোল্ডার পাথ
+    isLive: false      // ডাটাবেস কানেক্ট হলে এটাকে true করে দিবেন
+};
+
+// ২. মূল কয়েন কনফিগারেশন (এখান থেকে লগো, নাম এবং সিম্বল অটো লোড হবে)
 const GLOBAL_COINS = [
-    {
-        sym: 'SMAT',
-        name: 'SMAT Native Coin',
-        price: 10.00,
-        startPrice: 12.30,
-        key: 'smatBalance',
-        color: '#26a17b',
-        networks: ['SMAT Chain', 'BNB Smart Chain']
-    },
-   {
-        sym: 'USDT',
-        name: 'USDT Stablecoin',
-        price: 1.00,
-        startPrice: 1.00,
-        key: 'usdtBalance',
-        color: '#26a17b',
-        networks: ['BSC20', 'ERC20']
-    },
-   {
-        sym: 'USDC',
-        name: 'USDC Stablecoin',
-        price: 1.00,
-        startPrice: 1.00,
-        key: 'usdcBalance',
-        color: '#26a17b',
-        networks: ['BSC20', 'ERC20']
-    },
-  {
-        sym: 'BNB',
-        name: 'Binance coin',
-        price: 588.00,
-        startPrice: 590.20,
-        key: 'bnbBalance',
-        color: '#26a17b',
-        networks: ['BSC20', 'ERC20']
-    },
-    {
-        sym: 'BTC',
-        name: 'Bitcoin',
-        price: 61000.00,
-        startPrice: 63000.5200,
-        key: 'btcBalance',
-        color: '#f3ba2f',
-        networks: ['BSC20', 'ERC20']
-    },
-    {
-        sym: 'ETH',
-        name: 'Ethereum',
-        price: 1932.50,
-        startPrice: 1897.00,
-        key: 'ethBalance',
-        color: '#f3ba2f',
-        networks: ['BSC20','ERC20']
-    },
-    {
-        sym: 'SOL',
-        name: 'Solana',
-        price: 162.00,
-        startPrice: 169.00,
-        color: '#f7931a',
-        key: 'solBalance',
-        networks: ['ERC20', 'BSC20']
-    },
- {
-        sym: 'POL',
-        name: 'Polygon',
-        price: 0.090,
-        startPrice: 0.103,
-        color: '#f7931a',
-        key: 'polBalance',
-        networks: ['POS', 'BSC20']
-    },
- {
-        sym: 'LTC',
-        name: 'Litecoin',
-        price: 162.00,
-        startPrice: 169.00,
-        color: '#f7931a',
-        key: 'ltcBalance',
-        networks: ['ERC20', 'Litecoin','BSC20']
-    },
- {
-        sym: 'ETC',
-        name: 'Ethereum Classic',
-        price: 16.00,
-        startPrice: 16.00,
-        color: '#f7931a',
-        key: 'etcBalance',
-        networks: ['ERC20', 'BSC20']
-    },
- {
-        sym: 'XRP',
-        name: 'Ripple',
-        price: 1.69,
-        startPrice: 1.73,
-        color: '#f7931a',
-        key: 'xrpBalance',
-        networks: ['ERC20','Ripple', 'BSC20']
-    },
- {
-        sym: 'TRX',
-        name: 'Tronix',
-        price: 0.17,
-        startPrice: 0.179,
-        color: '#f7931a',
-        key: 'trxBalance',
-        networks: ['TRC20','ERC20', 'BSC20']
-    },
- {
-        sym: 'SUI',
-        name: 'SUI Coin',
-        price: 2.00,
-        startPrice: 2.00,
-        color: '#f7931a',
-        key: 'suiBalance',
-        networks: ['SUI','ERC20', 'BSC20']
-    },
- {
-        sym: 'TON',
-        name: 'Toncoin',
-        price: 2.00,
-        startPrice: 1.80,
-        color: '#f7931a',
-        key: 'tonBalance',
-        networks: ['TON Network','ERC20', 'BSC20']
-    },
- {
-        sym: 'XLM',
-        name: 'Monero',
-        price: 0.25,
-        startPrice: 0.27,
-        color: '#f7931a',
-        key: 'xlmBalance',
-        networks: ['ERC20', 'BSC20']
-    },
-    {
-        sym: 'Doge',
-        name: 'Dogecoin',
-        price: 0.10,
-        startPrice: 0.13,
-        key: 'dogeBalance',
-        color: '#627eea',
-        networks: ['ERC20', 'BSC20']
-    }
+    { sym: 'smat', name: 'SMAT Native', price: 10.00, key: 'smat_balance', networks: ['SMAT Chain'] },
+    { sym: 'btc', name: 'Bitcoin', price: 61000.00, key: 'btc_balance', networks: ['BTC', 'BEP20'] },
+    { sym: 'eth', name: 'Ethereum', price: 2350.50, key: 'eth_balance', networks: ['ERC20', 'BEP20'] },
+    { sym: 'bnb', name: 'Binance Coin', price: 588.00, key: 'bnb_balance', networks: ['BEP20'] },
+    { sym: 'usdt', name: 'Tether', price: 1.00, key: 'usdt_balance', networks: ['TRC20', 'BEP20'] },
+    { sym: 'sol', name: 'Solana', price: 145.00, key: 'sol_balance', networks: ['Mainnet'] },
+    { sym: 'trx', name: 'TRON', price: 0.15, key: 'trx_balance', networks: ['TRC20'] }
+    // নতুন কয়েন এড করতে হলে শুধু এখানে একটি লাইন বাড়াবেন, আর কিচ্ছু করতে হবে না।
 ];
 
-// ডাটা সিঙ্ক করার মাস্টার ফাংশন
-function masterSync() {
-    // ১. মার্কেট লিস্ট আপডেট (পুরনো লিস্টের সাথে নতুন কয়েন থাকলে তা যোগ করবে)
-    localStorage.setItem('marketStats', JSON.stringify(GLOBAL_COINS));
-
-    // ২. প্রতিটি কয়েনের জন্য ব্যালেন্স বক্স চেক করা
-    GLOBAL_COINS.forEach(coin => {
-        // যদি ওই কয়েনের ব্যালেন্স আগে থেকে না থাকে, তবেই ০ সেট করবে
-        if (localStorage.getItem(coin.key) === null) {
-            localStorage.setItem(coin.key, "0.00");
+/**
+ * ৩. ব্যালেন্স ম্যানেজার (Database Connector)
+ * ইউজারের ব্যালেন্স সরাসরি ডাটাবেস থেকে আনার জন্য এই ফাংশনটি কাজ করবে।
+ */
+async function fetchUserBalance(coinKey) {
+    if (API_CONFIG.isLive) {
+        try {
+            // ডাটাবেস থেকে রিয়াল ডাটা কল (PHP/Node API)
+            const response = await fetch(`${API_CONFIG.baseUrl}/get_balance.php?asset=${coinKey}`);
+            const data = await response.json();
+            return data.balance; 
+        } catch (error) {
+            console.error("Database connection failed:", error);
+            return "0.0000";
         }
-    });
-
-    // ৩. টেস্টিং ব্যালেন্স (আপনার আগের $205.32 USDT ফিরিয়ে আনা)
-    // যদি USDT ব্যালেন্স ০ থাকে বা না থাকে, তবেই এটি ২০৫ সেট করবে
-    if (parseFloat(localStorage.getItem('usdtBalance')) <= 0 || localStorage.getItem('usdtBalance') === null) {
-        localStorage.setItem('usdtBalance', '205.32');
+    } else {
+        // টেস্টিং মোড: ডাটাবেস না থাকলে ৫০০ ব্যালেন্স দেখাবে
+        let localData = localStorage.getItem(coinKey);
+        return localData ? localData : "500.0000"; 
     }
-
-    console.log("SUCCESS: " + GLOBAL_COINS.length + " Coins Synced to Platform.");
 }
 
-// ফাইল লোড হওয়ার সাথে সাথে রান হবে
-masterSync();
+/**
+ * ৪. গ্লোবাল উইন্ডো ভেরিয়েবল সেটআপ
+ * যাতে আপনি যেকোনো ফাইল থেকে সরাসরি btcVal বা btcBalance কল করতে পারেন।
+ */
+async function initSmatEngine() {
+    console.log("⚡ SMAT Engine Initializing...");
+
+    for (const coin of GLOBAL_COINS) {
+        // ডাইনামিক প্রাইস ভেরিয়েবল (যেমন: smatVal)
+        window[coin.sym + "Val"] = coin.price;
+        
+        // ডাইনামিক ব্যালেন্স ভেরিয়েবল (যেমন: smatBalance)
+        const balance = await fetchUserBalance(coin.key);
+        window[coin.sym + "Balance"] = parseFloat(balance);
+        
+        // সিঙ্ক করার জন্য লোকাল স্টোরেজেও রাখা (ব্যাকআপ হিসেবে)
+        localStorage.setItem(coin.key, balance);
+    }
+
+    // মার্কেট স্ট্যাটাস সেভ
+    localStorage.setItem('marketStats', JSON.stringify(GLOBAL_COINS));
+    
+    console.log("✅ All Assets Synced from Database/Sim.");
+}
+
+// ফাইল লোড হওয়ার সাথে সাথে ইঞ্জিন স্টার্ট হবে
+initSmatEngine();
