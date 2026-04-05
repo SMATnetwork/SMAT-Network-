@@ -10,15 +10,16 @@ const API_CONFIG = {
     isLive: false // ডাটাবেস লাইভ করলে ট্রু করে দিবেন
 };
 
-// ২. মূল কয়েন ডাটাবেস (এখানে ডাটা পরিবর্তন করলে পুরো সাইটে আপডেট হবে)
+// ২. মূল কয়েন কনফিগারেশন (এখান থেকে লগো, নাম এবং সিম্বল অটো লোড হবে)
 const GLOBAL_COINS = [
-    { sym: 'SMAT', name: 'SMAT Native', price: 10.0000, vol: 704.93, key: 'smat_balance', tag: 'new' },
-    { sym: 'BTC', name: 'Bitcoin', price: 61000.0000, vol: 3915936.61, key: 'btc_balance', tag: 'hot' },
-    { sym: 'ETH', name: 'Ethereum', price: 2350.5000, vol: 169198.47, key: 'eth_balance', tag: 'hot' },
-    { sym: 'BNB', name: 'Binance Coin', price: 588.0000, vol: 41345.40, key: 'bnb_balance', tag: 'hot' },
-    { sym: 'USDT', name: 'Tether', price: 1.0000, vol: 67.75, key: 'usdt_balance', tag: 'stable' },
-    { sym: 'SOL', name: 'Solana', price: 145.0000, vol: 9053.06, key: 'sol_balance', tag: 'hot' },
-    { sym: 'TRX', name: 'TRON', price: 0.1500, vol: 12.99, key: 'trx_balance', tag: 'hot' }
+    { sym: 'smat', name: 'SMAT Native', price: 10.00, key: 'smat_balance', networks: ['SMAT Chain'] },
+    { sym: 'btc', name: 'Bitcoin', price: 61000.00, key: 'btc_balance', networks: ['BTC', 'BEP20'] },
+    { sym: 'eth', name: 'Ethereum', price: 2350.50, key: 'eth_balance', networks: ['ERC20', 'BEP20'] },
+    { sym: 'bnb', name: 'Binance Coin', price: 588.00, key: 'bnb_balance', networks: ['BEP20'] },
+    { sym: 'usdt', name: 'Tether', price: 1.00, key: 'usdt_balance', networks: ['TRC20', 'BEP20'] },
+    { sym: 'sol', name: 'Solana', price: 145.00, key: 'sol_balance', networks: ['Mainnet'] },
+    { sym: 'trx', name: 'TRON', price: 0.15, key: 'trx_balance', networks: ['TRC20'] }
+    // নতুন কয়েন এড করতে হলে শুধু এখানে একটি লাইন বাড়াবেন, আর কিচ্ছু করতে হবে না।
 ];
 
 /**
