@@ -192,7 +192,15 @@
     <div id="adminModal" class="modal"><div class="modal-box"><h2>Admin</h2><input type="text" id="targetUserID" placeholder="SMAT ID"><button onclick="makeAdmin()">PROMOTE</button><button onclick="closeModal('adminModal')">Close</button></div></div>
     <div id="banListModal" class="modal"><div class="modal-box"><h2>Ban List</h2><div id="banListContent"></div><button onclick="closeModal('banListModal')">Close</button></div></div>
 
-    <script>
+  <footer class="footer">
+        <a href="home.html" class="f-nav"><i class="fas fa-home"></i>Home</a>
+        <a href="Trade.html" class="f-nav active"><i class="fas fa-chart-line"></i>Trade</a>
+        <div class="u-curve"><div class="spin-circle"></div><a href="Crash.html" class="crash-link">CRASH</a></div>
+        <a href="Explorer.html" class="f-nav"><i class="fas fa-compass"></i>Explore</a>
+        <a href="Wallet.html" class="f-nav"><i class="fas fa-wallet"></i>Wallet</a>
+    </footer>
+
+  <script>
         const MAIN_SUPER_ADMIN = "SMAT100001"; 
         const MAX_MESSAGES = 250;
         let user = getMyInfo();
