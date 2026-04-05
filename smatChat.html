@@ -24,16 +24,14 @@
 
         * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; margin: 0; padding: 0; }
         
-        /* ডিসপ্লে অটো-অ্যাডজাস্ট করার জন্য বডি ফিক্স */
         body {
             background: var(--bg); color: var(--text-main);
             font-family: 'Inter', 'Segoe UI', Roboto, sans-serif;
             display: flex; flex-direction: column; 
-            height: 100vh; height: 100dvh; /* Mobile Browser Fix */
+            height: 100vh; height: 100dvh; /* dynamic height fix */
             overflow: hidden; width: 100%;
         }
 
-        /* Header - Fixed */
         .chat-header {
             padding: 12px 15px; background: var(--card-bg); border-bottom: 2px solid var(--primary);
             display: flex; justify-content: space-between; align-items: center; 
@@ -41,7 +39,6 @@
         }
         .header-title { font-size: 18px; font-weight: 900; letter-spacing: 1px; color: var(--primary); }
 
-        /* Jojo Timer */
         #jojoTimer {
             position: absolute; top: 65px; right: 15px;
             background: rgba(30, 35, 41, 0.95); border: 1px solid var(--primary);
@@ -50,7 +47,6 @@
             box-shadow: 0 4px 10px rgba(0,0,0,0.5); z-index: 999;
         }
 
-        /* S-Bubble Logic Styles */
         #s-bubble { 
             position: fixed; width: 65px; height: 65px; z-index: 9999; cursor: pointer; display: none; 
             animation: floatBubble 10s ease-in-out infinite; 
@@ -70,15 +66,17 @@
             box-shadow: 0 0 30px rgba(240, 185, 11, 0.5); 
         }
 
-        /* Chat Display - Responsive Scrolling */
+        /* --- ফিক্সড চ্যাট ডিসপ্লে এরিয়া --- */
         #chatDisplay {
             flex: 1; overflow-y: auto; padding: 15px;
-            display: flex; flex-direction: column; gap: 15px;
+            display: flex; flex-direction: column; 
+            justify-content: flex-start; /* মেসেজ ওপর থেকে শুরু হবে */
+            gap: 15px;
             background: linear-gradient(to bottom, #0b0e11, #161a1e);
             scroll-behavior: smooth; -webkit-overflow-scrolling: touch;
         }
 
-        .msg-row { display: flex; gap: 12px; animation: slideUp 0.3s ease-out; position: relative; width: 100%; }
+        .msg-row { display: flex; gap: 12px; animation: slideUp 0.3s ease-out; position: relative; width: 100%; flex-shrink: 0; }
         @keyframes slideUp { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
 
         .avatar {
@@ -107,8 +105,7 @@
         .bubble.mentioned-active { border-left: 3px solid var(--mention-green); background: rgba(14, 203, 129, 0.1); }
         .special-msg { border: 1px solid var(--rain-blue); background: rgba(0, 210, 255, 0.05) !important; }
 
-        /* Input Area - Fixed at bottom */
-        .input-area { bottom :0;
+        .input-area {
             padding: 10px 15px; background: var(--card-bg); 
             border-top: 1px solid var(--chat-bubble); flex-shrink: 0;
             z-index: 100; padding-bottom: env(safe-area-inset-bottom);
@@ -135,7 +132,6 @@
             display: flex; align-items: center; justify-content: center; flex-shrink: 0;
         }
 
-        /* Modals */
         .modal {
             display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
             background: rgba(0,0,0,0.9); z-index: 5000; justify-content: center; align-items: center;
@@ -239,7 +235,6 @@
     </div>
 
     <script>
-        // --- আপনার লজিক এখানে শুরু ---
         const MAIN_SUPER_ADMIN = "SMAT100001"; 
         const MAX_MESSAGES = 250;
         let user = getMyInfo();
@@ -459,12 +454,13 @@
         function openModal(id) { document.getElementById(id).style.display = 'flex'; }
         function closeModal(id) { document.getElementById(id).style.display = 'none'; }
 
-        // কীবোর্ড ওপেন হলে চ্যাট অ্যাডজাস্ট করার ফিক্স
+        // --- অটো-স্ক্রল এবং কিবোর্ড ফিক্স ---
         window.addEventListener('resize', () => {
             if(document.activeElement.tagName === 'INPUT') {
                 window.setTimeout(() => {
-                    document.getElementById('chatDisplay').scrollTop = document.getElementById('chatDisplay').scrollHeight;
-                }, 100);
+                    const container = document.getElementById('chatDisplay');
+                    container.scrollTop = container.scrollHeight;
+                }, 150);
             }
         });
 
