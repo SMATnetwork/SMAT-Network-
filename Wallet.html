@@ -126,6 +126,10 @@
             renderAssets();
         }
 
+        function formatNum(num, dec = 4) {
+            return num.toLocaleString(undefined, { minimumFractionDigits: dec, maximumFractionDigits: dec });
+        }
+
         function renderAssets() {
             const container = document.getElementById('asset_list');
             let totalUSD = 0, html = '';
@@ -140,13 +144,13 @@
                             <div><div class="coin-sym">${coin.sym}</div><div style="font-size:11px; color:var(--text-sec)">${coin.name}</div></div>
                         </div>
                         <div style="text-align:right">
-                            <div style="font-weight:700;">${isBalanceHidden ? '****' : bal.toFixed(4)}</div>
-                            <div style="font-size:11px; color:var(--text-sec)">≈ ${isBalanceHidden ? '****' : '$' + usdVal.toFixed(2)}</div>
+                            <div style="font-weight:700;">${isBalanceHidden ? '****' : formatNum(bal, 4)}</div>
+                            <div style="font-size:11px; color:var(--text-sec)">≈ ${isBalanceHidden ? '****' : '$' + formatNum(usdVal, 2)}</div>
                         </div>
                     </div>`;
             });
             container.innerHTML = html;
-            document.getElementById('total_val').innerText = isBalanceHidden ? '****' : totalUSD.toLocaleString(undefined, {minimumFractionDigits: 2});
+            document.getElementById('total_val').innerText = isBalanceHidden ? '****' : formatNum(totalUSD, 2);
         }
 
         function openAction(type) {
@@ -207,7 +211,7 @@
                     <div class="net-tag" onclick="toggleActive(this)">TRC20</div>
                 </div>
                 <input type="text" id="withAddr" class="cex-input" placeholder="Enter Full Recipient Address">
-                <div style="display:flex; justify-content:space-between; margin-top:10px;"><small>Amount (Fee: ${feeInCoin.toFixed(4)} ${coin.sym.toUpperCase()})</small><small>Available: ${available.toFixed(4)}</small></div>
+                <div style="display:flex; justify-content:space-between; margin-top:10px;"><small>Amount (Fee: ${formatNum(feeInCoin, 4)} ${coin.sym.toUpperCase()})</small><small>Available: ${formatNum(available, 4)}</small></div>
                 <div class="cex-input-box">
                     <input type="number" id="withAmt" class="cex-input" placeholder="Minimum 10">
                     <span class="max-btn" onclick="document.getElementById('withAmt').value = ${available.toFixed(6)}">MAX</span>
@@ -223,19 +227,16 @@
             const balKey = sym.toLowerCase() + '_balance';
             const bal = parseFloat(localStorage.getItem(balKey)) || 0;
 
-            const totalToDeduct = amt + fee; // উইথড্র + ফি
+            const totalToDeduct = amt + fee;
 
             if(!addr || addr.length < 20) return alert("Please enter a valid full wallet address.");
             if(isNaN(amt) || amt < 10) return alert("Minimum withdrawal amount is 10 " + sym);
             if(totalToDeduct > bal) return alert("Insufficient balance to cover Amount + Fee.");
 
-            // ব্যালেন্স আপডেট (তৎক্ষণাৎ মূল ব্যালেন্স থেকে কাটা হবে)
             localStorage.setItem(balKey, (bal - totalToDeduct).toFixed(6));
-            
-            // ট্রানজেকশন সেভ
             saveTx({ type: 'Withdraw', sym: sym.toUpperCase(), amt: amt, chain: chain, addr: addr, status: 'pending' });
             
-            alert("Withdrawal request sent. Total " + totalToDeduct.toFixed(4) + " " + sym + " (including fee) has been deducted from your balance.");
+            alert("Withdrawal request sent. Total " + formatNum(totalToDeduct, 4) + " " + sym + " has been deducted.");
             renderAssets();
             closeSheet();
         }
@@ -301,7 +302,7 @@
                             <span style="color:var(--text-sec); font-size:9px">${tx.chain || 'Internal'}</span>
                         </div>
                         <div>
-                            <b>${tx.amt}</b><br>
+                            <b>${formatNum(tx.amt, 4)}</b><br>
                             <span class="full-addr" style="font-size:9px; color:var(--text-sec)">${tx.addr}</span>
                         </div>
                         <div style="text-align:right; color:${statusColor}; font-weight:700; text-transform:capitalize;">${tx.status}</div>
