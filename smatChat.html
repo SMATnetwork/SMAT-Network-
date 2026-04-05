@@ -25,15 +25,16 @@
         /* Responsive Fixes */
         * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
         
-        body {
-            margin: 0; background: var(--bg); color: var(--text-main);
-            font-family: 'Inter', 'Segoe UI', Roboto, sans-serif;
+        /* Body Layout Fix: স্ক্রল বন্ধ করে ফ্লেক্সবক্স সেট করা হয়েছে */
+        body { 
+            background-color: #0b0e11; color: white; font-family: 'Inter', sans-serif; 
+            margin: 0; padding: 0;
             display: flex; flex-direction: column; 
-            height: 100vh; height: 100dvh; /* dvh ensures perfect mobile height */
-            overflow: hidden; position: relative;
+            height: 100vh; height: 100dvh; /* মোবাইল কিবোর্ড ফিক্স */
+            overflow: hidden; width: 100%; 
         }
 
-        /* Header - Flex Shrink 0 ensures it stays fixed height */
+        /* Header - Fixed height */
         .chat-header {
             padding: 12px 15px; background: var(--card-bg); border-bottom: 2px solid var(--primary);
             display: flex; justify-content: space-between; align-items: center; 
@@ -70,12 +71,13 @@
             box-shadow: 0 0 30px rgba(240, 185, 11, 0.5); 
         }
 
-        /* Chat Display - flex: 1 makes it take all remaining space */
+        /* Chat Display - flex: 1 এবং overflow-y: auto নিশ্চিত করে এটি কেবল স্ক্রল হবে */
         #chatDisplay {
             flex: 1; overflow-y: auto; padding: 15px;
             display: flex; flex-direction: column; gap: 15px;
             background: linear-gradient(to bottom, #0b0e11, #161a1e);
             scroll-behavior: smooth;
+            min-height: 0; /* Flexbox এর ভেতরে স্ক্রল সচল রাখতে এটি জরুরি */
         }
 
         .msg-row { display: flex; gap: 10px; animation: slideUp 0.3s ease-out; position: relative; width: 100%; }
@@ -107,10 +109,11 @@
         .bubble.mentioned-active { border-left: 3px solid var(--mention-green); background: rgba(14, 203, 129, 0.1); }
         .special-msg { border: 1px solid var(--rain-blue); background: rgba(0, 210, 255, 0.05) !important; }
 
-        /* Input Area - Sticks to the bottom */
+        /* Input Area - Footer fixed at bottom */
         .input-area { 
             padding: 10px 15px; background: var(--card-bg); 
             border-top: 1px solid var(--chat-bubble); flex-shrink: 0;
+            z-index: 100;
         }
         .input-box-wrapper { display: flex; gap: 8px; align-items: center; width: 100%; }
         
@@ -159,6 +162,16 @@
 </head>
 <body>
 
+    <div class="chat-header">
+        <div class="header-title">SMAT CHAT</div>
+        <div style="display:flex; gap:6px; align-items:center;">
+            <i class="fa-solid fa-crown" style="color: var(--gold); cursor: pointer; font-size: 18px;" onclick="openLeaderboard()"></i>
+            <button id="banListBtn" class="btn-panel" style="display:none; background: var(--danger); color: white;" onclick="openBanList()">LIST</button>
+            <button id="superAdminBtn" class="btn-panel" style="display:none; background: var(--primary); color: black;" onclick="openModal('adminModal')">ADMIN</button>
+            <a href="Home.html" style="color:var(--text-sec); font-size: 20px; margin-left: 2px;"><i class="fa-solid fa-circle-xmark"></i></a>
+        </div>
+    </div>
+
     <div id="s-bubble" onclick="popBubble()">
         <div class="s-logo-wrapper"><span class="s-logo-inner">S</span></div>
     </div>
@@ -169,56 +182,6 @@
     </div>
 
     <div id="jojoTimer">Jojo Time: <span id="jojoClock">00:00:00</span></div>
-
-    <div id="leaderboardModal" class="modal">
-        <div class="modal-box">
-            <h2 style="color:var(--primary); text-align: center; font-size: 18px;"><i class="fa-solid fa-trophy"></i> Top Earners</h2>
-            <div id="leaderboardBody"></div>
-            <button onclick="closeModal('leaderboardModal')" style="width:100%; margin-top:15px; background:var(--primary); border:none; padding:10px; border-radius:8px; font-weight: 800;">CLOSE</button>
-        </div>
-    </div>
-
-    <div id="rainModal" class="modal">
-        <div class="modal-box">
-            <h2 id="specialModalTitle" style="text-align: center; font-size: 18px;"></h2>
-            <p style="font-size: 11px; color: var(--text-sec); text-align: center;">Balance: <span id="modalBalInfo">0.00</span></p>
-            <select id="specialCoin" onchange="updateModalBalance()">
-                <option value="usdt">USDT</option><option value="trx">TRX</option>
-                <option value="smat">SMAT</option><option value="bnb">BNB</option>
-            </select>
-            <input type="number" id="specialAmount" placeholder="Total Amount">
-            <input type="number" id="specialUsers" placeholder="Number of Users">
-            <button id="specialSubmitBtn" onclick="processSpecial()" style="width:100%; margin-top:15px; border:none; padding:12px; border-radius:8px; font-weight: 900; color: #000; background: var(--primary);">SEND</button>
-            <button onclick="closeModal('rainModal')" style="width:100%; margin-top:10px; background:transparent; border:none; color:var(--text-sec);">Cancel</button>
-        </div>
-    </div>
-
-    <div id="adminModal" class="modal">
-        <div class="modal-box">
-            <h2 style="color:var(--primary); font-size: 18px;"><i class="fa-solid fa-user-shield"></i> Admin Panel</h2>
-            <input type="text" id="targetUserID" placeholder="SMAT ID to promote">
-            <button onclick="makeAdmin()" style="width:100%; padding:12px; background:var(--primary); border:none; font-weight:900; border-radius:8px;">PROMOTE</button>
-            <button onclick="closeModal('adminModal')" style="width:100%; margin-top:10px; background:transparent; border:none; color:var(--text-sec);">Close</button>
-        </div>
-    </div>
-
-    <div id="banListModal" class="modal">
-        <div class="modal-box">
-            <h2 style="color:var(--danger); font-size: 18px;"><i class="fa-solid fa-gavel"></i> Restriction List</h2>
-            <div id="banListContent"></div>
-            <button onclick="closeModal('banListModal')" style="width:100%; margin-top:15px; background:var(--chat-bubble); border:none; color:white; padding:10px; border-radius:8px;">Close</button>
-        </div>
-    </div>
-
-    <div class="chat-header">
-        <div class="header-title">SMAT CHAT</div>
-        <div style="display:flex; gap:6px; align-items:center;">
-            <i class="fa-solid fa-crown" style="color: var(--gold); cursor: pointer; font-size: 18px;" onclick="openLeaderboard()"></i>
-            <button id="banListBtn" class="btn-panel" style="display:none; background: var(--danger); color: white;" onclick="openBanList()">LIST</button>
-            <button id="superAdminBtn" class="btn-panel" style="display:none; background: var(--primary); color: black;" onclick="openModal('adminModal')">ADMIN</button>
-            <a href="Home.html" style="color:var(--text-sec); font-size: 20px; margin-left: 2px;"><i class="fa-solid fa-circle-xmark"></i></a>
-        </div>
-    </div>
 
     <div id="chatDisplay"></div>
 
@@ -234,6 +197,11 @@
             <button id="sendBtn" class="send-btn" onclick="sendMessage()"><i class="fa-solid fa-paper-plane"></i></button>
         </div>
     </div>
+
+    <div id="leaderboardModal" class="modal"><div class="modal-box"><h2 style="color:var(--primary); text-align: center; font-size: 18px;"><i class="fa-solid fa-trophy"></i> Top Earners</h2><div id="leaderboardBody"></div><button onclick="closeModal('leaderboardModal')" style="width:100%; margin-top:15px; background:var(--primary); border:none; padding:10px; border-radius:8px; font-weight: 800;">CLOSE</button></div></div>
+    <div id="rainModal" class="modal"><div class="modal-box"><h2 id="specialModalTitle" style="text-align: center; font-size: 18px;"></h2><p style="font-size: 11px; color: var(--text-sec); text-align: center;">Balance: <span id="modalBalInfo">0.00</span></p><select id="specialCoin" onchange="updateModalBalance()"><option value="usdt">USDT</option><option value="trx">TRX</option><option value="smat">SMAT</option><option value="bnb">BNB</option></select><input type="number" id="specialAmount" placeholder="Total Amount"><input type="number" id="specialUsers" placeholder="Number of Users"><button id="specialSubmitBtn" onclick="processSpecial()" style="width:100%; margin-top:15px; border:none; padding:12px; border-radius:8px; font-weight: 900; color: #000; background: var(--primary);">SEND</button><button onclick="closeModal('rainModal')" style="width:100%; margin-top:10px; background:transparent; border:none; color:var(--text-sec);">Cancel</button></div></div>
+    <div id="adminModal" class="modal"><div class="modal-box"><h2 style="color:var(--primary); font-size: 18px;"><i class="fa-solid fa-user-shield"></i> Admin Panel</h2><input type="text" id="targetUserID" placeholder="SMAT ID to promote"><button onclick="makeAdmin()" style="width:100%; padding:12px; background:var(--primary); border:none; font-weight:900; border-radius:8px;">PROMOTE</button><button onclick="closeModal('adminModal')" style="width:100%; margin-top:10px; background:transparent; border:none; color:var(--text-sec);">Close</button></div></div>
+    <div id="banListModal" class="modal"><div class="modal-box"><h2 style="color:var(--danger); font-size: 18px;"><i class="fa-solid fa-gavel"></i> Restriction List</h2><div id="banListContent"></div><button onclick="closeModal('banListModal')" style="width:100%; margin-top:15px; background:var(--chat-bubble); border:none; color:white; padding:10px; border-radius:8px;">Close</button></div></div>
 
     <script>
         const MAIN_SUPER_ADMIN = "SMAT100001"; 
