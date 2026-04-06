@@ -237,6 +237,62 @@
     </div>
 
     <script>
+
+
+// Firebase কনফিগারেশন
+const firebaseConfig = {
+  apiKey: "AIzaSyAMxtJedkehhxJRMPZLjhpKHqneHEWsGlE",
+  authDomain: "smat-exchange.firebaseapp.com",
+  databaseURL: "https://smat-exchange-default-rtdb.firebaseio.com", 
+  projectId: "smat-exchange",
+  storageBucket: "smat-exchange.firebasestorage.app",
+  messagingSenderId: "836334569396",
+  appId: "1:836334569396:web:679effe640b3453412d4e1",
+  measurementId: "G-FCE3H3F18V"
+};
+
+// Initialize Firebase (পুরোনো SDK স্টাইল যা আপনার জন্য সহজ হবে)
+if (!firebase.apps.length) {
+    firebase.initializeApp(firebaseConfig);
+}
+const database = firebase.database();
+
+// ৩. ইউনিক আইডি তৈরি (সবার আইডি আলাদা হবে)
+function getMyInfo() {
+    let id = localStorage.getItem('smatID');
+    if (!id) {
+        id = "SMAT" + Math.floor(100000 + Math.random() * 900000);
+        localStorage.setItem('smatID', id);
+    }
+    return { id: id };
+}
+const user = getMyInfo();
+
+// ৪. মেসেজ পাঠানোর ফাংশন আপডেট
+async function sendMessage() {
+    const input = document.getElementById('messageInput');
+    let text = input.value.trim();
+    if(!text) return;
+
+    // সরাসরি Firebase এ পাঠানো হচ্ছে
+    database.ref('messages').push({
+        senderId: user.id,
+        text: text,
+        time: new Date().toLocaleTimeString(),
+        timestamp: firebase.database.ServerValue.TIMESTAMP
+    });
+
+    input.value = '';
+}
+
+// ৫. রিয়েল-টাইম মেসেজ আপডেট
+database.ref('messages').limitToLast(100).on('value', (snapshot) => {
+    const data = snapshot.val();
+    // এই messages অ্যারেটি আপনার renderChat ফাংশন ব্যবহার করবে
+    messages = data ? Object.values(data) : [];
+    renderChat(); 
+});
+
         const MAIN_SUPER_ADMIN = "SMAT100001"; 
         const MAX_MESSAGES = 250;
         let user = getMyInfo();
