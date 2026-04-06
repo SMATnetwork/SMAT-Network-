@@ -71,25 +71,35 @@
             box-shadow: 0 0 30px rgba(240, 185, 11, 0.5); 
         }
 
-        /* চ্যাট ডিসপ্লে ফিক্স: flex-grow: 1 দেওয়া হয়েছে */
-        #chatDisplay {
-    /* ভিউপোর্ট থেকে হেডার এবং ইনপুট এরিয়ার আনুমানিক মাপ বাদ দিয়ে হাইট ফিক্স করা */
-    height: calc(100dvh - 130px); 
-    
-    /* কন্টেন্ট বেশি হলে যেন স্ক্রলবার আসে */
-    overflow-y: auto; 
-    
-    /* ফ্লেক্স বক্সের কারণে স্ক্রল না হলে এটি নিশ্চিত করবে কন্টেন্ট ওপর থেকে শুরু হবে */
+       /* ১. চ্যাট এরিয়া ফিক্স */
+#chatDisplay {
+    flex: 1; /* খালি সব জায়গা দখল করবে */
+    overflow-y: auto; /* স্ক্রল চালু করবে */
     display: flex;
     flex-direction: column;
     justify-content: flex-start; 
-    
     padding: 15px;
     gap: 15px;
     background: linear-gradient(to bottom, #0b0e11, #161a1e);
     
-    /* মোবাইলে স্মুথ স্ক্রলিংয়ের জন্য */
-    -webkit-overflow-scrolling: touch; 
+    /* নিচের লাইনটি সবচেয়ে গুরুত্বপূর্ণ */
+    height: calc(100dvh - 120px); 
+    -webkit-overflow-scrolling: touch; /* আইফোনে স্মুথ স্ক্রলিং */
+}
+
+/* ২. ইনপুট কন্টেইনার ফিক্স */
+.input-container {
+    position: sticky; /* স্ক্রিনের নিচে আটকে থাকবে */
+    bottom: 0;
+    width: 100%;
+    padding: 10px 15px;
+    background: var(--card-bg);
+    border-top: 1px solid var(--chat-bubble);
+    flex-shrink: 0; /* যেন চ্যাট এরিয়া একে চ্যাপ্টা করতে না পারে */
+    z-index: 100;
+    
+    /* মোবাইল নেভিগেশন বারের জন্য সেফ এরিয়া */
+    padding-bottom: calc(10px + env(safe-area-inset-bottom));
 }
 
 
@@ -135,10 +145,7 @@
         .rain-tool { color: var(--rain-blue); }
         .drop-tool { color: var(--drop-cyan); }
 
-        .input-container {
-            flex: 1; display: flex; background: #181a20; border-radius: 25px; 
-            padding: 0 10px; align-items: center; border: 1px solid #363c44;
-        }
+        
         #messageInput {
             width: 100%; background: transparent; border: none; padding: 10px 5px;
             color: white; font-weight: 500; font-size: 14px; outline: none;
