@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>SMAT Explore - Global Crash Arena</title>
+    <title>SMAT Explore - Realtime Crash Arena</title>
     
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
@@ -25,19 +25,27 @@
         #history-pills { display: flex; flex-wrap: wrap; gap: 4px; padding: 0 16px; margin-top: 8px; }
         .history-pill-item { font-size: 10px; font-weight: 900; padding: 4px 8px; border-radius: 4px; background: #1e2329; border: 1px solid #2d3339; }
         .pill-white { color: #FFFFFF; } .pill-gray { color: #808080; } .pill-green { color: #22c55e; } .pill-yellow { color: #f0b90b; }
-        #cashout-popup { position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); background: #22c55e; color: white; padding: 20px; border-radius: 15px; font-weight: 900; text-align: center; z-index: 10001; display: none; box-shadow: 0 10px 40px rgba(0,0,0,0.5); }
         .bet-row { display: grid; grid-template-columns: 1.5fr 1fr 1fr 1fr; padding: 12px 14px; border-bottom: 1px solid rgba(45, 51, 57, 0.5); font-size: 11px; }
+        #cashout-popup { position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); background: #22c55e; color: white; padding: 20px; border-radius: 15px; font-weight: 900; text-align: center; z-index: 10001; display: none; }
+        #s-bubble { position: fixed; width: 60px; height: 60px; z-index: 9999; cursor: pointer; display: none; }
+        .grid-lines { position: absolute; inset: -200px; background-image: linear-gradient(#23272c 1px, transparent 1px), linear-gradient(90deg, #23272c 1px, transparent 1px); background-size: 50px 50px; opacity: 0.15; z-index: 2; }
+        .moving-bg { animation: bgScroll 1s linear infinite; }
+        @keyframes bgScroll { from { transform: translate(0, 0); } to { transform: translate(-50px, 50px); } }
     </style>
 </head>
 <body>
 
+<div id="s-bubble" onclick="popBubble()">
+    <div class="s-logo-wrapper" style="width: 100%; height: 100%; margin: 0;"><span class="s-logo-inner">S</span></div>
+</div>
+
 <div id="cashout-popup">
-    <div class="text-xs uppercase opacity-90 mb-1">Cashed Out</div>
-    <div id="cashout-msg-amount" class="text-2xl font-black">0.0000 SMAT</div>
+    <div class="text-xs uppercase mb-1">Cashed Out</div>
+    <div id="cashout-msg-amount" class="text-2xl font-black">0.000000 SMAT</div>
 </div>
 
 <div class="app-container">
-    <div class="p-5 flex justify-between items-center border-b border-gray-800/50 mb-2">
+    <div class="p-5 flex justify-between items-center border-b border-gray-800/50">
         <div class="flex items-center">
             <div class="s-logo-wrapper"><span class="s-logo-inner">S</span></div>
             <div>
@@ -50,19 +58,20 @@
         </div>
     </div>
 
-    <div class="px-4 mb-3 flex justify-between items-center text-[10px] font-bold text-gray-500 uppercase">
+    <div class="px-4 py-2 flex justify-between items-center text-[10px] font-bold text-gray-500">
         <span>Bank: <span id="bank-display" class="text-blue-400">0.00</span></span>
-        <span>ID: <span id="game-id-display" class="text-white">#0000</span></span>
+        <span>ID: <span id="game-id-display" class="text-white">#0</span></span>
         <span>Pool: <span id="pool-display" class="text-yellow-500">0.00</span></span>
     </div>
 
     <div id="screen" class="game-screen shadow-inner">
+        <div id="grid-bg" class="grid-lines"></div>
         <div id="multiplier">1.00x</div>
         <div id="plane" class="plane-anim opacity-0">
             <svg viewBox="0 0 64 64"><path d="M32,10 L42,30 L42,50 L22,50 L22,30 Z" fill="#f0b90b" /><circle cx="32" cy="15" r="2" fill="#ef4444" class="animate-pulse" /></svg>
         </div>
         <div id="countdown-overlay">
-            <div class="text-yellow-500 font-black text-xs uppercase mb-2 animate-pulse">Next bet starts in</div>
+            <div class="text-yellow-500 font-black text-xs uppercase mb-2">Next bet starts in</div>
             <div id="timer-num" class="text-6xl font-black text-white">0</div>
         </div>
     </div>
@@ -73,231 +82,217 @@
         <div class="grid grid-cols-2 gap-3">
             <div class="bg-[#1e2329] p-3 rounded-xl border border-[#2d3339]">
                 <label class="text-[8px] text-gray-500 font-bold uppercase block mb-1">Bet SMAT</label>
-                <input id="bet-amount" type="number" value="10" class="w-full bg-transparent font-black text-lg outline-none text-yellow-500">
+                <input id="bet-amount" type="number" value="10" step="0.000001" class="w-full bg-transparent font-black text-lg outline-none text-yellow-500">
             </div>
             <div class="bg-[#1e2329] p-3 rounded-xl border border-[#2d3339]">
                 <label class="text-[8px] text-gray-500 font-bold uppercase block mb-1">Auto Exit</label>
-                <input id="auto-cashout" type="number" step="0.1" placeholder="2.00" class="w-full bg-transparent font-black text-lg outline-none text-blue-400">
+                <input id="auto-cashout" type="number" step="0.1" placeholder="∞" class="w-full bg-transparent font-black text-lg outline-none text-blue-400">
             </div>
         </div>
-        <button id="action-btn" class="w-full bg-yellow-500 text-black py-4 rounded-xl font-black text-xl shadow-lg active:scale-95 transition-all">PLACE BET</button>
+        <button id="action-btn" class="w-full bg-yellow-500 text-black py-4 rounded-xl font-black text-xl shadow-lg">PLACE BET</button>
     </div>
 
     <div class="mt-6 px-4">
-        <h3 class="text-[11px] font-black text-white uppercase tracking-widest mb-3">Live Players</h3>
+        <h3 class="text-[11px] font-black text-white uppercase mb-3">Live Players</h3>
         <div id="live-bet-list" class="bg-[#161a1e] border border-[#2d3339] rounded-xl overflow-hidden"></div>
     </div>
 </div>
 
 <script>
-// --- FIREBASE CONFIGURATION ---
+// --- FIREBASE CONFIG ---
 const firebaseConfig = {
   apiKey: "AIzaSyAMxtJedkehhxJRMPZLjhpKHqneHEWsGlE",
   authDomain: "smat-exchange.firebaseapp.com",
   projectId: "smat-exchange",
-  databaseURL: "https://smat-exchange-default-rtdb.firebaseio.com", // আপনার প্রজেক্ট অনুযায়ী এটা নিশ্চিত করুন
+  databaseURL: "https://smat-exchange-default-rtdb.firebaseio.com",
   storageBucket: "smat-exchange.firebasestorage.app",
   messagingSenderId: "836334569396",
   appId: "1:836334569396:web:679effe640b3453412d4e1"
 };
 
-// Initialize Firebase
 firebase.initializeApp(firebaseConfig);
 const db = firebase.database();
 
-// --- GAME VARIABLES ---
+// --- STATE ---
 let smatBalance = parseFloat(localStorage.getItem('smatBalance')) || 1000.0;
+let myUid = "User_" + Math.floor(Math.random() * 9999);
 let hasBet = false;
 let hasCashed = false;
 let myBetAmt = 0;
-let localGameId = 0;
+let currentStatus = "";
 
 const actionBtn = document.getElementById('action-btn');
 
-// --- UI UPDATES ---
 function updateUI() {
     document.getElementById('balance-display').innerText = smatBalance.toFixed(6) + " SMAT";
     localStorage.setItem('smatBalance', smatBalance);
 }
 
-// --- REAL-TIME DATA SYNC ---
-// Listen for global game state
+// --- SYNC ENGINE ---
 db.ref('crashArena/state').on('value', (snap) => {
     const data = snap.val();
-    if (!data) return initGlobalGame(); // যদি ডাটাবেস খালি থাকে তবে গেম শুরু করো
+    if (!data) { initGlobalLoop(); return; }
 
-    localGameId = data.gameId;
-    document.getElementById('game-id-display').innerText = "#" + localGameId;
+    currentStatus = data.status;
+    document.getElementById('game-id-display').innerText = "#" + data.gameId;
     document.getElementById('bank-display').innerText = data.bank.toFixed(2);
     document.getElementById('pool-display').innerText = data.pool.toFixed(2);
 
     if (data.status === 'waiting') {
-        runWaitingUI(data.timer);
+        renderWaiting(data.timer);
     } else if (data.status === 'running') {
-        runFlightUI(data.multiplier);
+        renderRunning(data.multiplier);
     } else if (data.status === 'crashed') {
-        runCrashedUI(data.multiplier);
+        renderCrashed(data.multiplier);
     }
 });
 
-// Listen for History
-db.ref('crashArena/history').limitToLast(12).on('value', (snap) => {
-    const history = snap.val();
+db.ref('crashArena/history').limitToLast(15).on('value', snap => {
+    const hist = snap.val();
     const container = document.getElementById('history-pills');
     container.innerHTML = "";
-    if (history) {
-        Object.values(history).reverse().forEach(val => {
+    if (hist) {
+        Object.values(hist).reverse().forEach(v => {
             const pill = document.createElement('div');
-            pill.className = `history-pill-item ${getPillColor(val)}`;
-            pill.innerText = val.toFixed(2) + "x";
+            pill.className = `history-pill-item ${v >= 2 ? 'pill-green' : 'pill-gray'}`;
+            pill.innerText = v.toFixed(2) + "x";
             container.appendChild(pill);
         });
     }
 });
 
-// Listen for Players
-db.ref('crashArena/players').on('value', (snap) => {
+db.ref('crashArena/players').on('value', snap => {
     const list = document.getElementById('live-bet-list');
     list.innerHTML = "";
     const players = snap.val();
     if (players) {
-        Object.values(players).forEach(p => {
+        Object.entries(players).forEach(([uid, p]) => {
             const row = document.createElement('div');
             row.className = "bet-row";
-            const profit = p.cashed ? (p.bet * p.exitMult - p.bet).toFixed(4) : "-";
+            const isMe = uid === myUid;
             row.innerHTML = `
-                <span class="${p.isYou ? 'text-yellow-500' : ''}">${p.name}</span>
+                <span class="${isMe ? 'text-yellow-500' : ''}">${isMe ? 'YOU' : 'Player'}</span>
                 <span class="text-center text-yellow-500">${p.bet.toFixed(2)}</span>
                 <span class="text-center ${p.cashed ? 'text-green-500' : ''}">${p.cashed ? p.exitMult + 'x' : '-'}</span>
-                <span class="text-right ${p.cashed ? 'text-green-500' : ''}">${p.cashed ? '+' + profit : '-'}</span>
+                <span class="text-right ${p.cashed ? 'text-green-500' : ''}">${p.cashed ? '+' + (p.bet * p.exitMult - p.bet).toFixed(4) : '-'}</span>
             `;
             list.appendChild(row);
         });
     }
 });
 
-// --- UI LOGIC ---
-function runWaitingUI(time) {
+// --- RENDER LOGIC ---
+function renderWaiting(timer) {
     document.getElementById('countdown-overlay').style.display = 'flex';
-    document.getElementById('timer-num').innerText = time;
+    document.getElementById('timer-num').innerText = timer;
     document.getElementById('multiplier').innerText = "1.00x";
     document.getElementById('multiplier').classList.remove('crashed-text');
     document.getElementById('plane').style.opacity = "0";
+    document.getElementById('grid-bg').classList.remove('moving-bg');
     
     if (!hasBet) {
         actionBtn.innerText = "PLACE BET";
         actionBtn.disabled = false;
+        actionBtn.onclick = doPlaceBet;
         actionBtn.className = "w-full bg-yellow-500 text-black py-4 rounded-xl font-black text-xl shadow-lg";
-        actionBtn.onclick = placeBet;
     } else {
         actionBtn.innerText = "BET PLACED";
         actionBtn.disabled = true;
     }
 }
 
-function runFlightUI(mult) {
+function renderRunning(mult) {
     document.getElementById('countdown-overlay').style.display = 'none';
     document.getElementById('multiplier').innerText = mult.toFixed(2) + "x";
     const plane = document.getElementById('plane');
     plane.style.opacity = "1";
-    
-    let moveX = Math.min(mult * 15, 220);
+    document.getElementById('grid-bg').classList.add('moving-bg');
+
+    let moveX = Math.min(mult * 20, 250);
     let moveY = Math.min(mult * 10, 150);
     plane.style.transform = `translate(${moveX}px, -${moveY}px)`;
 
     if (hasBet && !hasCashed) {
         actionBtn.disabled = false;
         actionBtn.innerText = "CASH OUT: " + (myBetAmt * mult).toFixed(4);
-        actionBtn.className = "w-full bg-green-500 text-black py-4 rounded-xl font-black text-xl shadow-xl";
-        actionBtn.onclick = () => manualCashOut(mult);
+        actionBtn.className = "w-full bg-green-500 text-black py-4 rounded-xl font-black text-xl";
+        actionBtn.onclick = () => doCashOut(mult);
 
         let auto = parseFloat(document.getElementById('auto-cashout').value);
-        if (auto > 1.0 && mult >= auto) manualCashOut(mult);
+        if (auto > 1.0 && mult >= auto) doCashOut(mult);
     }
 }
 
-function runCrashedUI(mult) {
+function renderCrashed(mult) {
     document.getElementById('multiplier').innerText = "CRASHED";
     document.getElementById('multiplier').classList.add('crashed-text');
     document.getElementById('plane').style.opacity = "0";
+    document.getElementById('grid-bg').classList.remove('moving-bg');
     actionBtn.innerText = "WAITING...";
     actionBtn.disabled = true;
-    actionBtn.className = "w-full bg-gray-800 text-gray-500 py-4 rounded-xl font-black text-xl cursor-not-allowed";
-    hasBet = false;
+    hasBet = false; 
     hasCashed = false;
 }
 
-// --- ACTION FUNCTIONS ---
-function placeBet() {
-    const val = parseFloat(document.getElementById('bet-amount').value);
-    if (isNaN(val) || val <= 0 || val > smatBalance) return;
-
-    smatBalance -= val;
-    myBetAmt = val;
+// --- ACTIONS ---
+function doPlaceBet() {
+    const amt = parseFloat(document.getElementById('bet-amount').value);
+    if (amt <= 0 || amt > smatBalance) return;
+    
+    smatBalance -= amt;
+    myBetAmt = amt;
     hasBet = true;
     updateUI();
 
-    db.ref('crashArena/players').push({
-        name: "User_" + Math.floor(Math.random() * 9000),
-        bet: val,
-        cashed: false,
-        isYou: true
+    db.ref('crashArena/players/' + myUid).set({
+        bet: amt,
+        cashed: false
     });
+    // Add to pool
+    db.ref('crashArena/state/pool').transaction(p => (p || 0) + amt);
 }
 
-function manualCashOut(mult) {
-    if (!hasBet || hasCashed) return;
+function doCashOut(mult) {
+    if (!hasBet || hasCashed || currentStatus !== 'running') return;
     hasCashed = true;
     const win = myBetAmt * mult;
     smatBalance += win;
     updateUI();
 
-    document.getElementById('cashout-msg-amount').innerText = win.toFixed(4) + " SMAT";
+    document.getElementById('cashout-msg-amount').innerText = win.toFixed(6) + " SMAT";
     document.getElementById('cashout-popup').style.display = "block";
-    setTimeout(() => { document.getElementById('cashout-popup').style.display = "none"; }, 2500);
+    setTimeout(() => { document.getElementById('cashout-popup').style.display = "none"; }, 2000);
 
-    // Update Firebase so others can see you cashed out
-    db.ref('crashArena/players').orderByChild('isYou').equalTo(true).once('value', snap => {
-        snap.forEach(child => {
-            child.ref.update({ cashed: true, exitMult: mult.toFixed(2) });
-        });
+    db.ref('crashArena/players/' + myUid).update({
+        cashed: true,
+        exitMult: mult.toFixed(2)
     });
-
-    actionBtn.innerText = "SUCCESS";
-    actionBtn.disabled = true;
-}
-
-function getPillColor(val) {
-    if (val <= 1.00) return 'pill-white';
-    if (val < 2.00) return 'pill-gray';
-    if (val < 10.00) return 'pill-green';
-    return 'pill-yellow';
-}
-
-// --- GLOBAL ENGINE (Only one client needs to run this, but we make it robust) ---
-// এটি গেমটিকে ডাটাবেসে সবসময় সচল রাখবে
-function initGlobalGame() {
-    const stateRef = db.ref('crashArena/state');
     
-    // Server-side logic simulated on the first active client
+    // Subtract from bank
+    db.ref('crashArena/state/bank').transaction(b => b - (win - myBetAmt));
+}
+
+// --- GLOBAL GAME ENGINE ---
+function initGlobalLoop() {
+    const stateRef = db.ref('crashArena/state');
     setInterval(() => {
         stateRef.transaction(current => {
-            if (!current) return { gameId: 1000, status: 'waiting', timer: 10, bank: 10000, pool: 0, multiplier: 1.00 };
+            if (!current) return { gameId: 1000, status: 'waiting', timer: 10, bank: 10000, pool: 0, multiplier: 1.00, crashAt: 2.00 };
 
             if (current.status === 'waiting') {
-                if (current.timer > 0) {
-                    current.timer -= 1;
-                } else {
+                if (current.timer > 0) current.timer -= 1;
+                else {
                     current.status = 'running';
                     current.multiplier = 1.00;
-                    current.crashPoint = generateCrashPoint();
-                    db.ref('crashArena/players').remove(); // New round, clear players
+                    current.crashAt = generateCrash();
+                    db.ref('crashArena/players').remove();
+                    current.pool = 0;
                 }
             } else if (current.status === 'running') {
-                current.multiplier += (current.multiplier < 5 ? 0.02 : current.multiplier * 0.01);
-                if (current.multiplier >= current.crashPoint) {
+                current.multiplier += (current.multiplier < 5 ? 0.03 : current.multiplier * 0.015);
+                if (current.multiplier >= current.crashAt) {
                     current.status = 'crashed';
-                    current.multiplier = current.crashPoint;
+                    current.multiplier = current.crashAt;
                     db.ref('crashArena/history').push(current.multiplier);
                 }
             } else if (current.status === 'crashed') {
@@ -310,15 +305,33 @@ function initGlobalGame() {
     }, 1000);
 }
 
-function generateCrashPoint() {
+function generateCrash() {
     let r = Math.random() * 100;
-    if (r < 5) return 1.00;
-    if (r < 50) return parseFloat((1 + Math.random() * 1.5).toFixed(2));
-    if (r < 90) return parseFloat((2 + Math.random() * 5).toFixed(2));
+    if (r < 10) return 1.00;
+    if (r < 50) return parseFloat((1.1 + Math.random() * 1.5).toFixed(2));
+    if (r < 90) return parseFloat((2 + Math.random() * 8).toFixed(2));
     return parseFloat((10 + Math.random() * 50).toFixed(2));
 }
 
-window.onload = updateUI;
+// S-Bubble Logic (Original)
+function checkBubble() {
+    const h = new Date().getHours();
+    const bubble = document.getElementById('s-bubble');
+    if ([8, 14, 20, 2].includes(h)) {
+        bubble.style.display = 'block';
+        bubble.style.top = "20%"; bubble.style.left = "20%";
+    } else {
+        bubble.style.display = 'none';
+    }
+}
+function popBubble() {
+    smatBalance += 1.0;
+    updateUI();
+    document.getElementById('s-bubble').style.display = 'none';
+    alert("You got 1 SMAT!");
+}
+
+window.onload = () => { updateUI(); checkBubble(); };
 </script>
 </body>
 </html>
