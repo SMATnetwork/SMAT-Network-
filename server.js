@@ -1,23 +1,29 @@
 const admin = require('firebase-admin');
 
-// ১. ফায়ারবেস অ্যাডমিন সেটআপ (কী ফরম্যাট ফিক্স করা হয়েছে)
+// সরাসরি কী না লিখে এনভায়রনমেন্ট ভেরিয়েবল ব্যবহার করা হচ্ছে
+const privateKey = process.env.FIREBASE_PRIVATE_KEY ? 
+    process.env.FIREBASE_PRIVATE_KEY.replace(/\\n/g, '\n') : 
+    undefined;
+
 const serviceAccount = {
   "type": "service_account",
   "project_id": "smat-exchange",
-  "private_key_id": "4c93bb2149c4c08b240c4a31e0063564f65957a4",
-  // প্রাইভেট কী-এর ফরম্যাট সমস্যা সমাধানের জন্য .replace ব্যবহার করা হয়েছে
-    "private_key": "-----BEGIN PRIVATE KEY-----\n" + "MIIEvgIBADANBgkqhkiG9w0BAQEFAASCBKgwggSkAgEAAoIBAQCyTgTwrJG5dGz4\nlAME4+sHCz9LFNKpMeYl1X5OlSAu67Bx8Lfi2BFyohCvjvZEXAJGuJrMRb3K2JC\nmd1P1Kw7KwMj7Wwyx30Nn4ArjxZXqBWl4Lh4v/UzO7XBq6dvzU9TX3LZYupqAojv\nUbwF+yhtU2DKPElepZT8xqDcbTzuo9SqY7PueOepMlhI3bMn3hja8Z1SWx07s2Cl\nvBQEx2KozvpbwuzGt5pSXGUn7U511ZEH6Z9l/29rzhHnXZiqcCkXLybjdyurkGdm\ny2m5nEM4WkrUn3PLub8WR6xhHxQvE8Dz+SofWv3XLOTZl8Htb36cJ7wg4dRzdXw0\nY2r7kLP7AgMBAAECggEAHLW8TOZ0hmiNPU9T1x890kII3HWLYAv1U2U3dSMixSGz\nR2d7ZNRD2aj9XMXVzCNnJ0gpafobCQx2w2OUA40qeFJ6LHhHwjtl0uI6WIkvH0kk\nxzNScLrz59526yrRCIsF+VY2n3MybIRg+SvvewUQYt4YiSfA5pkBztvKvgNm2sPI\nejPI1Rcct93X74T+8AZ77RemAIgd+HOZzr4OCIWor7NPWiRolih6DFVY8Sq+tk0R\nqiD4fy8rWye3K5jtsiUxMB49kWLpe7Nth7Jk7+brstxGdjwn7OqkEkc1SJlUdA3r\nAz28+VspgMP33tWC8IEySdqz9w9CDnITZi+sL7AO3QKBgQDlVEGu8Y63QFHrSQTP\nsmdxmYAnSOgPveG4OjMDmqrSBReITRkjzkQJwS7ITigzxgYgV5VgsmMX3nuNxCAN\n9Ph5ErdqlXAo5IapdPzEzBN3WRMCaksgLkudTxa1wdgn7TYkk0RddQFar4jyVy+t\n/2HSDDIvTO3DTnzOqda/l25xpQKBgQDHCqFn9U+M8toZS3dahlNq2OT4nDF0XOWa\n7GG7hzG5+zu+iXitjjRpbcL5A0L0QiNCFMj3mtyhDQkZOtrSerBpIqYBn6lfKurO\nKLufFhNgkJ39vm9Mqa4CBi/SWLcP1j2nN8xjAylT4ETrP5ksOb2APRzXzuPMTX5z\nC3nGOchdHwKBgQCiHasFOfwSrWR7uLWvAcZAtyuyGcb7AddkPbg8bwUczL6y+xWv\niyvr3WXt8dpXp0BDcsbFgbWtdPjQ4flrBGb2Z/XDYfrU3aAYgPwDPuTv9McMaQnM\nqQ2JGhTKzkq5BubEelrU2lbnvblI37tz/Foxe6+qYm6eJ4jxK30FGc7YhQKBgHyC\n7OdgcMwmW0L5j4dEgkhTuCDBbLpzJnrcpmKuNvA19nDCBIjlbWoKbK5jWO39tZqv\n7+vcp2nkAq4SwDJs55BNSXW4kDZlXY9rsbraD3MX5I2IJI3bk2vWvPGj55hzmAvT\n/vptTtwWbmaPWV1uHVpsYG+sD5qNW63SHvJe0TVXAoGBAL+pTmwfvGhhk87vflyg\nEf4OmAXomfPPMYyyWR8gAFowVEDEZ0iBfeTrYWWUOptYvRfSm2Zinz3P2pFQ16vT\nhFTIejFjps9SM/0FkYEwBrMroLJN2gA+ZRu5tUfeX3XswWYUw8ekD+nc9Lhdzgu8\nPhvY2wSgeE4wf7Pu8PpPW/FU\n" + "-----END PRIVATE KEY-----\n",
+  "private_key": privateKey,
   "client_email": "firebase-adminsdk-fbsvc@smat-exchange.iam.gserviceaccount.com"
 };
 
 try {
+    if (!privateKey) {
+        throw new Error("FIREBASE_PRIVATE_KEY is missing in Render Environment Variables!");
+    }
     admin.initializeApp({
         credential: admin.credential.cert(serviceAccount),
         databaseURL: "https://smat-exchange-default-rtdb.firebaseio.com"
     });
-    console.log("Firebase Admin Initialized Successfully");
+    console.log("SMAT Game Server: Firebase Connected Successfully!");
 } catch (error) {
-    console.error("Firebase Initialization Error:", error);
+    console.error("Firebase Initialization Error:", error.message);
+    process.exit(1); 
 }
 
 const db = admin.database();
