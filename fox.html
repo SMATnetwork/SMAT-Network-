@@ -18,13 +18,17 @@
         * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; margin: 0; padding: 0; }
         
         body {
-            background: var(--bg); color: var(--text-main);
-            font-family: 'Inter', 'Segoe UI', Roboto, sans-serif;
-            display: flex; flex-direction: column; 
-            height: 100vh; height: 100dvh; 
-            overflow: hidden; width: 100%;
-            position: relative;
-        }
+    background: var(--bg); 
+    color: var(--text-main);
+    font-family: 'Inter', sans-serif;
+    display: flex; 
+    flex-direction: column; 
+    /* height: 100vh এর বদলে 100dvh ব্যবহার করা হয়েছে যা মোবাইল ব্রাউজারের জন্য সঠিক */
+    height: 100dvh; 
+    width: 100vw;
+    overflow: hidden; 
+    position: fixed; /* বডি স্ক্রল হওয়া বন্ধ করবে */
+}
 
         /* --- PINNED NOTICE DESIGN --- */
         #pinnedNotice {
@@ -71,11 +75,16 @@
         }
 
         #chatDisplay {
-            flex: 1; overflow-y: auto; padding: 15px;
-            display: flex; flex-direction: column; justify-content: flex-start;
-            gap: 15px; background: linear-gradient(to bottom, #0b0e11, #161a1e);
-            scroll-behavior: smooth; -webkit-overflow-scrolling: touch;
-        }
+    flex: 1; 
+    overflow-y: auto; 
+    padding: 15px;
+    display: flex; 
+    flex-direction: column;
+    gap: 15px;
+    /* নিচের লাইনটি নিশ্চিত করে যে চ্যাট ডিসপ্লে ইনপুট এরিয়াকে ধাক্কা দিবে না */
+    min-height: 0; 
+    -webkit-overflow-scrolling: touch;
+}
 
         .msg-row { display: flex; gap: 12px; animation: slideUp 0.3s ease-out; position: relative; width: 100%; flex-shrink: 0; }
         @keyframes slideUp { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
@@ -109,10 +118,14 @@
         .special-msg { border: 1px solid var(--rain-blue); background: rgba(0, 210, 255, 0.05) !important; }
 
         .input-area {
-            padding: 10px 15px; background: var(--card-bg); 
-            border-top: 1px solid var(--chat-bubble); flex-shrink: 0;
-            z-index: 100; padding-bottom: max(10px, env(safe-area-inset-bottom));
-        }
+    padding: 10px 15px; 
+    background: var(--card-bg); 
+    border-top: 1px solid var(--chat-bubble);
+    flex-shrink: 0; /* এটি ইনপুট এরিয়াকে ছোট হতে বা নিচে নামতে দিবে না */
+    z-index: 100;
+    /* মোবাইল কিবোর্ড এবং নেভিগেশন বারের সেফ এরিয়া নিশ্চিত করতে */
+    padding-bottom: calc(10px + env(safe-area-inset-bottom));
+}
         .input-box-wrapper { display: flex; gap: 8px; align-items: center; width: 100%; }
         
         .special-tools { display: flex; gap: 10px; flex-shrink: 0; }
@@ -434,6 +447,21 @@
         function openSpecial(type) { document.getElementById('specialModalTitle').innerHTML = type === 'RAIN' ? '🌧️ Asset Rain' : '💧 Asset Drop'; document.getElementById('rainModal').style.display = 'flex'; }
         function openLeaderboard() { document.getElementById('leaderboardModal').style.display = 'flex'; }
         function openBanList() { document.getElementById('banListModal').style.display = 'flex'; }
-    </script>
+   
+function adjustLayout() {
+    // visualViewport ব্যবহার করলে কিবোর্ড ওপেন হলেও ইনপুট বক্স উপরে থাকবে
+    const viewport = window.visualViewport;
+    if (viewport) {
+        document.body.style.height = viewport.height + "px";
+        window.scrollTo(0, 0);
+    }
+}
+
+window.visualViewport?.addEventListener('resize', adjustLayout);
+window.visualViewport?.addEventListener('scroll', adjustLayout);
+window.onload = adjustLayout;
+
+
+ </script>
 </body>
 </html>
