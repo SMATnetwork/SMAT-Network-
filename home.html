@@ -5,13 +5,16 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>SMAT | Home</title>
     
+    <!-- Load coin.js for market data -->
     <script src="coin.js"></script>
+    
+    <!-- Font Awesome icons -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     
+    <!-- Custom favicon (SMAT logo) -->
     <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><circle cx='50' cy='50' r='50' fill='%23f3ba2f'/><text x='50%25' y='55%25' text-anchor='middle' dy='.3em' fill='black' font-family='Courier New, monospace' font-weight='900' font-size='60'>S</text></svg>">
-
-    <!-- ==================== FIREBASE SECTION - START ==================== -->
-    <!-- Delete this entire section when moving to VPS/custom backend -->
+    
+    <!-- Firebase SDK imports and initialization -->
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
         import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
@@ -31,6 +34,7 @@
         const auth = getAuth(app);
         const db = getDatabase(app);
 
+        // Real-time authentication state listener and UI update
         onAuthStateChanged(auth, (user) => {
             const loggedInContent = document.getElementById('loggedInContent');
             const loggedOutContent = document.getElementById('loggedOutContent');
@@ -40,15 +44,23 @@
             if (user) {
                 localStorage.setItem('isLoggedIn', 'true');
                 localStorage.setItem('userEmail', user.email);
+                
                 if (loggedInContent) loggedInContent.style.display = 'block';
                 if (loggedOutContent) loggedOutContent.style.display = 'none';
                 if (emailDisplay) emailDisplay.innerText = user.email;
 
+                // Fetch SMAT ID from Firebase database in real-time
                 const userRef = ref(db, 'users/' + user.uid);
                 onValue(userRef, (snapshot) => {
                     const data = snapshot.val();
-                    if (data && data.smatID) smatIDDisplay.innerText = data.smatID;
+                    if (data && data.smatID) {
+                        smatIDDisplay.innerText = data.smatID;
+                        localStorage.setItem('smatID', data.smatID);
+                    } else {
+                        smatIDDisplay.innerText = "Assigning...";
+                    }
                 });
+                
                 updateKYCUI();
             } else {
                 localStorage.setItem('isLoggedIn', 'false');
@@ -57,15 +69,19 @@
             }
         });
 
+        // Logout function
         window.logout = () => {
             signOut(auth).then(() => {
                 localStorage.clear();
                 window.location.href = 'logIn.html';
             });
         };
-    </script>
-    <!-- ==================== FIREBASE SECTION - END ==================== -->
 
+        // Expose database for other pages if needed
+        window.firebaseDB = db;
+    </script>
+
+    <!-- Main CSS styles for the entire page -->
     <style>
         :root {
             --primary: #f3ba2f;
@@ -78,94 +94,336 @@
             --border: #2b3139;
         }
 
-        * { box-sizing: border-box; outline: none; }
+        /* Global reset and base styles */
+        * { 
+            box-sizing: border-box; 
+            -webkit-tap-highlight-color: transparent; 
+            outline: none; 
+        }
+        
         body {
-            margin: 0; background: var(--bg); color: var(--text-main);
-            font-family: 'Segoe UI', Roboto, sans-serif; padding-bottom: 90px;
+            margin: 0; 
+            background: var(--bg); 
+            color: var(--text-main);
+            font-family: 'Segoe UI', Roboto, sans-serif; 
+            padding-bottom: 90px;
         }
 
+        /* Header styles */
         .header {
-            padding: 15px; display: flex; align-items: center; justify-content: space-between;
-            position: sticky; top: 0; background: var(--bg); z-index: 100;
+            padding: 15px; 
+            display: flex; 
+            align-items: center; 
+            justify-content: space-between;
+            position: sticky; 
+            top: 0; 
+            background: var(--bg); 
+            z-index: 100;
         }
-        .profile-trigger { font-size: 26px; color: var(--primary); cursor: pointer; }
+        .profile-trigger { 
+            font-size: 26px; 
+            color: var(--primary); 
+            cursor: pointer; 
+        }
 
-        .sidebar { position: fixed; top: 0; left: -100%; width: 85%; max-width: 320px; height: 100%; background: var(--card-bg); z-index: 4000; transition: 0.4s; padding: 25px; box-shadow: 15px 0 40px rgba(0,0,0,0.7); }
+        /* Sidebar styles */
+        .sidebar {
+            position: fixed; 
+            top: 0; 
+            left: -100%; 
+            width: 85%; 
+            max-width: 320px; 
+            height: 100%;
+            background: var(--card-bg); 
+            z-index: 4000; 
+            transition: 0.4s cubic-bezier(0.4, 0, 0.2, 1); 
+            padding: 25px;
+            box-shadow: 15px 0 40px rgba(0,0,0,0.7);
+        }
         .sidebar.active { left: 0; }
-        .sidebar-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); display: none; z-index: 3500; }
-
-        .asset-card {
-            margin: 15px; background: linear-gradient(135deg, #2b3139 0%, #1e2329 100%);
-            padding: 25px; border-radius: 24px; border: 1px solid var(--border);
+        
+        .sidebar-overlay {
+            position: fixed; 
+            top: 0; 
+            left: 0; 
+            width: 100%; 
+            height: 100%;
+            background: rgba(0,0,0,0.8); 
+            display: none; 
+            z-index: 3500;
         }
-        .asset-val { font-size: 32px; font-weight: 800; color: var(--primary); margin: 12px 0; }
 
+        .user-id-box { 
+            background: #181a20; 
+            padding: 15px; 
+            border-radius: 12px; 
+            margin: 15px 0; 
+            border: 1px dashed var(--primary); 
+        }
+        
+        .kyc-section { 
+            background: #2b3139; 
+            padding: 18px; 
+            border-radius: 15px; 
+            margin-top: 20px; 
+            border: 1px solid var(--border); 
+        }
+        
+        .status-badge { 
+            padding: 4px 10px; 
+            border-radius: 6px; 
+            font-size: 11px; 
+            font-weight: bold; 
+            text-transform: uppercase; 
+        }
+        .status-unverified { background: #474d57; color: #fff; }
+        .status-pending { background: rgba(243, 186, 47, 0.2); color: var(--primary); }
+
+        .kyc-form input { 
+            width: 100%; 
+            margin-top: 10px; 
+            background: #181a20; 
+            border: 1px solid var(--border); 
+            color: white; 
+            padding: 12px; 
+            border-radius: 8px; 
+            font-size: 14px; 
+        }
+
+        .loading-spin { 
+            display: inline-block; 
+            width: 14px; 
+            height: 14px; 
+            border: 2px solid var(--primary); 
+            border-top: 2px solid transparent; 
+            border-radius: 50%; 
+            animation: spin 0.8s linear infinite; 
+            margin-right: 8px;
+        }
+
+        /* Asset card styles */
+        .asset-card {
+            margin: 15px; 
+            background: linear-gradient(135deg, #2b3139 0%, #1e2329 100%);
+            padding: 25px; 
+            border-radius: 24px; 
+            border: 1px solid var(--border);
+        }
+        .asset-val { 
+            font-size: 32px; 
+            font-weight: 800; 
+            color: var(--primary); 
+            margin: 12px 0; 
+        }
+
+        /* Notice bar with scrolling text */
         .notice-bar {
-            margin: 0 15px; background: rgba(243, 186, 47, 0.05); border-radius: 8px;
-            padding: 8px; display: flex; align-items: center; overflow: hidden;
+            margin: 0 15px; 
+            background: rgba(243, 186, 47, 0.05); 
+            border-radius: 8px;
+            padding: 8px; 
+            display: flex; 
+            align-items: center; 
+            overflow: hidden;
+            border: 1px solid rgba(243, 186, 47, 0.1);
+        }
+        .notice-bar i { 
+            color: var(--primary); 
+            margin-right: 10px; 
+            font-size: 14px; 
         }
         .scrolling-text {
-            white-space: nowrap; overflow: hidden; font-size: 12px; color: var(--text-sec);
-            animation: marquee 25s linear infinite;
+            white-space: nowrap; 
+            overflow: hidden; 
+            font-size: 12px; 
+            color: var(--text-sec);
+            animation: marquee 20s linear infinite;
         }
-        @keyframes marquee { 0% { transform: translateX(100%); } 100% { transform: translateX(-100%); } }
+        @keyframes marquee {
+            0% { transform: translateX(100%); }
+            100% { transform: translateX(-100%); }
+        }
 
-        .market-tabs { display: flex; padding: 0 15px; gap: 20px; border-bottom: 1px solid var(--border); margin-top: 15px; }
-        .tab { padding: 12px 5px; color: var(--text-sec); font-size: 15px; font-weight: 600; cursor: pointer; position: relative; }
+        /* Market tabs */
+        .market-tabs { 
+            display: flex; 
+            padding: 0 15px; 
+            gap: 20px; 
+            border-bottom: 1px solid var(--border); 
+            margin-top: 15px; 
+        }
+        .tab { 
+            padding: 12px 5px; 
+            color: var(--text-sec); 
+            font-size: 15px; 
+            font-weight: 600; 
+            cursor: pointer; 
+            position: relative; 
+        }
         .tab.active { color: var(--primary); }
-        .tab.active::after { content: ''; position: absolute; bottom: 0; left: 0; width: 100%; height: 3px; background: var(--primary); }
+        .tab.active::after { 
+            content: ''; 
+            position: absolute; 
+            bottom: 0; 
+            left: 0; 
+            width: 100%; 
+            height: 3px; 
+            background: var(--primary); 
+            border-radius: 10px; 
+        }
 
-        .coin-list { padding: 5px 15px; }
+        /* Coin list styles */
+        .coin-list { 
+            padding: 5px 15px; 
+        }
         .coin-row { 
-            display: flex; justify-content: space-between; align-items: center; 
-            padding: 18px 0; border-bottom: 1px solid rgba(255,255,255,0.03); cursor: pointer; 
+            display: flex; 
+            justify-content: space-between; 
+            align-items: center; 
+            padding: 18px 0; 
+            border-bottom: 1px solid rgba(255,255,255,0.03); 
+            cursor: pointer; 
         }
-        .coin-icon { width: 40px; height: 40px; border-radius: 50%; object-fit: cover; }
+        .coin-icon { 
+            width: 40px; 
+            height: 40px; 
+            border-radius: 50%; 
+            object-fit: cover; 
+        }
         .percent-box { 
-            padding: 6px 12px; border-radius: 8px; font-weight: 700; font-size: 13px; 
-            min-width: 75px; text-align: center;
+            display: inline-block; 
+            padding: 6px 12px; 
+            border-radius: 8px; 
+            font-weight: 700; 
+            font-size: 13px; 
+            min-width: 75px; 
+            margin-top: 4px; 
+            text-align: center;
         }
 
+        /* Footer navigation */
         .footer { 
-            position: fixed; bottom: 0; width: 100%; height: 75px; background: #181a20; 
-            display: flex; justify-content: space-around; align-items: center; 
-            border-top: 1px solid #2b3139; z-index: 3000; 
+            position: fixed; 
+            bottom: 0; 
+            width: 100%; 
+            height: 75px; 
+            background: #181a20; 
+            display: flex; 
+            justify-content: space-around; 
+            align-items: center; 
+            border-top: 1px solid #2b3139; 
+            z-index: 3000; 
         }
-        .f-nav { text-decoration: none; color: var(--text-sec); text-align: center; font-size: 10px; flex: 1; display: flex; flex-direction: column; align-items: center; }
-        .f-nav i { font-size: 22px; margin-bottom: 5px; }
+        .f-nav { 
+            text-decoration: none; 
+            color: var(--text-sec); 
+            text-align: center; 
+            font-size: 10px; 
+            flex: 1; 
+            display: flex; 
+            flex-direction: column; 
+            align-items: center; 
+        }
+        .f-nav i { 
+            font-size: 22px; 
+            margin-bottom: 5px; 
+        }
         .f-nav.active { color: var(--primary); }
-
-        .u-curve { position: relative; top: -22px; width: 75px; height: 75px; display: flex; justify-content: center; align-items: center; }
-        .spin-circle { position: absolute; width: 70px; height: 70px; border: 2.5px dashed var(--primary); border-radius: 50%; animation: spin 5s linear infinite; }
+        
+        .u-curve { 
+            position: relative; 
+            top: -22px; 
+            width: 75px; 
+            height: 75px; 
+            display: flex; 
+            justify-content: center; 
+            align-items: center; 
+        }
+        .spin-circle { 
+            position: absolute; 
+            width: 70px; 
+            height: 70px; 
+            border: 2.5px dashed var(--primary); 
+            border-radius: 50%; 
+            animation: spin 5s linear infinite; 
+        }
         .crash-link { 
-            width: 58px; height: 58px; background: var(--primary); border-radius: 50%; color: black; 
-            font-weight: 900; font-size: 11px; display: flex; align-items: center; justify-content: center; 
+            width: 58px; 
+            height: 58px; 
+            background: var(--primary); 
+            border-radius: 50%; 
+            color: black; 
+            font-weight: 900; 
+            font-size: 11px; 
+            display: flex; 
+            align-items: center; 
+            justify-content: center; 
+            text-decoration: none; 
+            z-index: 5; 
             box-shadow: 0 0 15px rgba(243, 186, 47, 0.4); 
         }
-        @keyframes spin { 100% { transform: rotate(360deg); } }
+
+        @keyframes spin { 
+            100% { transform: rotate(360deg); } 
+        }
+        
+        .login-btn { 
+            background: var(--primary); 
+            color: black; 
+            padding: 12px; 
+            border-radius: 10px; 
+            border: none; 
+            font-weight: bold; 
+            width: 100%; 
+            cursor: pointer; 
+            margin-top: 20px; 
+        }
+
+        @media (max-width: 400px) { 
+            .asset-val { font-size: 26px; } 
+            .tab { font-size: 13px; } 
+        }
+        
+        /* Chat icon styles */
+        .chat-trigger { 
+            font-size: 22px; 
+            color: var(--text-sec); 
+            cursor: pointer; 
+            text-decoration: none; 
+            display: flex; 
+            align-items: center; 
+        }
+        .chat-trigger:hover { color: var(--primary); }
     </style>
 </head>
 <body>
 
+    <!-- Sidebar overlay (closes sidebar when clicked) -->
     <div class="sidebar-overlay" id="overlay" onclick="toggleSidebar()"></div>
 
+    <!-- Main sidebar / profile panel -->
     <div class="sidebar" id="sidebar">
         <h3 style="margin: 0 0 20px 0; font-size: 20px;">Profile</h3>
+        
         <div id="loggedInContent">
+            <!-- User info and SMAT ID section -->
             <div class="user-info">
                 <span style="font-size:12px; color:var(--text-sec)">Account Email</span>
                 <div id="emailDisplay" style="font-weight:600; margin-top:4px;">Loading...</div>
+                
                 <div class="user-id-box">
                     <span style="font-size:11px; color:var(--text-sec); display:block; margin-bottom:5px;">Your SMAT ID</span>
                     <span id="smatID" style="font-size:18px; font-weight:800; color:var(--primary);">Checking...</span>
                 </div>
             </div>
 
+            <!-- KYC verification section -->
             <div class="kyc-section">
                 <div style="display:flex; justify-content:space-between; align-items:center">
                     <span style="font-weight:bold; font-size:14px">Identity Verification</span>
                     <span id="kycBadge" class="status-badge status-unverified">Unverified</span>
                 </div>
+
                 <div id="kycForm">
                     <input type="text" id="nidNumber" placeholder="Enter NID Number">
                     <p style="font-size:11px; color:var(--text-sec); margin:15px 0 5px 0">Upload Identity Documents</p>
@@ -173,6 +431,7 @@
                     <input type="file" id="nidBack" accept="image/*" style="margin-top:5px">
                     <button onclick="handleKYC()" style="width:100%; margin-top:20px; background:var(--primary); border:none; padding:14px; border-radius:10px; font-weight:700; cursor:pointer">Submit Details</button>
                 </div>
+
                 <div id="kycPendingNotice" style="display:none; margin-top:15px; padding:10px; background:rgba(243,186,47,0.1); border-radius:8px;">
                     <p style="font-size:12px; color:var(--primary); margin:0; line-height:1.6">
                         <span class="loading-spin"></span> <b>KYC Status: Pending</b><br>
@@ -180,9 +439,12 @@
                     </p>
                 </div>
             </div>
+            
+            <!-- Logout button -->
             <p style="margin-top:40px; text-align:center; color:#ff4d4d; font-size:14px; cursor:pointer" onclick="logout()">Secure Logout</p>
         </div>
 
+        <!-- Content shown when user is logged out -->
         <div id="loggedOutContent" style="display:none; text-align: center; margin-top: 50px;">
             <i class="fa-solid fa-user-lock" style="font-size: 50px; color: var(--text-sec);"></i>
             <p style="color: var(--text-sec); margin-top: 15px;">Please login to see your profile and assets.</p>
@@ -190,6 +452,7 @@
         </div>
     </div>
 
+    <!-- Top header -->
     <div class="header">
         <i class="fa-solid fa-circle-user profile-trigger" onclick="toggleSidebar()"></i>
         <div style="font-weight: 900; font-size: 20px;">SMAT <span style="color:var(--primary)">Exchange</span></div>
@@ -203,6 +466,7 @@
         </div>
     </div>
 
+    <!-- Total assets card -->
     <div class="asset-card">
         <div style="font-size: 14px; color: var(--text-sec);">Total Assets <i class="fa-solid fa-eye-slash" style="font-size:12px"></i></div>
         <div class="asset-val">$ <span id="totalValue">0.00</span></div>
@@ -212,13 +476,15 @@
         </div>
     </div>
 
+    <!-- Scrolling notice bar -->
     <div class="notice-bar">
         <i class="fa-solid fa-bullhorn"></i>
         <div class="scrolling-text">
-            System Notice: SMAT Coin listing coming soon! | New TRC20 Deposit network is now stable. | Verify KYC to enjoy zero-fee internal transfers.
+            System Notice: SMAT Coin listing coming soon! | New TRC20 Deposit network is now stable. | Verify KYC to enjoy zero-fee internal transfers. | Stay alert of phishing links.
         </div>
     </div>
 
+    <!-- Market tabs -->
     <div class="market-tabs">
         <div class="tab active" id="tab-hot" onclick="switchTab(this, 'hot')">Hot</div>
         <div class="tab" id="tab-gainer" onclick="switchTab(this, 'gainer')">Gainers</div>
@@ -226,8 +492,10 @@
         <div class="tab" id="tab-new" onclick="switchTab(this, 'new')">New</div>
     </div>
 
+    <!-- Coin list container -->
     <div class="coin-list" id="coinContainer"></div>
 
+    <!-- Footer navigation -->
     <footer class="footer">
         <a href="home.html" class="f-nav active"><i class="fas fa-home"></i>Home</a>
         <a href="Trade.html" class="f-nav" onclick="checkAuth(event)"><i class="fas fa-chart-line"></i>Trade</a>
@@ -239,10 +507,12 @@
         <a href="Wallet.html" class="f-nav" onclick="checkAuth(event)"><i class="fas fa-wallet"></i>Wallet</a>
     </footer>
 
+    <!-- Main JavaScript logic -->
     <script>
         let currentActiveTab = 'hot';
         let isUserLoggedIn = localStorage.getItem('isLoggedIn') === 'true';
 
+        // Check if user is logged in before allowing navigation
         function checkAuth(e) {
             if (!isUserLoggedIn) {
                 if (e) e.preventDefault();
@@ -253,11 +523,14 @@
             return true;
         }
 
+        // Toggle sidebar visibility
         function toggleSidebar() {
             document.getElementById('sidebar').classList.toggle('active');
-            document.getElementById('overlay').style.display = document.getElementById('sidebar').classList.contains('active') ? 'block' : 'none';
+            document.getElementById('overlay').style.display = 
+                document.getElementById('sidebar').classList.contains('active') ? 'block' : 'none';
         }
 
+        // Switch between market tabs and refresh coin list
         function switchTab(element, category) {
             currentActiveTab = category;
             document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
@@ -265,77 +538,83 @@
             renderCoins(category);
         }
 
-        // FINAL FIXED renderCoins - Very Simple & Safe
+        // Render coins based on selected filter (hot, gainer, loser, new)
         function renderCoins(filter = 'hot') {
             const container = document.getElementById('coinContainer');
             if (!container) return;
+            
+            const liveData = (typeof GLOBAL_COINS !== 'undefined') ? GLOBAL_COINS : [];
+            let filtered = liveData;
 
-            const coins = (typeof GLOBAL_COINS !== 'undefined') ? GLOBAL_COINS : [];
-            let filtered = coins;
+            if (filter === 'hot') {
+                filtered = [...liveData].slice(0, 10);
+            } else if (filter === 'gainer') {
+                filtered = [...liveData].sort((a, b) => b.price - a.price).slice(0, 8);
+            } else if (filter === 'loser') {
+                filtered = [...liveData].sort((a, b) => a.price - b.price).slice(0, 8);
+            }
 
-            if (filter === 'hot') filtered = [...coins].slice(0, 10);
-            else if (filter === 'gainer') filtered = [...coins].sort((a, b) => b.price - a.price).slice(0, 8);
-            else if (filter === 'loser') filtered = [...coins].sort((a, b) => a.price - b.price).slice(0, 8);
-
-            let html = '';
+            let htmlContent = '';
             filtered.forEach(coin => {
-                const price = coin.price || 0;
+                const currentPrice = coin.price;
                 const isUp = Math.random() > 0.5;
-                const changeNum = (Math.random() * 5 + 0.5).toFixed(2);
+                const change = (Math.random() * 5).toFixed(2);
 
-                const sign = isUp ? '+' : '-';
-                const color = isUp ? '#0ecb81' : '#f6465d';
-                const bgColor = isUp ? 'rgba(14, 203, 129, 0.15)' : 'rgba(246, 70, 93, 0.15)';
-
-                html += `
+                htmlContent += `
                     <div class="coin-row" onclick="if(checkAuth(event)) window.location.href='Trade.html?coin=${coin.sym}'">
                         <div style="display:flex; align-items:center; gap:12px;">
                             <img src="assets/logos/\( {coin.sym.toLowerCase()}.png" class="coin-icon" onerror="this.src='https://via.placeholder.com/40?text= \){coin.sym[0]}'">
                             <div>
-                                <div style="font-weight:bold">${coin.sym}</div>
+                                <div style="font-weight:bold">${coin.sym.toUpperCase()}</div>
                                 <div style="font-size:12px; color:var(--text-sec)">${coin.name}</div>
                             </div>
                         </div>
                         <div style="text-align:right">
-                            <div style="font-weight:bold; font-size:16px">$${price.toLocaleString()}</div>
-                            <div class="percent-box" style="background:\( {bgColor}; color: \){color}">
-                                \( {sign} \){changeNum}%
+                            <div style="font-weight:bold; font-size:16px">$${currentPrice.toLocaleString()}</div>
+                            <div class="percent-box" style="background:\( {isUp ? 'rgba(14, 203, 129, 0.15)' : 'rgba(246, 70, 93, 0.15)'}; color: \){isUp ? 'var(--up)' : 'var(--down)'}">
+                                \( {isUp ? '+' : '-'} \){change}%
                             </div>
                         </div>
                     </div>
                 `;
             });
-
-            container.innerHTML = html;
+            container.innerHTML = htmlContent;
         }
 
+        // Handle KYC form submission
         function handleKYC() {
             const nid = document.getElementById('nidNumber').value;
-            if (nid.length < 5) return alert("Please enter valid NID.");
+            if (nid.length < 5) {
+                return alert("Please enter valid NID.");
+            }
             localStorage.setItem('kycStatus', 'pending');
             updateKYCUI();
         }
 
+        // Update KYC UI based on localStorage status
         function updateKYCUI() {
             if (localStorage.getItem('kycStatus') === 'pending') {
-                document.getElementById('kycForm').style.display = 'none';
-                document.getElementById('kycPendingNotice').style.display = 'block';
+                const form = document.getElementById('kycForm');
+                const notice = document.getElementById('kycPendingNotice');
                 const badge = document.getElementById('kycBadge');
-                badge.innerText = 'Pending';
-                badge.className = 'status-badge status-pending';
+                
+                if (form) form.style.display = 'none';
+                if (notice) notice.style.display = 'block';
+                if (badge) { 
+                    badge.innerText = 'Pending'; 
+                    badge.className = 'status-badge status-pending'; 
+                }
             }
         }
 
-        // Initialize page
-        window.addEventListener('load', () => {
-            setTimeout(() => {
-                renderCoins('hot');
-            }, 600);
-
-            setInterval(() => {
-                renderCoins(currentActiveTab);
+        // Page load initialization and auto-refresh
+        window.onload = () => {
+            renderCoins('hot');
+            // Refresh coin list every 5 seconds
+            setInterval(() => { 
+                renderCoins(currentActiveTab); 
             }, 5000);
-        });
+        };
     </script>
 </body>
 </html>
