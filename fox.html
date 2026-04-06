@@ -30,9 +30,10 @@
             display: flex; flex-direction: column; 
             height: 100vh; height: 100dvh; 
             overflow: hidden; width: 100%;
-            position: relative;
+            /* position: fixed সরানো হয়েছে কারণ এটি কীবোর্ড রিসাইজে বাধা দেয় */
         }
 
+        /* Header - Fixed */
         .chat-header {
             padding: 12px 15px; background: var(--card-bg); border-bottom: 2px solid var(--primary);
             display: flex; justify-content: space-between; align-items: center; 
@@ -40,6 +41,7 @@
         }
         .header-title { font-size: 18px; font-weight: 900; letter-spacing: 1px; color: var(--primary); }
 
+        /* Jojo Timer */
         #jojoTimer {
             position: absolute; top: 65px; right: 15px;
             background: rgba(30, 35, 41, 0.95); border: 1px solid var(--primary);
@@ -48,6 +50,7 @@
             box-shadow: 0 4px 10px rgba(0,0,0,0.5); z-index: 999;
         }
 
+        /* S-Bubble Logic Styles */
         #s-bubble { 
             position: fixed; width: 65px; height: 65px; z-index: 9999; cursor: pointer; display: none; 
             animation: floatBubble 10s ease-in-out infinite; 
@@ -130,6 +133,7 @@
             display: flex; align-items: center; justify-content: center; flex-shrink: 0;
         }
 
+        /* Modals */
         .modal {
             display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
             background: rgba(0,0,0,0.9); z-index: 5000; justify-content: center; align-items: center;
@@ -150,8 +154,6 @@
 
         .btn-panel { padding: 4px 8px; border-radius: 6px; font-weight: 900; font-size: 10px; cursor: pointer; border: none; }
         .leader-item { display: flex; justify-content: space-between; padding: 8px; border-bottom: 1px solid #333; }
-        
-        .unban-btn { background: var(--admin-color); color: black; border: none; padding: 2px 8px; border-radius: 4px; font-weight: 800; cursor: pointer; font-size: 10px; }
     </style>
 </head>
 <body>
@@ -310,22 +312,13 @@
             } else { alert("Requirement: 500 SMAT Daily Betting in Arena!"); }
         }
 
-        function deleteMessage(mid, targetId) {
+        function deleteMessage(mid) {
             if (user.role === 'ADMIN' || user.role === 'SUPER_ADMIN') {
-                const choice = confirm(`Target: ${targetId}\n\n[OK] = BAN USER\n[Cancel] = DELETE MESSAGE ONLY`);
-                if (choice) {
-                    let restricted = JSON.parse(localStorage.getItem('smat_restricted')) || [];
-                    if (!restricted.includes(targetId) && targetId !== MAIN_SUPER_ADMIN) {
-                        restricted.push(targetId);
-                        localStorage.setItem('smat_restricted', JSON.stringify(restricted));
-                        messages = messages.filter(m => m.id !== targetId);
-                        alert(`${targetId} has been restricted!`);
-                    }
-                } else {
+                if (confirm("Delete this message?")) {
                     messages = messages.filter(m => m.mid !== mid);
+                    localStorage.setItem('smat_messages', JSON.stringify(messages));
+                    renderChat();
                 }
-                localStorage.setItem('smat_messages', JSON.stringify(messages));
-                renderChat();
             }
         }
 
@@ -418,7 +411,7 @@
                                 <span class="timestamp">${msg.time}</span>
                             </div>
                             <div class="bubble ${isMentionedMe ? 'mentioned-active' : ''} ${msg.isSpecial ? 'special-msg' : ''}" 
-                                 ${(user.role === 'ADMIN' || user.role === 'SUPER_ADMIN') ? `oncontextmenu="deleteMessage('${msg.mid}', '${msg.id}'); return false;"` : ''}>
+                                 ${(user.role === 'ADMIN' || user.role === 'SUPER_ADMIN') ? `oncontextmenu="deleteMessage('${msg.mid}'); return false;"` : ''}>
                                 ${msg.text.replace(/(@SMAT\d+)/g, '<span style="color:var(--primary); font-weight:bold;">$1</span>')}
                                 ${btn}
                             </div>
@@ -436,11 +429,6 @@
         }
 
         async function sendMessage() {
-            const restricted = JSON.parse(localStorage.getItem('smat_restricted')) || [];
-            if (restricted.includes(user.id)) {
-                alert("You are restricted from sending messages.");
-                return;
-            }
             const input = document.getElementById('messageInput');
             let rawText = input.value.trim();
             if(!rawText) return;
@@ -452,20 +440,8 @@
 
         function openBanList() {
             const list = JSON.parse(localStorage.getItem('smat_restricted')) || [];
-            document.getElementById('banListContent').innerHTML = list.length 
-                ? list.map(id => `<div class="leader-item"><div>${id}</div><button class="unban-btn" onclick="unbanUser('${id}')">UNBAN</button></div>`).join('') 
-                : "<div style='text-align:center; padding:20px; color:var(--text-sec);'>No Banned Users</div>";
+            document.getElementById('banListContent').innerHTML = list.length ? list.map(id => `<div style="padding:10px; border-bottom:1px solid #333;">${id}</div>`).join('') : "No Banned Users";
             openModal('banListModal');
-        }
-
-        function unbanUser(id) {
-            if (user.role === 'ADMIN' || user.role === 'SUPER_ADMIN') {
-                let restricted = JSON.parse(localStorage.getItem('smat_restricted')) || [];
-                restricted = restricted.filter(uId => uId !== id);
-                localStorage.setItem('smat_restricted', JSON.stringify(restricted));
-                alert(`${id} has been unbanned!`);
-                openBanList();
-            }
         }
 
         function makeAdmin() {
@@ -480,19 +456,13 @@
         function openModal(id) { document.getElementById(id).style.display = 'flex'; }
         function closeModal(id) { document.getElementById(id).style.display = 'none'; }
 
-        /* KEYBOARD FOCUS & VIEWPORT FIX */
+        // --- কীবোর্ড ফিক্স এবং অটো-স্ক্রল ---
         if (window.visualViewport) {
             window.visualViewport.addEventListener('resize', () => {
-                const height = window.visualViewport.height;
-                // Set body height to visible viewport height
-                document.body.style.height = height + "px";
-                // Scroll to bottom
+                const viewportHeight = window.visualViewport.height;
+                document.body.style.height = viewportHeight + "px";
                 const container = document.getElementById('chatDisplay');
-                if (container) {
-                    setTimeout(() => {
-                        container.scrollTop = container.scrollHeight;
-                    }, 50);
-                }
+                if (container) container.scrollTop = container.scrollHeight;
             });
         }
 
