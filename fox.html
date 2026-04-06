@@ -359,14 +359,29 @@
         }
 
         function handleRainExecution(total, count, coin) {
-            let activeIds = [...new Set(messages.map(m => m.id))].filter(id => id !== user.id).slice(0, count);
-            if(activeIds.length === 0) return alert("No active users!");
-            activeIds.forEach(uId => { if(uId === user.id) updateCoinBalance(coin, total/activeIds.length); });
-            sendSystemMessage(`🌧️ Rain: ${total} ${coin.toUpperCase()} shared among ${activeIds.length} users!`);
+            // Get unique active IDs from messages, excluding current user and SYSTEM
+            let activeIds = [...new Set(messages.map(m => m.id))].filter(id => id !== user.id && id !== "SYSTEM").slice(0, count);
+            
+            if(activeIds.length === 0) {
+                updateCoinBalance(coin, total); // Refund if no one to receive
+                return alert("No active users found!");
+            }
+
+            let share = (total / activeIds.length);
+            
+            // In this client-side demo, we only update the current user's balance if they are in the rain
+            // In a real app, this would happen via server-side database update.
+            activeIds.forEach(uId => {
+                if(uId === user.id) {
+                   updateCoinBalance(coin, share);
+                }
+            });
+
+            sendSystemMessage(`🌧️ Rain by ${user.id}: ${total} ${coin.toUpperCase()} shared among ${activeIds.length} users! Each received ${share.toFixed(6)} ${coin.toUpperCase()}.`);
         }
 
         function handleDropExecution(total, count, coin) {
-            sendSystemMessage(`💧 Drop: ${total} ${coin.toUpperCase()} for ${count} users!`, "drop_" + Date.now(), total, count, coin);
+            sendSystemMessage(`💧 Drop by ${user.id}: ${total} ${coin.toUpperCase()} for ${count} users!`, "drop_" + Date.now(), total, count, coin);
         }
 
         function claimDrop(dropId, total, count, coin, msgId) {
@@ -374,15 +389,19 @@
             let claimed = JSON.parse(localStorage.getItem(key)) || [];
             if(claimed.includes(user.id)) return alert("Already claimed!");
             if(claimed.length >= count) return alert("Empty!");
+            
             let share = (total / count).toFixed(6);
             updateCoinBalance(coin, parseFloat(share));
+            
             claimed.push(user.id);
             localStorage.setItem(key, JSON.stringify(claimed));
+            
             if(claimed.length >= count) {
                 messages = messages.map(m => m.mid === msgId ? {...m, isCompleted: true} : m);
                 localStorage.setItem('smat_messages', JSON.stringify(messages));
             }
-            sendSystemMessage(`✅ @${user.id} claimed ${share} ${coin}!`);
+            
+            sendSystemMessage(`✅ @${user.id} claimed ${share} ${coin.toUpperCase()}!`);
             renderChat();
         }
 
@@ -409,7 +428,7 @@
                 let btn = msg.dropData ? `<button class="claim-btn" ${msg.isCompleted ? 'disabled' : ''} onclick="claimDrop('${msg.dropData.id}', ${msg.dropData.total}, ${msg.dropData.count}, '${msg.dropData.coin}', '${msg.mid}')">${msg.isCompleted ? 'EMPTY' : 'CLAIM'}</button>` : '';
                 container.innerHTML += `
                     <div class="msg-row">
-                        <div class="avatar" style="background:${getAvatarColor(msg.id)}">${msg.id[0]}</div>
+                        <div class="avatar" style="background:${getAvatarColor(msg.id)}">${msg.id === "SYSTEM" ? '<i class="fa-solid fa-robot"></i>' : msg.id[0]}</div>
                         <div class="msg-content">
                             <div class="user-meta">
                                 <span class="user-name" onclick="appendMention('${msg.id}')">${msg.id}</span> 
@@ -479,7 +498,6 @@
         function openModal(id) { document.getElementById(id).style.display = 'flex'; }
         function closeModal(id) { document.getElementById(id).style.display = 'none'; }
 
-        /* VIEWPORT HEIGHT CALCULATION */
         function adjustLayout() {
             const vh = window.visualViewport ? window.visualViewport.height : window.innerHeight;
             document.body.style.height = vh + "px";
@@ -493,7 +511,7 @@
         }
 
         window.onload = () => {
-            adjustLayout(); // Page load এ হাইট ফিক্স করা
+            adjustLayout();
             if (user.id === MAIN_SUPER_ADMIN) {
                 document.getElementById('superAdminBtn').style.display = 'block';
                 document.getElementById('banListBtn').style.display = 'block';
@@ -507,4 +525,3 @@
     </script>
 </body>
 </html>
-
