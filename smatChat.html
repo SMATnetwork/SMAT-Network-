@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover, interactive-widget=resizes-content">
     <title>SMAT | Premium Chat</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <style>
@@ -22,95 +22,151 @@
             --drop-cyan: #00ffcc;
         }
 
-        * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; margin: 0; padding: 0; }
-        
-        /* বডি ফিক্স: এখানে 100dvh ব্যবহার করা হয়েছে যা GitHub Pages-এ সাইজ ঠিক রাখবে */
-        body {
-            background: var(--bg); color: var(--text-main);
-            font-family: 'Inter', 'Segoe UI', Roboto, sans-serif;
-            display: flex; flex-direction: column; 
-            height: 100vh; height: 100dvh; 
-            overflow: hidden; width: 100%;
-            position: fixed; /* স্ক্রিন কাঁপাকাঁপি বন্ধ করতে */
+        * {
+            box-sizing: border-box;
+            -webkit-tap-highlight-color: transparent;
+            margin: 0;
+            padding: 0;
         }
 
-        /* Header - Fixed */
-        .chat-header {
-            padding: 12px 15px; background: var(--card-bg); border-bottom: 2px solid var(--primary);
-            display: flex; justify-content: space-between; align-items: center; 
-            box-shadow: 0 4px 15px rgba(0,0,0,0.5); z-index: 100; flex-shrink: 0;
+        /* সমাধান: position fixed সরিয়ে 100vh করা হয়েছে */
+        body {
+            background: var(--bg);
+            color: var(--text-main);
+            font-family: 'Inter', 'Segoe UI', Roboto, sans-serif;
+            display: flex;
+            flex-direction: column;
+            height: 100vh; 
+            width: 100%;
+            overflow: hidden;
+            position: relative;
         }
-        .header-title { font-size: 18px; font-weight: 900; letter-spacing: 1px; color: var(--primary); }
+
+        /* Header */
+        .chat-header {
+            padding: 12px 15px;
+            background: var(--card-bg);
+            border-bottom: 2px solid var(--primary);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.5);
+            z-index: 100;
+            flex-shrink: 0;
+        }
+
+        .header-title {
+            font-size: 18px;
+            font-weight: 900;
+            letter-spacing: 1px;
+            color: var(--primary);
+        }
 
         /* Jojo Timer */
         #jojoTimer {
-            position: absolute; top: 65px; right: 15px;
-            background: rgba(30, 35, 41, 0.95); border: 1px solid var(--primary);
-            padding: 6px 12px; border-radius: 8px; font-size: 12px;
-            font-weight: 900; color: var(--primary); display: none;
-            box-shadow: 0 4px 10px rgba(0,0,0,0.5); z-index: 999;
+            position: absolute;
+            top: 65px;
+            right: 15px;
+            background: rgba(30, 35, 41, 0.95);
+            border: 1px solid var(--primary);
+            padding: 6px 12px;
+            border-radius: 8px;
+            font-size: 12px;
+            font-weight: 900;
+            color: var(--primary);
+            display: none;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.5);
+            z-index: 999;
         }
 
-        /* S-Bubble Logic Styles */
-        #s-bubble { 
-            position: fixed; width: 65px; height: 65px; z-index: 9999; cursor: pointer; display: none; 
-            animation: floatBubble 10s ease-in-out infinite; 
+        /* S-Bubble */
+        #s-bubble {
+            position: fixed;
+            width: 65px;
+            height: 65px;
+            z-index: 9999;
+            cursor: pointer;
+            display: none;
+            animation: floatBubble 10s ease-in-out infinite;
         }
-        .s-logo-wrapper { 
-            position: relative; width: 100%; height: 100%; background: radial-gradient(circle, #f0b90b 0%, #cc9900 100%); 
-            border-radius: 50%; display: flex; align-items: center; justify-content: center; 
-            border: 2px solid rgba(255, 255, 255, 0.2); box-shadow: 0 0 15px rgba(240, 185, 11, 0.5); 
-        }    
+
+        .s-logo-wrapper {
+            position: relative;
+            width: 100%;
+            height: 100%;
+            background: radial-gradient(circle, #f0b90b 0%, #cc9900 100%);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border: 2px solid rgba(255, 255, 255, 0.2);
+            box-shadow: 0 0 15px rgba(240, 185, 11, 0.5);
+        }
+
         .s-logo-inner { font-weight: 900; font-size: 30px; color: white; }
-        @keyframes floatBubble { 0%, 100% { transform: translate(0, 0); } 25% { transform: translate(50vw, 15vh); } 50% { transform: translate(5vw, 60vh); } 75% { transform: translate(40vw, 40vh); } }
-        
-        .pop-text { 
-            position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); 
-            background: #f0b90b; color: black; padding: 20px; border-radius: 15px; 
-            font-weight: 900; text-align: center; z-index: 10000; display: none; 
-            box-shadow: 0 0 30px rgba(240, 185, 11, 0.5); 
+
+        @keyframes floatBubble {
+            0%, 100% { transform: translate(0, 0); }
+            25% { transform: translate(50vw, 15vh); }
+            50% { transform: translate(5vw, 60vh); }
+            75% { transform: translate(40vw, 40vh); }
         }
 
-       /* ১. চ্যাট এরিয়া ফিক্স */
-#chatDisplay {
-    flex: 1; /* খালি সব জায়গা দখল করবে */
-    overflow-y: auto; /* স্ক্রল চালু করবে */
-    display: flex;
-    flex-direction: column;
-    justify-content: flex-start; 
-    padding: 15px;
-    gap: 15px;
-    background: linear-gradient(to bottom, #0b0e11, #161a1e);
-    
-    /* নিচের লাইনটি সবচেয়ে গুরুত্বপূর্ণ */
-    height: calc(100dvh - 120px); 
-    -webkit-overflow-scrolling: touch; /* আইফোনে স্মুথ স্ক্রলিং */
-}
+        .pop-text {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: #f0b90b;
+            color: black;
+            padding: 20px;
+            border-radius: 15px;
+            font-weight: 900;
+            text-align: center;
+            z-index: 10000;
+            display: none;
+            box-shadow: 0 0 30px rgba(240, 185, 11, 0.5);
+        }
 
-/* ২. ইনপুট কন্টেইনার ফিক্স */
-.input-container {
-    position: sticky; /* স্ক্রিনের নিচে আটকে থাকবে */
-    bottom: 0;
-    width: 100%;
-    padding: 10px 15px;
-    background: var(--card-bg);
-    border-top: 1px solid var(--chat-bubble);
-    flex-shrink: 0; /* যেন চ্যাট এরিয়া একে চ্যাপ্টা করতে না পারে */
-    z-index: 100;
-    
-    /* মোবাইল নেভিগেশন বারের জন্য সেফ এরিয়া */
-    padding-bottom: calc(10px + env(safe-area-inset-bottom));
-}
+        /* Chat Display */
+        #chatDisplay {
+            flex: 1;
+            overflow-y: auto;
+            padding: 15px;
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            background: linear-gradient(to bottom, #0b0e11, #161a1e);
+            scroll-behavior: smooth;
+            -webkit-overflow-scrolling: touch;
+        }
 
+        .msg-row {
+            display: flex;
+            gap: 12px;
+            animation: slideUp 0.3s ease-out;
+            position: relative;
+            width: 100%;
+            flex-shrink: 0;
+        }
 
-        .msg-row { display: flex; gap: 12px; animation: slideUp 0.3s ease-out; position: relative; width: 100%; flex-shrink: 0; }
-        @keyframes slideUp { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+        @keyframes slideUp {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
 
         .avatar {
-            width: 40px; height: 40px; border-radius: 50%;
-            display: flex; align-items: center; justify-content: center;
-            font-weight: 900; color: #fff; border: 1px solid var(--chat-bubble);
-            flex-shrink: 0; font-size: 16px;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 900;
+            color: #fff;
+            border: 1px solid var(--chat-bubble);
+            flex-shrink: 0;
+            font-size: 16px;
         }
 
         .msg-content { max-width: 85%; }
@@ -123,59 +179,80 @@
         .badge-super { background: rgba(243, 186, 47, 0.2); color: var(--primary); border: 1px solid var(--primary); }
 
         .bubble {
-            background: var(--chat-bubble); padding: 10px 14px;
-            border-radius: 5px 15px 15px 15px; font-size: 14px;
-            line-height: 1.5; font-weight: 500; color: #f0f0f0;
+            background: var(--chat-bubble);
+            padding: 10px 14px;
+            border-radius: 5px 15px 15px 15px;
+            font-size: 14px;
+            line-height: 1.5;
+            font-weight: 500;
+            color: #f0f0f0;
             box-shadow: 2px 2px 8px rgba(0,0,0,0.2);
-            word-break: break-word; position: relative;
+            word-break: break-word;
+            position: relative;
         }
+
         .bubble.mentioned-active { border-left: 3px solid var(--mention-green); background: rgba(14, 203, 129, 0.1); }
         .special-msg { border: 1px solid var(--rain-blue); background: rgba(0, 210, 255, 0.05) !important; }
 
-        /* ইনপুট এরিয়া ফিক্স */
+        /* Input Area Fix */
         .input-area {
-            padding: 10px 15px; background: var(--card-bg); 
-            border-top: 1px solid var(--chat-bubble); flex-shrink: 0;
-            z-index: 100; padding-bottom: calc(10px + env(safe-area-inset-bottom));
+            padding: 10px 15px;
+            background: var(--card-bg);
+            border-top: 1px solid var(--chat-bubble);
+            flex-shrink: 0;
+            z-index: 100;
+            padding-bottom: max(10px, env(safe-area-inset-bottom));
         }
+
         .input-box-wrapper { display: flex; gap: 8px; align-items: center; width: 100%; }
-        
         .special-tools { display: flex; gap: 10px; flex-shrink: 0; }
         .tool-btn { font-size: 18px; cursor: pointer; transition: 0.2s; }
         .rain-tool { color: var(--rain-blue); }
         .drop-tool { color: var(--drop-cyan); }
 
-        
+        .input-container {
+            flex: 1;
+            display: flex;
+            background: #181a20;
+            border-radius: 25px;
+            padding: 0 10px;
+            align-items: center;
+            border: 1px solid #363c44;
+        }
+
         #messageInput {
-            width: 100%; background: transparent; border: none; padding: 10px 5px;
-            color: white; font-weight: 500; font-size: 14px; outline: none;
+            width: 100%;
+            background: transparent;
+            border: none;
+            padding: 10px 5px;
+            color: white;
+            font-weight: 500;
+            font-size: 16px; /* 16px prevents zoom on focus */
+            outline: none;
         }
 
         .send-btn {
-            background: var(--primary); border: none; width: 40px; height: 40px;
-            border-radius: 10px; color: #000; cursor: pointer; font-size: 16px;
-            display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+            background: var(--primary);
+            border: none;
+            width: 40px;
+            height: 40px;
+            border-radius: 10px;
+            color: #000;
+            cursor: pointer;
+            font-size: 16px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
         }
 
         /* Modals */
-        .modal {
-            display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(0,0,0,0.9); z-index: 5000; justify-content: center; align-items: center;
-        }
-        .modal-box {
-            background: var(--card-bg); padding: 20px; border-radius: 15px;
-            width: 90%; max-width: 380px; border: 1px solid var(--primary);
-            max-height: 80vh; overflow-y: auto;
-        }
+        .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.9); z-index: 5000; justify-content: center; align-items: center; }
+        .modal-box { background: var(--card-bg); padding: 20px; border-radius: 15px; width: 90%; max-width: 380px; border: 1px solid var(--primary); max-height: 80vh; overflow-y: auto; }
+        .modal-box input, .modal-box select { width: 100%; padding: 10px; margin: 8px 0; background: #181a20; border: 1px solid var(--chat-bubble); color: white; border-radius: 8px; outline: none; }
         
-        .modal-box input, .modal-box select {
-            width: 100%; padding: 10px; margin: 8px 0; background: #181a20;
-            border: 1px solid var(--chat-bubble); color: white; border-radius: 8px; outline: none;
-        }
-
         .claim-btn { background: var(--drop-cyan); border: none; padding: 8px; width: 100%; border-radius: 6px; color: #000; font-weight: 900; margin-top: 8px; cursor: pointer; }
         .claim-btn:disabled { background: #363c44; color: #848e9c; cursor: not-allowed; }
-
         .btn-panel { padding: 4px 8px; border-radius: 6px; font-weight: 900; font-size: 10px; cursor: pointer; border: none; }
         .leader-item { display: flex; justify-content: space-between; padding: 8px; border-bottom: 1px solid #333; }
     </style>
@@ -254,14 +331,14 @@
                 <i class="fa-solid fa-droplet tool-btn drop-tool" onclick="openSpecial('DROP')"></i>
             </div>
             <div class="input-container">
-                <input type="text" id="messageInput" placeholder="Write a message...">
+                <input type="text" id="messageInput" placeholder="Write a message..." autocomplete="off">
             </div>
             <button id="sendBtn" class="send-btn" onclick="sendMessage()"><i class="fa-solid fa-paper-plane"></i></button>
         </div>
     </div>
 
     <script>
-        const MAIN_SUPER_ADMIN = "SMAT100001"; 
+        const MAIN_SUPER_ADMIN = "SMAT100001";
         const MAX_MESSAGES = 250;
         let user = getMyInfo();
         let messages = JSON.parse(localStorage.getItem('smat_messages')) || [];
@@ -269,7 +346,7 @@
         let currentSpecialType = '';
 
         function getMyInfo() {
-            const id = localStorage.getItem('smatID') || "SMAT100001"; 
+            const id = localStorage.getItem('smatID') || "SMAT100001";
             let role = "USER";
             const admins = JSON.parse(localStorage.getItem('smat_admins')) || [];
             if (id === MAIN_SUPER_ADMIN) role = "SUPER_ADMIN";
@@ -278,7 +355,7 @@
         }
 
         async function translateToEnglish(text) {
-            if(!/[a-zA-Z]/.test(text)) return "[EN] " + text + " (Translated)"; 
+            if(!/[a-zA-Z]/.test(text)) return "[EN] " + text + " (Translated)";
             return text;
         }
 
@@ -292,8 +369,10 @@
             const currentTime = hours * 60 + minutes;
 
             const schedules = [
-                { start: 3*60+40, end: 3*60+50 }, { start: 7*60+50, end: 8*60 },
-                { start: 14*60+50, end: 15*60 }, { start: 19*60+50, end: 20*60 }
+                { start: 3*60+40, end: 3*60+50 },
+                { start: 7*60+50, end: 8*60 },
+                { start: 14*60+50, end: 15*60 },
+                { start: 19*60+50, end: 20*60 }
             ];
 
             let active = schedules.some(s => currentTime >= s.start && currentTime < s.end);
@@ -301,7 +380,9 @@
             if (active) {
                 timerDiv.style.display = 'block';
                 document.getElementById('jojoClock').innerText = bdTime.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit', second:'2-digit', hour12: true});
-            } else { timerDiv.style.display = 'none'; }
+            } else {
+                timerDiv.style.display = 'none';
+            }
 
             const targetHours = [8, 14, 20, 2];
             const bubble = document.getElementById('s-bubble');
@@ -311,14 +392,19 @@
             if (targetHours.includes(hours) && minutes === 0 && lastClaimedSlot !== currentSlotID) {
                 if (seconds < 15) { if (bubble.style.display !== 'block') showBubble(); } 
                 else { hideBubble(); }
-            } else { if (bubble.style.display === 'block' && (minutes > 0 || seconds >= 15)) hideBubble(); }
+            } else {
+                if (bubble.style.display === 'block' && (minutes > 0 || seconds >= 15)) hideBubble();
+            }
         }
         setInterval(updateTimers, 1000);
 
-        function showBubble() { 
-            const bubble = document.getElementById('s-bubble'); 
-            bubble.style.top = "30%"; bubble.style.left = "10%"; bubble.style.display = 'block'; 
+        function showBubble() {
+            const bubble = document.getElementById('s-bubble');
+            bubble.style.top = "30%";
+            bubble.style.left = "10%";
+            bubble.style.display = 'block';
         }
+
         function hideBubble() { document.getElementById('s-bubble').style.display = 'none'; }
 
         function popBubble() {
@@ -333,7 +419,9 @@
                 const msg = document.getElementById('pop-msg');
                 msg.style.display = 'block';
                 setTimeout(() => { msg.style.display = 'none'; }, 3000);
-            } else { alert("Requirement: 500 SMAT Daily Betting in Arena!"); }
+            } else {
+                alert("Requirement: 500 SMAT Daily Betting in Arena!");
+            }
         }
 
         function deleteMessage(mid) {
@@ -356,7 +444,10 @@
 
         function getCoinBalance(coin) { return parseFloat(localStorage.getItem(`${coin}_balance`)) || 0.00; }
         function updateCoinBalance(coin, amount) { localStorage.setItem(`${coin}_balance` , (getCoinBalance(coin) + amount).toFixed(6)); }
-        function updateModalBalance() { document.getElementById('modalBalInfo').innerText = getCoinBalance(document.getElementById('specialCoin').value).toFixed(4); }
+
+        function updateModalBalance() {
+            document.getElementById('modalBalInfo').innerText = getCoinBalance(document.getElementById('specialCoin').value).toFixed(4);
+        }
 
         function openSpecial(type) {
             currentSpecialType = type;
@@ -379,7 +470,7 @@
         function handleRainExecution(total, count, coin) {
             let activeIds = [...new Set(messages.map(m => m.id))].filter(id => id !== user.id).slice(0, count);
             if(activeIds.length === 0) return alert("No active users!");
-            activeIds.forEach(uId => { if(uId === user.id) updateCoinBalance(coin, total/activeIds.length); });
+            activeIds.forEach(uId => { updateCoinBalance(coin, total/activeIds.length); });
             sendSystemMessage(`🌧️ Rain: ${total} ${coin.toUpperCase()} shared among ${activeIds.length} users!`);
         }
 
@@ -405,17 +496,15 @@
         }
 
         function sendSystemMessage(text, dropId = null, total = 0, count = 0, coin = '') {
-            messages.push({
-                mid: Date.now().toString(), id: "SYSTEM", text, time: new Date().toLocaleTimeString(),
-                isSpecial: true, isCompleted: false, dropData: dropId ? {id: dropId, total, count, coin} : null
-            });
+            messages.push({ mid: Date.now().toString(), id: "SYSTEM", text, time: new Date().toLocaleTimeString(), isSpecial: true, isCompleted: false, dropData: dropId ? {id: dropId, total, count, coin} : null });
             localStorage.setItem('smat_messages', JSON.stringify(messages.slice(-MAX_MESSAGES)));
             renderChat();
         }
 
         function appendMention(id) {
             const input = document.getElementById('messageInput');
-            input.value += `@${id} `; input.focus();
+            input.value += `@${id} `;
+            input.focus();
         }
 
         function renderChat() {
@@ -430,12 +519,11 @@
                         <div class="avatar" style="background:${getAvatarColor(msg.id)}">${msg.id[0]}</div>
                         <div class="msg-content">
                             <div class="user-meta">
-                                <span class="user-name" onclick="appendMention('${msg.id}')">${msg.id}</span> 
+                                <span class="user-name" onclick="appendMention('${msg.id}')">${msg.id}</span>
                                 ${msg.id === MAIN_SUPER_ADMIN ? '<span class="badge badge-super">Owner</span>' : admins.includes(msg.id) ? '<span class="badge badge-admin">Admin</span>' : ''}
                                 <span class="timestamp">${msg.time}</span>
                             </div>
-                            <div class="bubble ${isMentionedMe ? 'mentioned-active' : ''} ${msg.isSpecial ? 'special-msg' : ''}" 
-                                 ${(user.role === 'ADMIN' || user.role === 'SUPER_ADMIN') ? `oncontextmenu="deleteMessage('${msg.mid}'); return false;"` : ''}>
+                            <div class="bubble ${isMentionedMe ? 'mentioned-active' : ''} ${msg.isSpecial ? 'special-msg' : ''}" ${(user.role === 'ADMIN' || user.role === 'SUPER_ADMIN') ? `oncontextmenu="deleteMessage('${msg.mid}'); return false;"` : ''}>
                                 ${msg.text.replace(/(@SMAT\d+)/g, '<span style="color:var(--primary); font-weight:bold;">$1</span>')}
                                 ${btn}
                             </div>
@@ -448,7 +536,8 @@
 
         function getAvatarColor(id) {
             if(id === "SYSTEM") return "#2b3139";
-            let hash = 0; for (let i = 0; i < id.length; i++) hash = id.charCodeAt(i) + ((hash << 5) - hash);
+            let hash = 0;
+            for (let i = 0; i < id.length; i++) hash = id.charCodeAt(i) + ((hash << 5) - hash);
             return `hsl(${Math.abs(hash) % 360}, 70%, 50%)`;
         }
 
@@ -459,7 +548,8 @@
             let translatedText = await translateToEnglish(rawText);
             messages.push({ mid: Date.now().toString(), id: user.id, text: translatedText, time: new Date().toLocaleTimeString() });
             localStorage.setItem('smat_messages', JSON.stringify(messages.slice(-MAX_MESSAGES)));
-            input.value = ''; renderChat();
+            input.value = '';
+            renderChat();
         }
 
         function openBanList() {
@@ -474,21 +564,28 @@
             let admins = JSON.parse(localStorage.getItem('smat_admins')) || [];
             if(!admins.includes(id)) admins.push(id);
             localStorage.setItem('smat_admins', JSON.stringify(admins));
-            alert("Success!"); closeModal('adminModal');
+            alert("Success!");
+            closeModal('adminModal');
         }
 
         function openModal(id) { document.getElementById(id).style.display = 'flex'; }
         function closeModal(id) { document.getElementById(id).style.display = 'none'; }
 
-        // --- অটো-স্ক্রল এবং কিবোর্ড ফিক্স ---
-        window.addEventListener('resize', () => {
-            if(document.activeElement.tagName === 'INPUT') {
-                window.setTimeout(() => {
+        // ================== অটো অ্যাডজাস্ট ও কীবোর্ড সমাধান ==================
+        function adjustLayoutForKeyboard() {
+            if (window.visualViewport) {
+                window.visualViewport.addEventListener('resize', () => {
+                    const viewportHeight = window.visualViewport.height;
+                    // বডি হাইট ভিউপোর্টের সমান করে দেওয়া হয়েছে কীবোর্ড ওপেন থাকলে
+                    document.body.style.height = viewportHeight + "px";
+                    
                     const container = document.getElementById('chatDisplay');
-                    container.scrollTop = container.scrollHeight;
-                }, 150);
+                    setTimeout(() => {
+                        container.scrollTop = container.scrollHeight;
+                    }, 50);
+                });
             }
-        });
+        }
 
         window.onload = () => {
             if (user.id === MAIN_SUPER_ADMIN) {
@@ -498,9 +595,12 @@
                 document.getElementById('banListBtn').style.display = 'block';
             }
             renderChat();
+            adjustLayoutForKeyboard(); 
         };
 
-        document.getElementById('messageInput').addEventListener("keypress", (e) => { if(e.key === "Enter") sendMessage(); });
+        document.getElementById('messageInput').addEventListener("keypress", (e) => {
+            if(e.key === "Enter") sendMessage();
+        });
     </script>
 </body>
 </html>
