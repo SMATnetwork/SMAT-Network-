@@ -4,17 +4,10 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>SMAT | Home </title>
-    
-    <!-- ==================== স্ক্রিপ্ট লোড: coin.js (মার্কেট ডাটা সোর্স) ==================== -->
     <script src="coin.js"></script>
-    
-    <!-- ==================== ফন্ট অসাম আইকন লাইব্রেরি লোড ==================== -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
-    
-    <!-- ==================== কাস্টম ফেভিকন (SMAT লোগো) ==================== -->
     <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><circle cx='50' cy='50' r='50' fill='%23f3ba2f'/><text x='50%25' y='55%25' text-anchor='middle' dy='.3em' fill='black' font-family='Courier New, monospace' font-weight='900' font-size='60'>S</text></svg>">
     
-    <!-- ==================== Firebase ইনিশিয়ালাইজেশন ও অথেনটিকেশন লজিক ==================== -->
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
         import { getAnalytics } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-analytics.js";
@@ -35,7 +28,7 @@
         const auth = getAuth(app);
         const db = getDatabase(app);
 
-        // ==================== লগইন স্ট্যাটাস রিয়েল-টাইম চেক ও UI আপডেট ====================
+        // লগইন স্ট্যাটাস এবং আইডি রিড করার রিয়েল-টাইম লজিক
         onAuthStateChanged(auth, (user) => {
             const loggedInContent = document.getElementById('loggedInContent');
             const loggedOutContent = document.getElementById('loggedOutContent');
@@ -50,7 +43,7 @@
                 if(loggedOutContent) loggedOutContent.style.display = 'none';
                 if(emailDisplay) emailDisplay.innerText = user.email;
 
-                // ==================== ডাটাবেজ থেকে ইউজারের SMAT ID রিয়েল-টাইমে টেনে আনা ====================
+                // সরাসরি ডাটাবেজ থেকে ইউজারের ইউনিক আইডি টেনে আনা
                 const userRef = ref(db, 'users/' + user.uid);
                 onValue(userRef, (snapshot) => {
                     const data = snapshot.val();
@@ -70,7 +63,6 @@
             }
         });
 
-        // ==================== লগআউট ফাংশন ====================
         window.logout = () => {
             signOut(auth).then(() => {
                 localStorage.clear();
@@ -81,7 +73,6 @@
         window.firebaseDB = db;
     </script>
 
-    <!-- ==================== পুরো ওয়েবপেজের CSS স্টাইলিং ==================== -->
     <style>
         :root {
             --primary: #f3ba2f;
@@ -94,21 +85,20 @@
             --border: #2b3139;
         }
 
-        /* ==================== গ্লোবাল রিসেট ও বেসিক স্টাইল ==================== */
         * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; outline: none; }
         body {
             margin: 0; background: var(--bg); color: var(--text-main);
             font-family: 'Segoe UI', Roboto, sans-serif; padding-bottom: 90px;
         }
 
-        /* ==================== হেডার স্টাইল ==================== */
+        /* Header */
         .header {
             padding: 15px; display: flex; align-items: center; justify-content: space-between;
             position: sticky; top: 0; background: var(--bg); z-index: 100;
         }
         .profile-trigger { font-size: 26px; color: var(--primary); cursor: pointer; }
 
-        /* ==================== সাইডবার স্টাইল ==================== */
+        /* Sidebar */
         .sidebar {
             position: fixed; top: 0; left: -100%; width: 85%; max-width: 320px; height: 100%;
             background: var(--card-bg); z-index: 4000; transition: 0.4s cubic-bezier(0.4, 0, 0.2, 1); padding: 25px;
@@ -138,14 +128,14 @@
             border-radius: 50%; animation: spin 0.8s linear infinite; margin-right: 8px;
         }
 
-        /* ==================== অ্যাসেট কার্ড স্টাইল ==================== */
+        /* Portfolio Card */
         .asset-card {
             margin: 15px; background: linear-gradient(135deg, #2b3139 0%, #1e2329 100%);
             padding: 25px; border-radius: 24px; border: 1px solid var(--border);
         }
         .asset-val { font-size: 32px; font-weight: 800; color: var(--primary); margin: 12px 0; }
 
-        /* ==================== নোটিস বার (মার্কি টেক্সট) ==================== */
+        /* Scrolling Notice */
         .notice-bar {
             margin: 0 15px; background: rgba(243, 186, 47, 0.05); border-radius: 8px;
             padding: 8px; display: flex; align-items: center; overflow: hidden;
@@ -161,19 +151,19 @@
             100% { transform: translateX(-100%); }
         }
 
-        /* ==================== মার্কেট ট্যাব স্টাইল ==================== */
+        /* Market Tabs */
         .market-tabs { display: flex; padding: 0 15px; gap: 20px; border-bottom: 1px solid var(--border); margin-top: 15px; }
         .tab { padding: 12px 5px; color: var(--text-sec); font-size: 15px; font-weight: 600; cursor: pointer; position: relative; }
         .tab.active { color: var(--primary); }
         .tab.active::after { content: ''; position: absolute; bottom: 0; left: 0; width: 100%; height: 3px; background: var(--primary); border-radius: 10px; }
 
-        /* ==================== কয়েন লিস্ট স্টাইল ==================== */
+        /* Coin List */
         .coin-list { padding: 5px 15px; }
         .coin-row { display: flex; justify-content: space-between; align-items: center; padding: 18px 0; border-bottom: 1px solid rgba(255,255,255,0.03); cursor: pointer; }
         .coin-icon { width: 40px; height: 40px; border-radius: 50%; object-fit: cover; }
         .percent-box { display: inline-block; padding: 6px 12px; border-radius: 8px; font-weight: 700; font-size: 13px; min-width: 75px; margin-top: 4px; text-align: center;}
 
-        /* ==================== ফুটার নেভিগেশন স্টাইল ==================== */
+        /* Footer */
         .footer { position: fixed; bottom: 0; width: 100%; height: 75px; background: #181a20; display: flex; justify-content: space-around; align-items: center; border-top: 1px solid #2b3139; z-index: 3000; }
         .f-nav { text-decoration: none; color: var(--text-sec); text-align: center; font-size: 10px; flex: 1; display: flex; flex-direction: column; align-items: center; }
         .f-nav i { font-size: 22px; margin-bottom: 5px; }
@@ -188,22 +178,19 @@
 
         @media (max-width: 400px) { .asset-val { font-size: 26px; } .tab { font-size: 13px; } }
         
-        /* ==================== চ্যাট আইকন স্টাইল ==================== */
+        /* Chat Icon Style */
         .chat-trigger { font-size: 22px; color: var(--text-sec); cursor: pointer; text-decoration: none; display: flex; align-items: center; }
         .chat-trigger:hover { color: var(--primary); }
     </style>
 </head>
 <body>
 
-    <!-- ==================== সাইডবার ওভারলে (ক্লিক করে বন্ধ করার জন্য) ==================== -->
     <div class="sidebar-overlay" id="overlay" onclick="toggleSidebar()"></div>
 
-    <!-- ==================== পুরো সাইডবার প্রোফাইল সেকশন ==================== -->
     <div class="sidebar" id="sidebar">
         <h3 style="margin: 0 0 20px 0; font-size: 20px;">Profile</h3>
         
         <div id="loggedInContent">
-            <!-- ==================== ইউজার ইনফো ও SMAT ID ডিসপ্লে ==================== -->
             <div class="user-info">
                 <span style="font-size:12px; color:var(--text-sec)">Account Email</span>
                 <div id="emailDisplay" style="font-weight:600; margin-top:4px;">Loading...</div>
@@ -214,7 +201,6 @@
                 </div>
             </div>
 
-            <!-- ==================== KYC ভেরিফিকেশন সেকশন ==================== -->
             <div class="kyc-section">
                 <div style="display:flex; justify-content:space-between; align-items:center">
                     <span style="font-weight:bold; font-size:14px">Identity Verification</span>
@@ -237,11 +223,9 @@
                 </div>
             </div>
             
-            <!-- ==================== লগআউট বাটন ==================== -->
             <p style="margin-top:40px; text-align:center; color:#ff4d4d; font-size:14px; cursor:pointer" onclick="logout()">Secure Logout</p>
         </div>
 
-        <!-- ==================== লগআউট অবস্থায় দেখানো কনটেন্ট ==================== -->
         <div id="loggedOutContent" style="display:none; text-align: center; margin-top: 50px;">
             <i class="fa-solid fa-user-lock" style="font-size: 50px; color: var(--text-sec);"></i>
             <p style="color: var(--text-sec); margin-top: 15px;">Please login to see your profile and assets.</p>
@@ -249,7 +233,6 @@
         </div>
     </div>
 
-    <!-- ==================== টপ হেডার ==================== -->
     <div class="header">
         <i class="fa-solid fa-circle-user profile-trigger" onclick="toggleSidebar()"></i>
         <div style="font-weight: 900; font-size: 20px;">SMAT <span style="color:var(--primary)">Exchange</span></div>
@@ -263,7 +246,6 @@
         </div>
     </div>
 
-    <!-- ==================== টোটাল অ্যাসেট কার্ড ==================== -->
     <div class="asset-card">
         <div style="font-size: 14px; color: var(--text-sec);">Total Assets <i class="fa-solid fa-eye-slash" style="font-size:12px"></i></div>
         <div class="asset-val">$ <span id="totalValue">0.00</span></div>
@@ -273,7 +255,6 @@
         </div>
     </div>
 
-    <!-- ==================== স্ক্রলিং নোটিস বার ==================== -->
     <div class="notice-bar">
         <i class="fa-solid fa-bullhorn"></i>
         <div class="scrolling-text">
@@ -281,7 +262,6 @@
         </div>
     </div>
 
-    <!-- ==================== মার্কেট ট্যাব (Hot, Gainers, Losers, New) ==================== -->
     <div class="market-tabs">
         <div class="tab active" id="tab-hot" onclick="switchTab(this, 'hot')">Hot</div>
         <div class="tab" id="tab-gainer" onclick="switchTab(this, 'gainer')">Gainers</div>
@@ -289,10 +269,8 @@
         <div class="tab" id="tab-new" onclick="switchTab(this, 'new')">New</div>
     </div>
 
-    <!-- ==================== কয়েন লিস্ট কনটেইনার ==================== -->
     <div class="coin-list" id="coinContainer"></div>
 
-    <!-- ==================== ফুটার নেভিগেশন ==================== -->
     <footer class="footer">
         <a href="home.html" class="f-nav active"><i class="fas fa-home"></i>Home</a>
         <a href="Trade.html" class="f-nav" onclick="checkAuth(event)"><i class="fas fa-chart-line"></i>Trade</a>
@@ -304,12 +282,10 @@
         <a href="Wallet.html" class="f-nav" onclick="checkAuth(event)"><i class="fas fa-wallet"></i>Wallet</a>
     </footer>
 
-    <!-- ==================== মেইন জাভাস্ক্রিপ্ট লজিক ==================== -->
     <script>
         let currentActiveTab = 'hot';
         let isUserLoggedIn = localStorage.getItem('isLoggedIn') === 'true';
 
-        // ==================== অথেনটিকেশন চেক (লগইন না থাকলে ব্লক) ====================
         function checkAuth(e) {
             if(!isUserLoggedIn) {
                 if(e) e.preventDefault();
@@ -320,14 +296,12 @@
             return true;
         }
 
-        // ==================== সাইডবার টগল ফাংশন ====================
         function toggleSidebar() {
             document.getElementById('sidebar').classList.toggle('active');
             document.getElementById('overlay').style.display = 
                 document.getElementById('sidebar').classList.contains('active') ? 'block' : 'none';
         }
 
-        // ==================== ট্যাব সুইচ ও কয়েন লিস্ট রিফ্রেশ ====================
         function switchTab(element, category) {
             currentActiveTab = category;
             document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
@@ -335,7 +309,6 @@
             renderCoins(category);
         }
 
-        // ==================== কয়েন লিস্ট রেন্ডার ফাংশন ====================
         function renderCoins(filter = 'hot') {
             const container = document.getElementById('coinContainer');
             if (!container) return;
@@ -355,7 +328,7 @@
                 htmlContent += `
                     <div class="coin-row" onclick="if(checkAuth(event)) window.location.href='Trade.html?coin=${coin.sym}'">
                         <div style="display:flex; align-items:center; gap:12px;">
-                            <img src="assets/logos/\( {coin.sym.toLowerCase()}.png" class="coin-icon" onerror="this.src='https://via.placeholder.com/40?text= \){coin.sym[0]}'">
+                            <img src="assets/logos/${coin.sym.toLowerCase()}.png" class="coin-icon" onerror="this.src='https://via.placeholder.com/40?text=${coin.sym[0]}'">
                             <div>
                                 <div style="font-weight:bold">${coin.sym.toUpperCase()}</div>
                                 <div style="font-size:12px; color:var(--text-sec)">${coin.name}</div>
@@ -363,8 +336,8 @@
                         </div>
                         <div style="text-align:right">
                             <div style="font-weight:bold; font-size:16px">$${currentPrice.toLocaleString()}</div>
-                            <div class="percent-box" style="background:\( {isUp ? 'rgba(14, 203, 129, 0.15)' : 'rgba(246, 70, 93, 0.15)'}; color: \){isUp ? 'var(--up)' : 'var(--down)'}">
-                                \( {isUp ? '+' : '-'} \){change}%
+                            <div class="percent-box" style="background:${isUp ? 'rgba(14, 203, 129, 0.15)' : 'rgba(246, 70, 93, 0.15)'}; color:${isUp ? 'var(--up)' : 'var(--down)'}">
+                                ${isUp ? '+' : '-'}${change}%
                             </div>
                         </div>
                     </div>
@@ -373,7 +346,6 @@
             container.innerHTML = htmlContent;
         }
 
-        // ==================== KYC সাবমিট হ্যান্ডলার ====================
         function handleKYC() {
             const nid = document.getElementById('nidNumber').value;
             if(nid.length < 5) return alert("Please enter valid NID.");
@@ -381,7 +353,6 @@
             updateKYCUI();
         }
 
-        // ==================== KYC UI আপডেট ফাংশন ====================
         function updateKYCUI() {
             if(localStorage.getItem('kycStatus') === 'pending') {
                 const form = document.getElementById('kycForm');
@@ -393,7 +364,6 @@
             }
         }
 
-        // ==================== পেজ লোড হওয়ার পর ইনিশিয়াল রেন্ডার ও অটো রিফ্রেশ ====================
         window.onload = () => {
             renderCoins('hot');
             setInterval(() => { renderCoins(currentActiveTab); }, 5000);
