@@ -16,80 +16,200 @@
         }
 
         * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; margin: 0; padding: 0; }
-        body { background: var(--bg); color: var(--text-main); font-family: 'Inter', sans-serif; display: flex; flex-direction: column; height: 100vh; height: 100dvh; overflow: hidden; width: 100%; position: relative; }
-
-        /* Pinned Section */
-        #pinnedContainer {
-            background: var(--card-bg); border-bottom: 1px solid var(--primary);
-            padding: 8px 15px; display: none; align-items: center; justify-content: space-between;
-            z-index: 101; flex-shrink: 0; animation: slideDown 0.3s ease;
+        
+        body {
+            background: var(--bg); color: var(--text-main);
+            font-family: 'Inter', 'Segoe UI', Roboto, sans-serif;
+            display: flex; flex-direction: column; 
+            height: 100vh; height: 100dvh; 
+            overflow: hidden; width: 100%;
+            position: relative;
         }
-        @keyframes slideDown { from { transform: translateY(-100%); } to { transform: translateY(0); } }
 
-        .chat-header { padding: 12px 15px; background: var(--card-bg); border-bottom: 2px solid var(--primary); display: flex; justify-content: space-between; align-items: center; z-index: 100; flex-shrink: 0; }
+        /* --- PINNED NOTICE DESIGN --- */
+        #pinnedNotice {
+            background: #1e2329; border-bottom: 1px solid var(--primary);
+            padding: 8px 15px; display: none; align-items: center; 
+            gap: 10px; z-index: 101; flex-shrink: 0; cursor: pointer;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.3);
+        }
+        #pinnedNotice i { color: var(--primary); font-size: 14px; }
+        #pinnedContent { font-size: 12px; color: #fff; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; flex: 1; }
+
+        .chat-header {
+            padding: 12px 15px; background: var(--card-bg); border-bottom: 2px solid var(--primary);
+            display: flex; justify-content: space-between; align-items: center; 
+            box-shadow: 0 4px 15px rgba(0,0,0,0.5); z-index: 100; flex-shrink: 0;
+        }
+        .header-title { font-size: 18px; font-weight: 900; letter-spacing: 1px; color: var(--primary); }
+
+        #jojoTimer {
+            position: absolute; top: 65px; right: 15px;
+            background: rgba(30, 35, 41, 0.95); border: 1px solid var(--primary);
+            padding: 6px 12px; border-radius: 8px; font-size: 12px;
+            font-weight: 900; color: var(--primary); display: none;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.5); z-index: 999;
+        }
+
+        #s-bubble { 
+            position: fixed; width: 65px; height: 65px; z-index: 9999; cursor: pointer; display: none; 
+            animation: floatBubble 10s ease-in-out infinite; 
+        }
+        .s-logo-wrapper { 
+            position: relative; width: 100%; height: 100%; background: radial-gradient(circle, #f0b90b 0%, #cc9900 100%); 
+            border-radius: 50%; display: flex; align-items: center; justify-content: center; 
+            border: 2px solid rgba(255, 255, 255, 0.2); box-shadow: 0 0 15px rgba(240, 185, 11, 0.5); 
+        }    
+        .s-logo-inner { font-weight: 900; font-size: 30px; color: white; }
+        @keyframes floatBubble { 0%, 100% { transform: translate(0, 0); } 25% { transform: translate(50vw, 15vh); } 50% { transform: translate(5vw, 60vh); } 75% { transform: translate(40vw, 40vh); } }
         
-        #chatDisplay { flex: 1; overflow-y: auto; padding: 15px; display: flex; flex-direction: column; gap: 15px; background: linear-gradient(to bottom, #0b0e11, #161a1e); scroll-behavior: smooth; }
+        .pop-text { 
+            position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); 
+            background: #f0b90b; color: black; padding: 20px; border-radius: 15px; 
+            font-weight: 900; text-align: center; z-index: 10000; display: none; 
+            box-shadow: 0 0 30px rgba(240, 185, 11, 0.5); 
+        }
 
-        .msg-row { display: flex; gap: 12px; animation: slideUp 0.3s ease-out; width: 100%; }
-        .avatar { width: 40px; height: 40px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: 900; color: #fff; flex-shrink: 0; }
+        #chatDisplay {
+            flex: 1; overflow-y: auto; padding: 15px;
+            display: flex; flex-direction: column; justify-content: flex-start;
+            gap: 15px; background: linear-gradient(to bottom, #0b0e11, #161a1e);
+            scroll-behavior: smooth; -webkit-overflow-scrolling: touch;
+        }
+
+        .msg-row { display: flex; gap: 12px; animation: slideUp 0.3s ease-out; position: relative; width: 100%; flex-shrink: 0; }
+        @keyframes slideUp { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+
+        .avatar {
+            width: 40px; height: 40px; border-radius: 50%;
+            display: flex; align-items: center; justify-content: center;
+            font-weight: 900; color: #fff; border: 1px solid var(--chat-bubble);
+            flex-shrink: 0; font-size: 16px;
+        }
+
+        .msg-content { max-width: 85%; }
+        .user-meta { display: flex; align-items: center; gap: 8px; margin-bottom: 4px; flex-wrap: wrap; }
+        .user-name { font-size: 13px; font-weight: 800; cursor: pointer; }
+        .timestamp { font-size: 9px; color: var(--text-sec); font-weight: 600; }
         
-        .bubble { background: var(--chat-bubble); padding: 10px 14px; border-radius: 5px 15px 15px 15px; font-size: 14px; position: relative; max-width: 85%; }
-        .chat-img { max-width: 100%; border-radius: 8px; margin-top: 5px; display: block; border: 1px solid #444; }
+        .badge { font-size: 9px; padding: 1px 6px; border-radius: 4px; font-weight: 900; text-transform: uppercase; }
+        .badge-admin { background: rgba(14, 203, 129, 0.2); color: var(--admin-color); border: 1px solid var(--admin-color); }
+        .badge-super { background: rgba(243, 186, 47, 0.2); color: var(--primary); border: 1px solid var(--primary); }
 
-        /* Input Area Fixes */
-        .input-area { padding: 10px 15px; background: var(--card-bg); border-top: 1px solid var(--chat-bubble); z-index: 100; padding-bottom: max(10px, env(safe-area-inset-bottom)); }
-        .input-box-wrapper { display: flex; gap: 8px; align-items: center; }
-        .input-container { flex: 1; display: flex; background: #181a20; border-radius: 25px; padding: 0 12px; align-items: center; border: 1px solid #363c44; }
-        #messageInput { flex: 1; background: transparent; border: none; padding: 10px 5px; color: white; outline: none; }
+        .bubble {
+            background: var(--chat-bubble); padding: 10px 14px;
+            border-radius: 5px 15px 15px 15px; font-size: 14px;
+            line-height: 1.5; font-weight: 500; color: #f0f0f0;
+            box-shadow: 2px 2px 8px rgba(0,0,0,0.2);
+            word-break: break-word; position: relative;
+        }
+        .chat-image { max-width: 100%; border-radius: 8px; margin-top: 5px; display: block; border: 1px solid #444; }
+
+        .bubble.mentioned-active { border-left: 3px solid var(--mention-green); background: rgba(14, 203, 129, 0.1); }
+        .special-msg { border: 1px solid var(--rain-blue); background: rgba(0, 210, 255, 0.05) !important; }
+
+        .input-area {
+            padding: 10px 15px; background: var(--card-bg); 
+            border-top: 1px solid var(--chat-bubble); flex-shrink: 0;
+            z-index: 100; padding-bottom: max(10px, env(safe-area-inset-bottom));
+        }
+        .input-box-wrapper { display: flex; gap: 8px; align-items: center; width: 100%; }
         
-        .admin-only-tool { display: none; color: var(--text-sec); cursor: pointer; margin-right: 8px; font-size: 18px; }
-        .send-btn { background: var(--primary); border: none; width: 42px; height: 42px; border-radius: 12px; color: #000; cursor: pointer; display: flex; align-items: center; justify-content: center; }
+        .special-tools { display: flex; gap: 10px; flex-shrink: 0; }
+        .tool-btn { font-size: 18px; cursor: pointer; transition: 0.2s; }
+        .rain-tool { color: var(--rain-blue); }
+        .drop-tool { color: var(--drop-cyan); }
+        #photoBtn { color: #848e9c; display: none; }
 
-        /* User Profile Modal */
-        .profile-card { text-align: center; }
-        .profile-card .avatar-lg { width: 70px; height: 70px; border-radius: 50%; margin: 0 auto 15px; display: flex; align-items: center; justify-content: center; font-size: 30px; font-weight: 900; color: white; }
-        .action-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 20px; }
-        .action-btn { padding: 10px; border: none; border-radius: 8px; font-weight: 800; cursor: pointer; }
+        .input-container {
+            flex: 1; display: flex; background: #181a20; border-radius: 25px; 
+            padding: 0 10px; align-items: center; border: 1px solid #363c44;
+        }
+        #messageInput {
+            width: 100%; background: transparent; border: none; padding: 10px 5px;
+            color: white; font-weight: 500; font-size: 16px; outline: none;
+        }
 
-        /* Floating Components */
-        #s-bubble { position: fixed; width: 65px; height: 65px; z-index: 9999; cursor: pointer; display: none; animation: floatBubble 10s ease-in-out infinite; }
-        @keyframes floatBubble { 0%, 100% { transform: translate(0, 0); } 50% { transform: translate(40vw, 60vh); } }
-        .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.9); z-index: 5000; justify-content: center; align-items: center; }
-        .modal-box { background: var(--card-bg); padding: 20px; border-radius: 15px; width: 90%; max-width: 380px; border: 1px solid var(--primary); }
+        .send-btn {
+            background: var(--primary); border: none; width: 40px; height: 40px;
+            border-radius: 10px; color: #000; cursor: pointer; font-size: 16px;
+            display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+        }
+
+        /* Profile Modal Specific */
+        #profileModal .modal-box { text-align: center; }
+        #profileAvatar { width: 70px; height: 70px; border-radius: 50%; margin: 0 auto 15px; font-size: 30px; display: flex; align-items: center; justify-content: center; font-weight: 900; }
+        #profileName { font-size: 18px; font-weight: 900; color: #fff; margin-bottom: 5px; }
+        #profileRole { font-size: 12px; color: var(--text-sec); margin-bottom: 20px; }
+        .admin-action-btns { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+        .action-btn { padding: 10px; border-radius: 8px; font-weight: 900; cursor: pointer; border: none; font-size: 12px; }
+
+        .modal {
+            display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.9); z-index: 5000; justify-content: center; align-items: center;
+        }
+        .modal-box {
+            background: var(--card-bg); padding: 20px; border-radius: 15px;
+            width: 90%; max-width: 380px; border: 1px solid var(--primary);
+            max-height: 80vh; overflow-y: auto;
+        }
+        
+        .modal-box input, .modal-box select {
+            width: 100%; padding: 10px; margin: 8px 0; background: #181a20;
+            border: 1px solid var(--chat-bubble); color: white; border-radius: 8px; outline: none;
+        }
+
+        .claim-btn { background: var(--drop-cyan); border: none; padding: 8px; width: 100%; border-radius: 6px; color: #000; font-weight: 900; margin-top: 8px; cursor: pointer; }
+        .claim-btn:disabled { background: #363c44; color: #848e9c; cursor: not-allowed; }
+
+        .btn-panel { padding: 4px 8px; border-radius: 6px; font-weight: 900; font-size: 10px; cursor: pointer; border: none; }
     </style>
 </head>
 <body>
 
-    <div id="pinnedContainer">
-        <div style="display: flex; align-items: center; gap: 10px; overflow: hidden;">
-            <i class="fa-solid fa-thumbtack" style="color: var(--primary); transform: rotate(-45deg);"></i>
-            <div id="pinnedText" style="font-size: 12px; color: white; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">No pinned message</div>
-        </div>
-        <i class="fa-solid fa-circle-xmark" id="unpinBtn" style="color: var(--text-sec); cursor: pointer; display: none;" onclick="unpinMessage()"></i>
+    <div id="pinnedNotice" onclick="scrollToPinned()">
+        <i class="fa-solid fa-thumbtack"></i>
+        <div id="pinnedContent">No pinned message</div>
+        <i class="fa-solid fa-xmark" id="unpinIcon" style="font-size: 12px; display:none;" onclick="unpinAction(event)"></i>
     </div>
 
-    <div id="s-bubble" onclick="popBubble()"><div style="background:radial-gradient(circle, #f0b90b, #cc9900); width:100%; height:100%; border-radius:50%; display:flex; align-items:center; justify-content:center; color:white; font-weight:900; font-size:30px; box-shadow:0 0 15px rgba(240,185,11,0.5);">S</div></div>
+    <div id="s-bubble" onclick="popBubble()">
+        <div class="s-logo-wrapper"><span class="s-logo-inner">S</span></div>
+    </div>
+
+    <div id="pop-msg" class="pop-text">
+        <div style="font-size: 20px;">"I'm Jojo"</div>
+        <div style="font-size: 14px;">+1.00 SMAT </div>
+    </div>
+
+    <div id="jojoTimer">Jojo Time: <span id="jojoClock">00:00:00</span></div>
 
     <div id="profileModal" class="modal">
-        <div class="modal-box profile-card">
-            <div id="p-avatar" class="avatar-lg"></div>
-            <h3 id="p-id" style="color:white; margin-bottom: 5px;"></h3>
-            <p id="p-role" style="font-size: 12px; color: var(--text-sec);"></p>
-            <div class="action-grid" id="adminActions" style="display:none;">
-                <button class="action-btn" style="background: var(--primary); color: black;" id="pinActionBtn">PIN</button>
-                <button class="action-btn" style="background: var(--danger); color: white;" id="banActionBtn">BAN</button>
-                <button class="action-btn" style="background: var(--chat-bubble); color: white; grid-column: span 2;" id="delActionBtn">DELETE MSG</button>
+        <div class="modal-box">
+            <div id="profileAvatar"></div>
+            <div id="profileName"></div>
+            <div id="profileRole"></div>
+            <div id="adminActions" class="admin-action-btns" style="display:none;">
+                <button class="action-btn" style="background:var(--primary); color:black;" id="pinMsgBtn">PIN MSG</button>
+                <button class="action-btn" style="background:var(--danger); color:white;" id="banUserBtn">BAN USER</button>
+                <button class="action-btn" style="background:var(--admin-color); color:black; grid-column: span 2;" id="delMsgBtn">DELETE MESSAGE</button>
             </div>
             <button onclick="closeModal('profileModal')" style="width:100%; margin-top:15px; background:transparent; border:none; color:var(--text-sec);">Close</button>
         </div>
     </div>
 
+    <div id="leaderboardModal" class="modal"><div class="modal-box"><h2 style="color:var(--primary); text-align: center; font-size: 18px;"><i class="fa-solid fa-trophy"></i> Today's Earners</h2><div id="leaderboardBody"></div><button onclick="closeModal('leaderboardModal')" style="width:100%; margin-top:15px; background:var(--primary); border:none; padding:10px; border-radius:8px; font-weight: 800;">CLOSE</button></div></div>
+    <div id="rainModal" class="modal"><div class="modal-box"><h2 id="specialModalTitle" style="text-align: center; font-size: 18px;"></h2><p style="font-size: 11px; color: var(--text-sec); text-align: center;">Balance: <span id="modalBalInfo">0.00</span></p><select id="specialCoin"><option value="usdt">USDT</option><option value="trx">TRX</option><option value="smat">SMAT</option><option value="bnb">BNB</option></select><input type="number" id="specialAmount" placeholder="Total Amount"><input type="number" id="specialUsers" placeholder="Number of Users"><button id="specialSubmitBtn" onclick="processSpecial()" style="width:100%; margin-top:15px; border:none; padding:12px; border-radius:8px; font-weight: 900; color: #000; background: var(--primary);">SEND</button><button onclick="closeModal('rainModal')" style="width:100%; margin-top:10px; background:transparent; border:none; color:var(--text-sec);">Cancel</button></div></div>
+    <div id="adminModal" class="modal"><div class="modal-box"><h2 style="color:var(--primary); font-size: 18px;"><i class="fa-solid fa-user-shield"></i> Admin Panel</h2><input type="text" id="targetUserID" placeholder="Admin Appointment"><button onclick="makeAdmin()" style="width:100%; padding:12px; background:var(--primary); border:none; font-weight:900; border-radius:8px;">PROMOTE</button><button onclick="closeModal('adminModal')" style="width:100%; margin-top:10px; background:transparent; border:none; color:var(--text-sec);">Close</button></div></div>
+    <div id="banListModal" class="modal"><div class="modal-box"><h2 style="color:var(--danger); font-size: 18px;"><i class="fa-solid fa-gavel"></i> Restriction List</h2><div id="banListContent"></div><button onclick="closeModal('banListModal')" style="width:100%; margin-top:15px; background:var(--chat-bubble); border:none; color:white; padding:10px; border-radius:8px;">Close</button></div></div>
+
     <div class="chat-header">
         <div class="header-title">Global 💬 English</div>
         <div style="display:flex; gap:6px; align-items:center;">
             <i class="fa-solid fa-crown" style="color: var(--gold); cursor: pointer; font-size: 18px;" onclick="openLeaderboard()"></i>
-            <button id="superAdminBtn" class="btn-panel" style="display:none; background: var(--primary); color: black; font-size: 10px; padding: 4px; border:none; border-radius:4px;" onclick="openModal('adminModal')">Super Admin</button>
-            <a href="home.html" style="color:var(--text-sec); font-size: 20px;"><i class="fa-solid fa-circle-xmark"></i></a>
+            <button id="banListBtn" class="btn-panel" style="display:none; background: var(--danger); color: white;" onclick="openBanList()">Mute List</button>
+            <button id="superAdminBtn" class="btn-panel" style="display:none; background: var(--primary); color: black;" onclick="openModal('adminModal')">Super Admin</button>
+            <a href="home.html" style="color:var(--text-sec); font-size: 20px; margin-left: 2px;"><i class="fa-solid fa-circle-xmark"></i></a>
         </div>
     </div>
 
@@ -98,11 +218,12 @@
     <div class="input-area">
         <div class="input-box-wrapper">
             <div class="special-tools">
-                <i class="fa-solid fa-cloud-showers-heavy tool-btn rain-tool" style="color:var(--rain-blue); cursor:pointer;" onclick="openSpecial('RAIN')"></i>
+                <i class="fa-solid fa-cloud-showers-heavy tool-btn rain-tool" onclick="openSpecial('RAIN')"></i>
+                <i class="fa-solid fa-droplet tool-btn drop-tool" onclick="openSpecial('DROP')"></i>
             </div>
             <div class="input-container">
-                <label for="imgUpload" class="admin-only-tool" id="imgToolBtn"><i class="fa-solid fa-image"></i></label>
-                <input type="file" id="imgUpload" style="display:none;" accept="image/*" onchange="handleImage(this)">
+                <i class="fa-solid fa-image tool-btn" id="photoBtn" onclick="triggerUpload()"></i>
+                <input type="file" id="imageInput" style="display:none;" accept="image/*" onchange="handleImage(this)">
                 <input type="text" id="messageInput" placeholder="Write a message..." autocomplete="off">
             </div>
             <button id="sendBtn" class="send-btn" onclick="sendMessage()"><i class="fa-solid fa-paper-plane"></i></button>
@@ -113,12 +234,10 @@
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
         import { getDatabase, ref, push, onValue, set, update, remove, limitToLast, query, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
 
-        // Your Firebase Config (Keep it exactly as is)
         const firebaseConfig = {
             apiKey: "AIzaSyAMxtJedkehhxJRMPZLjhpKHqneHEWsGlE",
             authDomain: "smat-exchange.firebaseapp.com",
             projectId: "smat-exchange",
-            databaseURL: "https://smat-exchange-default-rtdb.firebaseio.com",
             storageBucket: "smat-exchange.firebasestorage.app",
             messagingSenderId: "836334569396",
             appId: "1:836334569396:web:679effe640b3453412d4e1"
@@ -127,127 +246,194 @@
         const app = initializeApp(firebaseConfig);
         const db = getDatabase(app);
         const messagesRef = ref(db, "global_messages");
-        const pinRef = ref(db, "pinned_notice");
         const adminsRef = ref(db, "smat_admins");
         const restrictedRef = ref(db, "smat_restricted");
+        const pinRef = ref(db, "smat_pin");
 
         const MAIN_SUPER_ADMIN = "SMAT100001";
+        const MAX_MESSAGES = 250;
+        
         let user = { id: localStorage.getItem('smatID') || "SMAT100001", role: "USER" };
+        let currentMessages = [];
         let adminsList = [];
         let restrictedList = [];
 
-        // Admin Sync
-        onValue(adminsRef, (snap) => {
+        // ADMIN SYNC
+        onValue(adminsRef, (snap) => { 
             adminsList = snap.val() ? Object.values(snap.val()) : [];
-            if(user.id === MAIN_SUPER_ADMIN) user.role = "SUPER_ADMIN";
-            else if(adminsList.includes(user.id)) user.role = "ADMIN";
-            
-            if(user.role !== "USER") {
-                document.getElementById('imgToolBtn').style.display = 'block';
-                if(user.role === "SUPER_ADMIN") document.getElementById('superAdminBtn').style.display = 'block';
-            }
+            updateMyRole();
+        });
+        onValue(restrictedRef, (snap) => {
+            restrictedList = snap.val() ? Object.values(snap.val()) : [];
         });
 
-        // Pin Message Sync
+        // PIN SYNC
         onValue(pinRef, (snap) => {
             const data = snap.val();
-            const container = document.getElementById('pinnedContainer');
-            if(data) {
-                document.getElementById('pinnedText').innerText = data.text;
-                container.style.display = 'flex';
-                if(user.role !== "USER") document.getElementById('unpinBtn').style.display = 'block';
+            const bar = document.getElementById('pinnedNotice');
+            if(data && data.text) {
+                document.getElementById('pinnedContent').innerText = data.text;
+                bar.style.display = 'flex';
+                document.getElementById('unpinIcon').style.display = (user.role === 'ADMIN' || user.role === 'SUPER_ADMIN') ? 'block' : 'none';
             } else {
-                container.style.display = 'none';
+                bar.style.display = 'none';
             }
         });
 
-        // Unique Color Generator
-        function getIDColor(id) {
-            let hash = 0;
-            for (let i = 0; i < id.length; i++) hash = id.charCodeAt(i) + ((hash << 5) - hash);
-            return `hsl(${Math.abs(hash) % 360}, 75%, 65%)`;
+        function updateMyRole() {
+            if (user.id === MAIN_SUPER_ADMIN) {
+                user.role = "SUPER_ADMIN";
+                document.getElementById('superAdminBtn').style.display = 'block';
+                document.getElementById('banListBtn').style.display = 'block';
+                document.getElementById('photoBtn').style.display = 'block';
+            } else if (adminsList.includes(user.id)) {
+                user.role = "ADMIN";
+                document.getElementById('banListBtn').style.display = 'block';
+                document.getElementById('photoBtn').style.display = 'block';
+            }
+            renderChat();
         }
 
-        window.sendMessage = async function(imgData = null) {
-            const input = document.getElementById('messageInput');
-            let text = input.value.trim();
-            if(!text && !imgData) return;
-            if(restrictedList.includes(user.id)) return alert("Muted!");
+        // UNIQUE ID COLOR GENERATOR
+        function getIDColor(id) {
+            if(id === "SYSTEM") return "#0ecb81";
+            if(id === MAIN_SUPER_ADMIN || adminsList.includes(id)) return "yellow";
+            let hash = 0;
+            for (let i = 0; i < id.length; i++) hash = id.charCodeAt(i) + ((hash << 5) - hash);
+            return `hsl(${Math.abs(hash) % 360}, 80%, 70%)`;
+        }
 
-            push(messagesRef, {
-                id: user.id,
-                text: text,
-                image: imgData,
-                time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
-                timestamp: serverTimestamp(),
-                role: user.role
-            });
-            input.value = '';
-        };
-
+        // PHOTO UPLOAD LOGIC
+        window.triggerUpload = () => document.getElementById('imageInput').click();
         window.handleImage = function(input) {
             const file = input.files[0];
-            if (file) {
+            if(file) {
                 const reader = new FileReader();
                 reader.onload = (e) => sendMessage(e.target.result);
                 reader.readAsDataURL(file);
             }
         };
 
-        window.showProfile = function(uid, role, mid, text) {
-            document.getElementById('p-id').innerText = uid;
-            document.getElementById('p-id').style.color = getIDColor(uid);
-            document.getElementById('p-avatar').innerText = uid[0];
-            document.getElementById('p-avatar').style.backgroundColor = getIDColor(uid);
-            document.getElementById('p-role').innerText = role;
+        const q = query(messagesRef, limitToLast(MAX_MESSAGES));
+        onValue(q, (snapshot) => {
+            currentMessages = [];
+            snapshot.forEach((child) => {
+                currentMessages.push({ mid: child.key, ...child.val() });
+            });
+            renderChat();
+        });
+
+        window.sendMessage = async function(imgData = null) {
+            if (restrictedList.includes(user.id)) return alert("You are restricted!");
+            const input = document.getElementById('messageInput');
+            let rawText = input.value.trim();
+            if(!rawText && !imgData) return;
             
-            const adminActions = document.getElementById('adminActions');
-            if(user.role !== "USER" && uid !== "SYSTEM") {
-                adminActions.style.display = 'grid';
-                document.getElementById('pinActionBtn').onclick = () => { set(pinRef, { text, uid }); closeModal('profileModal'); };
-                document.getElementById('banActionBtn').onclick = () => { if(uid !== MAIN_SUPER_ADMIN) set(ref(db, 'smat_restricted/'+uid), uid); closeModal('profileModal'); };
-                document.getElementById('delActionBtn').onclick = () => { remove(ref(db, 'global_messages/'+mid)); closeModal('profileModal'); };
-            } else {
-                adminActions.style.display = 'none';
-            }
-            openModal('profileModal');
-        };
+            push(messagesRef, {
+                id: user.id,
+                text: rawText,
+                image: imgData,
+                time: new Date().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'}),
+                timestamp: serverTimestamp(),
+                role: user.role
+            });
+            input.value = '';
+            document.getElementById('imageInput').value = '';
+        }
 
-        window.unpinMessage = () => remove(pinRef);
-
-        onValue(query(messagesRef, limitToLast(100)), (snap) => {
+        window.renderChat = function() {
             const container = document.getElementById('chatDisplay');
             container.innerHTML = '';
-            snap.forEach((child) => {
-                const msg = child.val();
-                const mid = child.key;
-                const isMe = msg.id === user.id;
-                const nameColor = getIDColor(msg.id);
+            currentMessages.forEach(msg => {
+                const isMentionedMe = msg.text && msg.text.includes("@" + user.id);
+                let btn = msg.dropData ? `<button class="claim-btn" ${msg.isCompleted ? 'disabled' : ''} onclick="claimDrop('${msg.dropData.id}', ${msg.dropData.total}, ${msg.dropData.count}, '${msg.dropData.coin}', '${msg.mid}')">${msg.isCompleted ? 'EMPTY' : 'CLAIM'}</button>` : '';
+                
+                let nameColor = getIDColor(msg.id);
+                let displayName = msg.id === "SYSTEM" ? "SMAT Bot" : msg.id;
 
                 container.innerHTML += `
-                    <div class="msg-row">
-                        <div class="avatar" style="background:${nameColor}">${msg.id[0]}</div>
-                        <div class="msg-content" style="width: 100%;">
+                    <div class="msg-row" id="msg-${msg.mid}">
+                        <div class="avatar" style="background:${getIDColor(msg.id)}">${msg.id === "SYSTEM" ? '<i class="fa-solid fa-robot"></i>' : msg.id[0]}</div>
+                        <div class="msg-content">
                             <div class="user-meta">
-                                <span style="color:${nameColor}; font-weight:900; font-size:12px; cursor:pointer;" onclick="showProfile('${msg.id}', '${msg.role}', '${mid}', '${msg.text}')">
-                                    ${msg.id === MAIN_SUPER_ADMIN ? '👑 ' : ''}${msg.id}
-                                </span>
-                                <span class="timestamp" style="font-size:9px; color:gray; margin-left:5px;">${msg.time}</span>
+                                <span class="user-name" style="color:${nameColor};" onclick="openUserProfile('${msg.id}', '${msg.mid}', '${msg.text || "Photo"}')">${displayName}</span> 
+                                ${msg.id === MAIN_SUPER_ADMIN ? '<span class="badge badge-super">Owner</span>' : adminsList.includes(msg.id) ? '<span class="badge badge-admin">Admin</span>' : ''}
+                                <span class="timestamp">${msg.time}</span>
                             </div>
-                            <div class="bubble" style="border-left: 3px solid ${nameColor}">
-                                ${msg.text ? `<div>${msg.text}</div>` : ''}
-                                ${msg.image ? `<img src="${msg.image}" class="chat-img">` : ''}
+                            <div class="bubble ${isMentionedMe ? 'mentioned-active' : ''} ${msg.isSpecial ? 'special-msg' : ''}">
+                                ${msg.text ? msg.text.replace(/(@SMAT\d+)/g, '<span style="color:var(--primary); font-weight:bold;">$1</span>') : ''}
+                                ${msg.image ? `<img src="${msg.image}" class="chat-image" onclick="window.open(this.src)">` : ''}
+                                ${btn}
                             </div>
                         </div>
                     </div>
                 `;
             });
             container.scrollTop = container.scrollHeight;
-        });
+        }
 
-        // Utility
-        window.openModal = (id) => document.getElementById(id).style.display = 'flex';
+        // PROFILE POPUP LOGIC
+        window.openUserProfile = function(uid, mid, text) {
+            const modal = document.getElementById('profileModal');
+            const avatar = document.getElementById('profileAvatar');
+            const name = document.getElementById('profileName');
+            const roleTxt = document.getElementById('profileRole');
+            const actions = document.getElementById('adminActions');
+
+            avatar.style.background = getIDColor(uid);
+            avatar.innerText = uid[0];
+            name.innerText = uid;
+            name.style.color = getIDColor(uid);
+            
+            let role = "User";
+            if(uid === MAIN_SUPER_ADMIN) role = "Owner";
+            else if(adminsList.includes(uid)) role = "Admin";
+            roleTxt.innerText = role;
+
+            if((user.role === 'ADMIN' || user.role === 'SUPER_ADMIN') && uid !== "SYSTEM") {
+                actions.style.display = 'grid';
+                document.getElementById('pinMsgBtn').onclick = () => { set(pinRef, { text, mid }); closeModal('profileModal'); };
+                document.getElementById('banUserBtn').onclick = () => { if(uid !== MAIN_SUPER_ADMIN) set(ref(db, 'smat_restricted/'+uid), uid); closeModal('profileModal'); };
+                document.getElementById('delMsgBtn').onclick = () => { remove(ref(db, 'global_messages/'+mid)); closeModal('profileModal'); };
+            } else {
+                actions.style.display = 'none';
+                if(uid !== "SYSTEM") appendMention(uid); 
+            }
+            openModal('profileModal');
+        }
+
+        window.unpinAction = (e) => { e.stopPropagation(); remove(pinRef); };
+        window.scrollToPinned = () => {
+            onValue(pinRef, (s) => {
+                const d = s.val();
+                if(d && d.mid) {
+                    const el = document.getElementById('msg-' + d.mid);
+                    if(el) el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                }
+            }, {onlyOnce: true});
+        };
+
+        // PREVIOUS FUNCTIONS (Intact)
+        window.makeAdmin = function() { const id = document.getElementById('targetUserID').value.trim(); if(id) set(ref(db, 'smat_admins/' + id), id); alert("Success!"); closeModal('adminModal'); };
+        window.unbanUser = function(id) { remove(ref(db, 'smat_restricted/' + id)); alert("Unbanned!"); };
+        window.processSpecial = function() { 
+            const coin = document.getElementById('specialCoin').value;
+            const amount = document.getElementById('specialAmount').value;
+            const type = document.getElementById('specialModalTitle').innerText.includes('Rain') ? 'RAIN' : 'DROP';
+            push(messagesRef, { id: "SYSTEM", text: `${type} by ${user.id}: ${amount} ${coin}!`, time: new Date().toLocaleTimeString(), isSpecial: true });
+            closeModal('rainModal');
+        };
+
         window.closeModal = (id) => document.getElementById(id).style.display = 'none';
+        window.openModal = (id) => document.getElementById(id).style.display = 'flex';
+        window.appendMention = (id) => { document.getElementById('messageInput').value += `@${id} `; document.getElementById('messageInput').focus(); };
+
+    </script>
+
+    <script>
+        function openSpecial(type) { document.getElementById('specialModalTitle').innerHTML = type === 'RAIN' ? '🌧️ Asset Rain' : '💧 Asset Drop'; document.getElementById('rainModal').style.display = 'flex'; }
+        function openLeaderboard() { document.getElementById('leaderboardModal').style.display = 'flex'; }
+        function openBanList() { document.getElementById('banListModal').style.display = 'flex'; }
     </script>
 </body>
 </html>
