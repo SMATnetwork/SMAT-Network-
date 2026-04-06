@@ -537,7 +537,7 @@
             renderCoins(category);
         }
 
-        // Render coins based on selected filter
+        // Render coins based on selected filter - FIXED VERSION
         function renderCoins(filter = 'hot') {
             const container = document.getElementById('coinContainer');
             if (!container) return;
@@ -555,9 +555,13 @@
 
             let htmlContent = '';
             filtered.forEach(coin => {
-                const currentPrice = coin.price;
+                const currentPrice = coin.price || 0;
                 const isUp = Math.random() > 0.5;
-                const change = (Math.random() * 5).toFixed(2);
+                const change = (Math.random() * 5 + 0.1).toFixed(2);
+
+                const changeSign = isUp ? '+' : '-';
+                const percentColor = isUp ? 'var(--up)' : 'var(--down)';
+                const percentBg = isUp ? 'rgba(14, 203, 129, 0.15)' : 'rgba(246, 70, 93, 0.15)';
 
                 htmlContent += `
                     <div class="coin-row" onclick="if(checkAuth(event)) window.location.href='Trade.html?coin=${coin.sym}'">
@@ -570,8 +574,8 @@
                         </div>
                         <div style="text-align:right">
                             <div style="font-weight:bold; font-size:16px">$${currentPrice.toLocaleString()}</div>
-                            <div class="percent-box" style="background:\( {isUp ? 'rgba(14, 203, 129, 0.15)' : 'rgba(246, 70, 93, 0.15)'}; color: \){isUp ? 'var(--up)' : 'var(--down)'}">
-                                \( {isUp ? '+' : '-'} \){change}%
+                            <div class="percent-box" style="background:\( {percentBg}; color: \){percentColor}">
+                                \( {changeSign} \){change}%
                             </div>
                         </div>
                     </div>
@@ -606,9 +610,10 @@
             }
         }
 
-        // Page load initialization
+        // Page load initialization and auto refresh
         window.onload = () => {
             renderCoins('hot');
+            // Refresh coin list every 5 seconds
             setInterval(() => { 
                 renderCoins(currentActiveTab); 
             }, 5000);
