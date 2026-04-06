@@ -3,20 +3,21 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>SMAT | Home</title>
+    <title>SMAT | Home </title>
     
-    <!-- Load coin.js for market data -->
+    <!-- ==================== স্ক্রিপ্ট লোড: coin.js (মার্কেট ডাটা সোর্স) ==================== -->
     <script src="coin.js"></script>
     
-    <!-- Font Awesome icons -->
+    <!-- ==================== ফন্ট অসাম আইকন লাইব্রেরি লোড ==================== -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     
-    <!-- Custom favicon (SMAT logo) -->
+    <!-- ==================== কাস্টম ফেভিকন (SMAT লোগো) ==================== -->
     <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><circle cx='50' cy='50' r='50' fill='%23f3ba2f'/><text x='50%25' y='55%25' text-anchor='middle' dy='.3em' fill='black' font-family='Courier New, monospace' font-weight='900' font-size='60'>S</text></svg>">
     
-    <!-- Firebase SDK imports and initialization -->
+    <!-- ==================== Firebase ইনিশিয়ালাইজেশন ও অথেনটিকেশন লজিক ==================== -->
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+        import { getAnalytics } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-analytics.js";
         import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
         import { getDatabase, ref, onValue } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
 
@@ -34,7 +35,7 @@
         const auth = getAuth(app);
         const db = getDatabase(app);
 
-        // Real-time authentication state listener and UI update
+        // ==================== লগইন স্ট্যাটাস রিয়েল-টাইম চেক ও UI আপডেট ====================
         onAuthStateChanged(auth, (user) => {
             const loggedInContent = document.getElementById('loggedInContent');
             const loggedOutContent = document.getElementById('loggedOutContent');
@@ -45,11 +46,11 @@
                 localStorage.setItem('isLoggedIn', 'true');
                 localStorage.setItem('userEmail', user.email);
                 
-                if (loggedInContent) loggedInContent.style.display = 'block';
-                if (loggedOutContent) loggedOutContent.style.display = 'none';
-                if (emailDisplay) emailDisplay.innerText = user.email;
+                if(loggedInContent) loggedInContent.style.display = 'block';
+                if(loggedOutContent) loggedOutContent.style.display = 'none';
+                if(emailDisplay) emailDisplay.innerText = user.email;
 
-                // Fetch SMAT ID from Firebase database in real-time
+                // ==================== ডাটাবেজ থেকে ইউজারের SMAT ID রিয়েল-টাইমে টেনে আনা ====================
                 const userRef = ref(db, 'users/' + user.uid);
                 onValue(userRef, (snapshot) => {
                     const data = snapshot.val();
@@ -64,12 +65,12 @@
                 updateKYCUI();
             } else {
                 localStorage.setItem('isLoggedIn', 'false');
-                if (loggedInContent) loggedInContent.style.display = 'none';
-                if (loggedOutContent) loggedOutContent.style.display = 'block';
+                if(loggedInContent) loggedInContent.style.display = 'none';
+                if(loggedOutContent) loggedOutContent.style.display = 'block';
             }
         });
 
-        // Logout function
+        // ==================== লগআউট ফাংশন ====================
         window.logout = () => {
             signOut(auth).then(() => {
                 localStorage.clear();
@@ -77,11 +78,10 @@
             });
         };
 
-        // Expose database for other pages if needed
         window.firebaseDB = db;
     </script>
 
-    <!-- Main CSS styles for the entire page -->
+    <!-- ==================== পুরো ওয়েবপেজের CSS স্টাইলিং ==================== -->
     <style>
         :root {
             --primary: #f3ba2f;
@@ -94,149 +94,66 @@
             --border: #2b3139;
         }
 
-        /* Global reset and base styles */
-        * { 
-            box-sizing: border-box; 
-            -webkit-tap-highlight-color: transparent; 
-            outline: none; 
-        }
-        
+        /* ==================== গ্লোবাল রিসেট ও বেসিক স্টাইল ==================== */
+        * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; outline: none; }
         body {
-            margin: 0; 
-            background: var(--bg); 
-            color: var(--text-main);
-            font-family: 'Segoe UI', Roboto, sans-serif; 
-            padding-bottom: 90px;
+            margin: 0; background: var(--bg); color: var(--text-main);
+            font-family: 'Segoe UI', Roboto, sans-serif; padding-bottom: 90px;
         }
 
-        /* Header styles */
+        /* ==================== হেডার স্টাইল ==================== */
         .header {
-            padding: 15px; 
-            display: flex; 
-            align-items: center; 
-            justify-content: space-between;
-            position: sticky; 
-            top: 0; 
-            background: var(--bg); 
-            z-index: 100;
+            padding: 15px; display: flex; align-items: center; justify-content: space-between;
+            position: sticky; top: 0; background: var(--bg); z-index: 100;
         }
-        .profile-trigger { 
-            font-size: 26px; 
-            color: var(--primary); 
-            cursor: pointer; 
-        }
+        .profile-trigger { font-size: 26px; color: var(--primary); cursor: pointer; }
 
-        /* Sidebar styles */
+        /* ==================== সাইডবার স্টাইল ==================== */
         .sidebar {
-            position: fixed; 
-            top: 0; 
-            left: -100%; 
-            width: 85%; 
-            max-width: 320px; 
-            height: 100%;
-            background: var(--card-bg); 
-            z-index: 4000; 
-            transition: 0.4s cubic-bezier(0.4, 0, 0.2, 1); 
-            padding: 25px;
+            position: fixed; top: 0; left: -100%; width: 85%; max-width: 320px; height: 100%;
+            background: var(--card-bg); z-index: 4000; transition: 0.4s cubic-bezier(0.4, 0, 0.2, 1); padding: 25px;
             box-shadow: 15px 0 40px rgba(0,0,0,0.7);
         }
         .sidebar.active { left: 0; }
-        
         .sidebar-overlay {
-            position: fixed; 
-            top: 0; 
-            left: 0; 
-            width: 100%; 
-            height: 100%;
-            background: rgba(0,0,0,0.8); 
-            display: none; 
-            z-index: 3500;
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.8); display: none; z-index: 3500;
         }
 
-        .user-id-box { 
-            background: #181a20; 
-            padding: 15px; 
-            border-radius: 12px; 
-            margin: 15px 0; 
-            border: 1px dashed var(--primary); 
-        }
+        .user-id-box { background: #181a20; padding: 15px; border-radius: 12px; margin: 15px 0; border: 1px dashed var(--primary); }
+        .kyc-section { background: #2b3139; padding: 18px; border-radius: 15px; margin-top: 20px; border: 1px solid var(--border); }
         
-        .kyc-section { 
-            background: #2b3139; 
-            padding: 18px; 
-            border-radius: 15px; 
-            margin-top: 20px; 
-            border: 1px solid var(--border); 
-        }
-        
-        .status-badge { 
-            padding: 4px 10px; 
-            border-radius: 6px; 
-            font-size: 11px; 
-            font-weight: bold; 
-            text-transform: uppercase; 
-        }
+        .status-badge { padding: 4px 10px; border-radius: 6px; font-size: 11px; font-weight: bold; text-transform: uppercase; }
         .status-unverified { background: #474d57; color: #fff; }
         .status-pending { background: rgba(243, 186, 47, 0.2); color: var(--primary); }
 
         .kyc-form input { 
-            width: 100%; 
-            margin-top: 10px; 
-            background: #181a20; 
-            border: 1px solid var(--border); 
-            color: white; 
-            padding: 12px; 
-            border-radius: 8px; 
-            font-size: 14px; 
+            width: 100%; margin-top: 10px; background: #181a20; border: 1px solid var(--border); 
+            color: white; padding: 12px; border-radius: 8px; font-size: 14px; cursor: pointer;
         }
 
         .loading-spin { 
-            display: inline-block; 
-            width: 14px; 
-            height: 14px; 
-            border: 2px solid var(--primary); 
-            border-top: 2px solid transparent; 
-            border-radius: 50%; 
-            animation: spin 0.8s linear infinite; 
-            margin-right: 8px;
+            display: inline-block; width: 14px; height: 14px; 
+            border: 2px solid var(--primary); border-top: 2px solid transparent; 
+            border-radius: 50%; animation: spin 0.8s linear infinite; margin-right: 8px;
         }
 
-        /* Asset card styles */
+        /* ==================== অ্যাসেট কার্ড স্টাইল ==================== */
         .asset-card {
-            margin: 15px; 
-            background: linear-gradient(135deg, #2b3139 0%, #1e2329 100%);
-            padding: 25px; 
-            border-radius: 24px; 
-            border: 1px solid var(--border);
+            margin: 15px; background: linear-gradient(135deg, #2b3139 0%, #1e2329 100%);
+            padding: 25px; border-radius: 24px; border: 1px solid var(--border);
         }
-        .asset-val { 
-            font-size: 32px; 
-            font-weight: 800; 
-            color: var(--primary); 
-            margin: 12px 0; 
-        }
+        .asset-val { font-size: 32px; font-weight: 800; color: var(--primary); margin: 12px 0; }
 
-        /* Notice bar with scrolling text */
+        /* ==================== নোটিস বার (মার্কি টেক্সট) ==================== */
         .notice-bar {
-            margin: 0 15px; 
-            background: rgba(243, 186, 47, 0.05); 
-            border-radius: 8px;
-            padding: 8px; 
-            display: flex; 
-            align-items: center; 
-            overflow: hidden;
+            margin: 0 15px; background: rgba(243, 186, 47, 0.05); border-radius: 8px;
+            padding: 8px; display: flex; align-items: center; overflow: hidden;
             border: 1px solid rgba(243, 186, 47, 0.1);
         }
-        .notice-bar i { 
-            color: var(--primary); 
-            margin-right: 10px; 
-            font-size: 14px; 
-        }
+        .notice-bar i { color: var(--primary); margin-right: 10px; font-size: 14px; }
         .scrolling-text {
-            white-space: nowrap; 
-            overflow: hidden; 
-            font-size: 12px; 
-            color: var(--text-sec);
+            white-space: nowrap; overflow: hidden; font-size: 12px; color: var(--text-sec);
             animation: marquee 20s linear infinite;
         }
         @keyframes marquee {
@@ -244,169 +161,49 @@
             100% { transform: translateX(-100%); }
         }
 
-        /* Market tabs */
-        .market-tabs { 
-            display: flex; 
-            padding: 0 15px; 
-            gap: 20px; 
-            border-bottom: 1px solid var(--border); 
-            margin-top: 15px; 
-        }
-        .tab { 
-            padding: 12px 5px; 
-            color: var(--text-sec); 
-            font-size: 15px; 
-            font-weight: 600; 
-            cursor: pointer; 
-            position: relative; 
-        }
+        /* ==================== মার্কেট ট্যাব স্টাইল ==================== */
+        .market-tabs { display: flex; padding: 0 15px; gap: 20px; border-bottom: 1px solid var(--border); margin-top: 15px; }
+        .tab { padding: 12px 5px; color: var(--text-sec); font-size: 15px; font-weight: 600; cursor: pointer; position: relative; }
         .tab.active { color: var(--primary); }
-        .tab.active::after { 
-            content: ''; 
-            position: absolute; 
-            bottom: 0; 
-            left: 0; 
-            width: 100%; 
-            height: 3px; 
-            background: var(--primary); 
-            border-radius: 10px; 
-        }
+        .tab.active::after { content: ''; position: absolute; bottom: 0; left: 0; width: 100%; height: 3px; background: var(--primary); border-radius: 10px; }
 
-        /* Coin list styles */
-        .coin-list { 
-            padding: 5px 15px; 
-        }
-        .coin-row { 
-            display: flex; 
-            justify-content: space-between; 
-            align-items: center; 
-            padding: 18px 0; 
-            border-bottom: 1px solid rgba(255,255,255,0.03); 
-            cursor: pointer; 
-        }
-        .coin-icon { 
-            width: 40px; 
-            height: 40px; 
-            border-radius: 50%; 
-            object-fit: cover; 
-        }
-        .percent-box { 
-            display: inline-block; 
-            padding: 6px 12px; 
-            border-radius: 8px; 
-            font-weight: 700; 
-            font-size: 13px; 
-            min-width: 75px; 
-            margin-top: 4px; 
-            text-align: center;
-        }
+        /* ==================== কয়েন লিস্ট স্টাইল ==================== */
+        .coin-list { padding: 5px 15px; }
+        .coin-row { display: flex; justify-content: space-between; align-items: center; padding: 18px 0; border-bottom: 1px solid rgba(255,255,255,0.03); cursor: pointer; }
+        .coin-icon { width: 40px; height: 40px; border-radius: 50%; object-fit: cover; }
+        .percent-box { display: inline-block; padding: 6px 12px; border-radius: 8px; font-weight: 700; font-size: 13px; min-width: 75px; margin-top: 4px; text-align: center;}
 
-        /* Footer navigation */
-        .footer { 
-            position: fixed; 
-            bottom: 0; 
-            width: 100%; 
-            height: 75px; 
-            background: #181a20; 
-            display: flex; 
-            justify-content: space-around; 
-            align-items: center; 
-            border-top: 1px solid #2b3139; 
-            z-index: 3000; 
-        }
-        .f-nav { 
-            text-decoration: none; 
-            color: var(--text-sec); 
-            text-align: center; 
-            font-size: 10px; 
-            flex: 1; 
-            display: flex; 
-            flex-direction: column; 
-            align-items: center; 
-        }
-        .f-nav i { 
-            font-size: 22px; 
-            margin-bottom: 5px; 
-        }
+        /* ==================== ফুটার নেভিগেশন স্টাইল ==================== */
+        .footer { position: fixed; bottom: 0; width: 100%; height: 75px; background: #181a20; display: flex; justify-content: space-around; align-items: center; border-top: 1px solid #2b3139; z-index: 3000; }
+        .f-nav { text-decoration: none; color: var(--text-sec); text-align: center; font-size: 10px; flex: 1; display: flex; flex-direction: column; align-items: center; }
+        .f-nav i { font-size: 22px; margin-bottom: 5px; }
         .f-nav.active { color: var(--primary); }
-        
-        .u-curve { 
-            position: relative; 
-            top: -22px; 
-            width: 75px; 
-            height: 75px; 
-            display: flex; 
-            justify-content: center; 
-            align-items: center; 
-        }
-        .spin-circle { 
-            position: absolute; 
-            width: 70px; 
-            height: 70px; 
-            border: 2.5px dashed var(--primary); 
-            border-radius: 50%; 
-            animation: spin 5s linear infinite; 
-        }
-        .crash-link { 
-            width: 58px; 
-            height: 58px; 
-            background: var(--primary); 
-            border-radius: 50%; 
-            color: black; 
-            font-weight: 900; 
-            font-size: 11px; 
-            display: flex; 
-            align-items: center; 
-            justify-content: center; 
-            text-decoration: none; 
-            z-index: 5; 
-            box-shadow: 0 0 15px rgba(243, 186, 47, 0.4); 
-        }
+        .u-curve { position: relative; top: -22px; width: 75px; height: 75px; display: flex; justify-content: center; align-items: center; }
+        .spin-circle { position: absolute; width: 70px; height: 70px; border: 2.5px dashed var(--primary); border-radius: 50%; animation: spin 5s linear infinite; }
+        .crash-link { width: 58px; height: 58px; background: var(--primary); border-radius: 50%; color: black; font-weight: 900; font-size: 11px; display: flex; align-items: center; justify-content: center; text-decoration: none; z-index: 5; box-shadow: 0 0 15px rgba(243, 186, 47, 0.4); }
 
-        @keyframes spin { 
-            100% { transform: rotate(360deg); } 
-        }
+        @keyframes spin { 100% { transform: rotate(360deg); } }
         
-        .login-btn { 
-            background: var(--primary); 
-            color: black; 
-            padding: 12px; 
-            border-radius: 10px; 
-            border: none; 
-            font-weight: bold; 
-            width: 100%; 
-            cursor: pointer; 
-            margin-top: 20px; 
-        }
+        .login-btn { background: var(--primary); color: black; padding: 12px; border-radius: 10px; border: none; font-weight: bold; width: 100%; cursor: pointer; margin-top: 20px; }
 
-        @media (max-width: 400px) { 
-            .asset-val { font-size: 26px; } 
-            .tab { font-size: 13px; } 
-        }
+        @media (max-width: 400px) { .asset-val { font-size: 26px; } .tab { font-size: 13px; } }
         
-        /* Chat icon styles */
-        .chat-trigger { 
-            font-size: 22px; 
-            color: var(--text-sec); 
-            cursor: pointer; 
-            text-decoration: none; 
-            display: flex; 
-            align-items: center; 
-        }
+        /* ==================== চ্যাট আইকন স্টাইল ==================== */
+        .chat-trigger { font-size: 22px; color: var(--text-sec); cursor: pointer; text-decoration: none; display: flex; align-items: center; }
         .chat-trigger:hover { color: var(--primary); }
     </style>
 </head>
 <body>
 
-    <!-- Sidebar overlay (closes sidebar when clicked) -->
+    <!-- ==================== সাইডবার ওভারলে (ক্লিক করে বন্ধ করার জন্য) ==================== -->
     <div class="sidebar-overlay" id="overlay" onclick="toggleSidebar()"></div>
 
-    <!-- Main sidebar / profile panel -->
+    <!-- ==================== পুরো সাইডবার প্রোফাইল সেকশন ==================== -->
     <div class="sidebar" id="sidebar">
         <h3 style="margin: 0 0 20px 0; font-size: 20px;">Profile</h3>
         
         <div id="loggedInContent">
-            <!-- User info and SMAT ID section -->
+            <!-- ==================== ইউজার ইনফো ও SMAT ID ডিসপ্লে ==================== -->
             <div class="user-info">
                 <span style="font-size:12px; color:var(--text-sec)">Account Email</span>
                 <div id="emailDisplay" style="font-weight:600; margin-top:4px;">Loading...</div>
@@ -417,7 +214,7 @@
                 </div>
             </div>
 
-            <!-- KYC verification section -->
+            <!-- ==================== KYC ভেরিফিকেশন সেকশন ==================== -->
             <div class="kyc-section">
                 <div style="display:flex; justify-content:space-between; align-items:center">
                     <span style="font-weight:bold; font-size:14px">Identity Verification</span>
@@ -440,11 +237,11 @@
                 </div>
             </div>
             
-            <!-- Logout button -->
+            <!-- ==================== লগআউট বাটন ==================== -->
             <p style="margin-top:40px; text-align:center; color:#ff4d4d; font-size:14px; cursor:pointer" onclick="logout()">Secure Logout</p>
         </div>
 
-        <!-- Content shown when user is logged out -->
+        <!-- ==================== লগআউট অবস্থায় দেখানো কনটেন্ট ==================== -->
         <div id="loggedOutContent" style="display:none; text-align: center; margin-top: 50px;">
             <i class="fa-solid fa-user-lock" style="font-size: 50px; color: var(--text-sec);"></i>
             <p style="color: var(--text-sec); margin-top: 15px;">Please login to see your profile and assets.</p>
@@ -452,7 +249,7 @@
         </div>
     </div>
 
-    <!-- Top header -->
+    <!-- ==================== টপ হেডার ==================== -->
     <div class="header">
         <i class="fa-solid fa-circle-user profile-trigger" onclick="toggleSidebar()"></i>
         <div style="font-weight: 900; font-size: 20px;">SMAT <span style="color:var(--primary)">Exchange</span></div>
@@ -466,7 +263,7 @@
         </div>
     </div>
 
-    <!-- Total assets card -->
+    <!-- ==================== টোটাল অ্যাসেট কার্ড ==================== -->
     <div class="asset-card">
         <div style="font-size: 14px; color: var(--text-sec);">Total Assets <i class="fa-solid fa-eye-slash" style="font-size:12px"></i></div>
         <div class="asset-val">$ <span id="totalValue">0.00</span></div>
@@ -476,7 +273,7 @@
         </div>
     </div>
 
-    <!-- Scrolling notice bar -->
+    <!-- ==================== স্ক্রলিং নোটিস বার ==================== -->
     <div class="notice-bar">
         <i class="fa-solid fa-bullhorn"></i>
         <div class="scrolling-text">
@@ -484,7 +281,7 @@
         </div>
     </div>
 
-    <!-- Market tabs -->
+    <!-- ==================== মার্কেট ট্যাব (Hot, Gainers, Losers, New) ==================== -->
     <div class="market-tabs">
         <div class="tab active" id="tab-hot" onclick="switchTab(this, 'hot')">Hot</div>
         <div class="tab" id="tab-gainer" onclick="switchTab(this, 'gainer')">Gainers</div>
@@ -492,10 +289,10 @@
         <div class="tab" id="tab-new" onclick="switchTab(this, 'new')">New</div>
     </div>
 
-    <!-- Coin list container -->
+    <!-- ==================== কয়েন লিস্ট কনটেইনার ==================== -->
     <div class="coin-list" id="coinContainer"></div>
 
-    <!-- Footer navigation -->
+    <!-- ==================== ফুটার নেভিগেশন ==================== -->
     <footer class="footer">
         <a href="home.html" class="f-nav active"><i class="fas fa-home"></i>Home</a>
         <a href="Trade.html" class="f-nav" onclick="checkAuth(event)"><i class="fas fa-chart-line"></i>Trade</a>
@@ -507,15 +304,15 @@
         <a href="Wallet.html" class="f-nav" onclick="checkAuth(event)"><i class="fas fa-wallet"></i>Wallet</a>
     </footer>
 
-    <!-- Main JavaScript logic -->
+    <!-- ==================== মেইন জাভাস্ক্রিপ্ট লজিক ==================== -->
     <script>
         let currentActiveTab = 'hot';
         let isUserLoggedIn = localStorage.getItem('isLoggedIn') === 'true';
 
-        // Check if user is logged in before allowing navigation
+        // ==================== অথেনটিকেশন চেক (লগইন না থাকলে ব্লক) ====================
         function checkAuth(e) {
-            if (!isUserLoggedIn) {
-                if (e) e.preventDefault();
+            if(!isUserLoggedIn) {
+                if(e) e.preventDefault();
                 alert("Access Denied! Please Login first.");
                 toggleSidebar();
                 return false;
@@ -523,14 +320,14 @@
             return true;
         }
 
-        // Toggle sidebar visibility
+        // ==================== সাইডবার টগল ফাংশন ====================
         function toggleSidebar() {
             document.getElementById('sidebar').classList.toggle('active');
             document.getElementById('overlay').style.display = 
                 document.getElementById('sidebar').classList.contains('active') ? 'block' : 'none';
         }
 
-        // Switch between market tabs and refresh coin list
+        // ==================== ট্যাব সুইচ ও কয়েন লিস্ট রিফ্রেশ ====================
         function switchTab(element, category) {
             currentActiveTab = category;
             document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
@@ -538,21 +335,16 @@
             renderCoins(category);
         }
 
-        // Render coins based on selected filter (hot, gainer, loser, new)
+        // ==================== কয়েন লিস্ট রেন্ডার ফাংশন ====================
         function renderCoins(filter = 'hot') {
             const container = document.getElementById('coinContainer');
             if (!container) return;
-            
             const liveData = (typeof GLOBAL_COINS !== 'undefined') ? GLOBAL_COINS : [];
             let filtered = liveData;
 
-            if (filter === 'hot') {
-                filtered = [...liveData].slice(0, 10);
-            } else if (filter === 'gainer') {
-                filtered = [...liveData].sort((a, b) => b.price - a.price).slice(0, 8);
-            } else if (filter === 'loser') {
-                filtered = [...liveData].sort((a, b) => a.price - b.price).slice(0, 8);
-            }
+            if (filter === 'hot') filtered = [...liveData].slice(0, 10);
+            else if (filter === 'gainer') filtered = [...liveData].sort((a,b) => b.price - a.price).slice(0, 8);
+            else if (filter === 'loser') filtered = [...liveData].sort((a,b) => a.price - b.price).slice(0, 8);
 
             let htmlContent = '';
             filtered.forEach(coin => {
@@ -581,39 +373,30 @@
             container.innerHTML = htmlContent;
         }
 
-        // Handle KYC form submission
+        // ==================== KYC সাবমিট হ্যান্ডলার ====================
         function handleKYC() {
             const nid = document.getElementById('nidNumber').value;
-            if (nid.length < 5) {
-                return alert("Please enter valid NID.");
-            }
+            if(nid.length < 5) return alert("Please enter valid NID.");
             localStorage.setItem('kycStatus', 'pending');
             updateKYCUI();
         }
 
-        // Update KYC UI based on localStorage status
+        // ==================== KYC UI আপডেট ফাংশন ====================
         function updateKYCUI() {
-            if (localStorage.getItem('kycStatus') === 'pending') {
+            if(localStorage.getItem('kycStatus') === 'pending') {
                 const form = document.getElementById('kycForm');
                 const notice = document.getElementById('kycPendingNotice');
                 const badge = document.getElementById('kycBadge');
-                
-                if (form) form.style.display = 'none';
-                if (notice) notice.style.display = 'block';
-                if (badge) { 
-                    badge.innerText = 'Pending'; 
-                    badge.className = 'status-badge status-pending'; 
-                }
+                if(form) form.style.display = 'none';
+                if(notice) notice.style.display = 'block';
+                if(badge) { badge.innerText = 'Pending'; badge.className = 'status-badge status-pending'; }
             }
         }
 
-        // Page load initialization and auto-refresh
+        // ==================== পেজ লোড হওয়ার পর ইনিশিয়াল রেন্ডার ও অটো রিফ্রেশ ====================
         window.onload = () => {
             renderCoins('hot');
-            // Refresh coin list every 5 seconds
-            setInterval(() => { 
-                renderCoins(currentActiveTab); 
-            }, 5000);
+            setInterval(() => { renderCoins(currentActiveTab); }, 5000);
         };
     </script>
 </body>
