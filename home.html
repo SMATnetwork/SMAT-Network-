@@ -6,6 +6,47 @@
     <title>SMAT | Home Official</title>
     <script src="coin.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+        import { getAnalytics } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-analytics.js";
+        import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+        import { getDatabase, ref, onValue } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyAMxtJedkehhxJRMPZLjhpKHqneHEWsGlE",
+            authDomain: "smat-exchange.firebaseapp.com",
+            projectId: "smat-exchange",
+            storageBucket: "smat-exchange.firebasestorage.app",
+            messagingSenderId: "836334569396",
+            appId: "1:836334569396:web:679effe640b3453412d4e1",
+            measurementId: "G-FCE3H3F18V"
+        };
+
+        // Initialize Firebase
+        const app = initializeApp(firebaseConfig);
+        const analytics = getAnalytics(app);
+        const auth = getAuth(app);
+        const db = getDatabase(app);
+
+        // Firebase Auth Observer to check login status in real-time
+        onAuthStateChanged(auth, (user) => {
+            if (user) {
+                localStorage.setItem('isLoggedIn', 'true');
+                localStorage.setItem('userEmail', user.email);
+                // যদি Firebase Database-এ smatID রাখা থাকে তবে তা এখান থেকে ফেচ করতে পারেন
+                updateUIPerAuth(user);
+            } else {
+                localStorage.setItem('isLoggedIn', 'false');
+                updateUIPerAuth(null);
+            }
+        });
+
+        window.firebaseApp = app;
+        window.firebaseAuth = auth;
+        window.firebaseDB = db;
+    </script>
+
     <style>
         :root {
             --primary: #f3ba2f;
@@ -222,11 +263,18 @@
             return true;
         }
 
-        // লগআউট ফিক্স: সবকিছু ক্লিয়ার করে রিফ্রেশ
         function logout() {
-            localStorage.clear(); 
-            localStorage.setItem('isLoggedIn', 'false');
-            window.location.href = 'logIn.html';
+            if(window.firebaseAuth) {
+                window.firebaseAuth.signOut().then(() => {
+                    localStorage.clear(); 
+                    localStorage.setItem('isLoggedIn', 'false');
+                    window.location.href = 'logIn.html';
+                });
+            } else {
+                localStorage.clear(); 
+                localStorage.setItem('isLoggedIn', 'false');
+                window.location.href = 'logIn.html';
+            }
         }
 
         function toggleSidebar() {
@@ -336,25 +384,36 @@
             }
         }
 
+        // Real-time UI Update handler for Firebase Auth
+        function updateUIPerAuth(user) {
+            isUserLoggedIn = !!user;
+            if(user) {
+                document.getElementById('loggedInContent').style.display = 'block';
+                document.getElementById('loggedOutContent').style.display = 'none';
+                document.getElementById('emailDisplay').innerText = user.email;
+                
+                // Fetch dynamic SMAT ID from localStorage or Database
+                const userID = localStorage.getItem('smatID');
+                document.getElementById('smatID').innerText = userID ? userID : "Checking...";
+                updateKYCUI();
+            } else {
+                document.getElementById('loggedInContent').style.display = 'none';
+                document.getElementById('loggedOutContent').style.display = 'block';
+            }
+            renderCoins(currentActiveTab);
+        }
+
         window.addEventListener('smat_engine_ready', () => {
             renderCoins(currentActiveTab);
         });
 
-        // মাস্টার লোড লজিক: ডাইনামিক আইডি এবং ইমেইল সেট
         window.onload = () => {
-            const loggedIn = localStorage.getItem('isLoggedIn') === 'true';
-            
-            if(loggedIn) {
+            // Initial render based on existing localStorage while Firebase loads
+            if(isUserLoggedIn) {
                 document.getElementById('loggedInContent').style.display = 'block';
                 document.getElementById('loggedOutContent').style.display = 'none';
-                
-                // ডাইনামিক ডাটা ফেচিং (ডিফল্ট ভ্যালু ছাড়া)
-                const userEmail = localStorage.getItem('userEmail');
-                const userID = localStorage.getItem('smatID');
-
-                document.getElementById('emailDisplay').innerText = userEmail ? userEmail : "Not Found";
-                document.getElementById('smatID').innerText = userID ? userID : "Checking...";
-                
+                document.getElementById('emailDisplay').innerText = localStorage.getItem('userEmail') || "Loading...";
+                document.getElementById('smatID').innerText = localStorage.getItem('smatID') || "---";
                 updateKYCUI();
             } else {
                 document.getElementById('loggedInContent').style.display = 'none';
