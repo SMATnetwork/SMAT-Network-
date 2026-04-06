@@ -537,11 +537,12 @@
             renderCoins(category);
         }
 
-        // Render coins based on selected filter - FIXED VERSION
+        // Render coins based on selected filter (Compatible with your coin.js)
         function renderCoins(filter = 'hot') {
             const container = document.getElementById('coinContainer');
             if (!container) return;
             
+            // Use GLOBAL_COINS from coin.js
             const liveData = (typeof GLOBAL_COINS !== 'undefined') ? GLOBAL_COINS : [];
             let filtered = liveData;
 
@@ -610,13 +611,28 @@
             }
         }
 
-        // Page load initialization and auto refresh
-        window.onload = () => {
+        // Wait for coin.js engine to finish before rendering coins
+        function initializeHome() {
             renderCoins('hot');
-            // Refresh coin list every 5 seconds
+            // Auto refresh every 5 seconds
             setInterval(() => { 
                 renderCoins(currentActiveTab); 
             }, 5000);
+        }
+
+        // Listen for smat_engine_ready event from coin.js
+        window.addEventListener('smat_engine_ready', () => {
+            console.log("SMAT Engine Ready - Rendering coins...");
+            initializeHome();
+        });
+
+        // Fallback: If event doesn't fire within 2 seconds, render anyway
+        window.onload = () => {
+            setTimeout(() => {
+                if (document.getElementById('coinContainer').innerHTML === '') {
+                    initializeHome();
+                }
+            }, 2000);
         };
     </script>
 </body>
