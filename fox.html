@@ -2,110 +2,110 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover, interactive-widget=resizes-content">
     <title>SMAT | Global Chat</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><circle cx='50' cy='50' r='50' fill='%23f3ba2f'/><text x='50%25' y='55%25' text-anchor='middle' dy='.3em' fill='black' font-family='Courier New, monospace' font-weight='900' font-size='60'>S</text></svg>">
     
     <style>
         :root {
-            --primary: #f3ba2f;
-            --bg: #0b0e11;
-            --card-bg: #1e2329;
-            --chat-bubble: #2b3139;
-            --text-main: #ffffff;
-            --text-sec: #848e9c;
-            --admin-color: #0ecb81;
-            --danger: #f6465d;
-            --gold: #ffd700;
+            --primary: #f3ba2f; --bg: #0b0e11; --card-bg: #1e2329;
+            --chat-bubble: #2b3139; --text-main: #ffffff; --text-sec: #848e9c;
+            --admin-color: #0ecb81; --super-admin: #f0b90b; --danger: #f6465d;
+            --mention-green: #0ecb81; --gold: #ffd700; --rain-blue: #00d2ff; --drop-cyan: #00ffcc;
         }
 
         * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; margin: 0; padding: 0; }
-        body { background: var(--bg); color: var(--text-main); font-family: 'Inter', sans-serif; display: flex; flex-direction: column; height: 100vh; overflow: hidden; }
+        body { background: var(--bg); color: var(--text-main); font-family: 'Inter', sans-serif; display: flex; flex-direction: column; height: 100vh; height: 100dvh; overflow: hidden; width: 100%; position: relative; }
 
-        /* --- Header & Pinned --- */
+        /* Pinned Section */
+        #pinnedContainer {
+            background: var(--card-bg); border-bottom: 1px solid var(--primary);
+            padding: 8px 15px; display: none; align-items: center; justify-content: space-between;
+            z-index: 101; flex-shrink: 0; animation: slideDown 0.3s ease;
+        }
+        @keyframes slideDown { from { transform: translateY(-100%); } to { transform: translateY(0); } }
+
         .chat-header { padding: 12px 15px; background: var(--card-bg); border-bottom: 2px solid var(--primary); display: flex; justify-content: space-between; align-items: center; z-index: 100; flex-shrink: 0; }
         
-        #pinnedContainer { 
-            background: #181a20; border-left: 3px solid var(--primary); padding: 8px 15px; 
-            display: none; justify-content: space-between; align-items: center; font-size: 13px; 
-            border-bottom: 1px solid #333; flex-shrink: 0;
-        }
+        #chatDisplay { flex: 1; overflow-y: auto; padding: 15px; display: flex; flex-direction: column; gap: 15px; background: linear-gradient(to bottom, #0b0e11, #161a1e); scroll-behavior: smooth; }
 
-        /* --- Chat Display --- */
-        #chatDisplay { flex: 1; overflow-y: auto; padding: 15px; display: flex; flex-direction: column; gap: 15px; background: #0b0e11; }
-        .msg-row { display: flex; gap: 12px; width: 100%; flex-shrink: 0; }
-        .avatar { width: 40px; height: 40px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: 900; color: #fff; flex-shrink: 0; cursor: pointer; }
+        .msg-row { display: flex; gap: 12px; animation: slideUp 0.3s ease-out; width: 100%; }
+        .avatar { width: 40px; height: 40px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: 900; color: #fff; flex-shrink: 0; }
         
-        .bubble { background: var(--chat-bubble); padding: 10px 14px; border-radius: 5px 15px 15px 15px; font-size: 14px; color: #f0f0f0; max-width: 85%; word-break: break-word; }
-        .chat-img { max-width: 100%; border-radius: 8px; margin-top: 5px; border: 1px solid #444; }
+        .bubble { background: var(--chat-bubble); padding: 10px 14px; border-radius: 5px 15px 15px 15px; font-size: 14px; position: relative; max-width: 85%; }
+        .chat-img { max-width: 100%; border-radius: 8px; margin-top: 5px; display: block; border: 1px solid #444; }
 
-        /* --- Badges --- */
-        .badge { font-size: 9px; padding: 1px 6px; border-radius: 4px; font-weight: 900; text-transform: uppercase; margin-left: 5px; }
-        .badge-admin { background: rgba(14, 203, 129, 0.2); color: var(--admin-color); border: 1px solid var(--admin-color); }
-        .badge-super { background: rgba(243, 186, 47, 0.2); color: var(--primary); border: 1px solid var(--primary); }
-
-        /* --- Input Area Fix --- */
-        .input-area { padding: 10px 15px; background: var(--card-bg); border-top: 1px solid #333; flex-shrink: 0; padding-bottom: max(10px, env(safe-area-inset-bottom)); }
-        .input-box-wrapper { display: flex; gap: 10px; align-items: center; width: 100%; }
-        .input-container { flex: 1; display: flex; background: #181a20; border-radius: 25px; padding: 0 15px; align-items: center; border: 1px solid #363c44; }
-        #messageInput { flex: 1; background: transparent; border: none; padding: 12px 0; color: white; font-size: 16px; outline: none; }
+        /* Input Area Fixes */
+        .input-area { padding: 10px 15px; background: var(--card-bg); border-top: 1px solid var(--chat-bubble); z-index: 100; padding-bottom: max(10px, env(safe-area-inset-bottom)); }
+        .input-box-wrapper { display: flex; gap: 8px; align-items: center; }
+        .input-container { flex: 1; display: flex; background: #181a20; border-radius: 25px; padding: 0 12px; align-items: center; border: 1px solid #363c44; }
+        #messageInput { flex: 1; background: transparent; border: none; padding: 10px 5px; color: white; outline: none; }
         
-        .send-btn { background: var(--primary) !important; border: none; width: 45px; height: 45px; border-radius: 12px; color: #000; cursor: pointer; display: flex; align-items: center; justify-content: center; flex-shrink: 0; font-size: 18px; }
-        .upload-label { color: var(--text-sec); cursor: pointer; font-size: 20px; display: none; flex-shrink: 0; }
+        .admin-only-tool { display: none; color: var(--text-sec); cursor: pointer; margin-right: 8px; font-size: 18px; }
+        .send-btn { background: var(--primary); border: none; width: 42px; height: 42px; border-radius: 12px; color: #000; cursor: pointer; display: flex; align-items: center; justify-content: center; }
 
-        /* --- Modals --- */
+        /* User Profile Modal */
+        .profile-card { text-align: center; }
+        .profile-card .avatar-lg { width: 70px; height: 70px; border-radius: 50%; margin: 0 auto 15px; display: flex; align-items: center; justify-content: center; font-size: 30px; font-weight: 900; color: white; }
+        .action-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 20px; }
+        .action-btn { padding: 10px; border: none; border-radius: 8px; font-weight: 800; cursor: pointer; }
+
+        /* Floating Components */
+        #s-bubble { position: fixed; width: 65px; height: 65px; z-index: 9999; cursor: pointer; display: none; animation: floatBubble 10s ease-in-out infinite; }
+        @keyframes floatBubble { 0%, 100% { transform: translate(0, 0); } 50% { transform: translate(40vw, 60vh); } }
         .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.9); z-index: 5000; justify-content: center; align-items: center; }
-        .modal-box { background: var(--card-bg); padding: 25px; border-radius: 15px; width: 85%; max-width: 320px; text-align: center; border: 1px solid var(--primary); }
-        .modal-btn { width: 100%; padding: 12px; margin-top: 10px; border: none; border-radius: 8px; font-weight: 900; cursor: pointer; }
-        
-        #jojoTimer { position: absolute; top: 65px; right: 15px; background: rgba(30,35,41,0.9); border: 1px solid var(--primary); padding: 5px 10px; border-radius: 5px; font-size: 11px; color: var(--primary); z-index: 99; }
+        .modal-box { background: var(--card-bg); padding: 20px; border-radius: 15px; width: 90%; max-width: 380px; border: 1px solid var(--primary); }
     </style>
 </head>
 <body>
 
     <div id="pinnedContainer">
-        <div style="flex:1;">
-            <div style="color:var(--primary); font-size: 10px; font-weight: 900; text-transform: uppercase;">📌 Pinned Message</div>
-            <div id="pinnedText" style="white-space: nowrap; overflow: hidden; text-overflow: ellipsis; color: #fff;">...</div>
+        <div style="display: flex; align-items: center; gap: 10px; overflow: hidden;">
+            <i class="fa-solid fa-thumbtack" style="color: var(--primary); transform: rotate(-45deg);"></i>
+            <div id="pinnedText" style="font-size: 12px; color: white; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">No pinned message</div>
         </div>
-        <i id="unpinBtn" class="fa-solid fa-circle-xmark" style="color:var(--text-sec); cursor:pointer; margin-left: 10px; display:none;" onclick="handleUnpin()"></i>
+        <i class="fa-solid fa-circle-xmark" id="unpinBtn" style="color: var(--text-sec); cursor: pointer; display: none;" onclick="unpinMessage()"></i>
     </div>
 
-    <div id="userModal" class="modal">
-        <div class="modal-box">
-            <h3 id="modalUserName" style="color:var(--primary);">User ID</h3>
-            <p id="modalUserRole" style="font-size: 12px; color: var(--text-sec); margin-bottom: 20px;">Role: USER</p>
-            <div id="adminActions" style="display: none;">
-                <button class="modal-btn" style="background:var(--primary); color:#000;" onclick="handlePinAction()">PIN MESSAGE</button>
-                <button class="modal-btn" style="background:var(--danger); color:#fff;" onclick="handleBanAction()">BAN USER</button>
-                <button class="modal-btn" style="background:#444; color:#fff;" onclick="handleDeleteAction()">DELETE MESSAGE</button>
+    <div id="s-bubble" onclick="popBubble()"><div style="background:radial-gradient(circle, #f0b90b, #cc9900); width:100%; height:100%; border-radius:50%; display:flex; align-items:center; justify-content:center; color:white; font-weight:900; font-size:30px; box-shadow:0 0 15px rgba(240,185,11,0.5);">S</div></div>
+
+    <div id="profileModal" class="modal">
+        <div class="modal-box profile-card">
+            <div id="p-avatar" class="avatar-lg"></div>
+            <h3 id="p-id" style="color:white; margin-bottom: 5px;"></h3>
+            <p id="p-role" style="font-size: 12px; color: var(--text-sec);"></p>
+            <div class="action-grid" id="adminActions" style="display:none;">
+                <button class="action-btn" style="background: var(--primary); color: black;" id="pinActionBtn">PIN</button>
+                <button class="action-btn" style="background: var(--danger); color: white;" id="banActionBtn">BAN</button>
+                <button class="action-btn" style="background: var(--chat-bubble); color: white; grid-column: span 2;" id="delActionBtn">DELETE MSG</button>
             </div>
-            <button class="modal-btn" style="background:transparent; color:var(--text-sec);" onclick="closeModal('userModal')">CANCEL</button>
+            <button onclick="closeModal('profileModal')" style="width:100%; margin-top:15px; background:transparent; border:none; color:var(--text-sec);">Close</button>
         </div>
     </div>
 
     <div class="chat-header">
-        <div style="color:var(--primary); font-weight:900; font-size:18px;">Global 💬 SMAT</div>
-        <div style="display:flex; gap:12px; align-items:center;">
-            <i class="fa-solid fa-crown" style="color:var(--gold); font-size:20px; cursor:pointer;" onclick="openLeaderboard()"></i>
-            <a href="home.html" style="color:var(--text-sec); font-size:24px;"><i class="fa-solid fa-circle-xmark"></i></a>
+        <div class="header-title">Global 💬 English</div>
+        <div style="display:flex; gap:6px; align-items:center;">
+            <i class="fa-solid fa-crown" style="color: var(--gold); cursor: pointer; font-size: 18px;" onclick="openLeaderboard()"></i>
+            <button id="superAdminBtn" class="btn-panel" style="display:none; background: var(--primary); color: black; font-size: 10px; padding: 4px; border:none; border-radius:4px;" onclick="openModal('adminModal')">Super Admin</button>
+            <a href="home.html" style="color:var(--text-sec); font-size: 20px;"><i class="fa-solid fa-circle-xmark"></i></a>
         </div>
     </div>
 
     <div id="chatDisplay"></div>
-    <div id="jojoTimer">Jojo Time: <span id="jojoClock">00:00:00</span></div>
 
     <div class="input-area">
         <div class="input-box-wrapper">
-            <label for="imgUpload" id="adminUploadBtn" class="upload-label"><i class="fa-solid fa-image"></i></label>
-            <input type="file" id="imgUpload" accept="image/*" style="display:none;" onchange="handleImageSend(this)">
-            
+            <div class="special-tools">
+                <i class="fa-solid fa-cloud-showers-heavy tool-btn rain-tool" style="color:var(--rain-blue); cursor:pointer;" onclick="openSpecial('RAIN')"></i>
+            </div>
             <div class="input-container">
+                <label for="imgUpload" class="admin-only-tool" id="imgToolBtn"><i class="fa-solid fa-image"></i></label>
+                <input type="file" id="imgUpload" style="display:none;" accept="image/*" onchange="handleImage(this)">
                 <input type="text" id="messageInput" placeholder="Write a message..." autocomplete="off">
             </div>
-            <button id="sendBtn" class="send-btn" onclick="sendMessage()">
-                <i class="fa-solid fa-paper-plane"></i>
-            </button>
+            <button id="sendBtn" class="send-btn" onclick="sendMessage()"><i class="fa-solid fa-paper-plane"></i></button>
         </div>
     </div>
 
@@ -113,10 +113,12 @@
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
         import { getDatabase, ref, push, onValue, set, update, remove, limitToLast, query, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
 
+        // Your Firebase Config (Keep it exactly as is)
         const firebaseConfig = {
             apiKey: "AIzaSyAMxtJedkehhxJRMPZLjhpKHqneHEWsGlE",
             authDomain: "smat-exchange.firebaseapp.com",
             projectId: "smat-exchange",
+            databaseURL: "https://smat-exchange-default-rtdb.firebaseio.com",
             storageBucket: "smat-exchange.firebasestorage.app",
             messagingSenderId: "836334569396",
             appId: "1:836334569396:web:679effe640b3453412d4e1"
@@ -124,131 +126,128 @@
 
         const app = initializeApp(firebaseConfig);
         const db = getDatabase(app);
-        
-        const MAIN_OWNER = "SMAT100001";
-        const user = { id: localStorage.getItem('smatID') || "GUEST", role: "USER" };
-        let adminsList = [];
-        let selectedMsg = null;
+        const messagesRef = ref(db, "global_messages");
+        const pinRef = ref(db, "pinned_notice");
+        const adminsRef = ref(db, "smat_admins");
+        const restrictedRef = ref(db, "smat_restricted");
 
-        // --- Admin & Pin Control ---
-        onValue(ref(db, "smat_admins"), (snap) => {
+        const MAIN_SUPER_ADMIN = "SMAT100001";
+        let user = { id: localStorage.getItem('smatID') || "SMAT100001", role: "USER" };
+        let adminsList = [];
+        let restrictedList = [];
+
+        // Admin Sync
+        onValue(adminsRef, (snap) => {
             adminsList = snap.val() ? Object.values(snap.val()) : [];
-            if(user.id === MAIN_OWNER) user.role = "SUPER_ADMIN";
+            if(user.id === MAIN_SUPER_ADMIN) user.role = "SUPER_ADMIN";
             else if(adminsList.includes(user.id)) user.role = "ADMIN";
             
-            if(user.role !== "USER") document.getElementById('adminUploadBtn').style.display = 'block';
+            if(user.role !== "USER") {
+                document.getElementById('imgToolBtn').style.display = 'block';
+                if(user.role === "SUPER_ADMIN") document.getElementById('superAdminBtn').style.display = 'block';
+            }
         });
 
-        onValue(ref(db, "pinned_msg"), (snap) => {
+        // Pin Message Sync
+        onValue(pinRef, (snap) => {
             const data = snap.val();
             const container = document.getElementById('pinnedContainer');
             if(data) {
-                container.style.display = 'flex';
                 document.getElementById('pinnedText').innerText = data.text;
-                document.getElementById('unpinBtn').style.display = (user.role !== "USER") ? 'block' : 'none';
+                container.style.display = 'flex';
+                if(user.role !== "USER") document.getElementById('unpinBtn').style.display = 'block';
             } else {
                 container.style.display = 'none';
             }
         });
 
-        // --- Render Chat with Badges & Colors ---
-        const q = query(ref(db, "global_messages"), limitToLast(100));
-        onValue(q, (snap) => {
-            const container = document.getElementById('chatDisplay');
-            container.innerHTML = '';
-            snap.forEach(child => {
-                const msg = child.val();
-                const mid = child.key;
-                const idColor = getUserColor(msg.id);
-                const isOwner = msg.id === MAIN_OWNER;
-                const isAdmin = adminsList.includes(msg.id);
+        // Unique Color Generator
+        function getIDColor(id) {
+            let hash = 0;
+            for (let i = 0; i < id.length; i++) hash = id.charCodeAt(i) + ((hash << 5) - hash);
+            return `hsl(${Math.abs(hash) % 360}, 75%, 65%)`;
+        }
 
-                const html = `
-                    <div class="msg-row">
-                        <div class="avatar" style="background:${idColor}" onclick="openUserActions('${msg.id}', '${mid}', '${msg.text ? msg.text.replace(/'/g, "") : "Image"}')">
-                            ${msg.id[0]}
-                        </div>
-                        <div class="msg-content">
-                            <div style="font-size:11px; font-weight:800; color:${idColor}; display:flex; align-items:center;">
-                                ${msg.id}
-                                ${isOwner ? '<span class="badge badge-super">Owner</span>' : isAdmin ? '<span class="badge badge-admin">Admin</span>' : ''}
-                            </div>
-                            <div class="bubble">
-                                ${msg.image ? `<img src="${msg.image}" class="chat-img">` : ''}
-                                ${msg.text || ''}
-                            </div>
-                        </div>
-                    </div>
-                `;
-                container.insertAdjacentHTML('beforeend', html);
-            });
-            container.scrollTop = container.scrollHeight;
-        });
-
-        // --- Admin Functions ---
-        window.openUserActions = (targetId, mid, text) => {
-            selectedMsg = { mid, targetId, text };
-            document.getElementById('modalUserName').innerText = targetId;
-            document.getElementById('modalUserRole').innerText = (targetId === MAIN_OWNER) ? "Role: Owner" : adminsList.includes(targetId) ? "Role: Admin" : "Role: User";
-            document.getElementById('adminActions').style.display = (user.role !== "USER") ? 'block' : 'none';
-            document.getElementById('userModal').style.display = 'flex';
-        };
-
-        window.handlePinAction = () => {
-            if(!selectedMsg.text || selectedMsg.text === "Image") return alert("Cannot pin empty text");
-            set(ref(db, "pinned_msg"), { text: selectedMsg.text, by: user.id });
-            closeModal('userModal');
-        };
-
-        window.handleUnpin = () => { remove(ref(db, "pinned_msg")); };
-        window.handleDeleteAction = () => { remove(ref(db, "global_messages/" + selectedMsg.mid)); closeModal('userModal'); };
-        
-        window.handleBanAction = () => {
-            if(selectedMsg.targetId === MAIN_OWNER) return alert("Owner cannot be banned!");
-            set(ref(db, "smat_restricted/" + selectedMsg.targetId), selectedMsg.targetId);
-            remove(ref(db, "global_messages/" + selectedMsg.mid));
-            closeModal('userModal');
-        };
-
-        // --- Message & Image logic ---
-        window.sendMessage = () => {
+        window.sendMessage = async function(imgData = null) {
             const input = document.getElementById('messageInput');
-            if(!input.value.trim()) return;
-            push(ref(db, "global_messages"), {
+            let text = input.value.trim();
+            if(!text && !imgData) return;
+            if(restrictedList.includes(user.id)) return alert("Muted!");
+
+            push(messagesRef, {
                 id: user.id,
-                text: input.value.trim(),
-                time: new Date().toLocaleTimeString(),
-                timestamp: serverTimestamp()
+                text: text,
+                image: imgData,
+                time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+                timestamp: serverTimestamp(),
+                role: user.role
             });
             input.value = '';
         };
 
-        window.handleImageSend = (input) => {
+        window.handleImage = function(input) {
             const file = input.files[0];
-            if(!file) return;
-            const reader = new FileReader();
-            reader.onload = (e) => {
-                push(ref(db, "global_messages"), {
-                    id: user.id,
-                    image: e.target.result,
-                    time: new Date().toLocaleTimeString(),
-                    timestamp: serverTimestamp()
-                });
-            };
-            reader.readAsDataURL(file);
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = (e) => sendMessage(e.target.result);
+                reader.readAsDataURL(file);
+            }
         };
 
-        function getUserColor(id) {
-            let hash = 0;
-            for (let i = 0; i < id.length; i++) hash = id.charCodeAt(i) + ((hash << 5) - hash);
-            return `hsl(${Math.abs(hash) % 360}, 70%, 60%)`;
-        }
-        window.closeModal = (id) => document.getElementById(id).style.display = 'none';
+        window.showProfile = function(uid, role, mid, text) {
+            document.getElementById('p-id').innerText = uid;
+            document.getElementById('p-id').style.color = getIDColor(uid);
+            document.getElementById('p-avatar').innerText = uid[0];
+            document.getElementById('p-avatar').style.backgroundColor = getIDColor(uid);
+            document.getElementById('p-role').innerText = role;
+            
+            const adminActions = document.getElementById('adminActions');
+            if(user.role !== "USER" && uid !== "SYSTEM") {
+                adminActions.style.display = 'grid';
+                document.getElementById('pinActionBtn').onclick = () => { set(pinRef, { text, uid }); closeModal('profileModal'); };
+                document.getElementById('banActionBtn').onclick = () => { if(uid !== MAIN_SUPER_ADMIN) set(ref(db, 'smat_restricted/'+uid), uid); closeModal('profileModal'); };
+                document.getElementById('delActionBtn').onclick = () => { remove(ref(db, 'global_messages/'+mid)); closeModal('profileModal'); };
+            } else {
+                adminActions.style.display = 'none';
+            }
+            openModal('profileModal');
+        };
 
-        // Timer Logic
-        setInterval(() => {
-            document.getElementById('jojoClock').innerText = new Date().toLocaleTimeString('en-US', { hour12: true, hour: '2-digit', minute: '2-digit', second: '2-digit' });
-        }, 1000);
+        window.unpinMessage = () => remove(pinRef);
+
+        onValue(query(messagesRef, limitToLast(100)), (snap) => {
+            const container = document.getElementById('chatDisplay');
+            container.innerHTML = '';
+            snap.forEach((child) => {
+                const msg = child.val();
+                const mid = child.key;
+                const isMe = msg.id === user.id;
+                const nameColor = getIDColor(msg.id);
+
+                container.innerHTML += `
+                    <div class="msg-row">
+                        <div class="avatar" style="background:${nameColor}">${msg.id[0]}</div>
+                        <div class="msg-content" style="width: 100%;">
+                            <div class="user-meta">
+                                <span style="color:${nameColor}; font-weight:900; font-size:12px; cursor:pointer;" onclick="showProfile('${msg.id}', '${msg.role}', '${mid}', '${msg.text}')">
+                                    ${msg.id === MAIN_SUPER_ADMIN ? '👑 ' : ''}${msg.id}
+                                </span>
+                                <span class="timestamp" style="font-size:9px; color:gray; margin-left:5px;">${msg.time}</span>
+                            </div>
+                            <div class="bubble" style="border-left: 3px solid ${nameColor}">
+                                ${msg.text ? `<div>${msg.text}</div>` : ''}
+                                ${msg.image ? `<img src="${msg.image}" class="chat-img">` : ''}
+                            </div>
+                        </div>
+                    </div>
+                `;
+            });
+            container.scrollTop = container.scrollHeight;
+        });
+
+        // Utility
+        window.openModal = (id) => document.getElementById(id).style.display = 'flex';
+        window.closeModal = (id) => document.getElementById(id).style.display = 'none';
     </script>
 </body>
 </html>
