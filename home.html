@@ -11,7 +11,7 @@
     <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><circle cx='50' cy='50' r='50' fill='%23f3ba2f'/><text x='50%25' y='55%25' text-anchor='middle' dy='.3em' fill='black' font-family='Courier New, monospace' font-weight='900' font-size='60'>S</text></svg>">
 
     <!-- ==================== FIREBASE SECTION - START ==================== -->
-    <!-- Delete this entire section when moving to VPS -->
+    <!-- Delete this entire section when moving to VPS/custom backend -->
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
         import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
@@ -47,10 +47,7 @@
                 const userRef = ref(db, 'users/' + user.uid);
                 onValue(userRef, (snapshot) => {
                     const data = snapshot.val();
-                    if (data && data.smatID) {
-                        smatIDDisplay.innerText = data.smatID;
-                        localStorage.setItem('smatID', data.smatID);
-                    }
+                    if (data && data.smatID) smatIDDisplay.innerText = data.smatID;
                 });
                 updateKYCUI();
             } else {
@@ -268,29 +265,29 @@
             renderCoins(category);
         }
 
-        // FIXED renderCoins function - 100% compatible with your coin.js
+        // FINAL FIXED renderCoins - Very Simple & Safe
         function renderCoins(filter = 'hot') {
             const container = document.getElementById('coinContainer');
             if (!container) return;
 
-            const liveData = (typeof GLOBAL_COINS !== 'undefined') ? GLOBAL_COINS : [];
-            let filtered = liveData;
+            const coins = (typeof GLOBAL_COINS !== 'undefined') ? GLOBAL_COINS : [];
+            let filtered = coins;
 
-            if (filter === 'hot') filtered = [...liveData].slice(0, 10);
-            else if (filter === 'gainer') filtered = [...liveData].sort((a, b) => b.price - a.price).slice(0, 8);
-            else if (filter === 'loser') filtered = [...liveData].sort((a, b) => a.price - b.price).slice(0, 8);
+            if (filter === 'hot') filtered = [...coins].slice(0, 10);
+            else if (filter === 'gainer') filtered = [...coins].sort((a, b) => b.price - a.price).slice(0, 8);
+            else if (filter === 'loser') filtered = [...coins].sort((a, b) => a.price - b.price).slice(0, 8);
 
-            let htmlContent = '';
+            let html = '';
             filtered.forEach(coin => {
                 const price = coin.price || 0;
                 const isUp = Math.random() > 0.5;
-                const change = (Math.random() * 6 + 0.5).toFixed(2);   // 0.5% to 6.5%
+                const changeNum = (Math.random() * 5 + 0.5).toFixed(2);
 
                 const sign = isUp ? '+' : '-';
-                const color = isUp ? 'var(--up)' : 'var(--down)';
-                const bg = isUp ? 'rgba(14, 203, 129, 0.15)' : 'rgba(246, 70, 93, 0.15)';
+                const color = isUp ? '#0ecb81' : '#f6465d';
+                const bgColor = isUp ? 'rgba(14, 203, 129, 0.15)' : 'rgba(246, 70, 93, 0.15)';
 
-                htmlContent += `
+                html += `
                     <div class="coin-row" onclick="if(checkAuth(event)) window.location.href='Trade.html?coin=${coin.sym}'">
                         <div style="display:flex; align-items:center; gap:12px;">
                             <img src="assets/logos/\( {coin.sym.toLowerCase()}.png" class="coin-icon" onerror="this.src='https://via.placeholder.com/40?text= \){coin.sym[0]}'">
@@ -301,15 +298,15 @@
                         </div>
                         <div style="text-align:right">
                             <div style="font-weight:bold; font-size:16px">$${price.toLocaleString()}</div>
-                            <div class="percent-box" style="background:\( {bg}; color: \){color}">
-                                \( {sign} \){change}%
+                            <div class="percent-box" style="background:\( {bgColor}; color: \){color}">
+                                \( {sign} \){changeNum}%
                             </div>
                         </div>
                     </div>
                 `;
             });
 
-            container.innerHTML = htmlContent;
+            container.innerHTML = html;
         }
 
         function handleKYC() {
@@ -329,14 +326,12 @@
             }
         }
 
-        // Initialize after coin.js loads
+        // Initialize page
         window.addEventListener('load', () => {
-            // Wait a bit for coin.js to finish initSmatEngine()
             setTimeout(() => {
                 renderCoins('hot');
-            }, 800);
+            }, 600);
 
-            // Auto refresh every 5 seconds
             setInterval(() => {
                 renderCoins(currentActiveTab);
             }, 5000);
