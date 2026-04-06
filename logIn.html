@@ -189,6 +189,7 @@
 <script type="module">
   import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
   import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, sendEmailVerification, sendPasswordResetEmail } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+  import { getDatabase, ref, set, get, runTransaction } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
 
   const firebaseConfig = {
     apiKey: "AIzaSyAMxtJedkehhxJRMPZLjhpKHqneHEWsGlE",
@@ -202,21 +203,19 @@
 
   const app = initializeApp(firebaseConfig);
   const auth = getAuth(app);
+  const db = getDatabase(app);
 
   let isLogin = true;
 
-  // Password Validation Logic
   window.validatePassword = () => {
     const pass = document.getElementById('password').value;
     const status = document.getElementById('passStatus');
     const submitBtn = document.getElementById('btn');
-    
-    // Regex: At least 8 chars, 1 letter and 1 number
     const regex = /^(?=.*[A-Za-z])(?=.*\d)[A-Za-z\d]{8,}$/;
 
     if (pass === "") {
         status.innerText = "";
-        submitBtn.disabled = false; // Allow empty check during login (Firebase handles it)
+        submitBtn.disabled = false;
         return;
     }
 
@@ -227,7 +226,6 @@
     } else {
         status.innerText = "Min 8 chars, Letter & Number";
         status.style.color = "#ff4d4d";
-        // Only disable on Register mode to enforce security
         if(!isLogin) submitBtn.disabled = true;
     }
   };
@@ -241,6 +239,15 @@
     document.getElementById('message').style.display = "none";
     document.getElementById('passStatus').innerText = "";
     document.getElementById('btn').disabled = false;
+  };
+
+  // --- Auto-ID Generation & Registration Logic ---
+  const generateSmatID = async () => {
+    const counterRef = ref(db, 'counters/lastSmatId');
+    const result = await runTransaction(counterRef, (currentValue) => {
+      return (currentValue || 100000) + 1;
+    });
+    return "SMAT" + result.snapshot.val();
   };
 
   window.handleAuth = async () => {
@@ -259,19 +266,36 @@
         const userCredential = await signInWithEmailAndPassword(auth, email, pass);
         
         if (userCredential.user.emailVerified) {
+          // লগইন সফল হলে প্রোফাইল থেকে আইডি খুঁজে LocalStorage এ সেভ করা
+          const userSnapshot = await get(ref(db, 'users/' + userCredential.user.uid));
+          if(userSnapshot.exists()){
+            localStorage.setItem('smatID', userSnapshot.val().smatID);
+          }
+          
           localStorage.setItem('isLoggedIn', 'true');
           localStorage.setItem('userEmail', email);
-          
-          // Redirecting to home.html (Corrected path)
-          window.location.href = "home.html"; 
-          
+          window.location.href = "Home.html"; 
         } else {
           msgBox.style.color = "#f3ba2f";
           msgBox.innerText = "Please verify your email first!";
         }
       } else {
-        const user = await createUserWithEmailAndPassword(auth, email, pass);
-        await sendEmailVerification(user.user);
+        // নতুন ইউজার রেজিস্ট্রেশন
+        const userCredential = await createUserWithEmailAndPassword(auth, email, pass);
+        const newUser = userCredential.user;
+        
+        // সিরিয়াল অনুযায়ী নতুন আইডি জেনারেট করা
+        const newSmatID = await generateSmatID();
+
+        // ডেটাবেজে ইউজারের তথ্য সেভ করা
+        await set(ref(db, 'users/' + newUser.uid), {
+          email: email,
+          smatID: newSmatID,
+          kycStatus: 'unverified',
+          createdAt: new Date().toISOString()
+        });
+
+        await sendEmailVerification(newUser);
         msgBox.style.color = "#00ff88";
         msgBox.innerText = "Verification link sent! Check your Gmail.";
       }
