@@ -161,15 +161,15 @@
     </div>
 
     <div id="pop-msg" class="pop-text">
-        <div style="font-size: 20px;">Jojo Gift You!</div>
-        <div style="font-size: 14px;">+1.00 SMAT COIN</div>
+        <div style="font-size: 20px;">"I'm Jojo"</div>
+        <div style="font-size: 14px;">+1.00 SMAT </div>
     </div>
 
     <div id="jojoTimer">Jojo Time: <span id="jojoClock">00:00:00</span></div>
 
     <div id="leaderboardModal" class="modal">
         <div class="modal-box">
-            <h2 style="color:var(--primary); text-align: center; font-size: 18px;"><i class="fa-solid fa-trophy"></i> Top Earners</h2>
+            <h2 style="color:var(--primary); text-align: center; font-size: 18px;"><i class="fa-solid fa-trophy"></i> Today's  Earners</h2>
             <div id="leaderboardBody"></div>
             <button onclick="closeModal('leaderboardModal')" style="width:100%; margin-top:15px; background:var(--primary); border:none; padding:10px; border-radius:8px; font-weight: 800;">CLOSE</button>
         </div>
@@ -195,7 +195,7 @@
     <div id="adminModal" class="modal">
         <div class="modal-box">
             <h2 style="color:var(--primary); font-size: 18px;"><i class="fa-solid fa-user-shield"></i> Admin Panel</h2>
-            <input type="text" id="targetUserID" placeholder="SMAT ID to promote">
+            <input type="text" id="targetUserID" placeholder="Admin Appointment">
             <button onclick="makeAdmin()" style="width:100%; padding:12px; background:var(--primary); border:none; font-weight:900; border-radius:8px;">PROMOTE</button>
             <button onclick="closeModal('adminModal')" style="width:100%; margin-top:10px; background:transparent; border:none; color:var(--text-sec);">Close</button>
         </div>
@@ -210,11 +210,11 @@
     </div>
 
     <div class="chat-header">
-        <div class="header-title">SMAT CHAT</div>
+        <div class="header-title">Global 💬 English</div>
         <div style="display:flex; gap:6px; align-items:center;">
             <i class="fa-solid fa-crown" style="color: var(--gold); cursor: pointer; font-size: 18px;" onclick="openLeaderboard()"></i>
-            <button id="banListBtn" class="btn-panel" style="display:none; background: var(--danger); color: white;" onclick="openBanList()">LIST</button>
-            <button id="superAdminBtn" class="btn-panel" style="display:none; background: var(--primary); color: black;" onclick="openModal('adminModal')">ADMIN</button>
+            <button id="banListBtn" class="btn-panel" style="display:none; background: var(--danger); color: white;" onclick="openBanList()">Mute List</button>
+            <button id="superAdminBtn" class="btn-panel" style="display:none; background: var(--primary); color: black;" onclick="openModal('adminModal')">Super Admin</button>
             <a href="home.html" style="color:var(--text-sec); font-size: 20px; margin-left: 2px;"><i class="fa-solid fa-circle-xmark"></i></a>
         </div>
     </div>
@@ -265,8 +265,8 @@
             const currentTime = hours * 60 + minutes;
 
             const schedules = [
-                { start: 3*60+40, end: 3*60+50 }, { start: 7*60+50, end: 8*60 },
-                { start: 14*60+50, end: 15*60 }, { start: 19*60+50, end: 20*60 }
+                { start: 1*60+50, end: 2*60 }, { start: 7*60+50, end: 8*60 },
+                { start: 13*60+50, end: 14*60 }, { start: 19*60+50, end: 20*60 }
             ];
 
             let active = schedules.some(s => currentTime >= s.start && currentTime < s.end);
