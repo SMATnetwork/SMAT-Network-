@@ -3,8 +3,10 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover, interactive-widget=resizes-content">
-    <title>SMAT | Premium Chat</title>
+    <title>SMAT | Global Chat</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><circle cx='50' cy='50' r='50' fill='%23f3ba2f'/><text x='50%25' y='55%25' text-anchor='middle' dy='.3em' fill='black' font-family='Courier New, monospace' font-weight='900' font-size='60'>S</text></svg>">
+    
     <style>
         :root {
             --primary: #f3ba2f;
@@ -423,15 +425,34 @@
             const container = document.getElementById('chatDisplay');
             container.innerHTML = '';
             const admins = JSON.parse(localStorage.getItem('smat_admins')) || [];
+            
+            const captIcon = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" style="width:12px; height:12px; fill:yellow; margin-right:4px; vertical-align:middle;"><path d="M256 0c15.1 0 28.5 10.5 31.5 25.3l15 74.2C353.4 111.4 400.6 158.6 412.5 209.5l74.2 15c14.8 3 25.3 16.4 25.3 31.5s-10.5 28.5-25.3 31.5l-74.2 15c-11.9 50.9-59.1 98.1-109.9 110l-15 74.2c-3 14.8-16.4 25.3-31.5 25.3s-28.5-10.5-31.5-25.3l-15-74.2C158.6 400.6 111.4 353.4 99.5 302.5l-74.2-15C10.5 285.5 0 272.1 0 257s10.5-28.5 25.3-31.5l74.2-15c11.9-50.9 59.1-98.1 110-110l15-74.2C227.5 10.5 240.9 0 256 0zM256 160c-53 0-96 43-96 96s43 96 96 96s96-43 96-96s-43-96-96-96z"/></svg>`;
+
             messages.forEach(msg => {
                 const isMentionedMe = msg.text.includes("@" + user.id);
                 let btn = msg.dropData ? `<button class="claim-btn" ${msg.isCompleted ? 'disabled' : ''} onclick="claimDrop('${msg.dropData.id}', ${msg.dropData.total}, ${msg.dropData.count}, '${msg.dropData.coin}', '${msg.mid}')">${msg.isCompleted ? 'EMPTY' : 'CLAIM'}</button>` : '';
+                
+                let displayName = msg.id;
+                let nameColor = "#fff";
+                let iconPrefix = "";
+
+                if (msg.id === "SYSTEM") {
+                    displayName = "SMAT Bot";
+                    nameColor = "#0ecb81"; 
+                } else if (msg.id === MAIN_SUPER_ADMIN) {
+                    nameColor = "yellow";
+                    iconPrefix = captIcon;
+                } else if (admins.includes(msg.id)) {
+                    nameColor = "yellow";
+                    iconPrefix = captIcon;
+                }
+
                 container.innerHTML += `
                     <div class="msg-row">
                         <div class="avatar" style="background:${getAvatarColor(msg.id)}">${msg.id === "SYSTEM" ? '<i class="fa-solid fa-robot"></i>' : msg.id[0]}</div>
                         <div class="msg-content">
                             <div class="user-meta">
-                                <span class="user-name" onclick="appendMention('${msg.id}')">${msg.id}</span> 
+                                <span class="user-name" style="color:${nameColor};" onclick="appendMention('${msg.id}')">${iconPrefix}${displayName}</span> 
                                 ${msg.id === MAIN_SUPER_ADMIN ? '<span class="badge badge-super">Owner</span>' : admins.includes(msg.id) ? '<span class="badge badge-admin">Admin</span>' : ''}
                                 <span class="timestamp">${msg.time}</span>
                             </div>
