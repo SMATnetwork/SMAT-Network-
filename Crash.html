@@ -3,60 +3,60 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>SMAT Arena - Fixed</title>
+    <title>SMAT EXPLORER - FINAL</title>
     <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-database-compat.js"></script>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
-        body { background-color: #0b0e11; color: white; font-family: 'Inter', sans-serif; overflow: hidden; }
-        .game-screen { height: 40vh; background: #161a1e; border-radius: 12px; position: relative; overflow: hidden; margin: 10px 16px; border: 1px solid #2d3339; }
+        body { background-color: #0b0e11; color: white; font-family: sans-serif; overflow: hidden; }
+        .game-screen { height: 40vh; background: #161a1e; border-radius: 12px; position: relative; margin: 10px 16px; border: 1px solid #2d3339; overflow: hidden; }
         #multiplier { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); font-size: 5rem; font-weight: 900; color: #f0b90b; z-index: 50; }
-        #loading-screen { position: fixed; inset: 0; background: #0b0e11; z-index: 9999; display: flex; align-items: center; justify-content: center; font-weight: bold; }
-        .history-pill { padding: 2px 8px; border-radius: 4px; font-size: 11px; font-weight: 800; background: #1e2329; }
+        .history-pill { padding: 2px 8px; border-radius: 4px; font-size: 11px; font-weight: 800; background: #1e2329; margin-right: 5px; }
+        #loading { position: fixed; inset: 0; background: #0b0e11; z-index: 9999; display: flex; align-items: center; justify-content: center; }
     </style>
 </head>
 <body>
 
-<div id="loading-screen">CONNECTING TO FIREBASE...</div>
+<div id="loading">Syncing with Firebase...</div>
 
 <div class="app-container">
     <div class="p-5 flex justify-between items-center border-b border-gray-800">
         <div class="flex items-center">
             <div class="bg-yellow-500 w-10 h-10 rounded-full flex items-center justify-center font-black text-black text-xl mr-3">S</div>
-            <h1 class="text-lg font-black uppercase tracking-tight">SMAT EXPLORER</h1>
+            <h1 class="text-lg font-black tracking-tighter">SMAT EXPLORER</h1>
         </div>
-        <div class="bg-[#1e2329] px-4 py-2 rounded-lg border border-gray-700">
-            <span id="balance-display" class="text-sm font-black text-yellow-500">LOADING...</span>
+        <div class="bg-[#1e2329] px-3 py-1 rounded border border-gray-700">
+            <span id="bal-text" class="text-yellow-500 font-bold text-sm">0.00 SMAT</span>
         </div>
     </div>
 
-    <div class="px-4 py-2 flex justify-between text-[10px] font-bold text-gray-500 uppercase">
-        <span>BANK: <span id="bank-val" class="text-blue-400">0.00</span></span>
-        <span>GAME ID: <span id="game-id-val" class="text-white">#0</span></span>
+    <div class="px-4 py-2 flex justify-between text-[10px] font-bold text-gray-500">
+        <span>BANK: <span id="bank-text" class="text-blue-400">0.00</span></span>
+        <span>ID: <span id="id-text" class="text-white">#0</span></span>
     </div>
 
-    <div class="game-screen shadow-2xl">
+    <div class="game-screen">
         <div id="multiplier">1.00x</div>
-        <div id="countdown-overlay" class="absolute inset-0 bg-black/80 z-[60] hidden flex-col items-center justify-center">
-            <div class="text-yellow-500 text-xs font-bold mb-1">NEXT ROUND</div>
-            <div id="timer-num" class="text-6xl font-black">10</div>
+        <div id="timer-box" class="absolute inset-0 bg-black/80 z-[60] hidden flex flex-col items-center justify-center">
+            <p class="text-yellow-500 text-[10px] font-bold mb-1">NEXT ROUND</p>
+            <h2 id="timer-val" class="text-6xl font-black">10</h2>
         </div>
     </div>
 
-    <div id="history-box" class="px-4 flex gap-2 overflow-x-auto mb-4"></div>
+    <div id="history-box" class="px-4 flex overflow-x-auto mb-4"></div>
 
-    <div class="px-4 space-y-4">
-        <div class="grid grid-cols-2 gap-4">
-            <div class="bg-[#1e2329] p-3 rounded-xl border border-gray-800">
-                <label class="text-[9px] text-gray-500 font-bold uppercase">Bet Amount</label>
-                <input id="bet-input" type="number" value="10" class="w-full bg-transparent text-xl font-black outline-none text-yellow-500">
+    <div class="px-4 space-y-3">
+        <div class="grid grid-cols-2 gap-3">
+            <div class="bg-[#1e2329] p-2 rounded border border-gray-800">
+                <p class="text-[9px] text-gray-500 font-bold">BET AMOUNT</p>
+                <input id="bet-input" type="number" value="10" class="w-full bg-transparent font-black outline-none text-yellow-500">
             </div>
-            <div class="bg-[#1e2329] p-3 rounded-xl border border-gray-800">
-                <label class="text-[9px] text-gray-500 font-bold uppercase">Auto Cashout</label>
-                <input id="auto-input" type="number" placeholder="2.00" class="w-full bg-transparent text-xl font-black outline-none text-blue-400">
+            <div class="bg-[#1e2329] p-2 rounded border border-gray-800">
+                <p class="text-[9px] text-gray-500 font-bold">AUTO EXIT</p>
+                <input id="auto-input" type="number" placeholder="2.00" class="w-full bg-transparent font-black outline-none text-blue-400">
             </div>
         </div>
-        <button id="main-btn" onclick="placeBet()" class="w-full bg-yellow-500 text-black py-4 rounded-xl font-black text-xl shadow-lg">PLACE BET</button>
+        <button id="btn-action" onclick="placeBet()" class="w-full bg-yellow-500 text-black py-4 rounded-xl font-black text-xl">PLACE BET</button>
     </div>
 </div>
 
@@ -74,147 +74,127 @@ const firebaseConfig = {
 firebase.initializeApp(firebaseConfig);
 const db = firebase.database();
 
-let userBalance = 0;
-let bankBalance = 0;
-let currentGameId = 0;
-let currentMult = 1.00;
-let isPlaying = false;
-let hasPlacedBet = false;
-let betAmount = 0;
-let crashPoint = 0;
+let userBal = 0, bankBal = 0, gId = 0, currentM = 1.0, isRun = false, isBet = false, bAmt = 0, crashP = 0;
 
-// ১. ফায়ারবেস থেকে রিয়েলটাইম ডেটা পড়া
-db.ref('gameData').on('value', (snap) => {
-    const data = snap.val();
-    if(data) {
-        bankBalance = data.bankBalance;
-        currentGameId = data.gameId;
-        // যদি ডাটাবেসে ইউজার ব্যালেন্স না থাকে তবে ডিফল্ট ১০০০
-        userBalance = data.userBalance || parseFloat(localStorage.getItem('smatBalance')) || 1000;
+// --- ১. ডেটাবেস থেকে রিয়েলটাইম লোড ---
+db.ref('gameData').on('value', (s) => {
+    const d = s.val();
+    if(d) {
+        bankBal = d.bankBalance;
+        gId = d.gameId;
+        userBal = d.userBalance || parseFloat(localStorage.getItem('smatBalance')) || 500;
         
-        document.getElementById('bank-val').innerText = bankBalance.toFixed(2);
-        document.getElementById('game-id-val').innerText = "#" + currentGameId;
-        document.getElementById('balance-display').innerText = userBalance.toFixed(4) + " SMAT";
-        
-        // লোডিং স্ক্রিন সরানো
-        document.getElementById('loading-screen').style.display = 'none';
+        document.getElementById('bank-text').innerText = bankBal.toFixed(2);
+        document.getElementById('id-text').innerText = "#" + gId;
+        document.getElementById('bal-text').innerText = userBal.toFixed(4) + " SMAT";
+        document.getElementById('loading').style.display = 'none';
     }
 });
 
-function updateFirebase() {
-    db.ref('gameData').update({
-        bankBalance: bankBalance,
-        gameId: currentGameId,
-        userBalance: userBalance
+// --- ২. ডাটাবেস আপডেট (Promise base) ---
+async function saveDB() {
+    await db.ref('gameData').update({
+        bankBalance: bankBal,
+        gameId: gId,
+        userBalance: userBal
     });
-    localStorage.setItem('smatBalance', userBalance);
+    localStorage.setItem('smatBalance', userBal);
 }
 
-function calculateCrash() {
+function getCrash() {
     let r = Math.random() * 100;
-    if (r < 10) return 1.00; // ১০% সম্ভাবনা ১.০০ এ ক্রাশ
-    if (r < 50) return parseFloat((1.1 + Math.random() * 0.9).toFixed(2));
-    if (r < 90) return parseFloat((2.0 + Math.random() * 8.0).toFixed(2));
-    return parseFloat((10.0 + Math.random() * 100.0).toFixed(2));
+    if(r < 10) return 1.00; // ১০% ১.০০ এ ক্রাশ
+    if(r < 60) return parseFloat((1.1 + Math.random() * 1.5).toFixed(2));
+    if(r < 90) return parseFloat((2.5 + Math.random() * 10).toFixed(2));
+    return parseFloat((15 + Math.random() * 100).toFixed(2));
 }
 
-function prepareRound() {
-    isPlaying = false;
+function startTimer() {
+    isRun = false;
     document.getElementById('multiplier').innerText = "1.00x";
     document.getElementById('multiplier').style.color = "#f0b90b";
-    document.getElementById('countdown-overlay').style.display = 'flex';
-    
+    document.getElementById('timer-box').style.display = 'flex';
     let t = 8;
-    let timer = setInterval(() => {
+    let iv = setInterval(() => {
         t--;
-        document.getElementById('timer-num').innerText = t;
-        if(t <= 0) {
-            clearInterval(timer);
-            document.getElementById('countdown-overlay').style.display = 'none';
-            startFlight();
-        }
+        document.getElementById('timer-val').innerText = t;
+        if(t <= 0) { clearInterval(iv); document.getElementById('timer-box').style.display = 'none'; runGame(); }
     }, 1000);
 }
 
-function placeBet() {
-    if(isPlaying || hasPlacedBet) return;
-    let val = parseFloat(document.getElementById('bet-input').value);
-    if(val > userBalance || val <= 0) return alert("Low Balance!");
+async function placeBet() {
+    if(isRun || isBet) return;
+    let v = parseFloat(document.getElementById('bet-input').value);
+    if(v > userBal || v <= 0) return alert("Low Balance!");
     
-    betAmount = val;
-    userBalance -= val;
-    hasPlacedBet = true;
-    updateFirebase(); // ব্যালেন্স কাটার সাথে সাথে ফায়ারবেস আপডেট
+    bAmt = v;
+    userBal -= v;
+    isBet = true;
+    await saveDB(); // ব্যালেন্স কাটার পর সাথে সাথে সেভ
     
-    let btn = document.getElementById('main-btn');
+    let btn = document.getElementById('btn-action');
     btn.innerText = "WAITING...";
     btn.disabled = true;
 }
 
-function startFlight() {
-    isPlaying = true;
-    currentMult = 1.00;
-    crashPoint = calculateCrash();
+function runGame() {
+    isRun = true;
+    currentM = 1.0;
+    crashP = getCrash();
     
-    if(hasPlacedBet) {
-        let btn = document.getElementById('main-btn');
+    if(isBet) {
+        let btn = document.getElementById('btn-action');
         btn.disabled = false;
         btn.innerText = "CASH OUT";
         btn.className = "w-full bg-green-500 text-black py-4 rounded-xl font-black text-xl";
-        btn.onclick = cashOut;
+        btn.onclick = doCash;
     }
 
     let loop = setInterval(() => {
-        currentMult += 0.01;
-        if(currentMult >= crashPoint) {
-            clearInterval(loop);
-            doCrash();
-        }
-        document.getElementById('multiplier').innerText = currentMult.toFixed(2) + "x";
+        currentM += 0.01;
+        if(currentM >= crashP) { clearInterval(loop); crash(); }
+        document.getElementById('multiplier').innerText = currentM.toFixed(2) + "x";
         
-        // Auto Cashout check
         let auto = parseFloat(document.getElementById('auto-input').value);
-        if(hasPlacedBet && auto > 1 && currentMult >= auto) cashOut();
+        if(isBet && auto > 1 && currentM >= auto) doCash();
     }, 50);
 }
 
-function cashOut() {
-    if(!hasPlacedBet) return;
-    let win = betAmount * currentMult;
-    userBalance += win;
-    bankBalance -= (win - betAmount);
-    hasPlacedBet = false;
+async function doCash() {
+    if(!isBet) return;
+    let win = bAmt * currentM;
+    userBal += win;
+    bankBal -= (win - bAmt);
+    isBet = false;
+    await saveDB();
     
-    updateFirebase(); // জেতার পর ব্যাংক ও ব্যালেন্স আপডেট
-    
-    document.getElementById('main-btn').innerText = "WIN! " + win.toFixed(2);
-    document.getElementById('main-btn').disabled = true;
+    document.getElementById('btn-action').innerText = "WIN!";
+    document.getElementById('btn-action').disabled = true;
 }
 
-function doCrash() {
-    isPlaying = false;
+async function crash() {
+    isRun = false;
     document.getElementById('multiplier').innerText = "CRASHED";
     document.getElementById('multiplier').style.color = "#ff4d4d";
     
-    if(hasPlacedBet) {
-        bankBalance += betAmount; // প্লেয়ার হারলে টাকা ব্যাংকে যাবে
-        hasPlacedBet = false;
+    if(isBet) {
+        bankBal += bAmt; // হারলে টাকা ব্যাংকে
+        isBet = false;
     }
-    
-    currentGameId++;
-    updateFirebase(); // ক্রাশের পর আইডি ও ব্যাংক আপডেট
+    gId++;
+    await saveDB();
     
     setTimeout(() => {
-        let btn = document.getElementById('main-btn');
+        let btn = document.getElementById('btn-action');
         btn.innerText = "PLACE BET";
         btn.disabled = false;
         btn.onclick = placeBet;
         btn.className = "w-full bg-yellow-500 text-black py-4 rounded-xl font-black text-xl";
-        prepareRound();
+        startTimer();
     }, 3000);
 }
 
-window.onload = prepareRound;
+window.onload = startTimer;
 </script>
 </body>
 </html>
