@@ -2,136 +2,481 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>SMAT CHAT FIX</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover, interactive-widget=resizes-content">
+    <title>SMAT | Premium Chat</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <style>
-        * { box-sizing: border-box; margin: 0; padding: 0; }
+        :root {
+            --primary: #f3ba2f;
+            --bg: #0b0e11;
+            --card-bg: #1e2329;
+            --chat-bubble: #2b3139;
+            --text-main: #ffffff;
+            --text-sec: #848e9c;
+            --admin-color: #0ecb81;
+            --super-admin: #f0b90b;
+            --danger: #f6465d;
+            --mention-green: #0ecb81;
+            --gold: #ffd700;
+            --rain-blue: #00d2ff;
+            --drop-cyan: #00ffcc;
+        }
+
+        * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; margin: 0; padding: 0; }
+        
         body {
-            background: #0b0e11; color: white;
-            font-family: sans-serif;
-            display: flex; flex-direction: column;
-            height: 100vh; height: 100dvh; overflow: hidden;
+            background: var(--bg); color: var(--text-main);
+            font-family: 'Inter', 'Segoe UI', Roboto, sans-serif;
+            display: flex; flex-direction: column; 
+            height: 100vh; height: 100dvh; 
+            overflow: hidden; width: 100%;
+            /* position: fixed সরানো হয়েছে কারণ এটি কীবোর্ড রিসাইজে বাধা দেয় */
         }
 
-        /* Header */
-        .header {
-            background: #1e2329; padding: 15px;
-            display: flex; justify-content: space-between; align-items: center;
-            border-bottom: 2px solid #f3ba2f; flex-shrink: 0;
+        /* Header - Fixed */
+        .chat-header {
+            padding: 12px 15px; background: var(--card-bg); border-bottom: 2px solid var(--primary);
+            display: flex; justify-content: space-between; align-items: center; 
+            box-shadow: 0 4px 15px rgba(0,0,0,0.5); z-index: 100; flex-shrink: 0;
         }
-        .header h1 { font-size: 18px; color: #f3ba2f; }
+        .header-title { font-size: 18px; font-weight: 900; letter-spacing: 1px; color: var(--primary); }
 
-        /* Chat Area - Scrollable */
+        /* Jojo Timer */
+        #jojoTimer {
+            position: absolute; top: 65px; right: 15px;
+            background: rgba(30, 35, 41, 0.95); border: 1px solid var(--primary);
+            padding: 6px 12px; border-radius: 8px; font-size: 12px;
+            font-weight: 900; color: var(--primary); display: none;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.5); z-index: 999;
+        }
+
+        /* S-Bubble Logic Styles */
+        #s-bubble { 
+            position: fixed; width: 65px; height: 65px; z-index: 9999; cursor: pointer; display: none; 
+            animation: floatBubble 10s ease-in-out infinite; 
+        }
+        .s-logo-wrapper { 
+            position: relative; width: 100%; height: 100%; background: radial-gradient(circle, #f0b90b 0%, #cc9900 100%); 
+            border-radius: 50%; display: flex; align-items: center; justify-content: center; 
+            border: 2px solid rgba(255, 255, 255, 0.2); box-shadow: 0 0 15px rgba(240, 185, 11, 0.5); 
+        }    
+        .s-logo-inner { font-weight: 900; font-size: 30px; color: white; }
+        @keyframes floatBubble { 0%, 100% { transform: translate(0, 0); } 25% { transform: translate(50vw, 15vh); } 50% { transform: translate(5vw, 60vh); } 75% { transform: translate(40vw, 40vh); } }
+        
+        .pop-text { 
+            position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); 
+            background: #f0b90b; color: black; padding: 20px; border-radius: 15px; 
+            font-weight: 900; text-align: center; z-index: 10000; display: none; 
+            box-shadow: 0 0 30px rgba(240, 185, 11, 0.5); 
+        }
+
         #chatDisplay {
             flex: 1; overflow-y: auto; padding: 15px;
-            display: flex; flex-direction: column; gap: 15px;
-            background: #0b0e11;
+            display: flex; flex-direction: column; justify-content: flex-start;
+            gap: 15px; background: linear-gradient(to bottom, #0b0e11, #161a1e);
+            scroll-behavior: smooth; -webkit-overflow-scrolling: touch;
         }
 
-        .msg-box { display: flex; gap: 10px; align-items: flex-start; }
+        .msg-row { display: flex; gap: 12px; animation: slideUp 0.3s ease-out; position: relative; width: 100%; flex-shrink: 0; }
+        @keyframes slideUp { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+
         .avatar {
-            width: 35px; height: 35px; background: #363c44;
-            border-radius: 50%; display: flex; align-items: center;
-            justify-content: center; font-weight: bold; flex-shrink: 0;
+            width: 40px; height: 40px; border-radius: 50%;
+            display: flex; align-items: center; justify-content: center;
+            font-weight: 900; color: #fff; border: 1px solid var(--chat-bubble);
+            flex-shrink: 0; font-size: 16px;
         }
-        .bubble {
-            background: #2b3139; padding: 10px 14px;
-            border-radius: 0 12px 12px 12px; font-size: 14px;
-            max-width: 80%; word-wrap: break-word;
-        }
-        .user-id { font-size: 11px; color: #848e9c; margin-bottom: 4px; display: block; }
 
-        /* Input Area - Fixed at Bottom */
+        .msg-content { max-width: 85%; }
+        .user-meta { display: flex; align-items: center; gap: 8px; margin-bottom: 4px; flex-wrap: wrap; }
+        .user-name { font-size: 13px; font-weight: 800; color: #fff; cursor: pointer; }
+        .timestamp { font-size: 9px; color: var(--text-sec); font-weight: 600; }
+        
+        .badge { font-size: 9px; padding: 1px 6px; border-radius: 4px; font-weight: 900; text-transform: uppercase; }
+        .badge-admin { background: rgba(14, 203, 129, 0.2); color: var(--admin-color); border: 1px solid var(--admin-color); }
+        .badge-super { background: rgba(243, 186, 47, 0.2); color: var(--primary); border: 1px solid var(--primary); }
+
+        .bubble {
+            background: var(--chat-bubble); padding: 10px 14px;
+            border-radius: 5px 15px 15px 15px; font-size: 14px;
+            line-height: 1.5; font-weight: 500; color: #f0f0f0;
+            box-shadow: 2px 2px 8px rgba(0,0,0,0.2);
+            word-break: break-word; position: relative;
+        }
+        .bubble.mentioned-active { border-left: 3px solid var(--mention-green); background: rgba(14, 203, 129, 0.1); }
+        .special-msg { border: 1px solid var(--rain-blue); background: rgba(0, 210, 255, 0.05) !important; }
+
         .input-area {
-            background: #1e2329; padding: 10px;
-            display: flex; gap: 10px; align-items: center;
-            border-top: 1px solid #363c44; flex-shrink: 0;
+            padding: 10px 15px; background: var(--card-bg); 
+            border-top: 1px solid var(--chat-bubble); flex-shrink: 0;
+            z-index: 100; padding-bottom: max(10px, env(safe-area-inset-bottom));
+        }
+        .input-box-wrapper { display: flex; gap: 8px; align-items: center; width: 100%; }
+        
+        .special-tools { display: flex; gap: 10px; flex-shrink: 0; }
+        .tool-btn { font-size: 18px; cursor: pointer; transition: 0.2s; }
+        .rain-tool { color: var(--rain-blue); }
+        .drop-tool { color: var(--drop-cyan); }
+
+        .input-container {
+            flex: 1; display: flex; background: #181a20; border-radius: 25px; 
+            padding: 0 10px; align-items: center; border: 1px solid #363c44;
         }
         #messageInput {
-            flex: 1; background: #181a20; border: 1px solid #363c44;
-            padding: 12px; color: white; border-radius: 8px; outline: none;
+            width: 100%; background: transparent; border: none; padding: 10px 5px;
+            color: white; font-weight: 500; font-size: 16px; outline: none;
         }
+
         .send-btn {
-            background: #f3ba2f; border: none; width: 45px; height: 45px;
-            border-radius: 8px; cursor: pointer; color: black; font-size: 18px;
+            background: var(--primary); border: none; width: 40px; height: 40px;
+            border-radius: 10px; color: #000; cursor: pointer; font-size: 16px;
+            display: flex; align-items: center; justify-content: center; flex-shrink: 0;
         }
+
+        /* Modals */
+        .modal {
+            display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.9); z-index: 5000; justify-content: center; align-items: center;
+        }
+        .modal-box {
+            background: var(--card-bg); padding: 20px; border-radius: 15px;
+            width: 90%; max-width: 380px; border: 1px solid var(--primary);
+            max-height: 80vh; overflow-y: auto;
+        }
+        
+        .modal-box input, .modal-box select {
+            width: 100%; padding: 10px; margin: 8px 0; background: #181a20;
+            border: 1px solid var(--chat-bubble); color: white; border-radius: 8px; outline: none;
+        }
+
+        .claim-btn { background: var(--drop-cyan); border: none; padding: 8px; width: 100%; border-radius: 6px; color: #000; font-weight: 900; margin-top: 8px; cursor: pointer; }
+        .claim-btn:disabled { background: #363c44; color: #848e9c; cursor: not-allowed; }
+
+        .btn-panel { padding: 4px 8px; border-radius: 6px; font-weight: 900; font-size: 10px; cursor: pointer; border: none; }
+        .leader-item { display: flex; justify-content: space-between; padding: 8px; border-bottom: 1px solid #333; }
     </style>
 </head>
 <body>
 
-    <div class="header">
-        <h1>SMAT CHAT</h1>
-        <div id="adminControls" style="display:none;">
-            <button style="background:#f3ba2f; border:none; padding:5px 10px; border-radius:4px;">ADMIN</button>
+    <div id="s-bubble" onclick="popBubble()">
+        <div class="s-logo-wrapper"><span class="s-logo-inner">S</span></div>
+    </div>
+
+    <div id="pop-msg" class="pop-text">
+        <div style="font-size: 20px;">Jojo Gift You!</div>
+        <div style="font-size: 14px;">+1.00 SMAT COIN</div>
+    </div>
+
+    <div id="jojoTimer">Jojo Time: <span id="jojoClock">00:00:00</span></div>
+
+    <div id="leaderboardModal" class="modal">
+        <div class="modal-box">
+            <h2 style="color:var(--primary); text-align: center; font-size: 18px;"><i class="fa-solid fa-trophy"></i> Top Earners</h2>
+            <div id="leaderboardBody"></div>
+            <button onclick="closeModal('leaderboardModal')" style="width:100%; margin-top:15px; background:var(--primary); border:none; padding:10px; border-radius:8px; font-weight: 800;">CLOSE</button>
         </div>
     </div>
 
-    <div id="chatDisplay">
+    <div id="rainModal" class="modal">
+        <div class="modal-box">
+            <h2 id="specialModalTitle" style="text-align: center; font-size: 18px;"></h2>
+            <p style="font-size: 11px; color: var(--text-sec); text-align: center;">Balance: <span id="modalBalInfo">0.00</span></p>
+            <select id="specialCoin" onchange="updateModalBalance()">
+                <option value="usdt">USDT</option>
+                <option value="trx">TRX</option>
+                <option value="smat">SMAT</option>
+                <option value="bnb">BNB</option>
+            </select>
+            <input type="number" id="specialAmount" placeholder="Total Amount">
+            <input type="number" id="specialUsers" placeholder="Number of Users">
+            <button id="specialSubmitBtn" onclick="processSpecial()" style="width:100%; margin-top:15px; border:none; padding:12px; border-radius:8px; font-weight: 900; color: #000; background: var(--primary);">SEND</button>
+            <button onclick="closeModal('rainModal')" style="width:100%; margin-top:10px; background:transparent; border:none; color:var(--text-sec);">Cancel</button>
         </div>
+    </div>
+
+    <div id="adminModal" class="modal">
+        <div class="modal-box">
+            <h2 style="color:var(--primary); font-size: 18px;"><i class="fa-solid fa-user-shield"></i> Admin Panel</h2>
+            <input type="text" id="targetUserID" placeholder="SMAT ID to promote">
+            <button onclick="makeAdmin()" style="width:100%; padding:12px; background:var(--primary); border:none; font-weight:900; border-radius:8px;">PROMOTE</button>
+            <button onclick="closeModal('adminModal')" style="width:100%; margin-top:10px; background:transparent; border:none; color:var(--text-sec);">Close</button>
+        </div>
+    </div>
+
+    <div id="banListModal" class="modal">
+        <div class="modal-box">
+            <h2 style="color:var(--danger); font-size: 18px;"><i class="fa-solid fa-gavel"></i> Restriction List</h2>
+            <div id="banListContent"></div>
+            <button onclick="closeModal('banListModal')" style="width:100%; margin-top:15px; background:var(--chat-bubble); border:none; color:white; padding:10px; border-radius:8px;">Close</button>
+        </div>
+    </div>
+
+    <div class="chat-header">
+        <div class="header-title">SMAT CHAT</div>
+        <div style="display:flex; gap:6px; align-items:center;">
+            <i class="fa-solid fa-crown" style="color: var(--gold); cursor: pointer; font-size: 18px;" onclick="openLeaderboard()"></i>
+            <button id="banListBtn" class="btn-panel" style="display:none; background: var(--danger); color: white;" onclick="openBanList()">LIST</button>
+            <button id="superAdminBtn" class="btn-panel" style="display:none; background: var(--primary); color: black;" onclick="openModal('adminModal')">ADMIN</button>
+            <a href="home.html" style="color:var(--text-sec); font-size: 20px; margin-left: 2px;"><i class="fa-solid fa-circle-xmark"></i></a>
+        </div>
+    </div>
+
+    <div id="chatDisplay"></div>
 
     <div class="input-area">
-        <input type="text" id="messageInput" placeholder="Type message..." autocomplete="off">
-        <button class="send-btn" onclick="sendMessage()"><i class="fa-solid fa-paper-plane"></i></button>
+        <div class="input-box-wrapper">
+            <div class="special-tools">
+                <i class="fa-solid fa-cloud-showers-heavy tool-btn rain-tool" onclick="openSpecial('RAIN')"></i>
+                <i class="fa-solid fa-droplet tool-btn drop-tool" onclick="openSpecial('DROP')"></i>
+            </div>
+            <div class="input-container">
+                <input type="text" id="messageInput" placeholder="Write a message..." autocomplete="off">
+            </div>
+            <button id="sendBtn" class="send-btn" onclick="sendMessage()"><i class="fa-solid fa-paper-plane"></i></button>
+        </div>
     </div>
 
     <script>
-        const MY_ID = localStorage.getItem('smatID') || "SMAT" + Math.floor(Math.random() * 900000 + 100000);
-        localStorage.setItem('smatID', MY_ID); // Ensure ID is saved
-
+        const MAIN_SUPER_ADMIN = "SMAT100001"; 
+        const MAX_MESSAGES = 250;
+        let user = getMyInfo();
         let messages = JSON.parse(localStorage.getItem('smat_messages')) || [];
+        let dailyTotalBet = parseFloat(localStorage.getItem('dailyTotalBet')) || 0;
+        let currentSpecialType = '';
+
+        function getMyInfo() {
+            const id = localStorage.getItem('smatID') || "SMAT100001"; 
+            let role = "USER";
+            const admins = JSON.parse(localStorage.getItem('smat_admins')) || [];
+            if (id === MAIN_SUPER_ADMIN) role = "SUPER_ADMIN";
+            else if (admins.includes(id)) role = "ADMIN";
+            return { id, role };
+        }
+
+        async function translateToEnglish(text) {
+            if(!/[a-zA-Z]/.test(text)) return "[EN] " + text + " (Translated)"; 
+            return text;
+        }
+
+        function updateTimers() {
+            const now = new Date();
+            const utc = now.getTime() + (now.getTimezoneOffset() * 60000);
+            const bdTime = new Date(utc + (3600000 * 6));
+            const hours = bdTime.getHours();
+            const minutes = bdTime.getMinutes();
+            const seconds = bdTime.getSeconds();
+            const currentTime = hours * 60 + minutes;
+
+            const schedules = [
+                { start: 3*60+40, end: 3*60+50 }, { start: 7*60+50, end: 8*60 },
+                { start: 14*60+50, end: 15*60 }, { start: 19*60+50, end: 20*60 }
+            ];
+
+            let active = schedules.some(s => currentTime >= s.start && currentTime < s.end);
+            const timerDiv = document.getElementById('jojoTimer');
+            if (active) {
+                timerDiv.style.display = 'block';
+                document.getElementById('jojoClock').innerText = bdTime.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit', second:'2-digit', hour12: true});
+            } else { timerDiv.style.display = 'none'; }
+
+            const targetHours = [8, 14, 20, 2];
+            const bubble = document.getElementById('s-bubble');
+            const currentSlotID = `${bdTime.getDate()}-${hours}`;
+            const lastClaimedSlot = localStorage.getItem('lastClaimedSlot');
+
+            if (targetHours.includes(hours) && minutes === 0 && lastClaimedSlot !== currentSlotID) {
+                if (seconds < 15) { if (bubble.style.display !== 'block') showBubble(); } 
+                else { hideBubble(); }
+            } else { if (bubble.style.display === 'block' && (minutes > 0 || seconds >= 15)) hideBubble(); }
+        }
+        setInterval(updateTimers, 1000);
+
+        function showBubble() { 
+            const bubble = document.getElementById('s-bubble'); 
+            bubble.style.top = "30%"; bubble.style.left = "10%"; bubble.style.display = 'block'; 
+        }
+        function hideBubble() { document.getElementById('s-bubble').style.display = 'none'; }
+
+        function popBubble() {
+            let currentDailyBet = parseFloat(localStorage.getItem('dailyTotalBet')) || 0;
+            if (currentDailyBet >= 500) {
+                const now = new Date();
+                const currentSlotID = `${now.getDate()}-${now.getHours()}`;
+                hideBubble();
+                localStorage.setItem('lastClaimedSlot', currentSlotID);
+                let currentBal = parseFloat(localStorage.getItem('smat_balance')) || 0;
+                localStorage.setItem('smat_balance', (currentBal + 1.0).toFixed(6));
+                const msg = document.getElementById('pop-msg');
+                msg.style.display = 'block';
+                setTimeout(() => { msg.style.display = 'none'; }, 3000);
+            } else { alert("Requirement: 500 SMAT Daily Betting in Arena!"); }
+        }
+
+        function deleteMessage(mid) {
+            if (user.role === 'ADMIN' || user.role === 'SUPER_ADMIN') {
+                if (confirm("Delete this message?")) {
+                    messages = messages.filter(m => m.mid !== mid);
+                    localStorage.setItem('smat_messages', JSON.stringify(messages));
+                    renderChat();
+                }
+            }
+        }
+
+        function openLeaderboard() {
+            const winners = [{id: "SMAT982341", profit: 1250.50},{id: "SMAT129384", profit: 980.20},{id: "SMAT556677", profit: 850.00}];
+            document.getElementById('leaderboardBody').innerHTML = winners.map((w, i) => `
+                <div class="leader-item"><div style="color:var(--primary); font-weight:900;">#${i + 1}</div><div>${w.id}</div><div style="color:var(--admin-color); font-weight:800;">$${w.profit.toFixed(2)}</div></div>
+            `).join('');
+            openModal('leaderboardModal');
+        }
+
+        function getCoinBalance(coin) { return parseFloat(localStorage.getItem(`${coin}_balance`)) || 0.00; }
+        function updateCoinBalance(coin, amount) { localStorage.setItem(`${coin}_balance` , (getCoinBalance(coin) + amount).toFixed(6)); }
+        function updateModalBalance() { document.getElementById('modalBalInfo').innerText = getCoinBalance(document.getElementById('specialCoin').value).toFixed(4); }
+
+        function openSpecial(type) {
+            currentSpecialType = type;
+            updateModalBalance();
+            document.getElementById('specialModalTitle').innerHTML = type === 'RAIN' ? '🌧️ Asset Rain' : '💧 Asset Drop';
+            openModal('rainModal');
+        }
+
+        function processSpecial() {
+            const coin = document.getElementById('specialCoin').value;
+            const amount = parseFloat(document.getElementById('specialAmount').value);
+            const count = parseInt(document.getElementById('specialUsers').value);
+            if(amount > getCoinBalance(coin)) return alert("Insufficient balance");
+            updateCoinBalance(coin, -amount);
+            closeModal('rainModal');
+            if(currentSpecialType === 'RAIN') handleRainExecution(amount, count, coin);
+            else handleDropExecution(amount, count, coin);
+        }
+
+        function handleRainExecution(total, count, coin) {
+            let activeIds = [...new Set(messages.map(m => m.id))].filter(id => id !== user.id).slice(0, count);
+            if(activeIds.length === 0) return alert("No active users!");
+            activeIds.forEach(uId => { if(uId === user.id) updateCoinBalance(coin, total/activeIds.length); });
+            sendSystemMessage(`🌧️ Rain: ${total} ${coin.toUpperCase()} shared among ${activeIds.length} users!`);
+        }
+
+        function handleDropExecution(total, count, coin) {
+            sendSystemMessage(`💧 Drop: ${total} ${coin.toUpperCase()} for ${count} users!`, "drop_" + Date.now(), total, count, coin);
+        }
+
+        function claimDrop(dropId, total, count, coin, msgId) {
+            const key = "claimed_" + dropId;
+            let claimed = JSON.parse(localStorage.getItem(key)) || [];
+            if(claimed.includes(user.id)) return alert("Already claimed!");
+            if(claimed.length >= count) return alert("Empty!");
+            let share = (total / count).toFixed(6);
+            updateCoinBalance(coin, parseFloat(share));
+            claimed.push(user.id);
+            localStorage.setItem(key, JSON.stringify(claimed));
+            if(claimed.length >= count) {
+                messages = messages.map(m => m.mid === msgId ? {...m, isCompleted: true} : m);
+                localStorage.setItem('smat_messages', JSON.stringify(messages));
+            }
+            sendSystemMessage(`✅ @${user.id} claimed ${share} ${coin}!`);
+            renderChat();
+        }
+
+        function sendSystemMessage(text, dropId = null, total = 0, count = 0, coin = '') {
+            messages.push({
+                mid: Date.now().toString(), id: "SYSTEM", text, time: new Date().toLocaleTimeString(),
+                isSpecial: true, isCompleted: false, dropData: dropId ? {id: dropId, total, count, coin} : null
+            });
+            localStorage.setItem('smat_messages', JSON.stringify(messages.slice(-MAX_MESSAGES)));
+            renderChat();
+        }
+
+        function appendMention(id) {
+            const input = document.getElementById('messageInput');
+            input.value += `@${id} `; input.focus();
+        }
 
         function renderChat() {
-            const display = document.getElementById('chatDisplay');
-            if (messages.length === 0) {
-                display.innerHTML = '<p style="text-align:center; color:#555; margin-top:20px;">No messages yet.</p>';
-                return;
-            }
-            
-            display.innerHTML = messages.map(msg => `
-                <div class="msg-box">
-                    <div class="avatar">${msg.id[0]}</div>
-                    <div>
-                        <span class="user-id">${msg.id} • ${msg.time}</span>
-                        <div class="bubble">${msg.text}</div>
+            const container = document.getElementById('chatDisplay');
+            container.innerHTML = '';
+            const admins = JSON.parse(localStorage.getItem('smat_admins')) || [];
+            messages.forEach(msg => {
+                const isMentionedMe = msg.text.includes("@" + user.id);
+                let btn = msg.dropData ? `<button class="claim-btn" ${msg.isCompleted ? 'disabled' : ''} onclick="claimDrop('${msg.dropData.id}', ${msg.dropData.total}, ${msg.dropData.count}, '${msg.dropData.coin}', '${msg.mid}')">${msg.isCompleted ? 'EMPTY' : 'CLAIM'}</button>` : '';
+                container.innerHTML += `
+                    <div class="msg-row">
+                        <div class="avatar" style="background:${getAvatarColor(msg.id)}">${msg.id[0]}</div>
+                        <div class="msg-content">
+                            <div class="user-meta">
+                                <span class="user-name" onclick="appendMention('${msg.id}')">${msg.id}</span> 
+                                ${msg.id === MAIN_SUPER_ADMIN ? '<span class="badge badge-super">Owner</span>' : admins.includes(msg.id) ? '<span class="badge badge-admin">Admin</span>' : ''}
+                                <span class="timestamp">${msg.time}</span>
+                            </div>
+                            <div class="bubble ${isMentionedMe ? 'mentioned-active' : ''} ${msg.isSpecial ? 'special-msg' : ''}" 
+                                 ${(user.role === 'ADMIN' || user.role === 'SUPER_ADMIN') ? `oncontextmenu="deleteMessage('${msg.mid}'); return false;"` : ''}>
+                                ${msg.text.replace(/(@SMAT\d+)/g, '<span style="color:var(--primary); font-weight:bold;">$1</span>')}
+                                ${btn}
+                            </div>
+                        </div>
                     </div>
-                </div>
-            `).join('');
-            
-            display.scrollTop = display.scrollHeight;
+                `;
+            });
+            container.scrollTop = container.scrollHeight;
         }
 
-        function sendMessage() {
+        function getAvatarColor(id) {
+            if(id === "SYSTEM") return "#2b3139";
+            let hash = 0; for (let i = 0; i < id.length; i++) hash = id.charCodeAt(i) + ((hash << 5) - hash);
+            return `hsl(${Math.abs(hash) % 360}, 70%, 50%)`;
+        }
+
+        async function sendMessage() {
             const input = document.getElementById('messageInput');
-            const text = input.value.trim();
-            if (!text) return;
-
-            const newMsg = {
-                id: MY_ID,
-                text: text,
-                time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
-            };
-
-            messages.push(newMsg);
-            if (messages.length > 100) messages.shift(); // Keep last 100
-
-            localStorage.setItem('smat_messages', JSON.stringify(messages));
-            input.value = '';
-            renderChat();
+            let rawText = input.value.trim();
+            if(!rawText) return;
+            let translatedText = await translateToEnglish(rawText);
+            messages.push({ mid: Date.now().toString(), id: user.id, text: translatedText, time: new Date().toLocaleTimeString() });
+            localStorage.setItem('smat_messages', JSON.stringify(messages.slice(-MAX_MESSAGES)));
+            input.value = ''; renderChat();
         }
 
-        // Handle Enter Key
-        document.getElementById('messageInput').addEventListener("keypress", (e) => {
-            if (e.key === "Enter") sendMessage();
-        });
+        function openBanList() {
+            const list = JSON.parse(localStorage.getItem('smat_restricted')) || [];
+            document.getElementById('banListContent').innerHTML = list.length ? list.map(id => `<div style="padding:10px; border-bottom:1px solid #333;">${id}</div>`).join('') : "No Banned Users";
+            openModal('banListModal');
+        }
 
-        // Initial Load
+        function makeAdmin() {
+            const id = document.getElementById('targetUserID').value.trim();
+            if(!id) return;
+            let admins = JSON.parse(localStorage.getItem('smat_admins')) || [];
+            if(!admins.includes(id)) admins.push(id);
+            localStorage.setItem('smat_admins', JSON.stringify(admins));
+            alert("Success!"); closeModal('adminModal');
+        }
+
+        function openModal(id) { document.getElementById(id).style.display = 'flex'; }
+        function closeModal(id) { document.getElementById(id).style.display = 'none'; }
+
+        // --- কীবোর্ড ফিক্স এবং অটো-স্ক্রল ---
+        if (window.visualViewport) {
+            window.visualViewport.addEventListener('resize', () => {
+                const viewportHeight = window.visualViewport.height;
+                document.body.style.height = viewportHeight + "px";
+                const container = document.getElementById('chatDisplay');
+                if (container) container.scrollTop = container.scrollHeight;
+            });
+        }
+
         window.onload = () => {
-            renderChat();
-            if (MY_ID === "SMAT100001") {
-                document.getElementById('adminControls').style.display = 'block';
+            if (user.id === MAIN_SUPER_ADMIN) {
+                document.getElementById('superAdminBtn').style.display = 'block';
+                document.getElementById('banListBtn').style.display = 'block';
+            } else if (user.role === 'ADMIN') {
+                document.getElementById('banListBtn').style.display = 'block';
             }
+            renderChat();
         };
+
+        document.getElementById('messageInput').addEventListener("keypress", (e) => { if(e.key === "Enter") sendMessage(); });
     </script>
 </body>
 </html>
