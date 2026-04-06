@@ -24,14 +24,17 @@
 
         * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; margin: 0; padding: 0; }
         
+        /* বডি ফিক্স: এখানে 100dvh ব্যবহার করা হয়েছে যা GitHub Pages-এ সাইজ ঠিক রাখবে */
         body {
             background: var(--bg); color: var(--text-main);
             font-family: 'Inter', 'Segoe UI', Roboto, sans-serif;
             display: flex; flex-direction: column; 
-            height: 100vh; height: 100dvh; /* dynamic height fix */
+            height: 100vh; height: 100dvh; 
             overflow: hidden; width: 100%;
+            position: fixed; /* স্ক্রিন কাঁপাকাঁপি বন্ধ করতে */
         }
 
+        /* Header - Fixed */
         .chat-header {
             padding: 12px 15px; background: var(--card-bg); border-bottom: 2px solid var(--primary);
             display: flex; justify-content: space-between; align-items: center; 
@@ -39,6 +42,7 @@
         }
         .header-title { font-size: 18px; font-weight: 900; letter-spacing: 1px; color: var(--primary); }
 
+        /* Jojo Timer */
         #jojoTimer {
             position: absolute; top: 65px; right: 15px;
             background: rgba(30, 35, 41, 0.95); border: 1px solid var(--primary);
@@ -47,6 +51,7 @@
             box-shadow: 0 4px 10px rgba(0,0,0,0.5); z-index: 999;
         }
 
+        /* S-Bubble Logic Styles */
         #s-bubble { 
             position: fixed; width: 65px; height: 65px; z-index: 9999; cursor: pointer; display: none; 
             animation: floatBubble 10s ease-in-out infinite; 
@@ -66,13 +71,11 @@
             box-shadow: 0 0 30px rgba(240, 185, 11, 0.5); 
         }
 
-        /* --- ফিক্সড চ্যাট ডিসপ্লে এরিয়া --- */
+        /* চ্যাট ডিসপ্লে ফিক্স: flex-grow: 1 দেওয়া হয়েছে */
         #chatDisplay {
-            flex: 1; overflow-y: auto; padding: 15px;
-            display: flex; flex-direction: column; 
-            justify-content: flex-start; /* মেসেজ ওপর থেকে শুরু হবে */
-            gap: 15px;
-            background: linear-gradient(to bottom, #0b0e11, #161a1e);
+            flex-grow: 1; overflow-y: auto; padding: 15px;
+            display: flex; flex-direction: column; justify-content: flex-start;
+            gap: 15px; background: linear-gradient(to bottom, #0b0e11, #161a1e);
             scroll-behavior: smooth; -webkit-overflow-scrolling: touch;
         }
 
@@ -105,10 +108,11 @@
         .bubble.mentioned-active { border-left: 3px solid var(--mention-green); background: rgba(14, 203, 129, 0.1); }
         .special-msg { border: 1px solid var(--rain-blue); background: rgba(0, 210, 255, 0.05) !important; }
 
+        /* ইনপুট এরিয়া ফিক্স */
         .input-area {
             padding: 10px 15px; background: var(--card-bg); 
             border-top: 1px solid var(--chat-bubble); flex-shrink: 0;
-            z-index: 100; padding-bottom: env(safe-area-inset-bottom);
+            z-index: 100; padding-bottom: calc(10px + env(safe-area-inset-bottom));
         }
         .input-box-wrapper { display: flex; gap: 8px; align-items: center; width: 100%; }
         
@@ -132,6 +136,7 @@
             display: flex; align-items: center; justify-content: center; flex-shrink: 0;
         }
 
+        /* Modals */
         .modal {
             display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
             background: rgba(0,0,0,0.9); z-index: 5000; justify-content: center; align-items: center;
@@ -329,7 +334,7 @@
         }
 
         function getCoinBalance(coin) { return parseFloat(localStorage.getItem(`${coin}_balance`)) || 0.00; }
-        function updateCoinBalance(coin, amount) { localStorage.setItem(`${coin}_balance`, (getCoinBalance(coin) + amount).toFixed(6)); }
+        function updateCoinBalance(coin, amount) { localStorage.setItem(`${coin}_balance` , (getCoinBalance(coin) + amount).toFixed(6)); }
         function updateModalBalance() { document.getElementById('modalBalInfo').innerText = getCoinBalance(document.getElementById('specialCoin').value).toFixed(4); }
 
         function openSpecial(type) {
