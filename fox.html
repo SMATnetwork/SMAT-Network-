@@ -30,10 +30,9 @@
             display: flex; flex-direction: column; 
             height: 100vh; height: 100dvh; 
             overflow: hidden; width: 100%;
-            /* position: fixed সরানো হয়েছে কারণ এটি কীবোর্ড রিসাইজে বাধা দেয় */
+            position: relative;
         }
 
-        /* Header - Fixed */
         .chat-header {
             padding: 12px 15px; background: var(--card-bg); border-bottom: 2px solid var(--primary);
             display: flex; justify-content: space-between; align-items: center; 
@@ -41,7 +40,6 @@
         }
         .header-title { font-size: 18px; font-weight: 900; letter-spacing: 1px; color: var(--primary); }
 
-        /* Jojo Timer */
         #jojoTimer {
             position: absolute; top: 65px; right: 15px;
             background: rgba(30, 35, 41, 0.95); border: 1px solid var(--primary);
@@ -50,7 +48,6 @@
             box-shadow: 0 4px 10px rgba(0,0,0,0.5); z-index: 999;
         }
 
-        /* S-Bubble Logic Styles */
         #s-bubble { 
             position: fixed; width: 65px; height: 65px; z-index: 9999; cursor: pointer; display: none; 
             animation: floatBubble 10s ease-in-out infinite; 
@@ -133,7 +130,6 @@
             display: flex; align-items: center; justify-content: center; flex-shrink: 0;
         }
 
-        /* Modals */
         .modal {
             display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
             background: rgba(0,0,0,0.9); z-index: 5000; justify-content: center; align-items: center;
@@ -154,6 +150,8 @@
 
         .btn-panel { padding: 4px 8px; border-radius: 6px; font-weight: 900; font-size: 10px; cursor: pointer; border: none; }
         .leader-item { display: flex; justify-content: space-between; padding: 8px; border-bottom: 1px solid #333; }
+        
+        .unban-btn { background: var(--admin-color); color: black; border: none; padding: 2px 8px; border-radius: 4px; font-weight: 800; cursor: pointer; font-size: 10px; }
     </style>
 </head>
 <body>
@@ -241,7 +239,6 @@
         const MAX_MESSAGES = 250;
         let user = getMyInfo();
         let messages = JSON.parse(localStorage.getItem('smat_messages')) || [];
-        let dailyTotalBet = parseFloat(localStorage.getItem('dailyTotalBet')) || 0;
         let currentSpecialType = '';
 
         function getMyInfo() {
@@ -312,13 +309,22 @@
             } else { alert("Requirement: 500 SMAT Daily Betting in Arena!"); }
         }
 
-        function deleteMessage(mid) {
+        function deleteMessage(mid, targetId) {
             if (user.role === 'ADMIN' || user.role === 'SUPER_ADMIN') {
-                if (confirm("Delete this message?")) {
+                const choice = confirm(`Target: ${targetId}\n\n[OK] = BAN USER\n[Cancel] = DELETE MESSAGE ONLY`);
+                if (choice) {
+                    let restricted = JSON.parse(localStorage.getItem('smat_restricted')) || [];
+                    if (!restricted.includes(targetId) && targetId !== MAIN_SUPER_ADMIN) {
+                        restricted.push(targetId);
+                        localStorage.setItem('smat_restricted', JSON.stringify(restricted));
+                        messages = messages.filter(m => m.id !== targetId);
+                        alert(`${targetId} has been restricted!`);
+                    }
+                } else {
                     messages = messages.filter(m => m.mid !== mid);
-                    localStorage.setItem('smat_messages', JSON.stringify(messages));
-                    renderChat();
                 }
+                localStorage.setItem('smat_messages', JSON.stringify(messages));
+                renderChat();
             }
         }
 
@@ -411,7 +417,7 @@
                                 <span class="timestamp">${msg.time}</span>
                             </div>
                             <div class="bubble ${isMentionedMe ? 'mentioned-active' : ''} ${msg.isSpecial ? 'special-msg' : ''}" 
-                                 ${(user.role === 'ADMIN' || user.role === 'SUPER_ADMIN') ? `oncontextmenu="deleteMessage('${msg.mid}'); return false;"` : ''}>
+                                 ${(user.role === 'ADMIN' || user.role === 'SUPER_ADMIN') ? `oncontextmenu="deleteMessage('${msg.mid}', '${msg.id}'); return false;"` : ''}>
                                 ${msg.text.replace(/(@SMAT\d+)/g, '<span style="color:var(--primary); font-weight:bold;">$1</span>')}
                                 ${btn}
                             </div>
@@ -429,6 +435,11 @@
         }
 
         async function sendMessage() {
+            const restricted = JSON.parse(localStorage.getItem('smat_restricted')) || [];
+            if (restricted.includes(user.id)) {
+                alert("You are restricted from sending messages.");
+                return;
+            }
             const input = document.getElementById('messageInput');
             let rawText = input.value.trim();
             if(!rawText) return;
@@ -440,8 +451,20 @@
 
         function openBanList() {
             const list = JSON.parse(localStorage.getItem('smat_restricted')) || [];
-            document.getElementById('banListContent').innerHTML = list.length ? list.map(id => `<div style="padding:10px; border-bottom:1px solid #333;">${id}</div>`).join('') : "No Banned Users";
+            document.getElementById('banListContent').innerHTML = list.length 
+                ? list.map(id => `<div class="leader-item"><div>${id}</div><button class="unban-btn" onclick="unbanUser('${id}')">UNBAN</button></div>`).join('') 
+                : "<div style='text-align:center; padding:20px; color:var(--text-sec);'>No Banned Users</div>";
             openModal('banListModal');
+        }
+
+        function unbanUser(id) {
+            if (user.role === 'ADMIN' || user.role === 'SUPER_ADMIN') {
+                let restricted = JSON.parse(localStorage.getItem('smat_restricted')) || [];
+                restricted = restricted.filter(uId => uId !== id);
+                localStorage.setItem('smat_restricted', JSON.stringify(restricted));
+                alert(`${id} has been unbanned!`);
+                openBanList();
+            }
         }
 
         function makeAdmin() {
@@ -456,17 +479,21 @@
         function openModal(id) { document.getElementById(id).style.display = 'flex'; }
         function closeModal(id) { document.getElementById(id).style.display = 'none'; }
 
-        // --- কীবোর্ড ফিক্স এবং অটো-স্ক্রল ---
+        /* VIEWPORT HEIGHT CALCULATION */
+        function adjustLayout() {
+            const vh = window.visualViewport ? window.visualViewport.height : window.innerHeight;
+            document.body.style.height = vh + "px";
+            const container = document.getElementById('chatDisplay');
+            if (container) container.scrollTop = container.scrollHeight;
+        }
+
         if (window.visualViewport) {
-            window.visualViewport.addEventListener('resize', () => {
-                const viewportHeight = window.visualViewport.height;
-                document.body.style.height = viewportHeight + "px";
-                const container = document.getElementById('chatDisplay');
-                if (container) container.scrollTop = container.scrollHeight;
-            });
+            window.visualViewport.addEventListener('resize', adjustLayout);
+            window.visualViewport.addEventListener('scroll', adjustLayout);
         }
 
         window.onload = () => {
+            adjustLayout(); // Page load এ হাইট ফিক্স করা
             if (user.id === MAIN_SUPER_ADMIN) {
                 document.getElementById('superAdminBtn').style.display = 'block';
                 document.getElementById('banListBtn').style.display = 'block';
@@ -480,3 +507,4 @@
     </script>
 </body>
 </html>
+
