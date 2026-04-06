@@ -8,6 +8,9 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     
+    <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-database-compat.js"></script>
+
     <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><circle cx='50' cy='50' r='50' fill='%23f3ba2f'/><text x='50%25' y='55%25' text-anchor='middle' dy='.3em' fill='black' font-family='Courier New, monospace' font-weight='900' font-size='60'>S</text></svg>">
     
     <style>
@@ -29,7 +32,6 @@
 
         .game-screen { height: 40vh; min-height: 280px; background: #161a1e; border: 1px solid #2d3339; border-radius: 12px; position: relative; overflow: hidden; margin: 0 16px; transition: all 0.5s ease; }
         
-        /* চ্যাটিং আইকন স্টাইল */
         .chat-icon-wrapper {
             position: absolute;
             top: 15px;
@@ -302,29 +304,41 @@
     </div>
 </div>
 
-<script type="module">
-    // --- FIREBASE INTEGRATION (ADDED) ---
-    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-    import { getDatabase, ref, update, onValue, set, get } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
-
+<script>
+    // --- Firebase Configuration ---
     const firebaseConfig = {
-        apiKey: "AIzaSyAMxtJedkehhxJRMPZLjhpKHqneHEWsGlE",
-        authDomain: "smat-exchange.firebaseapp.com",
-        projectId: "smat-exchange",
-        storageBucket: "smat-exchange.firebasestorage.app",
-        messagingSenderId: "836334569396",
-        appId: "1:836334569396:web:679effe640b3453412d4e1",
-        measurementId: "G-FCE3H3F18V"
+      apiKey: "AIzaSyAMxtJedkehhxJRMPZLjhpKHqneHEWsGlE",
+      authDomain: "smat-exchange.firebaseapp.com",
+      projectId: "smat-exchange",
+      storageBucket: "smat-exchange.firebasestorage.app",
+      messagingSenderId: "836334569396",
+      appId: "1:836334569396:web:679effe640b3453412d4e1",
+      measurementId: "G-FCE3H3F18V"
     };
 
-    const app = initializeApp(firebaseConfig);
-    const db = getDatabase(app);
+    firebase.initializeApp(firebaseConfig);
+    const db = firebase.database();
+    // --- End Firebase Configuration ---
 
-    // --- GAME LOGIC (UNCHANGED BUT SYNCED) ---
-    let smatBalance = parseFloat(localStorage.getItem('smatBalance')) || 1000.000000;
-    let bankBalance = parseFloat(localStorage.getItem('bankBalance')) || 10000.0000;
-    let dailyTotalBet = parseFloat(localStorage.getItem('dailyTotalBet')) || 0;
-    let gameId = parseInt(localStorage.getItem('gameId')) || 100000;
+    let smatBalance = 1000.000000;
+    let bankBalance = 10000.0000;
+    let dailyTotalBet = 0;
+    let gameId = 100000;
+    let crashHistoryDots = [];
+    
+    // ডাটাবেস থেকে রিয়াল-টাইম ডাটা লোড করা
+    db.ref('userData').on('value', (snapshot) => {
+        const data = snapshot.val();
+        if(data) {
+            smatBalance = data.smatBalance || 1000.000000;
+            bankBalance = data.bankBalance || 10000.0000;
+            dailyTotalBet = data.dailyTotalBet || 0;
+            gameId = data.gameId || 100000;
+            crashHistoryDots = data.crashHistoryDots || [];
+            updateUI(false); // UI আপডেট করবে কিন্তু ডাটাবেসে পুশ করবে না লুপ এড়াতে
+        }
+    });
+
     let currentMultiplier = 1.00;
     let isRunning = false;
     let hasBet = false;
@@ -340,26 +354,11 @@
     let under2xStreak = 0;
     let showAllPlayers = false;
     let visiblePlayersCount = 10; 
-    let crashHistoryDots = JSON.parse(localStorage.getItem('crashHistoryDots')) || [];
     let isProcessingBet = false;
     let isMuted = localStorage.getItem('isMuted') === 'true';
     const audioContext = new (window.AudioContext || window.webkitAudioContext)();
 
-    // Firebase Data Syncing
-    function syncToFirebase() {
-        update(ref(db, 'game_stats'), {
-            gameId: gameId,
-            bankBalance: bankBalance,
-            history: crashHistoryDots
-        });
-        update(ref(db, 'users/player1'), {
-            balance: smatBalance,
-            dailyBet: dailyTotalBet
-        });
-    }
-
-    // Logic Functions (Original)
-    window.toggleSound = () => {
+    function toggleSound() {
         isMuted = !isMuted;
         localStorage.setItem('isMuted', isMuted);
         document.getElementById('sound-icon').className = isMuted ? 'fas fa-volume-mute' : 'fas fa-volume-up';
@@ -379,25 +378,29 @@
         }
     }
 
-    window.multiplyBet = (factor) => {
+    function multiplyBet(factor) {
         let currentBet = parseFloat(document.getElementById('bet-amount').value);
         document.getElementById('bet-amount').value = (currentBet * factor).toFixed(6);
     }
 
-    function updateUI() { 
+    function updateUI(pushToDb = true) { 
         document.getElementById('balance-display').innerText = smatBalance.toFixed(6) + " SMAT"; 
         document.getElementById('bank-display').innerText = bankBalance.toFixed(4);
         document.getElementById('game-id-display').innerText = "#" + gameId;
         let totalPool = fakePool + (hasBet ? betAmt : 0);
         document.getElementById('total-pool-display').innerText = totalPool.toFixed(6);
 
-        localStorage.setItem('smatBalance', smatBalance); 
-        localStorage.setItem('bankBalance', bankBalance);
-        localStorage.setItem('gameId', gameId);
-        localStorage.setItem('dailyTotalBet', dailyTotalBet);
+        if(pushToDb) {
+            db.ref('userData').set({
+                smatBalance,
+                bankBalance,
+                gameId,
+                dailyTotalBet,
+                crashHistoryDots
+            });
+        }
         renderDots(); 
         updateActiveCount();
-        syncToFirebase();
     }
 
     function checkBubble() {
@@ -410,24 +413,26 @@
         const targetHours = [8, 14, 20, 2];
         const bubble = document.getElementById('s-bubble');
         const currentSlotID = `${bdTime.getDate()}-${hours}`;
-        const lastClaimedSlot = localStorage.getItem('lastClaimedSlot');
-
-        if (targetHours.includes(hours) && minutes === 0 && lastClaimedSlot !== currentSlotID) {
-            if (seconds < 15) { if (bubble.style.display !== 'block') showBubble(); } else { hideBubble(); }
-        } else { if (bubble.style.display === 'block' && (minutes > 0 || seconds >= 15)) hideBubble(); }
+        
+        db.ref('lastClaimedSlot').once('value', (snap) => {
+            const lastClaimedSlot = snap.val();
+            if (targetHours.includes(hours) && minutes === 0 && lastClaimedSlot !== currentSlotID) {
+                if (seconds < 15) { if (bubble.style.display !== 'block') showBubble(); } else { hideBubble(); }
+            } else { if (bubble.style.display === 'block' && (minutes > 0 || seconds >= 15)) hideBubble(); }
+        });
     }
 
     function showBubble() { const bubble = document.getElementById('s-bubble'); bubble.style.top = "30%"; bubble.style.left = "10%"; bubble.style.display = 'block'; }
     function hideBubble() { document.getElementById('s-bubble').style.display = 'none'; }
 
-    window.popBubble = () => {
+    function popBubble() {
         if (dailyTotalBet >= 500) {
             const now = new Date();
             const utc = now.getTime() + (now.getTimezoneOffset() * 60000);
             const bdTime = new Date(utc + (3600000 * 6));
             const currentSlotID = `${bdTime.getDate()}-${bdTime.getHours()}`;
             hideBubble();
-            localStorage.setItem('lastClaimedSlot', currentSlotID);
+            db.ref('lastClaimedSlot').set(currentSlotID);
             smatBalance += 1.0;
             updateUI();
             const msg = document.getElementById('pop-msg');
@@ -540,7 +545,7 @@
         document.getElementById('active-count').innerText = `${cashed}/${total} Players`;
     }
 
-    window.toggleMore = () => {
+    function toggleMore() {
         visiblePlayersCount += 10;
         if (visiblePlayersCount > players.length + 1) {
             visiblePlayersCount = 10;
@@ -629,7 +634,7 @@
         }, 1000);
     }
 
-    window.placeBet = () => {
+    function placeBet() {
         if(isRunning || hasBet || isProcessingBet) return;
         const val = parseFloat(document.getElementById('bet-amount').value);
         if(isNaN(val) || val <= 0) return alert("Invalid Bet Amount!");
@@ -689,7 +694,7 @@
         }, 60);
     }
     
-    window.manualCashOut = () => {
+    function manualCashOut() {
         if(!hasBet || hasCashed || !isRunning) return;
         hasCashed = true; 
         const winAmount = (betAmt * currentMultiplier);
@@ -720,8 +725,11 @@
         
         crashHistoryDots.push(result);
         if(crashHistoryDots.length > 50) crashHistoryDots.shift();
-        localStorage.setItem('crashHistoryDots', JSON.stringify(crashHistoryDots));
-        gameId++; renderDots(); renderBets();
+        
+        gameId++; 
+        renderDots(); 
+        renderBets();
+        updateUI(); // Firebase এ ডাটা সেভ করবে
 
         const pillContainer = document.getElementById('history-pills');
         const pill = document.createElement('div');
@@ -732,27 +740,14 @@
         if(pillContainer.children.length > 20) pillContainer.removeChild(pillContainer.lastChild);
 
         setTimeout(()=>{
-            actionBtn.innerText = "PLACE BET"; actionBtn.disabled = false; actionBtn.onclick = window.placeBet;
+            actionBtn.innerText = "PLACE BET"; actionBtn.disabled = false; actionBtn.onclick = placeBet;
             actionBtn.className = "w-full bg-yellow-500 text-black py-4 rounded-xl font-black text-xl shadow-lg";
             hasBet = false; betAmt = 0; isProcessingBet = false;
             prepareRound();
         }, 1000);
     }
 
-    window.onload = () => { 
-        // Initial Firebase Sync (Load stats)
-        get(ref(db, 'game_stats')).then((snapshot) => {
-            if (snapshot.exists()) {
-                const data = snapshot.val();
-                gameId = data.gameId || gameId;
-                bankBalance = data.bankBalance || bankBalance;
-                crashHistoryDots = data.history || crashHistoryDots;
-            }
-            updateUI(); 
-            prepareRound(); 
-            checkBubble(); 
-        });
-    };
+    window.onload = () => { prepareRound(); checkBubble(); };
 </script>
 
 </body>
