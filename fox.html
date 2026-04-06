@@ -7,6 +7,9 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><circle cx='50' cy='50' r='50' fill='%23f3ba2f'/><text x='50%25' y='55%25' text-anchor='middle' dy='.3em' fill='black' font-family='Courier New, monospace' font-weight='900' font-size='60'>S</text></svg>">
     
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
+
     <style>
         :root {
             --primary: #f3ba2f;
@@ -237,76 +240,48 @@
     </div>
 
     <script>
+        // --- FIREBASE CONFIGURATION ---
+        const firebaseConfig = {
+            apiKey: "AIzaSyAMxtJedkehhxJRMPZLjhpKHqneHEWsGlE",
+            authDomain: "smat-exchange.firebaseapp.com",
+            databaseURL: "https://smat-exchange-default-rtdb.firebaseio.com",
+            projectId: "smat-exchange",
+            storageBucket: "smat-exchange.firebasestorage.app",
+            messagingSenderId: "836334569396",
+            appId: "1:836334569396:web:679effe640b3453412d4e1",
+            measurementId: "G-FCE3H3F18V"
+        };
 
-
-// Firebase কনফিগারেশন
-const firebaseConfig = {
-  apiKey: "AIzaSyAMxtJedkehhxJRMPZLjhpKHqneHEWsGlE",
-  authDomain: "smat-exchange.firebaseapp.com",
-  databaseURL: "https://smat-exchange-default-rtdb.firebaseio.com", 
-  projectId: "smat-exchange",
-  storageBucket: "smat-exchange.firebasestorage.app",
-  messagingSenderId: "836334569396",
-  appId: "1:836334569396:web:679effe640b3453412d4e1",
-  measurementId: "G-FCE3H3F18V"
-};
-
-// Initialize Firebase (পুরোনো SDK স্টাইল যা আপনার জন্য সহজ হবে)
-if (!firebase.apps.length) {
-    firebase.initializeApp(firebaseConfig);
-}
-const database = firebase.database();
-
-// ৩. ইউনিক আইডি তৈরি (সবার আইডি আলাদা হবে)
-function getMyInfo() {
-    let id = localStorage.getItem('smatID');
-    if (!id) {
-        id = "SMAT" + Math.floor(100000 + Math.random() * 900000);
-        localStorage.setItem('smatID', id);
-    }
-    return { id: id };
-}
-const user = getMyInfo();
-
-// ৪. মেসেজ পাঠানোর ফাংশন আপডেট
-async function sendMessage() {
-    const input = document.getElementById('messageInput');
-    let text = input.value.trim();
-    if(!text) return;
-
-    // সরাসরি Firebase এ পাঠানো হচ্ছে
-    database.ref('messages').push({
-        senderId: user.id,
-        text: text,
-        time: new Date().toLocaleTimeString(),
-        timestamp: firebase.database.ServerValue.TIMESTAMP
-    });
-
-    input.value = '';
-}
-
-// ৫. রিয়েল-টাইম মেসেজ আপডেট
-database.ref('messages').limitToLast(100).on('value', (snapshot) => {
-    const data = snapshot.val();
-    // এই messages অ্যারেটি আপনার renderChat ফাংশন ব্যবহার করবে
-    messages = data ? Object.values(data) : [];
-    renderChat(); 
-});
+        firebase.initializeApp(firebaseConfig);
+        const database = firebase.database();
 
         const MAIN_SUPER_ADMIN = "SMAT100001"; 
         const MAX_MESSAGES = 250;
         let user = getMyInfo();
-        let messages = JSON.parse(localStorage.getItem('smat_messages')) || [];
+        let messages = [];
         let currentSpecialType = '';
 
         function getMyInfo() {
-            const id = localStorage.getItem('smatID') || "SMAT100001"; 
+            let id = localStorage.getItem('smatID');
+            // সবার আইডি আলাদা করতে র‍্যান্ডম আইডি জেনারেট
+            if (!id) {
+                id = "SMAT" + Math.floor(100000 + Math.random() * 900000);
+                localStorage.setItem('smatID', id);
+            }
+            
             let role = "USER";
             const admins = JSON.parse(localStorage.getItem('smat_admins')) || [];
             if (id === MAIN_SUPER_ADMIN) role = "SUPER_ADMIN";
             else if (admins.includes(id)) role = "ADMIN";
             return { id, role };
         }
+
+        // --- REAL-TIME DATA SYNC FROM FIREBASE ---
+        database.ref('global_chat').limitToLast(MAX_MESSAGES).on('value', (snapshot) => {
+            const data = snapshot.val();
+            messages = data ? Object.values(data) : [];
+            renderChat();
+        });
 
         async function translateToEnglish(text) {
             if(!/[a-zA-Z]/.test(text)) return "[EN] " + text + " (Translated)"; 
@@ -375,14 +350,15 @@ database.ref('messages').limitToLast(100).on('value', (snapshot) => {
                     if (!restricted.includes(targetId) && targetId !== MAIN_SUPER_ADMIN) {
                         restricted.push(targetId);
                         localStorage.setItem('smat_restricted', JSON.stringify(restricted));
-                        messages = messages.filter(m => m.id !== targetId);
+                        // Firebase থেকে ওই ইউজারের সব মেসেজ রিমুভ করার লজিক এখানে যুক্ত করা যায়
                         alert(`${targetId} has been restricted!`);
                     }
                 } else {
-                    messages = messages.filter(m => m.mid !== mid);
+                    // Firebase থেকে মেসেজ ডিলিট
+                    database.ref('global_chat').orderByChild('mid').equalTo(mid).once('value', snapshot => {
+                        snapshot.forEach(child => child.ref.remove());
+                    });
                 }
-                localStorage.setItem('smat_messages', JSON.stringify(messages));
-                renderChat();
             }
         }
 
@@ -417,24 +393,15 @@ database.ref('messages').limitToLast(100).on('value', (snapshot) => {
         }
 
         function handleRainExecution(total, count, coin) {
-            // Get unique active IDs from messages, excluding current user and SYSTEM
             let activeIds = [...new Set(messages.map(m => m.id))].filter(id => id !== user.id && id !== "SYSTEM").slice(0, count);
-            
             if(activeIds.length === 0) {
-                updateCoinBalance(coin, total); // Refund if no one to receive
+                updateCoinBalance(coin, total);
                 return alert("No active users found!");
             }
-
             let share = (total / activeIds.length);
-            
-            // In this client-side demo, we only update the current user's balance if they are in the rain
-            // In a real app, this would happen via server-side database update.
             activeIds.forEach(uId => {
-                if(uId === user.id) {
-                   updateCoinBalance(coin, share);
-                }
+                if(uId === user.id) updateCoinBalance(coin, share);
             });
-
             sendSystemMessage(`🌧️ Rain by ${user.id}: ${total} ${coin.toUpperCase()} shared among ${activeIds.length} users! Each received ${share.toFixed(6)} ${coin.toUpperCase()}.`);
         }
 
@@ -455,21 +422,22 @@ database.ref('messages').limitToLast(100).on('value', (snapshot) => {
             localStorage.setItem(key, JSON.stringify(claimed));
             
             if(claimed.length >= count) {
-                messages = messages.map(m => m.mid === msgId ? {...m, isCompleted: true} : m);
-                localStorage.setItem('smat_messages', JSON.stringify(messages));
+                // Firebase এ মেসেজ আপডেট লজিক প্রয়োজন
             }
             
             sendSystemMessage(`✅ @${user.id} claimed ${share} ${coin.toUpperCase()}!`);
-            renderChat();
         }
 
         function sendSystemMessage(text, dropId = null, total = 0, count = 0, coin = '') {
-            messages.push({
-                mid: Date.now().toString(), id: "SYSTEM", text, time: new Date().toLocaleTimeString(),
-                isSpecial: true, isCompleted: false, dropData: dropId ? {id: dropId, total, count, coin} : null
+            database.ref('global_chat').push({
+                mid: Date.now().toString(), 
+                id: "SYSTEM", 
+                text, 
+                time: new Date().toLocaleTimeString(),
+                isSpecial: true, 
+                isCompleted: false, 
+                dropData: dropId ? {id: dropId, total, count, coin} : null
             });
-            localStorage.setItem('smat_messages', JSON.stringify(messages.slice(-MAX_MESSAGES)));
-            renderChat();
         }
 
         function appendMention(id) {
@@ -481,7 +449,6 @@ database.ref('messages').limitToLast(100).on('value', (snapshot) => {
             const container = document.getElementById('chatDisplay');
             container.innerHTML = '';
             const admins = JSON.parse(localStorage.getItem('smat_admins')) || [];
-            
             const captIcon = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" style="width:12px; height:12px; fill:yellow; margin-right:4px; vertical-align:middle;"><path d="M256 0c15.1 0 28.5 10.5 31.5 25.3l15 74.2C353.4 111.4 400.6 158.6 412.5 209.5l74.2 15c14.8 3 25.3 16.4 25.3 31.5s-10.5 28.5-25.3 31.5l-74.2 15c-11.9 50.9-59.1 98.1-109.9 110l-15 74.2c-3 14.8-16.4 25.3-31.5 25.3s-28.5-10.5-31.5-25.3l-15-74.2C158.6 400.6 111.4 353.4 99.5 302.5l-74.2-15C10.5 285.5 0 272.1 0 257s10.5-28.5 25.3-31.5l74.2-15c11.9-50.9 59.1-98.1 110-110l15-74.2C227.5 10.5 240.9 0 256 0zM256 160c-53 0-96 43-96 96s43 96 96 96s96-43 96-96s-43-96-96-96z"/></svg>`;
 
             messages.forEach(msg => {
@@ -540,9 +507,16 @@ database.ref('messages').limitToLast(100).on('value', (snapshot) => {
             let rawText = input.value.trim();
             if(!rawText) return;
             let translatedText = await translateToEnglish(rawText);
-            messages.push({ mid: Date.now().toString(), id: user.id, text: translatedText, time: new Date().toLocaleTimeString() });
-            localStorage.setItem('smat_messages', JSON.stringify(messages.slice(-MAX_MESSAGES)));
-            input.value = ''; renderChat();
+            
+            // Firebase এ মেসেজ পুশ করা হচ্ছে
+            database.ref('global_chat').push({ 
+                mid: Date.now().toString(), 
+                id: user.id, 
+                text: translatedText, 
+                time: new Date().toLocaleTimeString() 
+            });
+
+            input.value = '';
         }
 
         function openBanList() {
@@ -595,7 +569,6 @@ database.ref('messages').limitToLast(100).on('value', (snapshot) => {
             } else if (user.role === 'ADMIN') {
                 document.getElementById('banListBtn').style.display = 'block';
             }
-            renderChat();
         };
 
         document.getElementById('messageInput').addEventListener("keypress", (e) => { if(e.key === "Enter") sendMessage(); });
