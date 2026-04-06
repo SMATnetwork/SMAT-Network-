@@ -30,6 +30,7 @@
             display: flex; flex-direction: column; 
             height: 100vh; height: 100dvh; 
             overflow: hidden; width: 100%;
+            position: relative;
         }
 
         .chat-header {
@@ -150,7 +151,6 @@
         .btn-panel { padding: 4px 8px; border-radius: 6px; font-weight: 900; font-size: 10px; cursor: pointer; border: none; }
         .leader-item { display: flex; justify-content: space-between; padding: 8px; border-bottom: 1px solid #333; }
         
-        /* Unban Button style */
         .unban-btn { background: var(--admin-color); color: black; border: none; padding: 2px 8px; border-radius: 4px; font-weight: 800; cursor: pointer; font-size: 10px; }
     </style>
 </head>
@@ -310,22 +310,18 @@
             } else { alert("Requirement: 500 SMAT Daily Betting in Arena!"); }
         }
 
-        // --- BAN / DELETE LOGIC ---
         function deleteMessage(mid, targetId) {
             if (user.role === 'ADMIN' || user.role === 'SUPER_ADMIN') {
                 const choice = confirm(`Target: ${targetId}\n\n[OK] = BAN USER\n[Cancel] = DELETE MESSAGE ONLY`);
                 if (choice) {
-                    // Ban User
                     let restricted = JSON.parse(localStorage.getItem('smat_restricted')) || [];
                     if (!restricted.includes(targetId) && targetId !== MAIN_SUPER_ADMIN) {
                         restricted.push(targetId);
                         localStorage.setItem('smat_restricted', JSON.stringify(restricted));
-                        // Remove all messages of banned user
                         messages = messages.filter(m => m.id !== targetId);
                         alert(`${targetId} has been restricted!`);
                     }
                 } else {
-                    // Just delete single message
                     messages = messages.filter(m => m.mid !== mid);
                 }
                 localStorage.setItem('smat_messages', JSON.stringify(messages));
@@ -440,13 +436,11 @@
         }
 
         async function sendMessage() {
-            // Check if user is banned
             const restricted = JSON.parse(localStorage.getItem('smat_restricted')) || [];
             if (restricted.includes(user.id)) {
                 alert("You are restricted from sending messages.");
                 return;
             }
-
             const input = document.getElementById('messageInput');
             let rawText = input.value.trim();
             if(!rawText) return;
@@ -456,15 +450,10 @@
             input.value = ''; renderChat();
         }
 
-        // --- BAN LIST & UNBAN ---
         function openBanList() {
             const list = JSON.parse(localStorage.getItem('smat_restricted')) || [];
             document.getElementById('banListContent').innerHTML = list.length 
-                ? list.map(id => `
-                    <div class="leader-item">
-                        <div>${id}</div>
-                        <button class="unban-btn" onclick="unbanUser('${id}')">UNBAN</button>
-                    </div>`).join('') 
+                ? list.map(id => `<div class="leader-item"><div>${id}</div><button class="unban-btn" onclick="unbanUser('${id}')">UNBAN</button></div>`).join('') 
                 : "<div style='text-align:center; padding:20px; color:var(--text-sec);'>No Banned Users</div>";
             openModal('banListModal');
         }
@@ -475,7 +464,7 @@
                 restricted = restricted.filter(uId => uId !== id);
                 localStorage.setItem('smat_restricted', JSON.stringify(restricted));
                 alert(`${id} has been unbanned!`);
-                openBanList(); // Refresh list
+                openBanList();
             }
         }
 
@@ -491,12 +480,19 @@
         function openModal(id) { document.getElementById(id).style.display = 'flex'; }
         function closeModal(id) { document.getElementById(id).style.display = 'none'; }
 
+        /* KEYBOARD FOCUS & VIEWPORT FIX */
         if (window.visualViewport) {
             window.visualViewport.addEventListener('resize', () => {
-                const viewportHeight = window.visualViewport.height;
-                document.body.style.height = viewportHeight + "px";
+                const height = window.visualViewport.height;
+                // Set body height to visible viewport height
+                document.body.style.height = height + "px";
+                // Scroll to bottom
                 const container = document.getElementById('chatDisplay');
-                if (container) container.scrollTop = container.scrollHeight;
+                if (container) {
+                    setTimeout(() => {
+                        container.scrollTop = container.scrollHeight;
+                    }, 50);
+                }
             });
         }
 
