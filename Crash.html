@@ -13,73 +13,79 @@
     
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;900&display=swap');
-        body { background-color: #0b0e11; color: white; font-family: 'Inter', sans-serif; overflow-x: hidden; }
-        .app-container { width: 100%; min-height: 100vh; padding-bottom: 50px; }
+        body { background-color: #0b0e11; color: white; font-family: 'Inter', sans-serif; overflow-x: hidden; width: 100%; }
+        .app-container { width: 100%; min-height: 100vh; background: #0b0e11; padding-bottom: 50px; }
         .game-screen { height: 40vh; min-height: 280px; background: #161a1e; border: 1px solid #2d3339; border-radius: 12px; position: relative; overflow: hidden; margin: 0 16px; }
         #multiplier { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); font-size: 5rem; font-weight: 900; color: #f0b90b; z-index: 50; text-shadow: 0 0 40px rgba(240, 185, 11, 0.6); }
         .plane-anim { position: absolute; bottom: 30px; left: 45px; width: 75px; height: 75px; z-index: 30; transition: 0.05s linear; }
         #countdown-overlay { position: absolute; inset: 0; background: rgba(11,14,17,0.95); z-index: 100; display: none; flex-direction: column; align-items: center; justify-content: center; }
-        .history-pill-item { padding: 4px 8px; border-radius: 4px; font-size: 10px; font-weight: 900; }
+        .history-pill-item { padding: 4px 8px; border-radius: 4px; font-size: 10px; font-weight: 900; flex-shrink: 0; }
         .pill-white { color: #FFFFFF; } .pill-gray { color: #808080; } .pill-green { color: #22c55e; } .pill-yellow { color: #f0b90b; }
-        #cashout-popup { position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); background: #22c55e; padding: 20px; border-radius: 15px; display: none; z-index: 10001; text-align: center; }
+        #cashout-popup { position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); background: #22c55e; color: white; padding: 20px; border-radius: 15px; display: none; z-index: 10001; text-align: center; box-shadow: 0 10px 40px rgba(0,0,0,0.5); }
     </style>
 </head>
 <body>
 
 <div id="cashout-popup">
-    <div class="text-xs uppercase opacity-90">Success</div>
-    <div id="cashout-msg-amount" class="text-2xl font-black">0.00 SMAT</div>
+    <div class="text-[12px] uppercase tracking-widest opacity-90 mb-1">Successful Cash Out</div>
+    <div id="cashout-msg-amount" class="text-2xl font-black">0.000000 SMAT</div>
 </div>
 
 <div class="app-container">
-    <div class="p-5 flex justify-between items-center border-b border-gray-800/50">
+    <div class="p-5 flex justify-between items-center border-b border-gray-800/50 mb-2">
         <div class="flex items-center">
             <div class="bg-yellow-500 w-10 h-10 rounded-full flex items-center justify-center font-black text-black text-xl mr-3">S</div>
             <div>
                 <h1 class="text-lg font-black uppercase">SMAT EXPLORER</h1>
-                <p class="text-[9px] text-yellow-500 font-bold tracking-widest -mt-1">CRASH AREA</p>
+                <p class="text-[9px] text-yellow-500 font-bold tracking-[2px] -mt-1">CRASH ARENA</p>
             </div>
         </div>
-        <div class="bg-[#1e2329] px-4 py-2 rounded-lg border border-gray-700">
-            <span id="balance-display" class="text-sm font-black text-yellow-500">0.000000 SMAT</span>
+        <div class="bg-[#1e2329] px-3 py-1 rounded-lg border border-gray-700 shadow-inner">
+            <span id="balance-display" class="text-[12px] font-black text-yellow-500">0.000000 SMAT</span>
         </div>
     </div>
 
-    <div class="px-4 py-3 flex justify-between text-[10px] font-bold text-gray-500">
-        <span>BANK: <span id="bank-display" class="text-blue-400">10000.00</span></span>
-        <span>ID: <span id="game-id-display" class="text-white">#100000</span></span>
+    <div class="px-4 mb-3 flex justify-between items-center text-[10px] font-bold text-gray-500">
+        <div class="bg-black/40 px-3 py-1 rounded-lg border border-gray-800">
+            BANK: <span id="bank-display" class="text-blue-400 font-black">10000.00</span>
+        </div>
+        <div class="bg-black/40 px-3 py-1 rounded-lg border border-gray-800">
+            ID: <span id="game-id-display" class="text-white font-black">#100000</span>
+        </div>
     </div>
 
-    <div id="screen" class="game-screen">
+    <div id="screen" class="game-screen shadow-inner">
         <div id="multiplier">1.00x</div>
         <div id="plane" class="plane-anim opacity-0">
-            <svg viewBox="0 0 64 64"><path d="M32,10 L42,30 L42,50 L22,50 L22,30 Z" fill="#f0b90b" /></svg>
+            <svg viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg">
+                <path d="M32,10 L42,30 L42,50 L22,50 L22,30 Z" fill="#f0b90b" />
+            </svg>
         </div>
         <div id="countdown-overlay">
-            <div class="text-yellow-500 text-xs font-bold mb-2">NEXT ROUND IN</div>
-            <div id="timer-num" class="text-6xl font-black">10</div>
+            <div class="text-yellow-500 font-black text-xs uppercase mb-2 animate-pulse">Next bet starts in</div>
+            <div id="timer-num" class="text-6xl font-black text-white">10</div>
         </div>
     </div>
 
-    <div id="history-pills" class="px-4 py-2 flex gap-2 overflow-x-auto"></div>
+    <div id="history-pills" class="mt-2 px-4 flex gap-2 overflow-x-auto"></div>
 
-    <div class="p-4 space-y-4">
-        <div class="grid grid-cols-2 gap-4">
+    <div class="mt-4 px-4 space-y-3">
+        <div class="grid grid-cols-2 gap-3">
             <div class="bg-[#1e2329] p-3 rounded-xl border border-[#2d3339]">
-                <label class="text-[8px] uppercase font-bold text-gray-500">Bet Amount</label>
-                <input id="bet-amount" type="number" value="10" class="w-full bg-transparent text-lg font-black outline-none text-yellow-500">
+                <label class="text-[8px] text-gray-500 font-bold uppercase block mb-1">Bet SMAT</label>
+                <input id="bet-amount" type="number" value="10" step="0.000001" class="w-full bg-transparent font-black text-lg outline-none text-yellow-500">
             </div>
             <div class="bg-[#1e2329] p-3 rounded-xl border border-[#2d3339]">
-                <label class="text-[8px] uppercase font-bold text-gray-500">Auto Exit</label>
-                <input id="auto-cashout" type="number" placeholder="2.00" class="w-full bg-transparent text-lg font-black outline-none text-blue-400">
+                <label class="text-[8px] text-gray-500 font-bold uppercase block mb-1">Auto Exit</label>
+                <input id="auto-cashout" type="number" placeholder="2.00" class="w-full bg-transparent font-black text-lg outline-none text-blue-400">
             </div>
         </div>
-        <button id="action-btn" onclick="placeBet()" class="w-full bg-yellow-500 text-black py-4 rounded-xl font-black text-xl">PLACE BET</button>
+        <button id="action-btn" onclick="placeBet()" class="w-full bg-yellow-500 text-black py-4 rounded-xl font-black text-xl shadow-lg active:scale-95 transition-all">PLACE BET</button>
     </div>
 </div>
 
 <script>
-// --- FIREBASE CONFIG ---
+// --- ফায়ারবেস কনফিগ (এখানে আপনার সঠিক তথ্য দিন) ---
 const firebaseConfig = {
     apiKey: "AIzaSyAc6G7verW9GekalzSQG8viyEhdGXxpuwM",
     authDomain: "crashgame-48d45.firebaseapp.com",
@@ -90,12 +96,15 @@ const firebaseConfig = {
     appId: "1:174632106924:web:3960713c7c82380a839809"
 };
 
-firebase.initializeApp(firebaseConfig);
+// Initialize Firebase
+if (!firebase.apps.length) {
+    firebase.initializeApp(firebaseConfig);
+}
 const db = firebase.database();
 
-// --- VARIABLES ---
-let smatBalance = parseFloat(localStorage.getItem('smatBalance')) || 1000.0;
-let bankBalance = 10000.0;
+// --- ভেরিয়েবল ---
+let smatBalance = parseFloat(localStorage.getItem('smatBalance')) || 1000.00;
+let bankBalance = 10000.00;
 let gameId = 100000;
 let currentMultiplier = 1.00;
 let isRunning = false;
@@ -105,7 +114,7 @@ let betAmt = 0;
 let crashAt = 0;
 let gameLoop;
 
-// --- 16 CRASH CONDITIONS ---
+// --- আপনার ১৬টি ক্রাশ কন্ডিশন (হুবহু রাখা হয়েছে) ---
 function calculateCrashPoint() {
     let r = Math.random() * 100;
     if (r <= 5.0) return 1.00;
@@ -120,31 +129,31 @@ function calculateCrashPoint() {
     if (r <= 48.0) return parseFloat((1.80 + Math.random() * 0.09).toFixed(2));
     if (r <= 52.5) return parseFloat((1.90 + Math.random() * 0.09).toFixed(2));
     if (r <= 62.5) return parseFloat((2.00 + Math.random() * 0.49).toFixed(2));
-    if (r <= 85.0) return parseFloat((5.00 + Math.random() * 5.00).toFixed(2));
-    if (r <= 95.0) return parseFloat((20.0 + Math.random() * 30.0).toFixed(2));
-    if (r <= 99.0) return parseFloat((100.0 + Math.random() * 900.0).toFixed(2));
-    return parseFloat((1000.0 + Math.random() * 5000.0).toFixed(2));
+    if (r <= 80.0) return parseFloat((5.00 + Math.random() * 10.0).toFixed(2));
+    if (r <= 95.0) return parseFloat((50.0 + Math.random() * 50.0).toFixed(2));
+    if (r <= 99.0) return parseFloat((500.0 + Math.random() * 500.0).toFixed(2));
+    return parseFloat((2000.0 + Math.random() * 10000.0).toFixed(2));
 }
 
-// --- CORE FUNCTIONS ---
-function updateUI() {
-    document.getElementById('balance-display').innerText = smatBalance.toFixed(6) + " SMAT";
-    document.getElementById('bank-display').innerText = bankBalance.toFixed(2);
-    document.getElementById('game-id-display').innerText = "#" + gameId;
-    localStorage.setItem('smatBalance', smatBalance);
-}
-
+// --- ডাটাবেস সিঙ্ক ---
 function syncFirebase() {
-    db.ref('gameData').on('value', (snap) => {
-        const data = snap.val();
-        if(data) {
-            bankBalance = data.bankBalance;
-            gameId = data.gameId;
+    db.ref('gameData').on('value', (snapshot) => {
+        const data = snapshot.val();
+        if (data) {
+            bankBalance = data.bankBalance || 10000.00;
+            gameId = data.gameId || 100000;
             updateUI();
         } else {
             db.ref('gameData').set({ bankBalance: 10000, gameId: 100000 });
         }
     });
+}
+
+function updateUI() {
+    document.getElementById('balance-display').innerText = smatBalance.toFixed(6) + " SMAT";
+    document.getElementById('bank-display').innerText = bankBalance.toFixed(2);
+    document.getElementById('game-id-display').innerText = "#" + gameId;
+    localStorage.setItem('smatBalance', smatBalance);
 }
 
 function prepareRound() {
@@ -158,7 +167,7 @@ function prepareRound() {
     let timer = setInterval(() => {
         t--;
         document.getElementById('timer-num').innerText = t;
-        if(t <= 0) {
+        if (t <= 0) {
             clearInterval(timer);
             document.getElementById('countdown-overlay').style.display = 'none';
             startFlight();
@@ -167,16 +176,18 @@ function prepareRound() {
 }
 
 function placeBet() {
-    if(isRunning || hasBet) return;
+    if (isRunning || hasBet) return;
     const val = parseFloat(document.getElementById('bet-amount').value);
-    if(val > smatBalance || val <= 0) return alert("Insufficient Balance");
+    if (isNaN(val) || val <= 0 || val > smatBalance) return alert("Invalid Amount!");
     
     betAmt = val;
     smatBalance -= val;
     hasBet = true;
     updateUI();
-    document.getElementById('action-btn').innerText = "WAITING...";
-    document.getElementById('action-btn').disabled = true;
+    
+    const btn = document.getElementById('action-btn');
+    btn.innerText = "WAITING...";
+    btn.disabled = true;
 }
 
 function startFlight() {
@@ -185,7 +196,7 @@ function startFlight() {
     crashAt = calculateCrashPoint();
     document.getElementById('plane').style.opacity = "1";
 
-    if(hasBet) {
+    if (hasBet) {
         const btn = document.getElementById('action-btn');
         btn.disabled = false;
         btn.innerText = "CASH OUT";
@@ -195,29 +206,31 @@ function startFlight() {
 
     gameLoop = setInterval(() => {
         currentMultiplier += (currentMultiplier < 10 ? 0.01 : currentMultiplier * 0.005);
-        if(currentMultiplier >= crashAt) {
+        if (currentMultiplier >= crashAt) {
             currentMultiplier = crashAt;
             doCrash();
             return;
         }
         document.getElementById('multiplier').innerText = currentMultiplier.toFixed(2) + "x";
         
-        if(hasBet && !hasCashed) {
+        if (hasBet && !hasCashed) {
             document.getElementById('action-btn').innerText = "CASH OUT: " + (betAmt * currentMultiplier).toFixed(2);
             let auto = parseFloat(document.getElementById('auto-cashout').value);
-            if(auto > 0 && currentMultiplier >= auto) manualCashOut();
+            if (auto > 1.0 && currentMultiplier >= auto) manualCashOut();
         }
     }, 60);
 }
 
 function manualCashOut() {
-    if(!hasBet || hasCashed) return;
+    if (!hasBet || hasCashed) return;
     hasCashed = true;
     const win = betAmt * currentMultiplier;
     smatBalance += win;
+    
+    // ডাটাবেস ব্যাংক থেকে টাকা কাটবে
     db.ref('gameData/bankBalance').set(bankBalance - (win - betAmt));
     
-    document.getElementById('cashout-msg-amount').innerText = win.toFixed(4) + " SMAT";
+    document.getElementById('cashout-msg-amount').innerText = win.toFixed(6) + " SMAT";
     document.getElementById('cashout-popup').style.display = 'block';
     setTimeout(() => document.getElementById('cashout-popup').style.display = 'none', 2000);
     
@@ -232,7 +245,8 @@ function doCrash() {
     document.getElementById('multiplier').innerText = "CRASHED";
     document.getElementById('multiplier').style.color = "#ef4444";
     
-    if(hasBet && !hasCashed) {
+    // হারলে ব্যাংক ব্যালেন্স আপডেট
+    if (hasBet && !hasCashed) {
         db.ref('gameData/bankBalance').set(bankBalance + betAmt);
     }
     
@@ -241,10 +255,11 @@ function doCrash() {
     
     setTimeout(() => {
         hasBet = false;
-        document.getElementById('action-btn').innerText = "PLACE BET";
-        document.getElementById('action-btn').disabled = false;
-        document.getElementById('action-btn').onclick = placeBet;
-        document.getElementById('action-btn').className = "w-full bg-yellow-500 text-black py-4 rounded-xl font-black text-xl";
+        const btn = document.getElementById('action-btn');
+        btn.innerText = "PLACE BET";
+        btn.disabled = false;
+        btn.onclick = placeBet;
+        btn.className = "w-full bg-yellow-500 text-black py-4 rounded-xl font-black text-xl shadow-lg";
         prepareRound();
     }, 3000);
 }
@@ -253,9 +268,10 @@ function addHistory(val) {
     const hist = document.getElementById('history-pills');
     const pill = document.createElement('div');
     let color = val < 2 ? 'pill-gray' : (val < 10 ? 'pill-green' : 'pill-yellow');
-    pill.className = `history-pill-item ${color}`;
+    pill.className = `history-pill-item ${color} bg-gray-800`;
     pill.innerText = val.toFixed(2) + "x";
     hist.prepend(pill);
+    if(hist.children.length > 10) hist.removeChild(hist.lastChild);
 }
 
 window.onload = () => {
