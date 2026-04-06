@@ -5,60 +5,73 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>SMAT Explore - Crash Arena</title>
     
+    <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-database-compat.js"></script>
+    
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
-   <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-app-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-database-compat.js"></script>
-
+    
     <style>
-        /* আপনার অরিজিনাল সব CSS (যাতে কোনো পরিবর্তন করা হয়নি) */
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;900&display=swap');
-        body { background-color: #0b0e11; color: white; font-family: 'Inter', sans-serif; transition: 0.3s; overflow-x: hidden; width: 100%; }
-        /* ... (বাকি সব CSS এখানে থাকবে যা আপনার ফাইলে ছিল) ... */
-        /* আমি সংক্ষেপ করছি কিন্তু আপনার অরিজিনাল ফাইল থেকে সব CSS এখানে কপি করে বসাবেন */
-        .app-container { width: 100%; min-height: 100vh; background: #0b0e11; padding-bottom: 50px; }
+        body { background-color: #0b0e11; color: white; font-family: 'Inter', sans-serif; overflow-x: hidden; }
+        .app-container { width: 100%; min-height: 100vh; padding-bottom: 50px; }
         .game-screen { height: 40vh; min-height: 280px; background: #161a1e; border: 1px solid #2d3339; border-radius: 12px; position: relative; overflow: hidden; margin: 0 16px; }
-        #multiplier { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); font-size: 5rem; font-weight: 900; color: #f0b90b; z-index: 50; }
-        .plane-anim { position: absolute; bottom: 30px; left: 45px; width: 75px; height: 75px; z-index: 30; }
+        #multiplier { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); font-size: 5rem; font-weight: 900; color: #f0b90b; z-index: 50; text-shadow: 0 0 40px rgba(240, 185, 11, 0.6); }
+        .plane-anim { position: absolute; bottom: 30px; left: 45px; width: 75px; height: 75px; z-index: 30; transition: 0.05s linear; }
         #countdown-overlay { position: absolute; inset: 0; background: rgba(11,14,17,0.95); z-index: 100; display: none; flex-direction: column; align-items: center; justify-content: center; }
-        .history-pill-item { padding: 4px 8px; font-size: 10px; font-weight: 900; border-radius: 4px; display: inline-block; margin: 2px; }
-        .pill-gray { background: #333; color: #808080; } .pill-green { background: #1b3e2b; color: #22c55e; }
-        /* ... আপনার অন্যান্য CSS স্টাইল এখানে থাকবে ... */
+        .history-pill-item { padding: 4px 8px; border-radius: 4px; font-size: 10px; font-weight: 900; }
+        .pill-white { color: #FFFFFF; } .pill-gray { color: #808080; } .pill-green { color: #22c55e; } .pill-yellow { color: #f0b90b; }
+        #cashout-popup { position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); background: #22c55e; padding: 20px; border-radius: 15px; display: none; z-index: 10001; text-align: center; }
     </style>
 </head>
 <body>
 
+<div id="cashout-popup">
+    <div class="text-xs uppercase opacity-90">Success</div>
+    <div id="cashout-msg-amount" class="text-2xl font-black">0.00 SMAT</div>
+</div>
+
 <div class="app-container">
-    <div class="p-5 flex justify-between items-center border-b border-gray-800/50 mb-2">
+    <div class="p-5 flex justify-between items-center border-b border-gray-800/50">
         <div class="flex items-center">
-            <div class="s-logo-wrapper" style="width: 45px; height: 45px; background: radial-gradient(circle, #f0b90b 0%, #cc9900 100%); border-radius: 50%; display: flex; align-items: center; justify-content: center;"><span class="s-logo-inner" style="font-weight: 900; font-size: 28px;">S</span></div>
-            <div class="ml-3">
-                <h1 class="header-title">SMAT EXPLORER</h1>
-                <p class="text-[9px] text-yellow-500 font-black">CRASH ARENA</p>
+            <div class="bg-yellow-500 w-10 h-10 rounded-full flex items-center justify-center font-black text-black text-xl mr-3">S</div>
+            <div>
+                <h1 class="text-lg font-black uppercase">SMAT EXPLORER</h1>
+                <p class="text-[9px] text-yellow-500 font-bold tracking-widest -mt-1">CRASH AREA</p>
             </div>
         </div>
-        <div class="bg-[#1e2329] px-3 py-1 rounded-lg border border-gray-700">
-            <span id="balance-display" class="text-[12px] font-black text-yellow-500">LOADING...</span>
+        <div class="bg-[#1e2329] px-4 py-2 rounded-lg border border-gray-700">
+            <span id="balance-display" class="text-sm font-black text-yellow-500">0.000000 SMAT</span>
         </div>
     </div>
 
-    <div id="screen" class="game-screen shadow-inner">
+    <div class="px-4 py-3 flex justify-between text-[10px] font-bold text-gray-500">
+        <span>BANK: <span id="bank-display" class="text-blue-400">10000.00</span></span>
+        <span>ID: <span id="game-id-display" class="text-white">#100000</span></span>
+    </div>
+
+    <div id="screen" class="game-screen">
         <div id="multiplier">1.00x</div>
         <div id="plane" class="plane-anim opacity-0">
-             <svg viewBox="0 0 64 64"><path d="M32,10 L42,30 L42,50 L22,50 L22,30 Z" fill="#f0b90b"/></svg>
+            <svg viewBox="0 0 64 64"><path d="M32,10 L42,30 L42,50 L22,50 L22,30 Z" fill="#f0b90b" /></svg>
         </div>
-        <div id="countdown-overlay"><div id="timer-num" class="text-6xl font-black text-white">10</div></div>
+        <div id="countdown-overlay">
+            <div class="text-yellow-500 text-xs font-bold mb-2">NEXT ROUND IN</div>
+            <div id="timer-num" class="text-6xl font-black">10</div>
+        </div>
     </div>
 
-    <div id="history-pills" class="px-4 py-2 flex flex-wrap"></div>
+    <div id="history-pills" class="px-4 py-2 flex gap-2 overflow-x-auto"></div>
 
-    <div class="px-4 mt-4 space-y-3">
-        <div class="grid grid-cols-2 gap-3">
+    <div class="p-4 space-y-4">
+        <div class="grid grid-cols-2 gap-4">
             <div class="bg-[#1e2329] p-3 rounded-xl border border-[#2d3339]">
-                <input id="bet-amount" type="number" value="10" class="w-full bg-transparent font-black text-lg text-yellow-500 outline-none">
+                <label class="text-[8px] uppercase font-bold text-gray-500">Bet Amount</label>
+                <input id="bet-amount" type="number" value="10" class="w-full bg-transparent text-lg font-black outline-none text-yellow-500">
             </div>
             <div class="bg-[#1e2329] p-3 rounded-xl border border-[#2d3339]">
-                <input id="auto-cashout" type="text" placeholder="Auto" class="w-full bg-transparent font-black text-lg text-blue-400 outline-none">
+                <label class="text-[8px] uppercase font-bold text-gray-500">Auto Exit</label>
+                <input id="auto-cashout" type="number" placeholder="2.00" class="w-full bg-transparent text-lg font-black outline-none text-blue-400">
             </div>
         </div>
         <button id="action-btn" onclick="placeBet()" class="w-full bg-yellow-500 text-black py-4 rounded-xl font-black text-xl">PLACE BET</button>
@@ -66,216 +79,189 @@
 </div>
 
 <script>
-    // ১. Firebase Configuration
-    const firebaseConfig = {
-        apiKey: "AIzaSyAc6G7verW9GekalzSQG8viyEhdGXxpuwM",
-        authDomain: "crashgame-48d45.firebaseapp.com",
-        projectId: "crashgame-48d45",
-        databaseURL: "https://crashgame-48d45-default-rtdb.firebaseio.com", // আপনার প্রজেক্ট আইডি অনুযায়ী URL
-        storageBucket: "crashgame-48d45.firebasestorage.app",
-        messagingSenderId: "174632106924",
-        appId: "1:174632106924:web:3960713c7c82380a839809"
-    };
+// --- FIREBASE CONFIG ---
+const firebaseConfig = {
+    apiKey: "AIzaSyAc6G7verW9GekalzSQG8viyEhdGXxpuwM",
+    authDomain: "crashgame-48d45.firebaseapp.com",
+    projectId: "crashgame-48d45",
+    databaseURL: "https://crashgame-48d45-default-rtdb.firebaseio.com", 
+    storageBucket: "crashgame-48d45.firebasestorage.app",
+    messagingSenderId: "174632106924",
+    appId: "1:174632106924:web:3960713c7c82380a839809"
+};
 
-    firebase.initializeApp(firebaseConfig);
-    const db = firebase.database();
+firebase.initializeApp(firebaseConfig);
+const db = firebase.database();
 
-    // গ্লোবাল ভেরিয়েবল
-    let smatBalance = 1000, bankBalance = 10000, gameId = 100000;
-    let crashHistoryDots = [];
-    let isRunning = false, hasBet = false, hasCashed = false, betAmt = 0;
-    let currentMultiplier = 1.00;
-    let serverTimeOffset = 0;
+// --- VARIABLES ---
+let smatBalance = parseFloat(localStorage.getItem('smatBalance')) || 1000.0;
+let bankBalance = 10000.0;
+let gameId = 100000;
+let currentMultiplier = 1.00;
+let isRunning = false;
+let hasBet = false;
+let hasCashed = false;
+let betAmt = 0;
+let crashAt = 0;
+let gameLoop;
 
-    // ২. রিয়াল টাইম ডেটা সিঙ্ক (Firebase Listeners)
-    function initFirebaseSync() {
-        // ইউজারের ব্যালেন্স এবং গেম হিস্ট্রি সিঙ্ক
-        db.ref('globalGameData').on('value', (snapshot) => {
-            const data = snapshot.val();
-            if (data) {
-                gameId = data.gameId || 100000;
-                crashHistoryDots = data.history || [];
-                bankBalance = data.bankBalance || 10000;
-                renderHistory();
-                document.getElementById('bank-display')?.innerText = bankBalance.toFixed(4);
-            }
-        });
+// --- 16 CRASH CONDITIONS ---
+function calculateCrashPoint() {
+    let r = Math.random() * 100;
+    if (r <= 5.0) return 1.00;
+    if (r <= 10.0) return parseFloat((1.01 + Math.random() * 0.08).toFixed(2));
+    if (r <= 15.0) return parseFloat((1.10 + Math.random() * 0.09).toFixed(2));
+    if (r <= 20.0) return parseFloat((1.20 + Math.random() * 0.09).toFixed(2));
+    if (r <= 25.0) return parseFloat((1.30 + Math.random() * 0.09).toFixed(2));
+    if (r <= 30.0) return parseFloat((1.40 + Math.random() * 0.09).toFixed(2));
+    if (r <= 34.5) return parseFloat((1.50 + Math.random() * 0.09).toFixed(2));
+    if (r <= 39.0) return parseFloat((1.60 + Math.random() * 0.09).toFixed(2));
+    if (r <= 43.5) return parseFloat((1.70 + Math.random() * 0.09).toFixed(2));
+    if (r <= 48.0) return parseFloat((1.80 + Math.random() * 0.09).toFixed(2));
+    if (r <= 52.5) return parseFloat((1.90 + Math.random() * 0.09).toFixed(2));
+    if (r <= 62.5) return parseFloat((2.00 + Math.random() * 0.49).toFixed(2));
+    if (r <= 85.0) return parseFloat((5.00 + Math.random() * 5.00).toFixed(2));
+    if (r <= 95.0) return parseFloat((20.0 + Math.random() * 30.0).toFixed(2));
+    if (r <= 99.0) return parseFloat((100.0 + Math.random() * 900.0).toFixed(2));
+    return parseFloat((1000.0 + Math.random() * 5000.0).toFixed(2));
+}
 
-        // ইউজারের নিজস্ব ডেটা (ব্যালেন্স)
-        // এখানে 'user1' উদাহরণ হিসেবে দেওয়া, আপনি চাইলে ডায়নামিক আইডি দিতে পারেন
-        db.ref('users/user1').on('value', (snapshot) => {
-            const data = snapshot.val();
-            if (data) {
-                smatBalance = data.balance;
-                updateBalanceUI();
-            } else {
-                // নতুন ইউজার হলে ডিফল্ট ব্যালেন্স সেট
-                db.ref('users/user1').set({ balance: 1000 });
-            }
-        });
+// --- CORE FUNCTIONS ---
+function updateUI() {
+    document.getElementById('balance-display').innerText = smatBalance.toFixed(6) + " SMAT";
+    document.getElementById('bank-display').innerText = bankBalance.toFixed(2);
+    document.getElementById('game-id-display').innerText = "#" + gameId;
+    localStorage.setItem('smatBalance', smatBalance);
+}
 
-        // গেম স্টেট সিঙ্ক (টাইমার ও মাল্টিপ্লায়ার)
-        db.ref('gameState').on('value', (snapshot) => {
-            const state = snapshot.val();
-            if (!state) return;
+function syncFirebase() {
+    db.ref('gameData').on('value', (snap) => {
+        const data = snap.val();
+        if(data) {
+            bankBalance = data.bankBalance;
+            gameId = data.gameId;
+            updateUI();
+        } else {
+            db.ref('gameData').set({ bankBalance: 10000, gameId: 100000 });
+        }
+    });
+}
 
-            if (state.status === 'counting') {
-                handleCountdown(state.timer);
-            } else if (state.status === 'flying') {
-                handleFlying(state.multiplier, state.crashAt);
-            } else if (state.status === 'crashed') {
-                handleCrashed(state.finalPoint);
-            }
-        });
-    }
-
-    // ৩. গেম লজিক কন্ডিশন (আপনার অরিজিনাল কোড থেকে)
-    function calculateCrashPoint() {
-        let r = Math.random() * 100;
-        let cp = 1.00;
-        // ... (আপনার দেওয়া সব if-else কন্ডিশন এখানে হুবহু থাকবে) ...
-        if (r <= 5.0) cp = 1.00;
-        else if (r <= 52.5) cp = 1.1 + (Math.random() * 0.8);
-        else if (r <= 90) cp = 2.0 + (Math.random() * 5);
-        else cp = 10 + (Math.random() * 50);
-        return parseFloat(cp.toFixed(2));
-    }
-
-    // ৪. গেম ফাংশনসমূহ (রিয়েল-টাইম হ্যান্ডলিং)
-    function handleCountdown(t) {
-        isRunning = false;
-        document.getElementById('countdown-overlay').style.display = 'flex';
+function prepareRound() {
+    isRunning = false; hasCashed = false;
+    document.getElementById('multiplier').innerText = "1.00x";
+    document.getElementById('multiplier').style.color = "#f0b90b";
+    document.getElementById('plane').style.opacity = "0";
+    document.getElementById('countdown-overlay').style.display = 'flex';
+    
+    let t = 10;
+    let timer = setInterval(() => {
+        t--;
         document.getElementById('timer-num').innerText = t;
-        document.getElementById('multiplier').innerText = "1.00x";
-        document.getElementById('plane').style.opacity = "0";
-        resetBetUI();
-    }
-
-    function handleFlying(m, crashPoint) {
-        document.getElementById('countdown-overlay').style.display = 'none';
-        isRunning = true;
-        currentMultiplier = m;
-        document.getElementById('multiplier').innerText = m.toFixed(2) + "x";
-        document.getElementById('plane').style.opacity = "1";
-        
-        // অটো ক্যাশ আউট চেক
-        let auto = parseFloat(document.getElementById('auto-cashout').value);
-        if (hasBet && !hasCashed && currentMultiplier >= auto) {
-            manualCashOut();
+        if(t <= 0) {
+            clearInterval(timer);
+            document.getElementById('countdown-overlay').style.display = 'none';
+            startFlight();
         }
+    }, 1000);
+}
 
-        // অ্যানিমেশন পজিশন (আপনার অরিজিনাল লজিক)
-        let moveX = Math.min(m * 20, 250);
-        let moveY = Math.min(m * 15, 150);
-        document.getElementById('plane').style.transform = `translate(${moveX}px, -${moveY}px)`;
+function placeBet() {
+    if(isRunning || hasBet) return;
+    const val = parseFloat(document.getElementById('bet-amount').value);
+    if(val > smatBalance || val <= 0) return alert("Insufficient Balance");
+    
+    betAmt = val;
+    smatBalance -= val;
+    hasBet = true;
+    updateUI();
+    document.getElementById('action-btn').innerText = "WAITING...";
+    document.getElementById('action-btn').disabled = true;
+}
+
+function startFlight() {
+    isRunning = true;
+    currentMultiplier = 1.00;
+    crashAt = calculateCrashPoint();
+    document.getElementById('plane').style.opacity = "1";
+
+    if(hasBet) {
+        const btn = document.getElementById('action-btn');
+        btn.disabled = false;
+        btn.innerText = "CASH OUT";
+        btn.onclick = manualCashOut;
+        btn.className = "w-full bg-green-500 text-black py-4 rounded-xl font-black text-xl";
     }
 
-    function handleCrashed(point) {
-        isRunning = false;
-        const m = document.getElementById('multiplier');
-        m.innerText = "CRASHED";
-        m.style.color = "#ef4444";
-        document.getElementById('plane').style.opacity = "0";
-        hasBet = false; 
-    }
-
-    // ৫. বেটিং এবং ক্যাশ আউট
-    function placeBet() {
-        if (isRunning || hasBet) return;
-        const val = parseFloat(document.getElementById('bet-amount').value);
-        if (smatBalance >= val) {
-            betAmt = val;
-            smatBalance -= val;
-            hasBet = true;
-            hasCashed = false;
-            // Firebase-এ ব্যালেন্স আপডেট
-            db.ref('users/user1').update({ balance: smatBalance });
-            document.getElementById('action-btn').innerText = "WAITING...";
+    gameLoop = setInterval(() => {
+        currentMultiplier += (currentMultiplier < 10 ? 0.01 : currentMultiplier * 0.005);
+        if(currentMultiplier >= crashAt) {
+            currentMultiplier = crashAt;
+            doCrash();
+            return;
         }
-    }
-
-    function manualCashOut() {
-        if (!hasBet || hasCashed || !isRunning) return;
-        hasCashed = true;
-        let win = betAmt * currentMultiplier;
-        smatBalance += win;
-        // ব্যালেন্স আপডেট
-        db.ref('users/user1').update({ balance: smatBalance });
-        document.getElementById('action-btn').innerText = "WIN: " + win.toFixed(2);
-    }
-
-    // সাহায্যকারী ফাংশন
-    function updateBalanceUI() {
-        document.getElementById('balance-display').innerText = smatBalance.toFixed(6) + " SMAT";
-    }
-
-    function renderHistory() {
-        const container = document.getElementById('history-pills');
-        container.innerHTML = crashHistoryDots.slice(-10).reverse().map(val => 
-            `<div class="history-pill-item ${val < 2 ? 'pill-gray' : 'pill-green'}">${val.toFixed(2)}x</div>`
-        ).join('');
-    }
-
-    function resetBetUI() {
-        if (!hasBet) {
-            const btn = document.getElementById('action-btn');
-            btn.innerText = "PLACE BET";
-            btn.className = "w-full bg-yellow-500 text-black py-4 rounded-xl font-black text-xl";
+        document.getElementById('multiplier').innerText = currentMultiplier.toFixed(2) + "x";
+        
+        if(hasBet && !hasCashed) {
+            document.getElementById('action-btn').innerText = "CASH OUT: " + (betAmt * currentMultiplier).toFixed(2);
+            let auto = parseFloat(document.getElementById('auto-cashout').value);
+            if(auto > 0 && currentMultiplier >= auto) manualCashOut();
         }
-    }
+    }, 60);
+}
 
-    // ৬. অ্যাডমিন/সার্ভার লুপ (এটি আসলে ব্যাকএন্ডে থাকা উচিত, তবে আপনার সুবিধার জন্য এখানেই দিয়ে দিচ্ছি)
-    // যদি আপনি চান গেমটি নিজে নিজেই সব ব্রাউজারে সিঙ্ক হয়ে চলুক:
-    function runServerLogic() {
-        // এই ফাংশনটি কেবল একজন ইউজারের ব্রাউজারে চললেই হবে, এটি ডেটাবেস কন্ট্রোল করবে
-        db.ref('gameState/status').once('value').then(snap => {
-            if (snap.val() === null) {
-                startNewRound();
-            }
-        });
-    }
+function manualCashOut() {
+    if(!hasBet || hasCashed) return;
+    hasCashed = true;
+    const win = betAmt * currentMultiplier;
+    smatBalance += win;
+    db.ref('gameData/bankBalance').set(bankBalance - (win - betAmt));
+    
+    document.getElementById('cashout-msg-amount').innerText = win.toFixed(4) + " SMAT";
+    document.getElementById('cashout-popup').style.display = 'block';
+    setTimeout(() => document.getElementById('cashout-popup').style.display = 'none', 2000);
+    
+    document.getElementById('action-btn').innerText = "WINNER!";
+    document.getElementById('action-btn').disabled = true;
+    updateUI();
+}
 
-    function startNewRound() {
-        let timer = 10;
-        db.ref('gameState').set({ status: 'counting', timer: timer });
-        
-        let interval = setInterval(() => {
-            timer--;
-            db.ref('gameState/timer').set(timer);
-            if (timer <= 0) {
-                clearInterval(interval);
-                let crashPoint = calculateCrashPoint();
-                startFlightServer(crashPoint);
-            }
-        }, 1000);
+function doCrash() {
+    clearInterval(gameLoop);
+    isRunning = false;
+    document.getElementById('multiplier').innerText = "CRASHED";
+    document.getElementById('multiplier').style.color = "#ef4444";
+    
+    if(hasBet && !hasCashed) {
+        db.ref('gameData/bankBalance').set(bankBalance + betAmt);
     }
+    
+    db.ref('gameData/gameId').set(gameId + 1);
+    addHistory(currentMultiplier);
+    
+    setTimeout(() => {
+        hasBet = false;
+        document.getElementById('action-btn').innerText = "PLACE BET";
+        document.getElementById('action-btn').disabled = false;
+        document.getElementById('action-btn').onclick = placeBet;
+        document.getElementById('action-btn').className = "w-full bg-yellow-500 text-black py-4 rounded-xl font-black text-xl";
+        prepareRound();
+    }, 3000);
+}
 
-    function startFlightServer(crashAt) {
-        let m = 1.00;
-        db.ref('gameState').set({ status: 'flying', multiplier: m, crashAt: crashAt });
-        
-        let flight = setInterval(() => {
-            m += (m < 10 ? 0.01 : m * 0.005);
-            db.ref('gameState/multiplier').set(m);
-            
-            if (m >= crashAt) {
-                clearInterval(flight);
-                db.ref('gameState').set({ status: 'crashed', finalPoint: crashAt });
-                // হিস্ট্রি আপডেট
-                crashHistoryDots.push(crashAt);
-                if(crashHistoryDots.length > 20) crashHistoryDots.shift();
-                db.ref('globalGameData').update({ history: crashHistoryDots, gameId: gameId + 1 });
-                
-                setTimeout(startNewRound, 3000);
-            }
-        }, 60);
-    }
+function addHistory(val) {
+    const hist = document.getElementById('history-pills');
+    const pill = document.createElement('div');
+    let color = val < 2 ? 'pill-gray' : (val < 10 ? 'pill-green' : 'pill-yellow');
+    pill.className = `history-pill-item ${color}`;
+    pill.innerText = val.toFixed(2) + "x";
+    hist.prepend(pill);
+}
 
-    window.onload = () => {
-        initFirebaseSync();
-        // এটি কেবল প্রথমবার গেমটি সার্ভারে চালু করার জন্য (একবার রান করলেই হবে)
-        runServerLogic();
-    };
+window.onload = () => {
+    syncFirebase();
+    prepareRound();
+};
 </script>
 </body>
 </html>
