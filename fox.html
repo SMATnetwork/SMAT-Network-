@@ -10,7 +10,7 @@
             --primary: #f3ba2f; --bg: #0b0e11; --card-bg: #1e2329;
             --chat-bubble: #2b3139; --text-main: #ffffff; --text-sec: #848e9c;
             --admin-color: #0ecb81; --super-admin: #f0b90b; --danger: #f6465d;
-            --gold: #ffd700; --rain-blue: #00d2ff; --drop-cyan: #00ffcc;
+            --mention-green: #0ecb81; --gold: #ffd700; --rain-blue: #00d2ff; --drop-cyan: #00ffcc;
         }
 
         * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; margin: 0; padding: 0; }
@@ -21,270 +21,167 @@
             display: flex; flex-direction: column; 
             height: 100vh; height: 100dvh; 
             overflow: hidden; width: 100%;
-            position: fixed;
+            position: fixed; /* এটি স্ক্রিনকে এক জায়গায় আটকে রাখবে */
         }
 
-        /* Jojo Timer UI */
-        #jojoTimer {
-            position: absolute; top: 65px; right: 15px;
-            background: rgba(30, 35, 41, 0.95); border: 1px solid var(--primary);
-            padding: 6px 12px; border-radius: 8px; font-size: 12px;
-            font-weight: 900; color: var(--primary); display: none; z-index: 999;
+        /* পিন নোটিশ */
+        #pinnedNotice {
+            background: #1e2329; border-bottom: 1px solid var(--primary);
+            padding: 8px 15px; display: none; align-items: center; 
+            gap: 10px; z-index: 101; flex-shrink: 0; cursor: pointer;
         }
-
-        /* S-Bubble Animation */
-        #s-bubble { 
-            position: fixed; width: 60px; height: 60px; z-index: 9999; cursor: pointer; display: none; 
-            animation: floatBubble 10s ease-in-out infinite; 
-        }
-        .s-logo-wrapper { 
-            width: 100%; height: 100%; background: radial-gradient(circle, #f0b90b 0%, #cc9900 100%); 
-            border-radius: 50%; display: flex; align-items: center; justify-content: center; 
-            border: 2px solid white; box-shadow: 0 0 15px var(--primary); 
-        }
-        @keyframes floatBubble { 0%, 100% { transform: translate(10vw, 10vh); } 50% { transform: translate(70vw, 60vh); } }
 
         .chat-header {
             padding: 12px 15px; background: var(--card-bg); border-bottom: 2px solid var(--primary);
-            display: flex; justify-content: space-between; align-items: center; flex-shrink: 0;
+            display: flex; justify-content: space-between; align-items: center; 
+            z-index: 100; flex-shrink: 0;
         }
 
         #chatDisplay {
             flex: 1; overflow-y: auto; padding: 15px;
-            display: flex; flex-direction: column; gap: 15px;
-            background: linear-gradient(to bottom, #0b0e11, #161a1e);
+            display: flex; flex-direction: column;
+            gap: 15px; background: linear-gradient(to bottom, #0b0e11, #161a1e);
+            -webkit-overflow-scrolling: touch;
         }
 
-        /* Special Buttons */
-        .claim-btn { background: var(--drop-cyan); border: none; padding: 8px; width: 100%; border-radius: 6px; color: #000; font-weight: 900; margin-top: 8px; cursor: pointer; }
-        .claim-btn:disabled { background: #363c44; color: #848e9c; cursor: not-allowed; }
-
+        /* ইনপুট এরিয়া ফিক্সড রাখার জন্য গুরুত্বপূর্ণ অংশ */
         .input-area {
             padding: 10px 15px; background: var(--card-bg); 
             border-top: 1px solid var(--chat-bubble); flex-shrink: 0;
+            z-index: 100; 
+            /* মোবাইলের নিচের নেভিগেশন বারের উপরে রাখার জন্য padding */
             padding-bottom: calc(10px + env(safe-area-inset-bottom));
         }
-        .input-box-wrapper { display: flex; gap: 10px; align-items: center; }
-        .input-container { flex: 1; display: flex; background: #181a20; border-radius: 25px; padding: 0 10px; border: 1px solid #363c44; }
-        #messageInput { width: 100%; background: transparent; border: none; padding: 10px; color: white; outline: none; }
 
-        /* Modals */
+        .input-box-wrapper { display: flex; gap: 8px; align-items: center; width: 100%; }
+        .input-container {
+            flex: 1; display: flex; background: #181a20; border-radius: 25px; 
+            padding: 0 10px; align-items: center; border: 1px solid #363c44;
+        }
+        #messageInput {
+            width: 100%; background: transparent; border: none; padding: 10px 5px;
+            color: white; font-size: 16px; outline: none;
+        }
+
+        .send-btn {
+            background: var(--primary); border: none; width: 42px; height: 42px;
+            border-radius: 12px; color: #000; cursor: pointer; flex-shrink: 0;
+        }
+
+        /* ইমেজের জন্য স্টাইল */
+        .chat-image { max-width: 200px; border-radius: 8px; margin-top: 5px; display: block; }
+        
+        /* আগের সব মোডাল স্টাইল এখানে থাকবে... */
         .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.9); z-index: 5000; justify-content: center; align-items: center; }
         .modal-box { background: var(--card-bg); padding: 20px; border-radius: 15px; width: 90%; max-width: 380px; border: 1px solid var(--primary); }
-        .modal-box input, .modal-box select { width: 100%; padding: 10px; margin: 8px 0; background: #181a20; border: 1px solid #363c44; color: white; border-radius: 8px; }
-
-        .pop-text { position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); background: #f0b90b; color: black; padding: 20px; border-radius: 15px; font-weight: 900; display: none; z-index: 10000; }
     </style>
 </head>
 <body>
 
-    <div id="jojoTimer">Jojo Time: <span id="jojoClock">00:00:00</span></div>
-    <div id="s-bubble" onclick="popBubble()">
-        <div class="s-logo-wrapper"><span style="font-weight:900; color:white; font-size:24px;">S</span></div>
-    </div>
-    <div id="pop-msg" class="pop-text">"I'm Jojo" <br> +1.00 SMAT</div>
-
-    <div id="rainModal" class="modal">
-        <div class="modal-box">
-            <h2 id="specialTitle" style="text-align: center; color:var(--primary); font-size:18px;">🌧️ Asset Rain</h2>
-            <select id="specialCoin">
-                <option value="usdt">USDT</option>
-                <option value="smat">SMAT</option>
-                <option value="bnb">BNB</option>
-            </select>
-            <input type="number" id="specialAmount" placeholder="Total Amount">
-            <input type="number" id="specialUsers" placeholder="Number of Users">
-            <button onclick="executeSpecial()" style="width:100%; margin-top:15px; background:var(--primary); border:none; padding:12px; border-radius:8px; font-weight: 900;">SEND</button>
-            <button onclick="closeModal('rainModal')" style="width:100%; margin-top:10px; background:transparent; border:none; color:var(--text-sec);">Cancel</button>
-        </div>
+    <div id="pinnedNotice" onclick="scrollToPinned()">
+        <i class="fa-solid fa-thumbtack" style="color:var(--primary)"></i>
+        <div id="pinnedContent" style="font-size:12px; flex:1; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">No pinned message</div>
     </div>
 
     <div class="chat-header">
-        <div style="color:var(--primary); font-weight:900;">Global Chat 💬</div>
-        <div style="font-size: 12px; color: var(--gold);">Balance: <span id="myBal">0.00</span> USDT</div>
+        <div class="header-title" style="color:var(--primary); font-weight:900;">Global 💬</div>
+        <div style="display:flex; gap:10px;">
+            <i class="fa-solid fa-crown" style="color:var(--gold)" onclick="openLeaderboard()"></i>
+            <a href="home.html" style="color:var(--text-sec)"><i class="fa-solid fa-circle-xmark"></i></a>
+        </div>
     </div>
 
     <div id="chatDisplay"></div>
 
     <div class="input-area">
         <div class="input-box-wrapper">
-            <i class="fa-solid fa-cloud-showers-heavy" style="color:var(--rain-blue); cursor:pointer;" onclick="openSpecial('RAIN')"></i>
-            <i class="fa-solid fa-droplet" style="color:var(--drop-cyan); cursor:pointer;" onclick="openSpecial('DROP')"></i>
-            <div class="input-container">
-                <input type="text" id="messageInput" placeholder="Write a message...">
+            <div class="special-tools">
+                <i class="fa-solid fa-image" style="color:#848e9c; font-size:18px;" onclick="document.getElementById('imageInput').click()"></i>
+                <input type="file" id="imageInput" style="display:none;" accept="image/*" onchange="handleImage(this)">
             </div>
-            <button onclick="sendMessage()" style="background:var(--primary); border:none; width:40px; height:40px; border-radius:50%;"><i class="fa-solid fa-paper-plane"></i></button>
+            <div class="input-container">
+                <input type="text" id="messageInput" placeholder="Write a message..." autocomplete="off">
+            </div>
+            <button class="send-btn" onclick="sendMessage()"><i class="fa-solid fa-paper-plane"></i></button>
         </div>
     </div>
 
     <script type="module">
+        // Firebase Configuration (আপনার আগের ফাইল থেকে)
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-        import { getDatabase, ref, push, onValue, set, get, update, limitToLast, query, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
+        import { getDatabase, ref, push, onValue, set, remove, limitToLast, query, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
 
         const firebaseConfig = {
             apiKey: "AIzaSyAMxtJedkehhxJRMPZLjhpKHqneHEWsGlE",
             authDomain: "smat-exchange.firebaseapp.com",
             projectId: "smat-exchange",
-            databaseURL: "https://smat-exchange-default-rtdb.firebaseio.com"
+            storageBucket: "smat-exchange.firebasestorage.app",
+            messagingSenderId: "836334569396",
+            appId: "1:836334569396:web:679effe640b3453412d4e1"
         };
 
         const app = initializeApp(firebaseConfig);
         const db = getDatabase(app);
-        const user = { id: localStorage.getItem('smatID') || "SMAT100001" };
-        let activeUserIds = [];
-        let currentType = '';
+        const messagesRef = ref(db, "global_messages");
 
-        // --- Balance Management ---
-        async function getBal(coin) {
-            const snap = await get(ref(db, `users/${user.id}/balances/${coin.toLowerCase()}`));
-            return snap.val() || 0;
-        }
+        let user = { id: localStorage.getItem('smatID') || "SMAT100001", role: "USER" };
 
-        async function updateBal(uid, coin, amount) {
-            const path = `users/${uid}/balances/${coin.toLowerCase()}`;
-            const snap = await get(ref(db, path));
-            await set(ref(db, path), (snap.val() || 0) + amount);
-            if(uid === user.id) refreshUI();
-        }
-
-        async function refreshUI() {
-            const b = await getBal('usdt');
-            document.getElementById('myBal').innerText = b.toFixed(2);
-        }
-        refreshUI();
-
-        // --- Jojo Timer Logic (Your 2nd Code Logic) ---
-        function updateJojo() {
-            const now = new Date();
-            const hours = now.getHours();
-            const minutes = now.getMinutes();
-            const seconds = now.getSeconds();
-
-            // Schedule: 2 AM, 8 AM, 2 PM, 8 PM
-            const targetHours = [2, 8, 14, 20];
-            const isActiveHour = targetHours.includes(hours);
-
-            // Timer Display (10 mins before target)
-            if(minutes >= 50 && targetHours.includes((hours+1)%24)) {
-                document.getElementById('jojoTimer').style.display = 'block';
-                document.getElementById('jojoClock').innerText = now.toLocaleTimeString();
-            } else { document.getElementById('jojoTimer').style.display = 'none'; }
-
-            // Bubble Display (First 15 seconds of target hour)
-            if(isActiveHour && minutes === 0 && seconds < 15) {
-                document.getElementById('s-bubble').style.display = 'block';
-            } else { document.getElementById('s-bubble').style.display = 'none'; }
-        }
-        setInterval(updateJojo, 1000);
-
-        window.popBubble = async function() {
-            // Requirement: Check local storage for betting (from your logic)
-            let dailyBet = parseFloat(localStorage.getItem('dailyTotalBet')) || 0;
-            if(dailyBet < 500) return alert("Requirement: 500 SMAT Daily Betting!");
-            
-            document.getElementById('s-bubble').style.display = 'none';
-            await updateBal(user.id, 'smat', 1.0);
-            const msg = document.getElementById('pop-msg');
-            msg.style.display = 'block';
-            setTimeout(() => msg.style.display = 'none', 3000);
-        };
-
-        // --- Rain & Drop Execution ---
-        window.openSpecial = (type) => {
-            currentType = type;
-            document.getElementById('specialTitle').innerText = type === 'RAIN' ? '🌧️ Asset Rain' : '💧 Asset Drop';
-            document.getElementById('rainModal').style.display = 'flex';
-        };
-
-        window.executeSpecial = async function() {
-            const coin = document.getElementById('specialCoin').value;
-            const amount = parseFloat(document.getElementById('specialAmount').value);
-            const count = parseInt(document.getElementById('specialUsers').value);
-
-            const myBalance = await getBal(coin);
-            if(myBalance < amount) return alert("Insufficient Balance!");
-
-            await updateBal(user.id, coin, -amount);
-            
-            if(currentType === 'RAIN') {
-                const targets = activeUserIds.filter(id => id !== user.id).slice(0, count);
-                const share = amount / (targets.length || 1);
-                targets.forEach(tid => updateBal(tid, coin, share));
-                
-                push(ref(db, "global_messages"), {
-                    id: "SYSTEM",
-                    text: `🌧️ Rain by ${user.id}: ${amount} ${coin.toUpperCase()} shared among ${targets.length} users!`,
-                    time: new Date().toLocaleTimeString(),
-                    isSpecial: true
-                });
-            } else {
-                push(ref(db, "global_messages"), {
-                    id: "SYSTEM",
-                    text: `💧 Drop by ${user.id}: ${amount} ${coin.toUpperCase()}!`,
-                    dropData: { total: amount, count: count, each: (amount/count), coin: coin, claimed: [] },
-                    time: new Date().toLocaleTimeString(),
-                    isSpecial: true
-                });
+        // ইমেজ হ্যান্ডলিং
+        window.handleImage = function(input) {
+            const file = input.files[0];
+            if(file) {
+                const reader = new FileReader();
+                reader.onload = (e) => sendMessage(e.target.result);
+                reader.readAsDataURL(file);
             }
-            closeModal('rainModal');
         };
 
-        window.claimDrop = async function(mKey) {
-            const snap = await get(ref(db, `global_messages/${mKey}`));
-            const drop = snap.val().dropData;
-            const claimedList = drop.claimed || [];
-
-            if(claimedList.includes(user.id)) return alert("Already Claimed!");
-            if(claimedList.length >= drop.count) return alert("Drop Empty!");
-
-            claimedList.push(user.id);
-            await update(ref(db, `global_messages/${mKey}/dropData`), { claimed: claimedList });
-            await updateBal(user.id, drop.coin, drop.each);
-            alert(`Claimed ${drop.each} ${drop.coin.toUpperCase()}!`);
-        };
-
-        // --- Chat Sync ---
-        window.sendMessage = () => {
+        // মেসেজ পাঠানোর ফাংশন (২য় কোডের ফিচারসহ)
+        window.sendMessage = async function(imgData = null) {
             const input = document.getElementById('messageInput');
-            if(!input.value.trim()) return;
-            push(ref(db, "global_messages"), {
+            let text = input.value.trim();
+            if(!text && !imgData) return;
+            
+            push(messagesRef, {
                 id: user.id,
-                text: input.value,
-                time: new Date().toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'}),
+                text: text,
+                image: imgData,
+                time: new Date().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'}),
                 timestamp: serverTimestamp()
             });
             input.value = '';
-        };
+            document.getElementById('imageInput').value = '';
+        }
 
-        onValue(query(ref(db, "global_messages"), limitToLast(50)), (snap) => {
-            const cont = document.getElementById('chatDisplay');
-            cont.innerHTML = '';
-            activeUserIds = [];
-            snap.forEach(child => {
-                const m = child.val();
-                if(m.id !== "SYSTEM") activeUserIds.unshift(m.id);
-                
-                let btn = "";
-                if(m.dropData) {
-                    const isFull = (m.dropData.claimed || []).length >= m.dropData.count;
-                    btn = `<button class="claim-btn" ${isFull?'disabled':''} onclick="claimDrop('${child.key}')">${isFull?'EMPTY':'CLAIM'}</button>`;
-                }
-
-                cont.innerHTML += `
-                    <div style="margin-bottom:10px; display:flex; flex-direction:column; align-items:${m.id === user.id ? 'flex-end' : 'flex-start'}">
-                        <div style="background:var(--chat-bubble); padding:10px; border-radius:10px; max-width:85%; border:${m.isSpecial?'1px solid var(--primary)':''}">
-                            <div style="font-size:10px; color:var(--primary); font-weight:900;">${m.id === 'SYSTEM' ? 'SMAT BOT' : m.id}</div>
-                            <div style="color:white; font-size:14px;">${m.text}</div>
-                            ${btn}
-                            <div style="font-size:8px; color:var(--text-sec); text-align:right; margin-top:4px;">${m.time}</div>
+        // চ্যাট রেন্ডারিং
+        onValue(query(messagesRef, limitToLast(50)), (snap) => {
+            const container = document.getElementById('chatDisplay');
+            container.innerHTML = '';
+            snap.forEach((child) => {
+                const msg = child.val();
+                container.innerHTML += `
+                    <div class="msg-row" style="display:flex; gap:10px; margin-bottom:10px;">
+                        <div class="bubble" style="background:var(--chat-bubble); padding:10px; border-radius:10px; max-width:85%;">
+                            <div style="font-size:11px; color:var(--primary); font-weight:800;">${msg.id}</div>
+                            ${msg.text ? `<div style="color:#fff;">${msg.text}</div>` : ''}
+                            ${msg.image ? `<img src="${msg.image}" class="chat-image">` : ''}
+                            <div style="font-size:9px; color:var(--text-sec); text-align:right;">${msg.time}</div>
                         </div>
                     </div>
                 `;
             });
-            cont.scrollTop = cont.scrollHeight;
+            container.scrollTop = container.scrollHeight;
         });
 
-        window.closeModal = (id) => document.getElementById(id).style.display = 'none';
+        // লেআউট ফিক্স (কিবোর্ড ওপেন হলেও বাটন উপরে থাকবে)
+        function adjustLayout() {
+            const vh = window.visualViewport ? window.visualViewport.height : window.innerHeight;
+            document.body.style.height = vh + "px";
+            window.scrollTo(0,0);
+        }
+        window.visualViewport?.addEventListener('resize', adjustLayout);
+        window.onload = adjustLayout;
+
     </script>
 </body>
 </html>
