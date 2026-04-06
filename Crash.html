@@ -120,6 +120,7 @@ let hasBet = false;
 let hasCashed = false;
 let myBetAmt = 0;
 let currentStatus = "";
+let isMaster = false;
 
 const actionBtn = document.getElementById('action-btn');
 
@@ -128,25 +129,76 @@ function updateUI() {
     localStorage.setItem('smatBalance', smatBalance);
 }
 
+// --- MASTER CONTROLLER LOGIC ---
+// গেম যেন কখনো না থামে সেজন্য এই অংশটি গুরুত্বপূর্ণ
+function syncMaster() {
+    const masterRef = db.ref('crashArena/master');
+    masterRef.onDisconnect().remove(); // মাস্টার ট্যাব বন্ধ করলে রিমুভ হবে
+
+    setInterval(() => {
+        masterRef.transaction(current => {
+            if (current === null || current === myUid) {
+                isMaster = true;
+                return myUid;
+            }
+            isMaster = false;
+            return current;
+        });
+
+        if (isMaster) {
+            runGameLogic();
+        }
+    }, 1000);
+}
+
+function runGameLogic() {
+    const stateRef = db.ref('crashArena/state');
+    stateRef.transaction(current => {
+        if (!current) return { gameId: 1000, status: 'waiting', timer: 10, bank: 10000, pool: 0, multiplier: 1.00, crashAt: 2.00, lastUpdate: Date.now() };
+
+        current.lastUpdate = Date.now();
+
+        if (current.status === 'waiting') {
+            if (current.timer > 0) current.timer -= 1;
+            else {
+                current.status = 'running';
+                current.multiplier = 1.00;
+                current.crashAt = generateCrash();
+                db.ref('crashArena/players').remove();
+                current.pool = 0;
+            }
+        } else if (current.status === 'running') {
+            current.multiplier += (current.multiplier < 5 ? 0.05 : current.multiplier * 0.02);
+            if (current.multiplier >= current.crashAt) {
+                current.status = 'crashed';
+                current.multiplier = current.crashAt;
+                db.ref('crashArena/history').push(current.multiplier);
+            }
+        } else if (current.status === 'crashed') {
+            current.status = 'waiting';
+            current.timer = 6;
+            current.gameId += 1;
+        }
+        return current;
+    });
+}
+
 // --- SYNC ENGINE ---
 db.ref('crashArena/state').on('value', (snap) => {
     const data = snap.val();
-    if (!data) { initGlobalLoop(); return; }
+    if (!data) return;
 
     currentStatus = data.status;
     document.getElementById('game-id-display').innerText = "#" + data.gameId;
     document.getElementById('bank-display').innerText = data.bank.toFixed(2);
-    document.getElementById('pool-display').innerText = data.pool.toFixed(2);
+    document.getElementById('pool-display').innerText = (data.pool || 0).toFixed(2);
 
-    if (data.status === 'waiting') {
-        renderWaiting(data.timer);
-    } else if (data.status === 'running') {
-        renderRunning(data.multiplier);
-    } else if (data.status === 'crashed') {
-        renderCrashed(data.multiplier);
-    }
+    if (data.status === 'waiting') renderWaiting(data.timer);
+    else if (data.status === 'running') renderRunning(data.multiplier);
+    else if (data.status === 'crashed') renderCrashed(data.multiplier);
 });
 
+// --- REST OF THE CODE (UI & ACTIONS) ---
 db.ref('crashArena/history').limitToLast(15).on('value', snap => {
     const hist = snap.val();
     const container = document.getElementById('history-pills');
@@ -181,7 +233,6 @@ db.ref('crashArena/players').on('value', snap => {
     }
 });
 
-// --- RENDER LOGIC ---
 function renderWaiting(timer) {
     document.getElementById('countdown-overlay').style.display = 'flex';
     document.getElementById('timer-num').innerText = timer;
@@ -234,7 +285,6 @@ function renderCrashed(mult) {
     hasCashed = false;
 }
 
-// --- ACTIONS ---
 function doPlaceBet() {
     const amt = parseFloat(document.getElementById('bet-amount').value);
     if (amt <= 0 || amt > smatBalance) return;
@@ -244,11 +294,7 @@ function doPlaceBet() {
     hasBet = true;
     updateUI();
 
-    db.ref('crashArena/players/' + myUid).set({
-        bet: amt,
-        cashed: false
-    });
-    // Add to pool
+    db.ref('crashArena/players/' + myUid).set({ bet: amt, cashed: false });
     db.ref('crashArena/state/pool').transaction(p => (p || 0) + amt);
 }
 
@@ -263,57 +309,18 @@ function doCashOut(mult) {
     document.getElementById('cashout-popup').style.display = "block";
     setTimeout(() => { document.getElementById('cashout-popup').style.display = "none"; }, 2000);
 
-    db.ref('crashArena/players/' + myUid).update({
-        cashed: true,
-        exitMult: mult.toFixed(2)
-    });
-    
-    // Subtract from bank
+    db.ref('crashArena/players/' + myUid).update({ cashed: true, exitMult: mult.toFixed(2) });
     db.ref('crashArena/state/bank').transaction(b => b - (win - myBetAmt));
-}
-
-// --- GLOBAL GAME ENGINE ---
-function initGlobalLoop() {
-    const stateRef = db.ref('crashArena/state');
-    setInterval(() => {
-        stateRef.transaction(current => {
-            if (!current) return { gameId: 1000, status: 'waiting', timer: 10, bank: 10000, pool: 0, multiplier: 1.00, crashAt: 2.00 };
-
-            if (current.status === 'waiting') {
-                if (current.timer > 0) current.timer -= 1;
-                else {
-                    current.status = 'running';
-                    current.multiplier = 1.00;
-                    current.crashAt = generateCrash();
-                    db.ref('crashArena/players').remove();
-                    current.pool = 0;
-                }
-            } else if (current.status === 'running') {
-                current.multiplier += (current.multiplier < 5 ? 0.03 : current.multiplier * 0.015);
-                if (current.multiplier >= current.crashAt) {
-                    current.status = 'crashed';
-                    current.multiplier = current.crashAt;
-                    db.ref('crashArena/history').push(current.multiplier);
-                }
-            } else if (current.status === 'crashed') {
-                current.status = 'waiting';
-                current.timer = 8;
-                current.gameId += 1;
-            }
-            return current;
-        });
-    }, 1000);
 }
 
 function generateCrash() {
     let r = Math.random() * 100;
     if (r < 10) return 1.00;
-    if (r < 50) return parseFloat((1.1 + Math.random() * 1.5).toFixed(2));
-    if (r < 90) return parseFloat((2 + Math.random() * 8).toFixed(2));
-    return parseFloat((10 + Math.random() * 50).toFixed(2));
+    if (r < 45) return parseFloat((1.1 + Math.random() * 1.0).toFixed(2));
+    if (r < 85) return parseFloat((2 + Math.random() * 5).toFixed(2));
+    return parseFloat((7 + Math.random() * 40).toFixed(2));
 }
 
-// S-Bubble Logic (Original)
 function checkBubble() {
     const h = new Date().getHours();
     const bubble = document.getElementById('s-bubble');
@@ -331,7 +338,7 @@ function popBubble() {
     alert("You got 1 SMAT!");
 }
 
-window.onload = () => { updateUI(); checkBubble(); };
+window.onload = () => { updateUI(); checkBubble(); syncMaster(); };
 </script>
 </body>
 </html>
