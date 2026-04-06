@@ -122,11 +122,11 @@
         <div id="loggedInContent">
             <div class="user-info">
                 <span style="font-size:12px; color:var(--text-sec)">Account Email</span>
-                <div id="emailDisplay" style="font-weight:600; margin-top:4px;">user@example.com</div>
+                <div id="emailDisplay" style="font-weight:600; margin-top:4px;">Loading...</div>
                 
                 <div class="user-id-box">
                     <span style="font-size:11px; color:var(--text-sec); display:block; margin-bottom:5px;">Your SMAT ID</span>
-                    <span id="smatID" style="font-size:18px; font-weight:800; color:var(--primary);">SMAT100001</span>
+                    <span id="smatID" style="font-size:18px; font-weight:800; color:var(--primary);">---</span>
                 </div>
             </div>
 
@@ -208,13 +208,10 @@
         let currentActiveTab = 'hot';
         let isUserLoggedIn = localStorage.getItem('isLoggedIn') === 'true';
 
-        // ১. ডাটাবেস বা coin.js থেকে রিয়াল টাইম ডাটা সংগ্রহ
         function getMarketData() {
-            // coin.js এর GLOBAL_COINS সরাসরি ব্যবহার করবে
             return (typeof GLOBAL_COINS !== 'undefined') ? GLOBAL_COINS : (JSON.parse(localStorage.getItem('marketStats')) || []);
         }
 
-        // ২. অথেনটিকেশন চেক
         function checkAuth(e) {
             if(!isUserLoggedIn) {
                 if(e) e.preventDefault();
@@ -225,10 +222,11 @@
             return true;
         }
 
+        // লগআউট ফিক্স: সবকিছু ক্লিয়ার করে রিফ্রেশ
         function logout() {
-            localStorage.clear(); // সব ডাটা ক্লিয়ার করবে সিকিউরিটির জন্য
+            localStorage.clear(); 
             localStorage.setItem('isLoggedIn', 'false');
-            location.reload();
+            window.location.href = 'logIn.html';
         }
 
         function toggleSidebar() {
@@ -244,7 +242,6 @@
             renderCoins(category);
         }
 
-        // ৩. কয়েন রেন্ডারিং ইঞ্জিন (coin.js ভেরিয়েবল অনুযায়ী)
         function renderCoins(filter = 'hot') {
             const container = document.getElementById('coinContainer');
             if (!container) return;
@@ -252,7 +249,6 @@
             const liveData = getMarketData();
             let filtered = [];
 
-            // ফিল্টারিং লজিক
             if (filter === 'hot') {
                 filtered = [...liveData].sort((a, b) => {
                     let volA = parseFloat(window[a.sym.toLowerCase() + "Vol"]) || 0;
@@ -278,11 +274,9 @@
             let htmlContent = '';
             filtered.forEach(coin => {
                 const currentPrice = window[coin.sym.toLowerCase() + "Val"] || coin.price;
-                const startPrice = coin.price; // coin.js এর ডিফল্ট প্রাইসকে স্টার্টিং ধরা হয়েছে
+                const startPrice = coin.price;
                 const change = ((currentPrice - startPrice) / startPrice * 100).toFixed(2);
                 const isUp = parseFloat(change) >= 0;
-                
-                // লগো পাথ: assets/logos/sym.png (coin.js এ যেভাবে সেট করা আছে)
                 const logoSrc = `assets/logos/${coin.sym.toLowerCase()}.png`;
 
                 htmlContent += `
@@ -307,7 +301,6 @@
             updatePortfolio();
         }
 
-        // ৪. রিয়াল ব্যালেন্স ক্যালকুলেশন (symBalance ব্যবহার করে)
         async function updatePortfolio() {
             let totalEquity = 0;
             const totalDisplay = document.getElementById('totalValue');
@@ -319,7 +312,6 @@
 
             const liveData = getMarketData();
             liveData.forEach(coin => {
-                // coin.js এর উইন্ডো ভেরিয়েবল থেকে সরাসরি ডাটা নেওয়া
                 let balance = window[coin.sym.toLowerCase() + "Balance"] || 0;
                 let price = window[coin.sym.toLowerCase() + "Val"] || coin.price;
                 totalEquity += (balance * price);
@@ -344,31 +336,33 @@
             }
         }
 
-        // ৫. মাস্টার লোড (ইঞ্জিন রেডি হওয়ার পর)
         window.addEventListener('smat_engine_ready', () => {
-            console.log("Home Sync: SMAT Engine Connected.");
             renderCoins(currentActiveTab);
         });
 
+        // মাস্টার লোড লজিক: ডাইনামিক আইডি এবং ইমেইল সেট
         window.onload = () => {
-            if(isUserLoggedIn) {
+            const loggedIn = localStorage.getItem('isLoggedIn') === 'true';
+            
+            if(loggedIn) {
                 document.getElementById('loggedInContent').style.display = 'block';
                 document.getElementById('loggedOutContent').style.display = 'none';
-                document.getElementById('emailDisplay').innerText = localStorage.getItem('userEmail') || "user@smat.com";
-                document.getElementById('smatID').innerText = localStorage.getItem('smatID') || "SMAT100001";
+                
+                // ডাইনামিক ডাটা ফেচিং (ডিফল্ট ভ্যালু ছাড়া)
+                const userEmail = localStorage.getItem('userEmail');
+                const userID = localStorage.getItem('smatID');
+
+                document.getElementById('emailDisplay').innerText = userEmail ? userEmail : "Not Found";
+                document.getElementById('smatID').innerText = userID ? userID : "Checking...";
+                
                 updateKYCUI();
             } else {
                 document.getElementById('loggedInContent').style.display = 'none';
                 document.getElementById('loggedOutContent').style.display = 'block';
             }
             
-            // রেন্ডার কল
             renderCoins('hot');
-            
-            // রিয়াল-টাইম রিফ্রেশ (প্রতি ৩ সেকেন্ডে)
-            setInterval(() => { 
-                renderCoins(currentActiveTab); 
-            }, 3000);
+            setInterval(() => { renderCoins(currentActiveTab); }, 3000);
         };
     </script>
 </body>
