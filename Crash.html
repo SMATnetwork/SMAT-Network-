@@ -121,6 +121,7 @@ let hasCashed = false;
 let myBetAmt = 0;
 let currentStatus = "";
 let isMaster = false;
+let lastSyncData = null; // ডাটা ট্র্যাক করার জন্য
 
 const actionBtn = document.getElementById('action-btn');
 
@@ -130,10 +131,9 @@ function updateUI() {
 }
 
 // --- MASTER CONTROLLER LOGIC ---
-// গেম যেন কখনো না থামে সেজন্য এই অংশটি গুরুত্বপূর্ণ
 function syncMaster() {
     const masterRef = db.ref('crashArena/master');
-    masterRef.onDisconnect().remove(); // মাস্টার ট্যাব বন্ধ করলে রিমুভ হবে
+    masterRef.onDisconnect().remove();
 
     setInterval(() => {
         masterRef.transaction(current => {
@@ -148,27 +148,32 @@ function syncMaster() {
         if (isMaster) {
             runGameLogic();
         }
-    }, 1000);
+    }, 1000); // সার্ভার আপডেট ১ সেকেন্ডে একবার
 }
 
 function runGameLogic() {
     const stateRef = db.ref('crashArena/state');
     stateRef.transaction(current => {
-        if (!current) return { gameId: 1000, status: 'waiting', timer: 10, bank: 10000, pool: 0, multiplier: 1.00, crashAt: 2.00, lastUpdate: Date.now() };
+        if (!current) return { gameId: 1000, status: 'waiting', timer: 10, bank: 10000, pool: 0, multiplier: 1.00, crashAt: 2.00, lastUpdate: Date.now(), startTime: Date.now() };
 
-        current.lastUpdate = Date.now();
+        let now = Date.now();
+        current.lastUpdate = now;
 
         if (current.status === 'waiting') {
             if (current.timer > 0) current.timer -= 1;
             else {
                 current.status = 'running';
                 current.multiplier = 1.00;
+                current.startTime = now;
                 current.crashAt = generateCrash();
                 db.ref('crashArena/players').remove();
                 current.pool = 0;
             }
         } else if (current.status === 'running') {
-            current.multiplier += (current.multiplier < 5 ? 0.05 : current.multiplier * 0.02);
+            // মাল্টিপ্লায়ার ক্যালকুলেশন (স্মুথ কার্ভ)
+            let elapsed = (now - current.startTime) / 1000;
+            current.multiplier = Math.pow(Math.E, 0.065 * elapsed); 
+
             if (current.multiplier >= current.crashAt) {
                 current.status = 'crashed';
                 current.multiplier = current.crashAt;
@@ -183,22 +188,42 @@ function runGameLogic() {
     });
 }
 
+// --- RENDERING ENGINE (Smooth Animation) ---
+function gameLoop() {
+    if (lastSyncData && lastSyncData.status === 'running') {
+        let now = Date.now();
+        let elapsedSinceStart = (now - lastSyncData.startTime) / 1000;
+        let visualMult = Math.pow(Math.E, 0.065 * elapsedSinceStart);
+        
+        // ক্রাশ পয়েন্ট অতিক্রম করবে না ভিজ্যুয়ালি
+        if (visualMult > lastSyncData.crashAt && lastSyncData.status !== 'crashed') {
+            visualMult = lastSyncData.crashAt;
+        }
+        
+        if (currentStatus === 'running') {
+            renderRunning(visualMult);
+        }
+    }
+    requestAnimationFrame(gameLoop);
+}
+requestAnimationFrame(gameLoop);
+
 // --- SYNC ENGINE ---
 db.ref('crashArena/state').on('value', (snap) => {
     const data = snap.val();
     if (!data) return;
 
+    lastSyncData = data;
     currentStatus = data.status;
     document.getElementById('game-id-display').innerText = "#" + data.gameId;
     document.getElementById('bank-display').innerText = data.bank.toFixed(2);
     document.getElementById('pool-display').innerText = (data.pool || 0).toFixed(2);
 
     if (data.status === 'waiting') renderWaiting(data.timer);
-    else if (data.status === 'running') renderRunning(data.multiplier);
     else if (data.status === 'crashed') renderCrashed(data.multiplier);
 });
 
-// --- REST OF THE CODE (UI & ACTIONS) ---
+// --- UI FUNCTIONS ---
 db.ref('crashArena/history').limitToLast(15).on('value', snap => {
     const hist = snap.val();
     const container = document.getElementById('history-pills');
@@ -259,8 +284,8 @@ function renderRunning(mult) {
     plane.style.opacity = "1";
     document.getElementById('grid-bg').classList.add('moving-bg');
 
-    let moveX = Math.min(mult * 20, 250);
-    let moveY = Math.min(mult * 10, 150);
+    let moveX = Math.min((mult - 1) * 40, 250);
+    let moveY = Math.min((mult - 1) * 20, 150);
     plane.style.transform = `translate(${moveX}px, -${moveY}px)`;
 
     if (hasBet && !hasCashed) {
@@ -316,9 +341,9 @@ function doCashOut(mult) {
 function generateCrash() {
     let r = Math.random() * 100;
     if (r < 10) return 1.00;
-    if (r < 45) return parseFloat((1.1 + Math.random() * 1.0).toFixed(2));
-    if (r < 85) return parseFloat((2 + Math.random() * 5).toFixed(2));
-    return parseFloat((7 + Math.random() * 40).toFixed(2));
+    if (r < 45) return parseFloat((1.1 + Math.random() * 0.9).toFixed(2));
+    if (r < 85) return parseFloat((2 + Math.random() * 4).toFixed(2));
+    return parseFloat((6 + Math.random() * 30).toFixed(2));
 }
 
 function checkBubble() {
