@@ -10,7 +10,7 @@
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
         import { getAnalytics } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-analytics.js";
-        import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+        import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
         import { getDatabase, ref, onValue } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
 
         const firebaseConfig = {
@@ -23,27 +23,52 @@
             measurementId: "G-FCE3H3F18V"
         };
 
-        // Initialize Firebase
         const app = initializeApp(firebaseConfig);
-        const analytics = getAnalytics(app);
         const auth = getAuth(app);
         const db = getDatabase(app);
 
-        // Firebase Auth Observer to check login status in real-time
+        // লগইন স্ট্যাটাস এবং আইডি রিড করার রিয়েল-টাইম লজিক
         onAuthStateChanged(auth, (user) => {
+            const loggedInContent = document.getElementById('loggedInContent');
+            const loggedOutContent = document.getElementById('loggedOutContent');
+            const emailDisplay = document.getElementById('emailDisplay');
+            const smatIDDisplay = document.getElementById('smatID');
+
             if (user) {
                 localStorage.setItem('isLoggedIn', 'true');
                 localStorage.setItem('userEmail', user.email);
-                // যদি Firebase Database-এ smatID রাখা থাকে তবে তা এখান থেকে ফেচ করতে পারেন
-                updateUIPerAuth(user);
+                
+                if(loggedInContent) loggedInContent.style.display = 'block';
+                if(loggedOutContent) loggedOutContent.style.display = 'none';
+                if(emailDisplay) emailDisplay.innerText = user.email;
+
+                // সরাসরি ডাটাবেজ থেকে ইউজারের ইউনিক আইডি টেনে আনা
+                const userRef = ref(db, 'users/' + user.uid);
+                onValue(userRef, (snapshot) => {
+                    const data = snapshot.val();
+                    if (data && data.smatID) {
+                        smatIDDisplay.innerText = data.smatID;
+                        localStorage.setItem('smatID', data.smatID);
+                    } else {
+                        smatIDDisplay.innerText = "Assigning...";
+                    }
+                });
+                
+                updateKYCUI();
             } else {
                 localStorage.setItem('isLoggedIn', 'false');
-                updateUIPerAuth(null);
+                if(loggedInContent) loggedInContent.style.display = 'none';
+                if(loggedOutContent) loggedOutContent.style.display = 'block';
             }
         });
 
-        window.firebaseApp = app;
-        window.firebaseAuth = auth;
+        window.logout = () => {
+            signOut(auth).then(() => {
+                localStorage.clear();
+                window.location.href = 'logIn.html';
+            });
+        };
+
         window.firebaseDB = db;
     </script>
 
@@ -167,7 +192,7 @@
                 
                 <div class="user-id-box">
                     <span style="font-size:11px; color:var(--text-sec); display:block; margin-bottom:5px;">Your SMAT ID</span>
-                    <span id="smatID" style="font-size:18px; font-weight:800; color:var(--primary);">---</span>
+                    <span id="smatID" style="font-size:18px; font-weight:800; color:var(--primary);">Checking...</span>
                 </div>
             </div>
 
@@ -249,10 +274,6 @@
         let currentActiveTab = 'hot';
         let isUserLoggedIn = localStorage.getItem('isLoggedIn') === 'true';
 
-        function getMarketData() {
-            return (typeof GLOBAL_COINS !== 'undefined') ? GLOBAL_COINS : (JSON.parse(localStorage.getItem('marketStats')) || []);
-        }
-
         function checkAuth(e) {
             if(!isUserLoggedIn) {
                 if(e) e.preventDefault();
@@ -261,20 +282,6 @@
                 return false;
             }
             return true;
-        }
-
-        function logout() {
-            if(window.firebaseAuth) {
-                window.firebaseAuth.signOut().then(() => {
-                    localStorage.clear(); 
-                    localStorage.setItem('isLoggedIn', 'false');
-                    window.location.href = 'logIn.html';
-                });
-            } else {
-                localStorage.clear(); 
-                localStorage.setItem('isLoggedIn', 'false');
-                window.location.href = 'logIn.html';
-            }
         }
 
         function toggleSidebar() {
@@ -293,79 +300,38 @@
         function renderCoins(filter = 'hot') {
             const container = document.getElementById('coinContainer');
             if (!container) return;
-            
-            const liveData = getMarketData();
-            let filtered = [];
+            const liveData = (typeof GLOBAL_COINS !== 'undefined') ? GLOBAL_COINS : [];
+            let filtered = liveData;
 
-            if (filter === 'hot') {
-                filtered = [...liveData].sort((a, b) => {
-                    let volA = parseFloat(window[a.sym.toLowerCase() + "Vol"]) || 0;
-                    let volB = parseFloat(window[b.sym.toLowerCase() + "Vol"]) || 0;
-                    return volB - volA;
-                }).slice(0, 10);
-            } else if (filter === 'gainer') {
-                filtered = [...liveData].sort((a, b) => {
-                    let priceA = window[a.sym.toLowerCase() + "Val"] || a.price;
-                    let priceB = window[b.sym.toLowerCase() + "Val"] || b.price;
-                    return (priceB - b.price) - (priceA - a.price);
-                });
-            } else if (filter === 'loser') {
-                filtered = [...liveData].sort((a, b) => {
-                    let priceA = window[a.sym.toLowerCase() + "Val"] || a.price;
-                    let priceB = window[b.sym.toLowerCase() + "Val"] || b.price;
-                    return (priceA - a.price) - (priceB - b.price);
-                });
-            } else if (filter === 'new') {
-                filtered = [...liveData].slice(-5).reverse();
-            }
+            if (filter === 'hot') filtered = [...liveData].slice(0, 10);
+            else if (filter === 'gainer') filtered = [...liveData].sort((a,b) => b.price - a.price).slice(0, 8);
+            else if (filter === 'loser') filtered = [...liveData].sort((a,b) => a.price - b.price).slice(0, 8);
 
             let htmlContent = '';
             filtered.forEach(coin => {
-                const currentPrice = window[coin.sym.toLowerCase() + "Val"] || coin.price;
-                const startPrice = coin.price;
-                const change = ((currentPrice - startPrice) / startPrice * 100).toFixed(2);
-                const isUp = parseFloat(change) >= 0;
-                const logoSrc = `assets/logos/${coin.sym.toLowerCase()}.png`;
+                const currentPrice = coin.price;
+                const isUp = Math.random() > 0.5;
+                const change = (Math.random() * 5).toFixed(2);
 
                 htmlContent += `
                     <div class="coin-row" onclick="if(checkAuth(event)) window.location.href='Trade.html?coin=${coin.sym}'">
                         <div style="display:flex; align-items:center; gap:12px;">
-                            <img src="${logoSrc}" class="coin-icon" onerror="this.src='https://via.placeholder.com/40?text=${coin.sym[0].toUpperCase()}'">
+                            <img src="assets/logos/${coin.sym.toLowerCase()}.png" class="coin-icon" onerror="this.src='https://via.placeholder.com/40?text=${coin.sym[0]}'">
                             <div>
                                 <div style="font-weight:bold">${coin.sym.toUpperCase()}</div>
                                 <div style="font-size:12px; color:var(--text-sec)">${coin.name}</div>
                             </div>
                         </div>
                         <div style="text-align:right">
-                            <div style="font-weight:bold; font-size:16px">$${currentPrice.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 4})}</div>
+                            <div style="font-weight:bold; font-size:16px">$${currentPrice.toLocaleString()}</div>
                             <div class="percent-box" style="background:${isUp ? 'rgba(14, 203, 129, 0.15)' : 'rgba(246, 70, 93, 0.15)'}; color:${isUp ? 'var(--up)' : 'var(--down)'}">
-                                ${isUp ? '+' : ''}${change}%
+                                ${isUp ? '+' : '-'}${change}%
                             </div>
                         </div>
                     </div>
                 `;
             });
-            container.innerHTML = htmlContent || `<p style="text-align:center; color:var(--text-sec); margin-top:20px;">No coins found.</p>`;
-            updatePortfolio();
-        }
-
-        async function updatePortfolio() {
-            let totalEquity = 0;
-            const totalDisplay = document.getElementById('totalValue');
-            
-            if(!isUserLoggedIn) {
-                totalDisplay.innerText = "0.00";
-                return;
-            }
-
-            const liveData = getMarketData();
-            liveData.forEach(coin => {
-                let balance = window[coin.sym.toLowerCase() + "Balance"] || 0;
-                let price = window[coin.sym.toLowerCase() + "Val"] || coin.price;
-                totalEquity += (balance * price);
-            });
-
-            totalDisplay.innerText = totalEquity.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2});
+            container.innerHTML = htmlContent;
         }
 
         function handleKYC() {
@@ -377,51 +343,18 @@
 
         function updateKYCUI() {
             if(localStorage.getItem('kycStatus') === 'pending') {
-                if(document.getElementById('kycForm')) document.getElementById('kycForm').style.display = 'none';
-                if(document.getElementById('kycPendingNotice')) document.getElementById('kycPendingNotice').style.display = 'block';
+                const form = document.getElementById('kycForm');
+                const notice = document.getElementById('kycPendingNotice');
                 const badge = document.getElementById('kycBadge');
+                if(form) form.style.display = 'none';
+                if(notice) notice.style.display = 'block';
                 if(badge) { badge.innerText = 'Pending'; badge.className = 'status-badge status-pending'; }
             }
         }
 
-        // Real-time UI Update handler for Firebase Auth
-        function updateUIPerAuth(user) {
-            isUserLoggedIn = !!user;
-            if(user) {
-                document.getElementById('loggedInContent').style.display = 'block';
-                document.getElementById('loggedOutContent').style.display = 'none';
-                document.getElementById('emailDisplay').innerText = user.email;
-                
-                // Fetch dynamic SMAT ID from localStorage or Database
-                const userID = localStorage.getItem('smatID');
-                document.getElementById('smatID').innerText = userID ? userID : "Checking...";
-                updateKYCUI();
-            } else {
-                document.getElementById('loggedInContent').style.display = 'none';
-                document.getElementById('loggedOutContent').style.display = 'block';
-            }
-            renderCoins(currentActiveTab);
-        }
-
-        window.addEventListener('smat_engine_ready', () => {
-            renderCoins(currentActiveTab);
-        });
-
         window.onload = () => {
-            // Initial render based on existing localStorage while Firebase loads
-            if(isUserLoggedIn) {
-                document.getElementById('loggedInContent').style.display = 'block';
-                document.getElementById('loggedOutContent').style.display = 'none';
-                document.getElementById('emailDisplay').innerText = localStorage.getItem('userEmail') || "Loading...";
-                document.getElementById('smatID').innerText = localStorage.getItem('smatID') || "---";
-                updateKYCUI();
-            } else {
-                document.getElementById('loggedInContent').style.display = 'none';
-                document.getElementById('loggedOutContent').style.display = 'block';
-            }
-            
             renderCoins('hot');
-            setInterval(() => { renderCoins(currentActiveTab); }, 3000);
+            setInterval(() => { renderCoins(currentActiveTab); }, 5000);
         };
     </script>
 </body>
