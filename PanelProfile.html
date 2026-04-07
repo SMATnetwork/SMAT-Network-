@@ -5,9 +5,9 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>SMAT | Admin Control Panel</title>
     
-    <script src="https://www.gstatic.com/firebasejs/9.0.0/firebase-app-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.0.0/firebase-database-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.0.0/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-database-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-auth-compat.js"></script>
     
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <style>
@@ -31,7 +31,8 @@
         
         /* KYC Image Preview Buttons */
         .doc-btns { display: flex; gap: 8px; margin-top: 10px; flex-wrap: wrap; }
-        .btn-view { background: #3772ff; color: white; border: none; padding: 6px 12px; border-radius: 5px; font-size: 12px; cursor: pointer; }
+        .btn-view { background: #3772ff; color: white; border: none; padding: 8px 14px; border-radius: 5px; font-size: 12px; cursor: pointer; font-weight: bold; }
+        .btn-view:hover { opacity: 0.8; }
 
         .action-btns { display: flex; flex-direction: column; gap: 10px; }
         button { padding: 10px 20px; border-radius: 8px; border: none; cursor: pointer; font-weight: bold; transition: 0.2s; }
@@ -40,9 +41,9 @@
         .btn-logout { background: var(--down); color: white; padding: 5px 15px; font-size: 13px; }
 
         /* Modal for Images */
-        .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.9); z-index: 6000; align-items: center; justify-content: center; flex-direction: column; }
-        .modal-img { max-width: 90%; max-height: 80%; border-radius: 10px; box-shadow: 0 0 30px rgba(255,255,255,0.1); }
-        .close-modal { position: absolute; top: 20px; right: 30px; color: white; font-size: 30px; cursor: pointer; }
+        .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.95); z-index: 6000; align-items: center; justify-content: center; flex-direction: column; }
+        .modal-img { max-width: 90%; max-height: 75%; border-radius: 10px; border: 2px solid var(--primary); box-shadow: 0 0 30px rgba(243, 186, 47, 0.2); }
+        .close-modal { position: absolute; top: 20px; right: 30px; color: white; font-size: 40px; cursor: pointer; }
 
         .badge { background: var(--down); padding: 2px 8px; border-radius: 20px; font-size: 12px; }
     </style>
@@ -73,10 +74,11 @@
     </div>
 </div>
 
-<div id="imgModal" class="modal" onclick="this.style.display='none'">
-    <span class="close-modal">&times;</span>
+<div id="imgModal" class="modal">
+    <span class="close-modal" onclick="closeImgModal()">&times;</span>
     <img id="previewImg" class="modal-img">
-    <p id="imgLabel" style="color:white; margin-top:15px; font-weight:bold;"></p>
+    <p id="imgLabel" style="color:white; margin-top:15px; font-size: 18px; font-weight:bold; letter-spacing: 1px;"></p>
+    <button onclick="closeImgModal()" style="margin-top: 20px; background: #444; color: white;">Close Preview</button>
 </div>
 
 <script>
@@ -99,7 +101,7 @@
         const email = document.getElementById('adminEmail').value;
         const pass = document.getElementById('adminPassword').value;
         auth.signInWithEmailAndPassword(email, pass).catch(err => {
-            document.getElementById('loginError').innerText = err.message;
+            document.getElementById('loginError').innerText = "Access Denied: " + err.message;
             document.getElementById('loginError').style.display = 'block';
         });
     }
@@ -132,21 +134,21 @@
                     <div class="user-card">
                         <div class="info-group">
                             <h4><i class="fas fa-user"></i> Account</h4>
-                            <p>SMAT ID: <b>${u.smatID || 'N/A'}</b></p>
-                            <p>Email: ${u.email}</p>
-                            <p>Pass: <span style="color:#555">${u.password || 'N/A'}</span></p>
+                            <p>SMAT ID: <b>${u.smatID || 'Assigning...'}</b></p>
+                            <p>Email: ${u.email || 'N/A'}</p>
+                            <p>Pass: <span style="color:#555">${u.password || '******'}</span></p>
                         </div>
 
                         <div class="info-group">
                             <h4><i class="fas fa-id-card"></i> Identity Details</h4>
-                            <p>Full Name: <b>${u.realName || 'N/A'}</b></p>
-                            <p>NID Number: <b>${u.nidNumber || 'N/A'}</b></p>
+                            <p>Full Name: <b>${u.realName || 'Not Provided'}</b></p>
+                            <p>NID Number: <b>${u.nidNumber || 'Not Provided'}</b></p>
                             <p>Status: <b style="color:${statusColor}">${status.toUpperCase()}</b></p>
                             
                             <div class="doc-btns">
-                                <button class="btn-view" onclick="viewDoc('${u.nidFront}', 'NID Front')">Front</button>
-                                <button class="btn-view" onclick="viewDoc('${u.nidBack}', 'NID Back')">Back</button>
-                                <button class="btn-view" onclick="viewDoc('${u.userSelfie}', 'Selfie')">Selfie</button>
+                                <button class="btn-view" onclick="viewDoc('${u.nidFront}', 'NID FRONT SIDE')">Front</button>
+                                <button class="btn-view" onclick="viewDoc('${u.nidBack}', 'NID BACK SIDE')">Back</button>
+                                <button class="btn-view" onclick="viewDoc('${u.userSelfie}', 'SELFIE WITH NID')">Selfie</button>
                             </div>
                         </div>
 
@@ -154,7 +156,7 @@
                             ${status === 'pending' ? `
                                 <button class="btn-verify" onclick="decideKYC('${uid}', 'verified')">APPROVE</button>
                                 <button class="btn-reject" onclick="decideKYC('${uid}', 'rejected')">REJECT</button>
-                            ` : `<p style="font-size:12px; color:var(--text-sec)">No Pending Action</p>`}
+                            ` : `<p style="font-size:12px; color:var(--text-sec); border: 1px solid #333; padding: 5px; border-radius: 4px;">Done: ${status.toUpperCase()}</p>`}
                         </div>
                     </div>
                 `;
@@ -164,16 +166,33 @@
     }
 
     function viewDoc(url, label) {
-        if(!url || url === 'undefined') return alert("This document was not uploaded.");
-        document.getElementById('previewImg').src = url;
-        document.getElementById('imgLabel').innerText = label;
-        document.getElementById('imgModal').style.display = 'flex';
+        // লজিক চেক: url যদি খালি থাকে বা undefined স্ট্রিং হয়
+        if(!url || url === 'undefined' || url === 'null' || url === '') {
+            return alert("Error: ইউজার এই ডকুমেন্টটি আপলোড করেনি অথবা আপলোডে সমস্যা হয়েছে।");
+        }
+        
+        const modal = document.getElementById('imgModal');
+        const img = document.getElementById('previewImg');
+        const lbl = document.getElementById('imgLabel');
+
+        img.src = url;
+        lbl.innerText = label;
+        modal.style.display = 'flex';
+    }
+
+    function closeImgModal() {
+        document.getElementById('imgModal').style.display = 'none';
+        document.getElementById('previewImg').src = '';
     }
 
     function decideKYC(uid, status) {
-        const msg = status === 'verified' ? "Approve this user's KYC?" : "Reject this user's KYC?";
-        if(confirm(msg)) {
-            database.ref('users/' + uid).update({ kycStatus: status });
+        const action = status === 'verified' ? "APPROVE" : "REJECT";
+        if(confirm(`Are you sure you want to ${action} this user?`)) {
+            database.ref('users/' + uid).update({ 
+                kycStatus: status 
+            }).then(() => {
+                console.log("Status updated to: " + status);
+            }).catch(err => alert("Update failed: " + err.message));
         }
     }
 </script>
