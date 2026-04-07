@@ -22,14 +22,18 @@
 
         /* Dashboard */
         .admin-container { max-width: 1100px; margin: auto; display: none; }
-        .header-panel { display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid var(--primary); padding-bottom: 15px; margin-bottom: 25px; }
+        .header-panel { display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid var(--primary); padding-bottom: 15px; margin-bottom: 10px; }
         
+        /* Search Bar Style */
+        .search-box { background: var(--card); border: 1px solid var(--border); border-radius: 12px; padding: 12px 20px; display: flex; align-items: center; margin-bottom: 25px; gap: 15px; }
+        .search-box input { flex: 1; background: transparent; border: none; color: white; font-size: 15px; outline: none; }
+        .search-box i { color: var(--text-sec); }
+
         .user-card { background: var(--card); border: 1px solid var(--border); border-radius: 15px; padding: 20px; margin-bottom: 20px; display: flex; flex-wrap: wrap; justify-content: space-between; gap: 20px; align-items: flex-start; }
         .info-group { flex: 1; min-width: 200px; }
         .info-group h4 { margin: 0 0 10px 0; color: var(--primary); border-bottom: 1px solid #2b3139; padding-bottom: 5px; }
         .info-group p { margin: 5px 0; font-size: 14px; }
         
-        /* KYC Image Preview Buttons */
         .doc-btns { display: flex; gap: 8px; margin-top: 10px; flex-wrap: wrap; }
         .btn-view { background: #3772ff; color: white; border: none; padding: 6px 12px; border-radius: 5px; font-size: 12px; cursor: pointer; font-weight: bold; }
 
@@ -37,9 +41,9 @@
         button { padding: 10px 20px; border-radius: 8px; border: none; cursor: pointer; font-weight: bold; transition: 0.2s; }
         .btn-verify { background: var(--up); color: black; }
         .btn-reject { background: var(--down); color: white; }
+        .btn-edit { background: #474d57; color: white; margin-top: 5px; }
         .btn-logout { background: var(--down); color: white; padding: 5px 15px; font-size: 13px; }
 
-        /* Modal for Images (Fixed for Preview) */
         .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.95); z-index: 6000; align-items: center; justify-content: center; flex-direction: column; }
         .modal-img { max-width: 90%; max-height: 75%; border-radius: 10px; border: 2px solid var(--primary); }
         .close-modal { position: absolute; top: 20px; right: 30px; color: white; font-size: 40px; cursor: pointer; font-weight: bold; }
@@ -67,6 +71,11 @@
             <span>Pending KYC: <b id="kycCount" class="badge">0</b></span>
             <button class="btn-logout" onclick="logoutAdmin()">Logout</button>
         </div>
+    </div>
+
+    <div class="search-box">
+        <i class="fas fa-search"></i>
+        <input type="text" id="adminSearch" placeholder="Search by SMAT ID, Email or NID..." onkeyup="loadUsers()">
     </div>
 
     <div id="userList">
@@ -117,6 +126,7 @@
     });
 
     function loadUsers() {
+        const searchTerm = document.getElementById('adminSearch').value.toLowerCase();
         database.ref('users').on('value', (snapshot) => {
             const users = snapshot.val() || {};
             const list = document.getElementById('userList');
@@ -125,6 +135,11 @@
 
             for (let uid in users) {
                 const u = users[uid];
+                
+                // Search Filter Logic
+                const searchStr = (u.smatID + u.email + u.nidNumber).toLowerCase();
+                if(searchTerm && !searchStr.includes(searchTerm)) continue;
+
                 const status = (u.kycStatus || 'unverified').toLowerCase();
                 if(status === 'pending') pendingCount++;
 
@@ -135,8 +150,9 @@
                         <div class="info-group">
                             <h4><i class="fas fa-user"></i> Account</h4>
                             <p>SMAT ID: <b>${u.smatID || 'N/A'}</b></p>
-                            <p>Email: ${u.email}</p>
-                            <p>Pass: <span style="color:#555">${u.password || 'N/A'}</span></p>
+                            <p>Email: <b>${u.email}</b></p>
+                            <p>Pass: <span style="color:#f3ba2f">${u.password || 'N/A'}</span></p>
+                            <button class="btn-edit" onclick="editUserAccount('${uid}', '${u.email}', '${u.password}')">Edit Login</button>
                         </div>
 
                         <div class="info-group">
@@ -156,7 +172,7 @@
                             ${status === 'pending' ? `
                                 <button class="btn-verify" onclick="decideKYC('${uid}', 'verified')">APPROVE</button>
                                 <button class="btn-reject" onclick="decideKYC('${uid}', 'rejected')">REJECT</button>
-                            ` : `<p style="font-size:12px; color:var(--text-sec)">No Pending Action</p>`}
+                            ` : `<p style="font-size:12px; color:var(--text-sec)">Account Active</p>`}
                         </div>
                     </div>
                 `;
@@ -165,7 +181,26 @@
         });
     }
 
-    // Fixed Image Viewing Function
+    // New Function to Edit User Account (Email & Password)
+    function editUserAccount(uid, oldEmail, oldPass) {
+        const newEmail = prompt("Enter New Email for this account:", oldEmail);
+        if (newEmail === null) return;
+
+        const newPass = prompt("Enter New Password for this account:", oldPass);
+        if (newPass === null) return;
+
+        if (newEmail && newPass) {
+            database.ref('users/' + uid).update({
+                email: newEmail,
+                password: newPass
+            }).then(() => {
+                alert("Account updated successfully!");
+            }).catch(err => {
+                alert("Error updating: " + err.message);
+            });
+        }
+    }
+
     function viewDoc(url, label) {
         if(!url || url === 'undefined' || url === 'null') {
             return alert("This document was not uploaded properly by the user.");
