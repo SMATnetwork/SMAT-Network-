@@ -81,6 +81,16 @@ const GLOBAL_COINS = [
         networks: ['TRC20'], 
         contract: 'Native', 
         vol: '1.1B' 
+    },
+{ 
+        sym: 'XRP', 
+        name: 'Ripple', 
+        price: 1.15, 
+        decimal: 8, 
+        key: 'xrp_balance', 
+        networks: ['BSC20'], 
+        contract: 'Native', 
+        vol: '1.1B' 
     }
     // নতুন কয়েন এড করতে হলে শুধু এখানে উপরের ফরম্যাটে একটি অবজেক্ট যোগ করবেন।
 ];
