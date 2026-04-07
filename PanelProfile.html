@@ -27,7 +27,7 @@
         .header-panel { 
             position: sticky; top: 0; z-index: 100;
             display: flex; justify-content: space-between; align-items: center; 
-            background: #665D1E;
+            background: #98AFC7;
             padding: 25px 25px; 
             color:#2B1B17;
             margin-bottom: 25px;          
@@ -37,11 +37,12 @@
         .header-panel h2 {background :none; margin: 0; font-size: 24px; color: yellow; font-weight: 800; letter-spacing: 1px; }
 
         .btn-logout { 
-            background: #583759; color: #A24857; padding: 10px 25px; 
+            background: #151B54; color: none; padding: 10px 25px; 
             font-size: 14px; border-radius: 12px; border: none; cursor: pointer; font-weight: bold;
             transition: 0.3s;
             box-shadow: rgba(0, 0, 0, 0.2) 0px 60px 40px -7px;
         }
+       .btn-logout i{background :none;font-size:25px;color:red;padding:10px 8px;}
         .btn-logout:hover { background: #d9394d; box-shadow: 0 0 15px rgba(246, 70, 93, 0.4); transform: translateY(-2px); }
 
         /* Status Stats Cards */
@@ -94,7 +95,7 @@
 
 <div class="header-panel" id="headerUI" style="display:none">
     <h2>Profile Panel</h2>
-    <button class="btn-logout" onclick="logoutAdmin()">LogOut</button>
+    <button class="btn-logout" onclick="logoutAdmin()"><i class="fa-regular fa-right-from-bracket"></i></button>
 </div>
 
 <div class="admin-container" id="panelUI">
