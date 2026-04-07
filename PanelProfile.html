@@ -1,0 +1,253 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SMAT | Profile Admin Panel</title>
+    
+    <script src="https://www.gstatic.com/firebasejs/9.0.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.0.0/firebase-database-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.0.0/firebase-auth-compat.js"></script>
+    
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        :root { --primary: #f3ba2f; --bg: #0b0e11; --card: #1e2329; --text: #eaecef; --border: #2b3139; --text-sec: #848e9c; }
+        body { background: var(--bg); color: var(--text); font-family: 'Segoe UI', sans-serif; margin: 0; padding: 20px; }
+        
+        /* Login Screen Styles */
+        #adminLogin { position: fixed; top:0; left:0; width:100%; height:100%; background:var(--bg); z-index: 5000; display: flex; align-items: center; justify-content: center; }
+        .login-card { background: var(--card); padding: 30px; border-radius: 15px; border: 1px solid var(--border); width: 90%; max-width: 350px; text-align: center; }
+        .login-card input { width: 100%; padding: 12px; margin: 10px 0; background: #0b0e11; border: 1px solid var(--border); color: white; border-radius: 8px; box-sizing: border-box; }
+        .btn-login { width: 100%; background: var(--primary); color: black; border: none; padding: 12px; border-radius: 8px; font-weight: bold; cursor: pointer; margin-top: 10px; }
+
+        /* Main Admin Panel Styles */
+        .admin-container { max-width: 1000px; margin: auto; display: none; }
+        .header-panel { display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid var(--primary); padding-bottom: 10px; margin-bottom: 20px; }
+        
+        .search-box { position: relative; margin-bottom: 20px; }
+        .search-box input { width: 100%; padding: 12px 40px; background: var(--card); border: 1px solid var(--border); border-radius: 8px; color: white; }
+        .search-box i { position: absolute; left: 15px; top: 15px; color: var(--text-sec); }
+
+        .user-card { background: var(--card); border: 1px solid var(--border); border-radius: 12px; padding: 15px; margin-bottom: 15px; display: flex; flex-wrap: wrap; justify-content: space-between; gap: 15px; transition: 0.3s; }
+        .user-card:hover { border-color: var(--primary); }
+        .info-group { flex: 1; min-width: 200px; }
+        .info-group h4 { margin: 0 0 5px 0; color: var(--primary); font-size: 14px; }
+        .info-group p { margin: 2px 0; font-size: 13px; }
+
+        .action-btns { display: flex; gap: 10px; align-items: center; }
+        button { padding: 8px 15px; border-radius: 6px; border: none; cursor: pointer; font-weight: bold; }
+        .btn-verify { background: #0ecb81; color: black; }
+        .btn-reject { background: #f6465d; color: white; }
+        .btn-edit { background: #3772ff; color: white; }
+        .btn-logout { background: transparent; color: var(--down); border: 1px solid var(--down); padding: 5px 12px; font-size: 12px; }
+
+        .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); z-index: 1000; align-items: center; justify-content: center; }
+        .modal-content { background: var(--card); padding: 25px; border-radius: 15px; width: 90%; max-width: 400px; border: 1px solid var(--primary); }
+        .modal-content input { width: 100%; padding: 10px; margin: 10px 0; background: #0b0e11; border: 1px solid var(--border); color: white; border-radius: 5px; box-sizing: border-box; }
+
+        .notification-badge { background: #f6465d; color: white; padding: 2px 8px; border-radius: 20px; font-size: 12px; }
+    </style>
+</head>
+<body>
+
+<div id="adminLogin">
+    <div class="login-card">
+        <h2 style="color: var(--primary); margin-bottom: 5px;">SMAT Admin</h2>
+        <p style="color: var(--text-sec); font-size: 12px; margin-bottom: 20px;">Authorized Personnel Only</p>
+        <input type="email" id="adminEmail" placeholder="Admin Email">
+        <input type="password" id="adminPassword" placeholder="Password">
+        <button class="btn-login" onclick="loginAdmin()">LOGIN TO PANEL</button>
+        <p id="loginError" style="color: var(--down); font-size: 12px; margin-top: 10px; display: none;">Invalid Credentials</p>
+    </div>
+</div>
+
+<div class="admin-container" id="panelUI">
+    <div class="header-panel">
+        <h3><i class="fas fa-user-shield"></i> Dashboard</h3>
+        <div style="display: flex; align-items: center; gap: 15px;">
+            <div>Pending: <span id="kycCount" class="notification-badge">0</span></div>
+            <button class="btn-logout" onclick="logoutAdmin()">Logout</button>
+        </div>
+    </div>
+
+    <div class="search-box">
+        <i class="fas fa-search"></i>
+        <input type="text" id="userSearch" placeholder="Search SMAT ID, Email, or NID..." onkeyup="filterUsers()">
+    </div>
+
+    <div id="userList">
+        <p style="text-align: center; color: var(--text-sec);">Loading user database...</p>
+    </div>
+</div>
+
+<div id="editModal" class="modal">
+    <div class="modal-content">
+        <h3>Edit User Account</h3>
+        <input type="hidden" id="editUserId">
+        <label style="font-size: 12px;">Link New Email:</label>
+        <input type="email" id="newEmail" placeholder="New Email Address">
+        <label style="font-size: 12px;">Reset Password:</label>
+        <input type="text" id="newPass" placeholder="Enter New Password">
+        <div style="display:flex; gap:10px; margin-top:15px;">
+            <button class="btn-verify" onclick="saveUserChanges()" style="flex: 1;">Save Changes</button>
+            <button class="btn-reject" onclick="closeModal()">Cancel</button>
+        </div>
+    </div>
+</div>
+
+<script>
+    // --- 1. Firebase Configuration ---
+    const firebaseConfig = {
+        apiKey: "AIzaSyAMxtJedkehhxJRMPZLjhpKHqneHEWsGlE",
+        authDomain: "smat-exchange.firebaseapp.com",
+        projectId: "smat-exchange",
+        storageBucket: "smat-exchange.firebasestorage.app",
+        messagingSenderId: "836334569396",
+        appId: "1:836334569396:web:679effe640b3453412d4e1",
+        measurementId: "G-FCE3H3F18V",
+        databaseURL: "https://smat-exchange-default-rtdb.firebaseio.com/" // আপনার রিয়ারটাইম ডাটাবেস URL এখানে চেক করুন
+    };
+
+    firebase.initializeApp(firebaseConfig);
+    const auth = firebase.auth();
+    const database = firebase.database();
+
+    let allUsers = {};
+    let lastPendingCount = 0;
+
+    // --- 2. Admin Authentication ---
+    function loginAdmin() {
+        const email = document.getElementById('adminEmail').value;
+        const pass = document.getElementById('adminPassword').value;
+        const error = document.getElementById('loginError');
+
+        auth.signInWithEmailAndPassword(email, pass)
+            .then(() => {
+                document.getElementById('adminLogin').style.display = 'none';
+                document.getElementById('panelUI').style.display = 'block';
+                loadUsers();
+            })
+            .catch((err) => {
+                error.innerText = err.message;
+                error.style.display = 'block';
+            });
+    }
+
+    function logoutAdmin() {
+        auth.signOut().then(() => location.reload());
+    }
+
+    // Auth State Check
+    auth.onAuthStateChanged(user => {
+        if (user) {
+            document.getElementById('adminLogin').style.display = 'none';
+            document.getElementById('panelUI').style.display = 'block';
+            loadUsers();
+        }
+    });
+
+    // --- 3. Database Operations ---
+    function loadUsers() {
+        database.ref('users').on('value', (snapshot) => {
+            allUsers = snapshot.val() || {};
+            renderUserList(allUsers);
+            
+            let pendingCount = 0;
+            Object.values(allUsers).forEach(u => {
+                if(u.kycStatus === 'pending') pendingCount++;
+            });
+            
+            // Notification if count increases
+            if(pendingCount > lastPendingCount) {
+                playNotificationSound();
+            }
+            lastPendingCount = pendingCount;
+            document.getElementById('kycCount').innerText = pendingCount;
+        });
+    }
+
+    function renderUserList(users) {
+        const list = document.getElementById('userList');
+        list.innerHTML = '';
+
+        if(Object.keys(users).length === 0) {
+            list.innerHTML = '<p style="text-align:center; color:var(--text-sec)">No users found in database.</p>';
+            return;
+        }
+
+        for (let uid in users) {
+            const user = users[uid];
+            const kStatus = (user.kycStatus || 'unverified').toLowerCase();
+            const statusColor = kStatus === 'verified' ? '#0ecb81' : (kStatus === 'pending' ? '#f3ba2f' : '#f6465d');
+            
+            list.innerHTML += `
+                <div class="user-card" data-search="${(user.smatID || '')} ${user.email} ${(user.kycNidNumber || '')}">
+                    <div class="info-group">
+                        <h4>Account Info</h4>
+                        <p>ID: <b>${user.smatID || 'N/A'}</b></p>
+                        <p>Email: ${user.email}</p>
+                        <p>Pass: <span style="color:var(--text-sec)">${user.password || '******'}</span></p>
+                    </div>
+                    <div class="info-group">
+                        <h4>KYC / Identity</h4>
+                        <p>Name: ${user.kycRealName || 'N/A'}</p>
+                        <p>NID: ${user.kycNidNumber || 'N/A'}</p>
+                        <p>Status: <b style="color:${statusColor}">${kStatus.toUpperCase()}</b></p>
+                    </div>
+                    <div class="action-btns">
+                        <button class="btn-edit" onclick="openEditModal('${uid}', '${user.email}', '${user.password}')"><i class="fas fa-edit"></i></button>
+                        ${kStatus === 'pending' ? `
+                            <button class="btn-verify" onclick="updateKYC('${uid}', 'verified')">Approve</button>
+                            <button class="btn-reject" onclick="updateKYC('${uid}', 'rejected')">Reject</button>
+                        ` : ''}
+                    </div>
+                </div>
+            `;
+        }
+    }
+
+    function filterUsers() {
+        let query = document.getElementById('userSearch').value.toLowerCase();
+        document.querySelectorAll('.user-card').forEach(card => {
+            let text = card.getAttribute('data-search').toLowerCase();
+            card.style.display = text.includes(query) ? 'flex' : 'none';
+        });
+    }
+
+    function updateKYC(uid, status) {
+        if(confirm(`Are you sure you want to ${status} this user?`)) {
+            database.ref('users/' + uid).update({ kycStatus: status });
+        }
+    }
+
+    function openEditModal(uid, email, pass) {
+        document.getElementById('editUserId').value = uid;
+        document.getElementById('newEmail').value = email;
+        document.getElementById('newPass').value = pass;
+        document.getElementById('editModal').style.display = 'flex';
+    }
+
+    function closeModal() { document.getElementById('editModal').style.display = 'none'; }
+
+    function saveUserChanges() {
+        const uid = document.getElementById('editUserId').value;
+        const email = document.getElementById('newEmail').value;
+        const pass = document.getElementById('newPass').value;
+
+        database.ref('users/' + uid).update({
+            email: email,
+            password: pass
+        }).then(() => {
+            alert("Account details updated!");
+            closeModal();
+        });
+    }
+
+    function playNotificationSound() {
+        const audio = new Audio('https://assets.mixkit.co/sfx/preview/mixkit-urgent-simple-tone-2976.mp3');
+        audio.play().catch(e => console.log("Audio play failed"));
+    }
+</script>
+
+</body>
+</html>
