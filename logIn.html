@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>SMAT Exchange | Secure Access</title>
+    <title>SMAT | Reg & LogIn</title>
     <style>
         :root {
             --primary: #f3ba2f;
@@ -207,6 +207,10 @@
 
   let isLogin = true;
 
+  // --- Referral Detection ---
+  const urlParams = new URLSearchParams(window.location.search);
+  const referralID = urlParams.get('ref') || null;
+
   window.validatePassword = () => {
     const pass = document.getElementById('password').value;
     const status = document.getElementById('passStatus');
@@ -241,7 +245,6 @@
     document.getElementById('btn').disabled = false;
   };
 
-  // --- Auto-ID Generation & Registration Logic ---
   const generateSmatID = async () => {
     const counterRef = ref(db, 'counters/lastSmatId');
     const result = await runTransaction(counterRef, (currentValue) => {
@@ -266,7 +269,6 @@
         const userCredential = await signInWithEmailAndPassword(auth, email, pass);
         
         if (userCredential.user.emailVerified) {
-          // লগইন সফল হলে প্রোফাইল থেকে আইডি খুঁজে LocalStorage এ সেভ করা
           const userSnapshot = await get(ref(db, 'users/' + userCredential.user.uid));
           if(userSnapshot.exists()){
             localStorage.setItem('smatID', userSnapshot.val().smatID);
@@ -280,18 +282,16 @@
           msgBox.innerText = "Please verify your email first!";
         }
       } else {
-        // নতুন ইউজার রেজিস্ট্রেশন
         const userCredential = await createUserWithEmailAndPassword(auth, email, pass);
         const newUser = userCredential.user;
-        
-        // সিরিয়াল অনুযায়ী নতুন আইডি জেনারেট করা
         const newSmatID = await generateSmatID();
 
-        // ডেটাবেজে ইউজারের তথ্য সেভ করা
+        // ডেটাবেজে ইউজারের তথ্য সেভ করা (রেফারেলসহ)
         await set(ref(db, 'users/' + newUser.uid), {
           email: email,
           smatID: newSmatID,
           kycStatus: 'unverified',
+          referredBy: referralID, // URL থেকে পাওয়া রেফারেল আইডি এখানে সেভ হবে
           createdAt: new Date().toISOString()
         });
 
