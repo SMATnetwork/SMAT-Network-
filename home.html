@@ -160,7 +160,29 @@
         };
     </script>
 
-    <style>
+    
+
+<link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#f3ba2f">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black">
+
+<script>
+  if ('serviceWorker' in navigator) {
+    window.addEventListener('load', () => {
+      navigator.serviceWorker.register('sw.js')
+        .then(reg => console.log('Service Worker Registered'))
+        .catch(err => console.log('Service Worker Failed', err));
+    });
+  }
+</script>
+
+
+
+
+
+
+<style>
         :root {
             --primary: #f3ba2f;
             --bg: #0b0e11;
@@ -361,7 +383,14 @@
 
     <div class="coin-list" id="coinContainer"></div>
 
-    <footer class="footer">
+<button id="installBtn" style="display:none; background: var(--primary); color: black; padding: 10px 20px; border-radius: 8px; font-weight: bold; border: none; cursor: pointer; margin: 10px;">
+    <i class="fas fa-download"></i> Download App
+</button>
+
+    
+
+
+<footer class="footer">
         <a href="home.html" class="f-nav active"><i class="fas fa-home"></i>Home</a>
         <a href="Trade.html" class="f-nav" onclick="checkAuth(event)"><i class="fas fa-chart-line"></i>Trade</a>
         <div class="u-curve">
@@ -440,6 +469,43 @@
             renderCoins('hot');
             setInterval(() => { renderCoins(currentActiveTab); }, 5000);
         };
+
+let deferredPrompt;
+const installBtn = document.getElementById('installBtn');
+
+window.addEventListener('beforeinstallprompt', (e) => {
+    // ব্রাউজারের ডিফল্ট প্রম্পট আটকে দেওয়া
+    e.preventDefault();
+    // ইভেন্টটি সেভ করে রাখা
+    deferredPrompt = e;
+    // ইনস্টল বাটনটি স্ক্রিনে দেখানো
+    installBtn.style.display = 'block';
+
+    installBtn.addEventListener('click', () => {
+        // বাটন ক্লিক করলে ইনস্টল প্রম্পট দেখানো
+        installBtn.style.display = 'none';
+        deferredPrompt.prompt();
+        // ইউজার কি সিলেক্ট করলো তা চেক করা
+        deferredPrompt.userChoice.then((choiceResult) => {
+            if (choiceResult.outcome === 'accepted') {
+                console.log('User accepted the install prompt');
+            } else {
+                console.log('User dismissed the install prompt');
+            }
+            deferredPrompt = null;
+        });
+    });
+});
+
+// অ্যাপটি অলরেডি ইনস্টল থাকলে বাটন লুকানো
+window.addEventListener('appinstalled', (evt) => {
+    installBtn.style.display = 'none';
+    console.log('SMAT App was installed');
+});
+
+
+
+
     </script>
 </body>
 </html>
