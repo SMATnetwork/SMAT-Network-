@@ -63,6 +63,7 @@
             if(refLink) refLink.value = fullLink;
 
             const usersRef = ref(db, 'users');
+            // সকল রেফারেল গুনে স্ট্যাটাস দেখানোর জন্য
             const allRefQuery = query(usersRef, orderByChild('referredBy'), equalTo(smatID));
             
             onValue(allRefQuery, (snapshot) => {
@@ -76,15 +77,18 @@
                 if (data) {
                     const allUsers = Object.values(data);
                     
+                    // স্ট্যাটাস কাউন্ট করা
                     allUsers.forEach(u => {
                         if(u.kycStatus === 'verified') verifiedCount++;
                         else if(u.kycStatus === 'rejected') rejectedCount++;
                         else pendingCount++;
                     });
 
+                    // UI আপডেট (কাউন্টার)
                     document.getElementById('ref_verified').innerText = verifiedCount;
                     document.getElementById('ref_rejected').innerText = rejectedCount;
 
+                    // শুধুমাত্র সর্বশেষ ৫টি রেফারেল দেখানো (Reverse order for latest)
                     const latest5 = allUsers.sort((a, b) => (b.createdAt || 0) - (a.createdAt || 0)).slice(0, 5);
                     
                     listContainer.innerHTML = '';
@@ -164,26 +168,24 @@
             const notice = document.getElementById('kycPendingNotice');
             const badge = document.getElementById('kycBadge');
             const verifiedBox = document.getElementById('kycVerifiedInfo');
-            if(form) form.style.display = 'none'; 
-            if(notice) notice.style.display = 'none'; 
-            if(verifiedBox) verifiedBox.style.display = 'none';
+            form.style.display = 'none'; notice.style.display = 'none'; verifiedBox.style.display = 'none';
 
             if (data.kycStatus === 'pending') {
-                if(notice) notice.style.display = 'block';
+                notice.style.display = 'block';
                 badge.innerText = 'Pending';
                 badge.className = 'status-badge status-pending';
             } else if (data.kycStatus === 'verified') {
-                if(verifiedBox) verifiedBox.style.display = 'block';
+                verifiedBox.style.display = 'block';
                 badge.innerText = 'Verified';
                 badge.className = 'status-badge status-verified';
                 document.getElementById('v_name').innerText = data.realName || "N/A";
                 document.getElementById('v_nid').innerText = data.nidNumber || "N/A";
             } else if (data.kycStatus === 'rejected') {
-                if(form) form.style.display = 'block';
+                form.style.display = 'block';
                 badge.innerText = 'Rejected';
                 badge.className = 'status-badge status-rejected';
             } else {
-                if(form) form.style.display = 'block';
+                form.style.display = 'block';
                 badge.innerText = 'Unverified';
                 badge.className = 'status-badge status-unverified';
             }
@@ -211,17 +213,37 @@
             font-family: 'Segoe UI', Roboto, sans-serif; padding-bottom: 90px;
         }
 
+/* চ্যাটিং আইকন স্টাইল */
         .chat-icon-wrapper {
-            position: absolute; top: 12px; right: 45px; z-index: 110;
-            background: rgba(30, 35, 41, 0.8); width: 35px; height: 35px;
-            border-radius: 8px; display: flex; align-items: center; justify-content: center;
-            border: 1px solid rgba(240, 185, 11, 0.3); cursor: pointer; transition: 0.3s; text-decoration: none;
+        position: absolute;
+        top: 12px;
+        right: 45px;
+        z-index: 110;
+        background: rgba(30, 35, 41, 0.8);
+        width: 35px;
+        height: 35px;
+        border-radius: 8px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border: 1px solid rgba(240, 185, 11, 0.3);
+        cursor: pointer;
+        transition: 0.3s;
+        text-decoration: none;
         }
         .chat-icon-wrapper:hover { background: #f0b90b; }
         .chat-icon-wrapper:hover i { color: black; }
         .chat-icon-wrapper i { color: #f0b90b; font-size: 16px; }
+        
 
-        .header { padding: 15px; display: flex; align-items: center; justify-content: space-between; position: sticky; top: 0; background: var(--bg); z-index: 100; }
+
+
+
+
+        .header {
+            padding: 15px; display: flex; align-items: center; justify-content: space-between;
+            position: sticky; top: 0; background: var(--bg); z-index: 100;
+        }
         .profile-trigger { font-size: 26px; color: var(--primary); cursor: pointer; }
 
         .sidebar {
@@ -230,13 +252,17 @@
             box-shadow: 15px 0 40px rgba(0,0,0,0.7); overflow-y: auto;
         }
         .sidebar.active { left: 0; }
-        .sidebar-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); display: none; z-index: 3500; }
+        .sidebar-overlay {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.8); display: none; z-index: 3500;
+        }
 
         .user-id-box { background: #181a20; padding: 15px; border-radius: 12px; margin: 15px 0; border: 1px dashed var(--primary); }
         
         .kyc-section, .referral-section { 
             background: #2b3139; padding: 20px; border-radius: 20px; margin-top: 20px; 
-            border: 1px solid var(--border); box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+            border: 1px solid var(--border); 
+            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
         }
 
         .ref-stats { display: flex; justify-content: space-between; margin-bottom: 12px; }
@@ -250,7 +276,10 @@
         .ref-list { margin-top: 15px; }
         .ref-item { display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid rgba(255,255,255,0.05); }
 
-        .kyc-form input { width: 100%; margin-top: 12px; background: #181a20; border: 1px solid var(--border); color: white; padding: 14px; border-radius: 10px; font-size: 14px; }
+        .kyc-form input { 
+            width: 100%; margin-top: 12px; background: #181a20; border: 1px solid var(--border); 
+            color: white; padding: 14px; border-radius: 10px; font-size: 14px;
+        }
         .kyc-form p { font-size: 11px; color: var(--text-sec); margin: 15px 0 5px 0; }
 
         .status-badge { padding: 4px 10px; border-radius: 6px; font-size: 11px; font-weight: bold; text-transform: uppercase; }
@@ -259,14 +288,29 @@
         .status-verified { background: rgba(14, 203, 129, 0.2); color: var(--up); }
         .status-rejected { background: rgba(246, 70, 93, 0.2); color: var(--down); }
 
-        .loading-spin { display: inline-block; width: 18px; height: 18px; border: 2px solid var(--primary); border-top: 2px solid transparent; border-radius: 50%; animation: spin 0.8s linear infinite; vertical-align: middle; margin-right: 10px; }
+        .loading-spin { 
+            display: inline-block; width: 18px; height: 18px; 
+            border: 2px solid var(--primary); border-top: 2px solid transparent; 
+            border-radius: 50%; animation: spin 0.8s linear infinite; vertical-align: middle;
+            margin-right: 10px;
+        }
 
-        .asset-card { margin: 15px; background: linear-gradient(135deg, #2b3139 0%, #1e2329 100%); padding: 25px; border-radius: 24px; border: 1px solid var(--border); }
+        .asset-card {
+            margin: 15px; background: linear-gradient(135deg, #2b3139 0%, #1e2329 100%);
+            padding: 25px; border-radius: 24px; border: 1px solid var(--border);
+        }
         .asset-val { font-size: 32px; font-weight: 800; color: var(--primary); margin: 12px 0; }
 
-        .notice-bar { margin: 0 15px; background: rgba(243, 186, 47, 0.05); border-radius: 8px; padding: 8px; display: flex; align-items: center; overflow: hidden; border: 1px solid rgba(243, 186, 47, 0.1); }
+        .notice-bar {
+            margin: 0 15px; background: rgba(243, 186, 47, 0.05); border-radius: 8px;
+            padding: 8px; display: flex; align-items: center; overflow: hidden;
+            border: 1px solid rgba(243, 186, 47, 0.1);
+        }
         .notice-bar i { color: var(--primary); margin-right: 10px; font-size: 14px; }
-        .scrolling-text { white-space: nowrap; overflow: hidden; font-size: 12px; color: var(--text-sec); animation: marquee 20s linear infinite; }
+        .scrolling-text {
+            white-space: nowrap; overflow: hidden; font-size: 12px; color: var(--text-sec);
+            animation: marquee 20s linear infinite;
+        }
         @keyframes marquee { 0% { transform: translateX(100%); } 100% { transform: translateX(-100%); } }
 
         .market-tabs { display: flex; padding: 0 15px; gap: 20px; border-bottom: 1px solid var(--border); margin-top: 15px; }
@@ -290,6 +334,7 @@
         @keyframes spin { 100% { transform: rotate(360deg); } }
         .login-btn { background: var(--primary); color: black; padding: 12px; border-radius: 10px; border: none; font-weight: bold; width: 100%; cursor: pointer; margin-top: 20px; }
         .new-badge { font-size: 9px; background: var(--primary); color: black; padding: 2px 5px; border-radius: 4px; font-weight: bold; margin-left: 5px; vertical-align: middle; }
+        
     </style>
 </head>
 <body>
@@ -298,32 +343,46 @@
 
     <div class="sidebar" id="sidebar">
         <h3 style="margin: 0 0 20px 0; font-size: 20px;"><i class="fa-solid fa-circle-notch fa-spin"></i> Profile</h3>
+        
         <div id="loggedInContent">
             <div class="user-info">
                 <span style="font-size:12px; color:var(--text-sec)">Account Email</span>
                 <div id="emailDisplay" style="font-weight:600; margin-top:4px;">Loading...</div>
+                
                 <div class="user-id-box">
                     <span style="font-size:11px; color:var(--text-sec); display:block; margin-bottom:5px;">Your SMAT ID</span>
                     <span id="smatID" style="font-size:18px; font-weight:800; color:var(--primary);">Checking...</span>
                 </div>
             </div>
+
             <div class="referral-section">
                 <span style="font-weight:bold; font-size:14px"><i class="fa-solid fa-users"></i> Referral Program</span>
+                
                 <div class="ref-stats" style="margin-top: 10px;">
                     <div class="stat-item"><span>Verified</span><b id="ref_verified" style="color:var(--up)">0</b></div>
                     <div class="stat-item"><span>Rejected</span><b id="ref_rejected" style="color:var(--down)">0</b></div>
                 </div>
+
                 <div class="ref-box">
                     <input type="text" id="referralLink" readonly value="Loading Link...">
                     <button onclick="copyRef()">Copy</button>
                 </div>
-                <div class="ref-list" id="referralList"></div>
+                
+                <div style="margin-top:15px; font-size:12px; border-bottom:1px solid var(--border); padding-bottom:5px; display:flex; justify-content:space-between">
+                    <span>Recent Referrals</span>
+                    <span style="color:var(--text-sec); font-size:10px">(Last 5 Only)</span>
+                </div>
+                <div class="ref-list" id="referralList">
+                    <p style="font-size:11px; color:var(--text-sec); text-align:center">Loading referrals...</p>
+                </div>
             </div>
+
             <div class="kyc-section">
                 <div style="display:flex; justify-content:space-between; align-items:center">
                     <span style="font-weight:bold; font-size:14px">Identity Verification</span>
                     <span id="kycBadge" class="status-badge status-unverified">Unverified</span>
                 </div>
+
                 <div id="kycForm">
                     <input type="text" id="realName" placeholder="Enter Real Name">
                     <input type="text" id="nidNumber" placeholder="Enter NID Number">
@@ -335,18 +394,26 @@
                     <input type="file" id="userSelfie" accept="image/*">
                     <button id="submitBtn" onclick="handleKYC()" style="width:100%; margin-top:20px; background:var(--primary); border:none; padding:16px; border-radius:12px; font-weight:800; cursor:pointer;">Submit Details</button>
                 </div>
+
                 <div id="kycPendingNotice" style="display:none; margin-top:15px; padding:15px; background:rgba(243, 186, 47, 0.1); border-radius:12px; text-align:center; border: 1px solid rgba(243, 186, 47, 0.2);">
                     <span class="loading-spin"></span>
                     <p style="font-size:13px; color:var(--primary); margin:10px 0 0 0; font-weight:bold">KYC Status: Pending Review</p>
+                    <p style="font-size:11px; color:var(--text-sec); margin-top:5px">Within 72 hours you will see result.</p>
                 </div>
+
                 <div id="kycVerifiedInfo" style="display:none; margin-top:15px; padding:15px; background:rgba(14, 203, 129, 0.1); border-radius:12px; border: 1px solid rgba(14, 203, 129, 0.2);">
+                    <div style="font-size:12px; color:var(--text-sec)">Verified Holder:</div>
                     <div id="v_name" style="font-weight:bold; font-size:16px; color:var(--up); margin:4px 0">N/A</div>
                     <div style="font-size:11px; color:var(--text-sec)">NID: <span id="v_nid" style="color:var(--text-main)">N/A</span></div>
                 </div>
             </div>
+            
             <p style="margin-top:40px; text-align:center; color:#ff4d4d; font-size:30px; cursor:pointer" onclick="logout()"><i class="fa-solid fa-sign-out-alt"></i></p>
         </div>
+
         <div id="loggedOutContent" style="display:none; text-align: center; margin-top: 50px;">
+            <i class="fa-solid fa-user-lock" style="font-size: 50px; color: var(--text-sec);"></i>
+            <p style="color: var(--text-sec); margin-top: 15px;">Please login to see your profile.</p>
             <button class="login-btn" onclick="window.location.href='logIn.html'">Login Now</button>
         </div>
     </div>
@@ -355,20 +422,28 @@
         <i class="fa-solid fa-circle-user profile-trigger" onclick="toggleSidebar()"></i>
         <div style="font-weight: 900; font-size: 20px;">SMAT <span style="color:var(--primary)">Exchange</span></div>
         <div style="display: flex; gap: 18px; align-items: center;">
-            <a href="fox.html" class="chat-icon-wrapper" onclick="return checkAuth(event)"><i class="fas fa-comments"></i></a>
+            <a href="fox.html" class="chat-icon-wrapper" onclick="return checkAuth(event)">
+    <i class="fas fa-comments"></i>
+</a>
+
             <i class="fa-solid fa-bell" style="font-size:22px; color:var(--text-sec)" onclick="checkAuth(event)"></i>
         </div>
     </div>
 
     <div class="asset-card">
-        <div style="font-size: 14px; color: var(--text-sec);">Total Assets</div>
+        <div style="font-size: 14px; color: var(--text-sec);">Total Assets <i class="fa-solid fa-eye-slash" style="font-size:12px"></i></div>
         <div class="asset-val">$ <span id="totalValue">0.00</span></div>
-        <div style="font-size:13px; font-weight:600;"><span style="color:var(--up)" id="pnlValue">+$0.00</span></div>
+        <div style="font-size:13px; font-weight:600;">
+            <span style="color:var(--up)" id="pnlValue">+$0.00</span> 
+            <span style="color:var(--text-sec); margin-left:8px">Today's PNL</span>
+        </div>
     </div>
 
     <div class="notice-bar">
         <i class="fa-solid fa-bullhorn"></i>
-        <div class="scrolling-text">System Notice: SMAT Coin listing coming soon! | New TRC20 Deposit network is now stable.</div>
+        <div class="scrolling-text">
+            System Notice: SMAT Coin listing coming soon! | New TRC20 Deposit network is now stable. | Verify KYC to enjoy zero-fee internal transfers. | Stay alert of phishing links.
+        </div>
     </div>
 
     <div class="market-tabs">
@@ -417,55 +492,55 @@
         }
 
         function renderCoins(filter = 'hot') {
-            const container = document.getElementById('coinContainer');
-            if (!container) return;
-            const liveData = (typeof GLOBAL_COINS !== 'undefined') ? GLOBAL_COINS : [];
-            
-            // নিচের ভেরিয়েবল দুটি আপনার কোডে ছিল না, তাই কয়েন শো করছিল না
-            const now = Date.now();
-            const threeDaysMs = 3 * 24 * 60 * 60 * 1000;
-
-            let filtered = liveData;
-            if (filter === 'hot') filtered = [...liveData].slice(0, 10);
-            else if (filter === 'gainer') filtered = [...liveData].sort((a,b) => b.price - a.price).slice(0, 8);
-            else if (filter === 'loser') filtered = [...liveData].sort((a,b) => a.price - b.price).slice(0, 8);
-            else if (filter === 'new') {
-                filtered = liveData.filter(coin => (now - (coin.listedAt || 0)) < threeDaysMs);
-            }
-
-            let htmlContent = '';
-            filtered.forEach(coin => {
-                const isUp = Math.random() > 0.5;
-                const change = (Math.random() * 5).toFixed(2);
-                const isNew = (now - (coin.listedAt || 0)) < threeDaysMs;
-                
-                htmlContent += `
-                    <div class="coin-row" onclick="if(checkAuth(event)) window.location.href='Trade.html?coin=${coin.sym}'">
-                        <div style="display:flex; align-items:center; gap:12px;">
-                            <img src="assets/logos/${coin.sym.toLowerCase()}.png" class="coin-icon" onerror="this.src='https://via.placeholder.com/40?text=${coin.sym[0]}'">
-                            <div>
-                                <div style="font-weight:bold">
-                                    ${coin.sym.toUpperCase()}
-                                    ${isNew ? '<span class="new-badge">NEW</span>' : ''}
-                                </div>
-                                <div style="font-size:12px; color:var(--text-sec)">${coin.name}</div>
-                            </div>
-                        </div>
-                        <div style="text-align:right">
-                            <div style="font-weight:bold; font-size:16px">$${coin.price.toLocaleString()}</div>
-                            <div class="percent-box" style="background:${isUp ? 'rgba(14, 203, 129, 0.15)' : 'rgba(246, 70, 93, 0.15)'}; color:${isUp ? 'var(--up)' : 'var(--down)'}">
-                                ${isUp ? '+' : '-'}${change}%
-                            </div>
-                        </div>
-                    </div>
-                `;
-            });
-            container.innerHTML = htmlContent || '<p style="text-align:center; color:var(--text-sec); margin-top:20px;">No coins found.</p>';
+        const container = document.getElementById('coinContainer');
+        if (!container) return;
+        const liveData = (typeof GLOBAL_COINS !== 'undefined') ? GLOBAL_COINS : [];
+        
+        // নিচের ভেরিয়েবল দুটি আপনার কোডে ছিল না, তাই কয়েন শো করছিল না
+        const now = Date.now();
+        const threeDaysMs = 3 * 24 * 60 * 60 * 1000;
+        
+        let filtered = liveData;
+        if (filter === 'hot') filtered = [...liveData].slice(0, 10);
+        else if (filter === 'gainer') filtered = [...liveData].sort((a,b) => b.price - a.price).slice(0, 8);
+        else if (filter === 'loser') filtered = [...liveData].sort((a,b) => a.price - b.price).slice(0, 8);
+        else if (filter === 'new') {
+        filtered = liveData.filter(coin => (now - (coin.listedAt || 0)) < threeDaysMs);
         }
-
+        
+        let htmlContent = '';
+        filtered.forEach(coin => {
+        const isUp = Math.random() > 0.5;
+        const change = (Math.random() * 5).toFixed(2);
+        const isNew = (now - (coin.listedAt || 0)) < threeDaysMs;
+        
+        htmlContent += `
+        <div class="coin-row" onclick="if(checkAuth(event)) window.location.href='Trade.html?coin=${coin.sym}'">
+        <div style="display:flex; align-items:center; gap:12px;">
+        <img src="assets/logos/${coin.sym.toLowerCase()}.png" class="coin-icon" onerror="this.src='https://via.placeholder.com/40?text=${coin.sym[0]}'">
+        <div>
+        <div style="font-weight:bold">
+        ${coin.sym.toUpperCase()}
+        ${isNew ? '<span class="new-badge">NEW</span>' : ''}
+        </div>
+        <div style="font-size:12px; color:var(--text-sec)">${coin.name}</div>
+        </div>
+        </div>
+        <div style="text-align:right">
+        <div style="font-weight:bold; font-size:16px">$${coin.price.toLocaleString()}</div>
+        <div class="percent-box" style="background:${isUp ? 'rgba(14, 203, 129, 0.15)' : 'rgba(246, 70, 93, 0.15)'}; color:${isUp ? 'var(--up)' : 'var(--down)'}">
+        ${isUp ? '+' : '-'}${change}%
+        </div>
+        </div>
+        </div>
+        `;
+        });
+        container.innerHTML = htmlContent || '<p style="text-align:center; color:var(--text-sec); margin-top:20px;">No coins found.</p>';
+        }
+        
         window.onload = () => {
-            renderCoins('hot');
-            setInterval(() => { renderCoins(currentActiveTab); }, 5000);
+        renderCoins('hot');
+        setInterval(() => { renderCoins(currentActiveTab); }, 5000);
         };
     </script>
 </body>
