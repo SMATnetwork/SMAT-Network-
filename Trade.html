@@ -547,33 +547,38 @@
         }
 
         function renderHistory() {
-            const body = document.getElementById('hBody');
-            const head = document.getElementById('hHead');
-            if(!body || !head) return;
+    const body = document.getElementById('hBody');
+    const head = document.getElementById('hHead');
+    if(!body || !head || !activeCoin) return; // activeCoin না থাকলে কাজ করবে না
 
-            const data = JSON.parse(localStorage.getItem(activeHTab + 'Orders')) || [];
-            const showMoreBtn = document.getElementById('showMoreBox');
-            const smatVal = window["smatVal"] || 1;
-            
-            const visibleData = data.slice(0, historyLimit);
-            if(showMoreBtn) showMoreBtn.style.display = data.length > historyLimit ? 'block' : 'none';
-            
-            if (activeHTab === 'un') {
-                head.innerHTML = `<tr><th>Pair</th><th>Price</th><th>Amount</th><th>Status</th></tr>`;
-                body.innerHTML = visibleData.map(o => {
-                    let displayP = o.p;
-                    if(o.market === 'SMAT') displayP = o.p / smatVal;
-                    return `<tr><td>${o.s}/${o.market}</td><td>${parseFloat(displayP).toFixed(4)}</td><td>${parseFloat(o.a).toFixed(4)}</td><td class="down" onclick="cancelOrder(${o.id})">Cancel</td></tr>`;
-                }).join('');
-            } else {
-                head.innerHTML = `<tr><th>Time</th><th>Side</th><th>Price</th><th>Amount</th></tr>`;
-                body.innerHTML = visibleData.map(o => {
-                    let displayP = o.p;
-                    if(activeMarket === 'SMAT') displayP = o.p / smatVal;
-                    return `<tr><td>${o.time}</td><td class="${o.side==='buy'?'up':'down'}">${o.side.toUpperCase()}</td><td>${parseFloat(displayP).toFixed(4)}</td><td>${parseFloat(o.a).toFixed(4)}</td></tr>`;
-                }).join('');
-            }
-        }
+    const data = JSON.parse(localStorage.getItem(activeHTab + 'Orders')) || [];
+    const showMoreBtn = document.getElementById('showMoreBox');
+    const smatVal = window["smatVal"] || 1;
+    
+    // --- ফিল্টারিং লজিক (শুধুমাত্র বর্তমান কয়েনের ডাটা দেখাবে) ---
+    const currentSymbol = activeCoin.sym.toUpperCase();
+    const filteredData = data.filter(order => order.s === currentSymbol);
+    
+    const visibleData = filteredData.slice(0, historyLimit);
+    if(showMoreBtn) showMoreBtn.style.display = filteredData.length > historyLimit ? 'block' : 'none';
+    
+    if (activeHTab === 'un') {
+        head.innerHTML = `<tr><th>Pair</th><th>Price</th><th>Amount</th><th>Status</th></tr>`;
+        body.innerHTML = visibleData.map(o => {
+            let displayP = o.p;
+            if(o.market === 'SMAT') displayP = o.p / smatVal;
+            return `<tr><td>${o.s}/${o.market}</td><td>${parseFloat(displayP).toFixed(4)}</td><td>${parseFloat(o.a).toFixed(4)}</td><td class="down" style="cursor:pointer" onclick="cancelOrder(${o.id})">Cancel</td></tr>`;
+        }).join('');
+    } else {
+        head.innerHTML = `<tr><th>Time</th><th>Side</th><th>Price</th><th>Amount</th></tr>`;
+        body.innerHTML = visibleData.map(o => {
+            let displayP = o.p;
+            if(activeMarket === 'SMAT') displayP = o.p / smatVal;
+            return `<tr><td>${o.time}</td><td class="${o.side==='buy'?'up':'down'}">${o.side.toUpperCase()}</td><td>${parseFloat(displayP).toFixed(4)}</td><td>${parseFloat(o.a).toFixed(4)}</td></tr>`;
+        }).join('');
+    }
+}
+
 
         function showMoreHistory() {
             historyLimit += 10;
