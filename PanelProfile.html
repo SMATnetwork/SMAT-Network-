@@ -5,20 +5,22 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>SMAT | Admin Control Panel</title>
     
-    <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-app-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-database-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.0.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.0.0/firebase-database-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.0.0/firebase-auth-compat.js"></script>
     
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <style>
         :root { --primary: #f3ba2f; --bg: #0b0e11; --card: #1e2329; --text: #eaecef; --border: #2b3139; --text-sec: #848e9c; --up: #0ecb81; --down: #f6465d; }
         body { background: var(--bg); color: var(--text); font-family: 'Segoe UI', sans-serif; margin: 0; padding: 20px; }
         
+        /* Login Screen */
         #adminLogin { position: fixed; top:0; left:0; width:100%; height:100%; background:var(--bg); z-index: 5000; display: flex; align-items: center; justify-content: center; }
         .login-card { background: var(--card); padding: 30px; border-radius: 15px; border: 1px solid var(--border); width: 90%; max-width: 350px; text-align: center; }
         .login-card input { width: 100%; padding: 12px; margin: 10px 0; background: #0b0e11; border: 1px solid var(--border); color: white; border-radius: 8px; box-sizing: border-box; }
         .btn-login { width: 100%; background: var(--primary); color: black; border: none; padding: 12px; border-radius: 8px; font-weight: bold; cursor: pointer; }
 
+        /* Dashboard */
         .admin-container { max-width: 1100px; margin: auto; display: none; }
         .header-panel { display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid var(--primary); padding-bottom: 15px; margin-bottom: 25px; }
         
@@ -27,8 +29,9 @@
         .info-group h4 { margin: 0 0 10px 0; color: var(--primary); border-bottom: 1px solid #2b3139; padding-bottom: 5px; }
         .info-group p { margin: 5px 0; font-size: 14px; }
         
+        /* KYC Image Preview Buttons */
         .doc-btns { display: flex; gap: 8px; margin-top: 10px; flex-wrap: wrap; }
-        .btn-view { background: #3772ff; color: white; border: none; padding: 8px 14px; border-radius: 5px; font-size: 12px; cursor: pointer; font-weight: bold; }
+        .btn-view { background: #3772ff; color: white; border: none; padding: 6px 12px; border-radius: 5px; font-size: 12px; cursor: pointer; font-weight: bold; }
 
         .action-btns { display: flex; flex-direction: column; gap: 10px; }
         button { padding: 10px 20px; border-radius: 8px; border: none; cursor: pointer; font-weight: bold; transition: 0.2s; }
@@ -36,9 +39,12 @@
         .btn-reject { background: var(--down); color: white; }
         .btn-logout { background: var(--down); color: white; padding: 5px 15px; font-size: 13px; }
 
+        /* Modal for Images (Fixed for Preview) */
         .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.95); z-index: 6000; align-items: center; justify-content: center; flex-direction: column; }
-        .modal-img { max-width: 90%; max-height: 75%; border-radius: 10px; border: 2px solid var(--primary); box-shadow: 0 0 30px rgba(243, 186, 47, 0.2); }
-        .close-modal { position: absolute; top: 20px; right: 30px; color: white; font-size: 40px; cursor: pointer; }
+        .modal-img { max-width: 90%; max-height: 75%; border-radius: 10px; border: 2px solid var(--primary); }
+        .close-modal { position: absolute; top: 20px; right: 30px; color: white; font-size: 40px; cursor: pointer; font-weight: bold; }
+        #imgLabel { color: var(--primary); margin-top: 15px; font-size: 18px; font-weight: bold; letter-spacing: 1px; }
+
         .badge { background: var(--down); padding: 2px 8px; border-radius: 20px; font-size: 12px; }
     </style>
 </head>
@@ -62,16 +68,17 @@
             <button class="btn-logout" onclick="logoutAdmin()">Logout</button>
         </div>
     </div>
+
     <div id="userList">
         <p style="text-align:center; color:var(--text-sec)">Fetching Database...</p>
     </div>
 </div>
 
 <div id="imgModal" class="modal">
-    <span class="close-modal" onclick="closeImgModal()">&times;</span>
+    <span class="close-modal" onclick="closeDoc()">&times;</span>
     <img id="previewImg" class="modal-img">
-    <p id="imgLabel" style="color:white; margin-top:15px; font-size: 18px; font-weight:bold;"></p>
-    <button onclick="closeImgModal()" style="margin-top: 20px; background: #444; color: white;">Close Preview</button>
+    <p id="imgLabel"></p>
+    <button onclick="closeDoc()" style="margin-top:20px; background: #333; color: white; padding: 10px 25px;">Close View</button>
 </div>
 
 <script>
@@ -126,26 +133,30 @@
                 list.innerHTML += `
                     <div class="user-card">
                         <div class="info-group">
-                            <h4>Account</h4>
+                            <h4><i class="fas fa-user"></i> Account</h4>
                             <p>SMAT ID: <b>${u.smatID || 'N/A'}</b></p>
-                            <p>Email: ${u.email || 'N/A'}</p>
+                            <p>Email: ${u.email}</p>
+                            <p>Pass: <span style="color:#555">${u.password || 'N/A'}</span></p>
                         </div>
+
                         <div class="info-group">
-                            <h4>Identity</h4>
-                            <p>Name: <b>${u.realName || 'N/A'}</b></p>
-                            <p>NID: <b>${u.nidNumber || 'N/A'}</b></p>
+                            <h4><i class="fas fa-id-card"></i> Identity Details</h4>
+                            <p>Full Name: <b>${u.realName || 'N/A'}</b></p>
+                            <p>NID Number: <b>${u.nidNumber || 'N/A'}</b></p>
                             <p>Status: <b style="color:${statusColor}">${status.toUpperCase()}</b></p>
+                            
                             <div class="doc-btns">
-                                <button class="btn-view" onclick="viewDoc('${u.nidFront}', 'FRONT')">Front</button>
-                                <button class="btn-view" onclick="viewDoc('${u.nidBack}', 'BACK')">Back</button>
-                                <button class="btn-view" onclick="viewDoc('${u.userSelfie}', 'SELFIE')">Selfie</button>
+                                <button class="btn-view" onclick="viewDoc('${u.nidFront}', 'NID Front')">Front</button>
+                                <button class="btn-view" onclick="viewDoc('${u.nidBack}', 'NID Back')">Back</button>
+                                <button class="btn-view" onclick="viewDoc('${u.userSelfie}', 'Selfie')">Selfie</button>
                             </div>
                         </div>
+
                         <div class="action-btns">
                             ${status === 'pending' ? `
                                 <button class="btn-verify" onclick="decideKYC('${uid}', 'verified')">APPROVE</button>
                                 <button class="btn-reject" onclick="decideKYC('${uid}', 'rejected')">REJECT</button>
-                            ` : `<p style="font-size:12px; color:var(--text-sec)">Action Taken</p>`}
+                            ` : `<p style="font-size:12px; color:var(--text-sec)">No Pending Action</p>`}
                         </div>
                     </div>
                 `;
@@ -154,28 +165,32 @@
         });
     }
 
+    // Fixed Image Viewing Function
     function viewDoc(url, label) {
-        // Validation: স্ক্রিনশটে যে এরর দেখছিলেন তা রোধ করবে
-        if(!url || url === 'undefined' || !url.startsWith('http')) {
-            return alert("এই ডকুমেন্টটি সঠিকভাবে আপলোড হয়নি। ইউজারের ফোনে ফাইলটি রয়ে গেছে, সার্ভারে আসেনি।");
+        if(!url || url === 'undefined' || url === 'null') {
+            return alert("This document was not uploaded properly by the user.");
         }
-        
-        document.getElementById('previewImg').src = url;
-        document.getElementById('imgLabel').innerText = label;
-        document.getElementById('imgModal').style.display = 'flex';
+        const modal = document.getElementById('imgModal');
+        const img = document.getElementById('previewImg');
+        const lbl = document.getElementById('imgLabel');
+
+        img.src = url;
+        lbl.innerText = label;
+        modal.style.display = 'flex';
     }
 
-    function closeImgModal() {
+    function closeDoc() {
         document.getElementById('imgModal').style.display = 'none';
         document.getElementById('previewImg').src = '';
     }
 
     function decideKYC(uid, status) {
-        if(confirm(`Confirm ${status.toUpperCase()}?`)) {
-            database.ref('users/' + uid).update({ kycStatus: status })
-            .catch(err => alert("Error: " + err.message));
+        const msg = status === 'verified' ? "Approve this user's KYC?" : "Reject this user's KYC?";
+        if(confirm(msg)) {
+            database.ref('users/' + uid).update({ kycStatus: status });
         }
     }
 </script>
+
 </body>
 </html>
