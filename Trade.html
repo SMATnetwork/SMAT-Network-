@@ -576,7 +576,24 @@
             }
         }
 
-        window.onload = init;
+        // Trade.html এর স্ক্রিপ্টে এই অংশটি রাখুন
+window.onload = () => {
+    // ইউআরএল থেকে কয়েনের নাম খুঁজে বের করা
+    const urlParams = new URLSearchParams(window.location.search);
+    const selectedCoin = urlParams.get('coin');
+
+    if (selectedCoin) {
+        // যদি ইউআরএল এ কয়েন থাকে (যেমন: Trade.html?coin=btc)
+        console.log("Trading for:", selectedCoin.toUpperCase());
+        
+        // এখানে আপনার সেই ফাংশনটি কল করুন যা ট্রেডিং পেজের ডাটা আপডেট করে
+        // ধরুন আপনার ফাংশনের নাম updateTradeUI(coinName);
+        if(typeof updateTradeUI === "function") {
+            updateTradeUI(selectedCoin);
+        }
+    }
+};
+
     </script>
 </body>
 </html>
