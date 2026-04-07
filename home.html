@@ -333,7 +333,9 @@
 
         @keyframes spin { 100% { transform: rotate(360deg); } }
         .login-btn { background: var(--primary); color: black; padding: 12px; border-radius: 10px; border: none; font-weight: bold; width: 100%; cursor: pointer; margin-top: 20px; }
-    </style>
+ .new-badge { font-size: 9px; background: var(--primary); color: black; padding: 2px 5px; border-radius: 4px; font-weight: bold; margin-left: 5px; vertical-align: middle; }
+      
+</style>
 </head>
 <body>
 
@@ -448,6 +450,7 @@
         <div class="tab active" id="tab-hot" onclick="switchTab(this, 'hot')">Hot</div>
         <div class="tab" id="tab-gainer" onclick="switchTab(this, 'gainer')">Gainers</div>
         <div class="tab" id="tab-loser" onclick="switchTab(this, 'loser')">Losers</div>
+<div class="tab" id="tab-new" onclick="switchTab(this, 'new')">New</div>
     </div>
 
     <div class="coin-list" id="coinContainer"></div>
@@ -496,15 +499,24 @@
             if (filter === 'hot') filtered = [...liveData].slice(0, 10);
             else if (filter === 'gainer') filtered = [...liveData].sort((a,b) => b.price - a.price).slice(0, 8);
             else if (filter === 'loser') filtered = [...liveData].sort((a,b) => a.price - b.price).slice(0, 8);
+ else if (filter === 'new') {
+                // কয়েন যোগ করার সময় (listedAt) থেকে ৩ দিনের লজিক
+                filtered = liveData.filter(coin => (now - (coin.listedAt || 0)) < threeDaysMs);
+            }
 
             let htmlContent = '';
             filtered.forEach(coin => {
                 const isUp = Math.random() > 0.5;
                 const change = (Math.random() * 5).toFixed(2);
+                const isNew = (now - (coin.listedAt || 0)) < threeDaysMs;
                 htmlContent += `
                     <div class="coin-row" onclick="if(checkAuth(event)) window.location.href='Trade.html?coin=${coin.sym}'">
                         <div style="display:flex; align-items:center; gap:12px;">
                             <img src="assets/logos/${coin.sym.toLowerCase()}.png" class="coin-icon" onerror="this.src='https://via.placeholder.com/40?text=${coin.sym[0]}'">
+<div style="font-weight:bold">
+                                    ${coin.sym.toUpperCase()}
+                                    ${isNew ? '<span class="new-badge">NEW</span>' : ''}
+                                </div>
                             <div>
                                 <div style="font-weight:bold">${coin.sym.toUpperCase()}</div>
                                 <div style="font-size:12px; color:var(--text-sec)">${coin.name}</div>
