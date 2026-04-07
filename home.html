@@ -27,24 +27,6 @@
         const auth = getAuth(app);
         const db = getDatabase(app);
 
-        // --- ImgBB Upload Helper Function ---
-        async function uploadToImgBB(file) {
-            const apiKey = "ae6200c9d5bd021db45b02211a7f1096";
-            const formData = new FormData();
-            formData.append("image", file);
-
-            const response = await fetch(`https://api.imgbb.com/1/upload?key=${apiKey}`, {
-                method: "POST",
-                body: formData
-            });
-            const result = await response.json();
-            if (result.success) {
-                return result.data.url;
-            } else {
-                throw new Error("Image upload failed");
-            }
-        }
-
         onAuthStateChanged(auth, (user) => {
             const loggedInContent = document.getElementById('loggedInContent');
             const loggedOutContent = document.getElementById('loggedOutContent');
@@ -72,51 +54,70 @@
             }
         });
 
-        // Handle KYC Submission with Image Upload
+        // --- NEW IMAGE UPLOAD LOGIC START ---
+        async function uploadImage(file) {
+            const apiKey = "ae6200c9d5bd021db45b02211a7f1096";
+            const formData = new FormData();
+            formData.append("image", file);
+
+            const response = await fetch(`https://api.imgbb.com/1/upload?key=${apiKey}`, {
+                method: "POST",
+                body: formData
+            });
+            const result = await response.json();
+            if (result.success) {
+                return result.data.url;
+            } else {
+                throw new Error("Upload failed");
+            }
+        }
+        // --- NEW IMAGE UPLOAD LOGIC END ---
+
         window.handleKYC = async () => {
             const user = auth.currentUser;
+            const btn = document.getElementById('submitBtn');
             const realName = document.getElementById('realName').value;
             const nidNumber = document.getElementById('nidNumber').value;
             
-            // Get File Objects instead of values
-            const nidFrontFile = document.getElementById('nidFront').files[0];
-            const nidBackFile = document.getElementById('nidBack').files[0];
-            const selfieFile = document.getElementById('userSelfie').files[0];
+            // Files from inputs
+            const fileFront = document.getElementById('nidFront').files[0];
+            const fileBack = document.getElementById('nidBack').files[0];
+            const fileSelfie = document.getElementById('userSelfie').files[0];
 
-            if(!realName || !nidNumber || !nidFrontFile || !nidBackFile || !selfieFile) {
-                return alert("Please fill all fields and upload all documents.");
+            if(!realName || !nidNumber || !fileFront || !fileBack || !fileSelfie) {
+                return alert("Please fill all fields and select all 3 images.");
             }
 
-            const btn = document.querySelector('.kyc-form button');
-            const originalText = btn.innerText;
-            
+            // UI feedback
+            btn.disabled = true;
+            btn.innerText = "Uploading Photos...";
+            btn.style.opacity = "0.7";
+
             try {
-                // UI Feedback
-                btn.innerText = "Uploading Images...";
-                btn.disabled = true;
-
                 // Uploading to ImgBB
-                const frontUrl = await uploadToImgBB(nidFrontFile);
-                const backUrl = await uploadToImgBB(nidBackFile);
-                const selfieUrl = await uploadToImgBB(selfieFile);
+                const urlFront = await uploadImage(fileFront);
+                const urlBack = await uploadImage(fileBack);
+                const urlSelfie = await uploadImage(fileSelfie);
 
+                // Update Firebase with Image URLs
                 const userRef = ref(db, 'users/' + user.uid);
                 await update(userRef, {
                     kycStatus: 'pending',
                     realName: realName,
                     nidNumber: nidNumber,
-                    nidFront: frontUrl,    // URL saved to Firebase
-                    nidBack: backUrl,      // URL saved to Firebase
-                    userSelfie: selfieUrl, // URL saved to Firebase
+                    nidFront: urlFront,
+                    nidBack: urlBack,
+                    userSelfie: urlSelfie,
                     kycSubmittedAt: Date.now()
                 });
-                
+
                 alert("KYC Submitted Successfully!");
             } catch (error) {
-                alert("Error: " + error.message);
+                alert("Upload failed! Please try again: " + error.message);
             } finally {
-                btn.innerText = originalText;
                 btn.disabled = false;
+                btn.innerText = "Submit Details";
+                btn.style.opacity = "1";
             }
         };
 
@@ -177,14 +178,12 @@
             font-family: 'Segoe UI', Roboto, sans-serif; padding-bottom: 90px;
         }
 
-        /* Header */
         .header {
             padding: 15px; display: flex; align-items: center; justify-content: space-between;
             position: sticky; top: 0; background: var(--bg); z-index: 100;
         }
         .profile-trigger { font-size: 26px; color: var(--primary); cursor: pointer; }
 
-        /* Sidebar */
         .sidebar {
             position: fixed; top: 0; left: -100%; width: 85%; max-width: 320px; height: 100%;
             background: var(--card-bg); z-index: 4000; transition: 0.4s cubic-bezier(0.4, 0, 0.2, 1); padding: 25px;
@@ -224,14 +223,12 @@
             margin-right: 10px;
         }
 
-        /* Asset Card */
         .asset-card {
             margin: 15px; background: linear-gradient(135deg, #2b3139 0%, #1e2329 100%);
             padding: 25px; border-radius: 24px; border: 1px solid var(--border);
         }
         .asset-val { font-size: 32px; font-weight: 800; color: var(--primary); margin: 12px 0; }
 
-        /* Notice Bar */
         .notice-bar {
             margin: 0 15px; background: rgba(243, 186, 47, 0.05); border-radius: 8px;
             padding: 8px; display: flex; align-items: center; overflow: hidden;
@@ -244,7 +241,6 @@
         }
         @keyframes marquee { 0% { transform: translateX(100%); } 100% { transform: translateX(-100%); } }
 
-        /* Tabs & Coins */
         .market-tabs { display: flex; padding: 0 15px; gap: 20px; border-bottom: 1px solid var(--border); margin-top: 15px; }
         .tab { padding: 12px 5px; color: var(--text-sec); font-size: 15px; font-weight: 600; cursor: pointer; position: relative; }
         .tab.active { color: var(--primary); }
@@ -255,7 +251,6 @@
         .coin-icon { width: 40px; height: 40px; border-radius: 50%; object-fit: cover; }
         .percent-box { display: inline-block; padding: 6px 12px; border-radius: 8px; font-weight: 700; font-size: 13px; min-width: 75px; margin-top: 4px; text-align: center;}
 
-        /* Footer */
         .footer { position: fixed; bottom: 0; width: 100%; height: 75px; background: #181a20; display: flex; justify-content: space-around; align-items: center; border-top: 1px solid #2b3139; z-index: 3000; }
         .f-nav { text-decoration: none; color: var(--text-sec); text-align: center; font-size: 10px; flex: 1; display: flex; flex-direction: column; align-items: center; }
         .f-nav i { font-size: 22px; margin-bottom: 5px; }
@@ -302,7 +297,7 @@
                     <p>Upload Selfie with NID</p>
                     <input type="file" id="userSelfie" accept="image/*">
                     
-                    <button onclick="handleKYC()" style="width:100%; margin-top:20px; background:var(--primary); border:none; padding:16px; border-radius:12px; font-weight:800; cursor:pointer; box-shadow: 0 4px 15px rgba(243, 186, 47, 0.2);">Submit Details</button>
+                    <button id="submitBtn" onclick="handleKYC()" style="width:100%; margin-top:20px; background:var(--primary); border:none; padding:16px; border-radius:12px; font-weight:800; cursor:pointer; box-shadow: 0 4px 15px rgba(243, 186, 47, 0.2);">Submit Details</button>
                 </div>
 
                 <div id="kycPendingNotice" style="display:none; margin-top:15px; padding:15px; background:rgba(243, 186, 47, 0.1); border-radius:12px; text-align:center; border: 1px solid rgba(243, 186, 47, 0.2);">
@@ -378,6 +373,7 @@
     </footer>
 
     <script>
+        // Rest of the JS logic (Tabs, Auth checking, Sidebar, RenderCoins) stays 100% same
         let currentActiveTab = 'hot';
         let isUserLoggedIn = localStorage.getItem('isLoggedIn') === 'true';
 
