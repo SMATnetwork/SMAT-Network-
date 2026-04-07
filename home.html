@@ -213,6 +213,33 @@
             font-family: 'Segoe UI', Roboto, sans-serif; padding-bottom: 90px;
         }
 
+/* চ্যাটিং আইকন স্টাইল */
+        .chat-icon-wrapper {
+        position: absolute;
+        top: 12px;
+        right: 45px;
+        z-index: 110;
+        background: rgba(30, 35, 41, 0.8);
+        width: 35px;
+        height: 35px;
+        border-radius: 8px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border: 1px solid rgba(240, 185, 11, 0.3);
+        cursor: pointer;
+        transition: 0.3s;
+        text-decoration: none;
+        }
+        .chat-icon-wrapper:hover { background: #f0b90b; }
+        .chat-icon-wrapper:hover i { color: black; }
+        .chat-icon-wrapper i { color: #f0b90b; font-size: 16px; }
+        
+
+
+
+
+
         .header {
             padding: 15px; display: flex; align-items: center; justify-content: space-between;
             position: sticky; top: 0; background: var(--bg); z-index: 100;
@@ -393,7 +420,10 @@
         <i class="fa-solid fa-circle-user profile-trigger" onclick="toggleSidebar()"></i>
         <div style="font-weight: 900; font-size: 20px;">SMAT <span style="color:var(--primary)">Exchange</span></div>
         <div style="display: flex; gap: 18px; align-items: center;">
-            <a href="fox.html" onclick="return checkAuth(event)"><i class="fa-solid fa-paper-plane" style="font-size:22px; color:var(--text-main)"></i></a>
+            <a href="fox.html" class="chat-icon-wrapper" onclick="return checkAuth(event)">
+    <i class="fas fa-comments"></i>
+</a>
+
             <i class="fa-solid fa-bell" style="font-size:22px; color:var(--text-sec)" onclick="checkAuth(event)"></i>
         </div>
     </div>
