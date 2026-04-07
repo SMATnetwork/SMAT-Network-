@@ -464,7 +464,15 @@
                     syncUnsuccessfulOrder(ask.id, matchQty);
                 }
 
-                saveToHistory('global', {time: new Date().toLocaleTimeString(), p: matchPrice, a: matchQty, s: symbol, side: 'buy'});
+                let globalSide = ask.time > bid.time ? 'sell' : 'buy'; // যেটি পরে এসেছে সেটিই সাইড
+
+        saveToHistory('global', {
+            time: new Date().toLocaleTimeString(), 
+            p: matchPrice, 
+            a: matchQty, 
+            s: symbol, 
+            side: globalSide // এখানে সংশোধিত ডাইনামিক সাইড
+        });
                 ask.a -= matchQty; bid.a -= matchQty;
                 if (ask.a <= 0.00000001) pair.asks.shift();
                 if (bid.a <= 0.00000001) pair.bids.shift();
