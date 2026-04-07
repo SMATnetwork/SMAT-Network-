@@ -458,7 +458,9 @@ if(volDisplay) {
 // --- ভলিউম সেভ করার লজিক ---
 const volKey = symbol.toLowerCase() + "_volume";
 let currentVolData = parseFloat(localStorage.getItem(volKey)) || 0;
-localStorage.setItem(volKey, (currentVolData + matchQty).toFixed(4)); 
+let tradeValue = matchQty * matchPrice; 
+
+localStorage.setItem(volKey, (currentVolData + tradeValue).toFixed(2)); 
             
             window[symbol.toLowerCase() + "Val"] = matchPrice;
             if (activeCoin && activeCoin.sym.toUpperCase() === symbol) {
