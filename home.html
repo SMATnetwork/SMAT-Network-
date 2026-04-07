@@ -60,7 +60,7 @@
         // Referral System Logic
         function setupReferralSystem(smatID) {
             const refLink = document.getElementById('referralLink');
-            const baseUrl = window.location.origin + window.location.pathname.replace('home.html', 'register.html');
+            const baseUrl = window.location.origin + window.location.pathname.replace('home.html', 'logIn.html');
             const fullLink = `${baseUrl}?ref=${smatID}`;
             if(refLink) refLink.value = fullLink;
 
