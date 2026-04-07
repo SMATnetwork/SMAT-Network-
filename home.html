@@ -492,51 +492,52 @@
         }
 
         function renderCoins(filter = 'hot') {
-        const container = document.getElementById('coinContainer');
-        if (!container) return;
-        const liveData = (typeof GLOBAL_COINS !== 'undefined') ? GLOBAL_COINS : [];
-        
-        // নিচের ভেরিয়েবল দুটি আপনার কোডে ছিল না, তাই কয়েন শো করছিল না
-        const now = Date.now();
-        const threeDaysMs = 3 * 24 * 60 * 60 * 1000;
-        
-        let filtered = liveData;
-        if (filter === 'hot') filtered = [...liveData].slice(0, 10);
-        else if (filter === 'gainer') filtered = [...liveData].sort((a,b) => b.price - a.price).slice(0, 8);
-        else if (filter === 'loser') filtered = [...liveData].sort((a,b) => a.price - b.price).slice(0, 8);
-        else if (filter === 'new') {
+    const container = document.getElementById('coinContainer');
+    if (!container) return;
+    const liveData = (typeof GLOBAL_COINS !== 'undefined') ? GLOBAL_COINS : [];
+    
+    const now = Date.now();
+    const threeDaysMs = 3 * 24 * 60 * 60 * 1000;
+
+    let filtered = liveData;
+    if (filter === 'hot') filtered = [...liveData].slice(0, 10);
+    else if (filter === 'gainer') filtered = [...liveData].sort((a,b) => b.price - a.price).slice(0, 8);
+    else if (filter === 'loser') filtered = [...liveData].sort((a,b) => a.price - b.price).slice(0, 8);
+    else if (filter === 'new') {
         filtered = liveData.filter(coin => (now - (coin.listedAt || 0)) < threeDaysMs);
-        }
-        
-        let htmlContent = '';
-        filtered.forEach(coin => {
+    }
+
+    let htmlContent = '';
+    filtered.forEach(coin => {
         const isUp = Math.random() > 0.5;
         const change = (Math.random() * 5).toFixed(2);
         const isNew = (now - (coin.listedAt || 0)) < threeDaysMs;
         
+        // এখানে ক্লিক করলে Trade.html?coin=smat (বা অন্য কয়েন) এ যাবে
         htmlContent += `
-        <div class="coin-row" onclick="if(checkAuth(event)) window.location.href='Trade.html?coin=${coin.sym}'">
-        <div style="display:flex; align-items:center; gap:12px;">
-        <img src="assets/logos/${coin.sym.toLowerCase()}.png" class="coin-icon" onerror="this.src='https://via.placeholder.com/40?text=${coin.sym[0]}'">
-        <div>
-        <div style="font-weight:bold">
-        ${coin.sym.toUpperCase()}
-        ${isNew ? '<span class="new-badge">NEW</span>' : ''}
-        </div>
-        <div style="font-size:12px; color:var(--text-sec)">${coin.name}</div>
-        </div>
-        </div>
-        <div style="text-align:right">
-        <div style="font-weight:bold; font-size:16px">$${coin.price.toLocaleString()}</div>
-        <div class="percent-box" style="background:${isUp ? 'rgba(14, 203, 129, 0.15)' : 'rgba(246, 70, 93, 0.15)'}; color:${isUp ? 'var(--up)' : 'var(--down)'}">
-        ${isUp ? '+' : '-'}${change}%
-        </div>
-        </div>
-        </div>
+            <div class="coin-row" onclick="if(checkAuth(event)) window.location.href='Trade.html?coin=${coin.sym.toLowerCase()}'">
+                <div style="display:flex; align-items:center; gap:12px;">
+                    <img src="assets/logos/${coin.sym.toLowerCase()}.png" class="coin-icon" onerror="this.src='https://via.placeholder.com/40?text=${coin.sym[0].toUpperCase()}'">
+                    <div>
+                        <div style="font-weight:bold">
+                            ${coin.sym.toUpperCase()}
+                            ${isNew ? '<span class="new-badge">NEW</span>' : ''}
+                        </div>
+                        <div style="font-size:12px; color:var(--text-sec)">${coin.name}</div>
+                    </div>
+                </div>
+                <div style="text-align:right">
+                    <div style="font-weight:bold; font-size:16px">$${coin.price.toLocaleString()}</div>
+                    <div class="percent-box" style="background:${isUp ? 'rgba(14, 203, 129, 0.15)' : 'rgba(246, 70, 93, 0.15)'}; color:${isUp ? 'var(--up)' : 'var(--down)'}">
+                        ${isUp ? '+' : '-'}${change}%
+                    </div>
+                </div>
+            </div>
         `;
-        });
-        container.innerHTML = htmlContent || '<p style="text-align:center; color:var(--text-sec); margin-top:20px;">No coins found.</p>';
-        }
+    });
+    container.innerHTML = htmlContent || '<p style="text-align:center; color:var(--text-sec); margin-top:20px;">No coins found.</p>';
+}
+
         
         window.onload = () => {
         renderCoins('hot');
