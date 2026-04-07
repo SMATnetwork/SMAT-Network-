@@ -11,23 +11,52 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <style>
         :root { --primary: #f3ba2f; --bg: #0b0e11; --card: #1e2329; --text: #eaecef; --border: #2b3139; --text-sec: #848e9c; --up: #0ecb81; --down: #f6465d; }
-        body { background: var(--bg); color: var(--text); font-family: 'Segoe UI', sans-serif; margin: 0; padding: 20px; }
+        body { background: var(--bg); color: var(--text); font-family: 'Segoe UI', sans-serif; margin: 0; padding: 0; }
         
-        /* Login Screen */
+        /* Login Screen (Unchanged Logic) */
         #adminLogin { position: fixed; top:0; left:0; width:100%; height:100%; background:var(--bg); z-index: 5000; display: flex; align-items: center; justify-content: center; }
         .login-card { background: var(--card); padding: 30px; border-radius: 15px; border: 1px solid var(--border); width: 90%; max-width: 350px; text-align: center; }
         .login-card input { width: 100%; padding: 12px; margin: 10px 0; background: #0b0e11; border: 1px solid var(--border); color: white; border-radius: 8px; box-sizing: border-box; }
         .btn-login { width: 100%; background: var(--primary); color: black; border: none; padding: 12px; border-radius: 8px; font-weight: bold; cursor: pointer; }
 
-        /* Dashboard */
-        .admin-container { max-width: 1100px; margin: auto; display: none; }
-        .header-panel { display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid var(--primary); padding-bottom: 15px; margin-bottom: 10px; }
+        /* Dashboard Header with Shadow System */
+        .admin-container { max-width: 1100px; margin: auto; display: none; padding: 20px; }
         
-        /* Search Bar Style */
+        .header-panel { 
+            position: sticky; top: 0; z-index: 100;
+            display: flex; justify-content: space-between; align-items: center; 
+            background: var(--bg);
+            padding: 15px 25px; 
+            margin-bottom: 25px;
+            box-shadow: 0 8px 20px rgba(0,0,0,0.6); /* Shadow System */
+            border-bottom: 1px solid var(--border);
+        }
+        .header-panel h2 { margin: 0; font-size: 24px; color: var(--text); font-weight: 800; letter-spacing: 1px; }
+
+        .btn-logout { 
+            background: var(--down); color: white; padding: 10px 25px; 
+            font-size: 14px; border-radius: 8px; border: none; cursor: pointer; font-weight: bold;
+            transition: 0.3s;
+        }
+        .btn-logout:hover { background: #d9394d; box-shadow: 0 0 15px rgba(246, 70, 93, 0.4); transform: translateY(-2px); }
+
+        /* Status Stats Cards */
+        .stats-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 15px; margin-bottom: 25px; }
+        .stat-card { 
+            background: var(--card); padding: 15px; border-radius: 12px; text-align: center; 
+            border: 1px solid var(--border); cursor: pointer; transition: 0.2s;
+        }
+        .stat-card:hover { border-color: var(--primary); transform: translateY(-3px); }
+        .stat-card h5 { margin: 0; font-size: 12px; color: var(--text-sec); text-transform: uppercase; }
+        .stat-card h2 { margin: 5px 0 0 0; font-size: 22px; }
+        .stat-card.active { border: 2px solid var(--primary); background: rgba(243, 186, 47, 0.05); }
+
+        /* Search Bar Style (Unchanged Logic) */
         .search-box { background: var(--card); border: 1px solid var(--border); border-radius: 12px; padding: 12px 20px; display: flex; align-items: center; margin-bottom: 25px; gap: 15px; }
         .search-box input { flex: 1; background: transparent; border: none; color: white; font-size: 15px; outline: none; }
         .search-box i { color: var(--text-sec); }
 
+        /* User Cards (Unchanged Design/Logic) */
         .user-card { background: var(--card); border: 1px solid var(--border); border-radius: 15px; padding: 20px; margin-bottom: 20px; display: flex; flex-wrap: wrap; justify-content: space-between; gap: 20px; align-items: flex-start; }
         .info-group { flex: 1; min-width: 200px; }
         .info-group h4 { margin: 0 0 10px 0; color: var(--primary); border-bottom: 1px solid #2b3139; padding-bottom: 5px; }
@@ -37,18 +66,14 @@
         .btn-view { background: #3772ff; color: white; border: none; padding: 6px 12px; border-radius: 5px; font-size: 12px; cursor: pointer; font-weight: bold; }
 
         .action-btns { display: flex; flex-direction: column; gap: 10px; }
-        button { padding: 10px 20px; border-radius: 8px; border: none; cursor: pointer; font-weight: bold; transition: 0.2s; }
-        .btn-verify { background: var(--up); color: black; }
-        .btn-reject { background: var(--down); color: white; }
-        .btn-edit { background: #474d57; color: white; margin-top: 5px; }
-        .btn-logout { background: var(--down); color: white; padding: 5px 15px; font-size: 13px; }
+        .btn-verify { background: var(--up); color: black; padding: 10px 20px; border-radius: 8px; font-weight: bold; border:none; cursor:pointer;}
+        .btn-reject { background: var(--down); color: white; padding: 10px 20px; border-radius: 8px; font-weight: bold; border:none; cursor:pointer;}
+        .btn-edit { background: #474d57; color: white; margin-top: 5px; border-radius: 8px; border:none; padding: 8px; cursor:pointer; }
 
         .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.95); z-index: 6000; align-items: center; justify-content: center; flex-direction: column; }
         .modal-img { max-width: 90%; max-height: 75%; border-radius: 10px; border: 2px solid var(--primary); }
         .close-modal { position: absolute; top: 20px; right: 30px; color: white; font-size: 40px; cursor: pointer; font-weight: bold; }
         #imgLabel { color: var(--primary); margin-top: 15px; font-size: 18px; font-weight: bold; letter-spacing: 1px; }
-
-        .badge { background: var(--down); padding: 2px 8px; border-radius: 20px; font-size: 12px; }
     </style>
 </head>
 <body>
@@ -63,12 +88,24 @@
     </div>
 </div>
 
+<div class="header-panel" id="headerUI" style="display:none">
+    <h2>Profile Panel</h2>
+    <button class="btn-logout" onclick="logoutAdmin()">LogOut</button>
+</div>
+
 <div class="admin-container" id="panelUI">
-    <div class="header-panel">
-        <h3><i class="fas fa-shield-alt"></i> Admin Dashboard</h3>
-        <div style="display:flex; align-items:center; gap:20px">
-            <span>Pending KYC: <b id="kycCount" class="badge">0</b></span>
-            <button class="btn-logout" onclick="logoutAdmin()">Logout</button>
+    <div class="stats-grid">
+        <div class="stat-card active" id="filterAll" onclick="setFilter('all')">
+            <h5>Total Users</h5>
+            <h2 id="totalCount" style="color:var(--text)">0</h2>
+        </div>
+        <div class="stat-card" id="filterPending" onclick="setFilter('pending')">
+            <h5>Pending KYC</h5>
+            <h2 id="pendingCount" style="color:var(--primary)">0</h2>
+        </div>
+        <div class="stat-card" id="filterVerified" onclick="setFilter('verified')">
+            <h5>Passed KYC</h5>
+            <h2 id="passedCount" style="color:var(--up)">0</h2>
         </div>
     </div>
 
@@ -86,7 +123,7 @@
     <span class="close-modal" onclick="closeDoc()">&times;</span>
     <img id="previewImg" class="modal-img">
     <p id="imgLabel"></p>
-    <button onclick="closeDoc()" style="margin-top:20px; background: #333; color: white; padding: 10px 25px;">Close View</button>
+    <button onclick="closeDoc()" style="margin-top:20px; background: #333; color: white; padding: 10px 25px; border:none; cursor:pointer;">Close View</button>
 </div>
 
 <script>
@@ -105,6 +142,8 @@
     const auth = firebase.auth();
     const database = firebase.database();
 
+    let currentFilter = 'all'; // Default filter
+
     function loginAdmin() {
         const email = document.getElementById('adminEmail').value;
         const pass = document.getElementById('adminPassword').value;
@@ -119,10 +158,20 @@
     auth.onAuthStateChanged(user => {
         if (user) {
             document.getElementById('adminLogin').style.display = 'none';
+            document.getElementById('headerUI').style.display = 'flex';
             document.getElementById('panelUI').style.display = 'block';
             loadUsers();
         }
     });
+
+    function setFilter(type) {
+        currentFilter = type;
+        document.querySelectorAll('.stat-card').forEach(c => c.classList.remove('active'));
+        if(type === 'all') document.getElementById('filterAll').classList.add('active');
+        if(type === 'pending') document.getElementById('filterPending').classList.add('active');
+        if(type === 'verified') document.getElementById('filterVerified').classList.add('active');
+        loadUsers();
+    }
 
     function loadUsers() {
         const searchTerm = document.getElementById('adminSearch').value.toLowerCase();
@@ -130,17 +179,24 @@
             const users = snapshot.val() || {};
             const list = document.getElementById('userList');
             list.innerHTML = '';
-            let pendingCount = 0;
+            
+            let counts = { total: 0, pending: 0, verified: 0 };
 
             for (let uid in users) {
                 const u = users[uid];
+                const status = (u.kycStatus || 'unverified').toLowerCase();
                 
+                // Analytics counting
+                counts.total++;
+                if(status === 'pending') counts.pending++;
+                if(status === 'verified') counts.verified++;
+
+                // Filter logic based on clicked card
+                if(currentFilter !== 'all' && status !== currentFilter) continue;
+
                 // Search Filter Logic
                 const searchStr = (u.smatID + u.email + u.nidNumber).toLowerCase();
                 if(searchTerm && !searchStr.includes(searchTerm)) continue;
-
-                const status = (u.kycStatus || 'unverified').toLowerCase();
-                if(status === 'pending') pendingCount++;
 
                 const statusColor = status === 'verified' ? '#0ecb81' : (status === 'pending' ? '#f3ba2f' : '#f6465d');
 
@@ -176,27 +232,22 @@
                     </div>
                 `;
             }
-            document.getElementById('kycCount').innerText = pendingCount;
+            // Update counts on cards
+            document.getElementById('totalCount').innerText = counts.total;
+            document.getElementById('pendingCount').innerText = counts.pending;
+            document.getElementById('passedCount').innerText = counts.verified;
         });
     }
 
-    // New Function to Edit User Account (Email & Password)
     function editUserAccount(uid, oldEmail, oldPass) {
         const newEmail = prompt("Enter New Email for this account:", oldEmail);
         if (newEmail === null) return;
-
         const newPass = prompt("Enter New Password for this account:", oldPass);
         if (newPass === null) return;
 
         if (newEmail && newPass) {
-            database.ref('users/' + uid).update({
-                email: newEmail,
-                password: newPass
-            }).then(() => {
-                alert("Account updated successfully!");
-            }).catch(err => {
-                alert("Error updating: " + err.message);
-            });
+            database.ref('users/' + uid).update({ email: newEmail, password: newPass })
+            .then(() => alert("Account updated successfully!"));
         }
     }
 
@@ -204,13 +255,9 @@
         if(!url || url === 'undefined' || url === 'null') {
             return alert("This document was not uploaded properly by the user.");
         }
-        const modal = document.getElementById('imgModal');
-        const img = document.getElementById('previewImg');
-        const lbl = document.getElementById('imgLabel');
-
-        img.src = url;
-        lbl.innerText = label;
-        modal.style.display = 'flex';
+        document.getElementById('previewImg').src = url;
+        document.getElementById('imgLabel').innerText = label;
+        document.getElementById('imgModal').style.display = 'flex';
     }
 
     function closeDoc() {
