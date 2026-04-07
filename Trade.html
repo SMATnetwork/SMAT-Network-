@@ -196,7 +196,7 @@
         <a href="Wallet.html" class="f-nav"><i class="fas fa-wallet"></i>Wallet</a>
     </footer>
 
-    <script>
+     <script>
         let activeCoin = null;
         let tradeSide = 'buy';
         let activeHTab = 'global';
@@ -215,10 +215,23 @@
             return true;
         }
 
+        // --- সংশোধিত init ফাংশন (URL প্যারামিটার সাপোর্টসহ) ---
         function init() {
             if (typeof GLOBAL_COINS !== 'undefined') {
-                activeCoin = GLOBAL_COINS[0];
+                // ১. ইউআরএল থেকে কয়েন সিম্বল নেওয়া
+                const urlParams = new URLSearchParams(window.location.search);
+                const selectedCoinSym = urlParams.get('coin');
+
+                if (selectedCoinSym) {
+                    // যদি ইউআরএল এ কয়েন থাকে, সেটি সেট করা
+                    const foundCoin = GLOBAL_COINS.find(c => c.sym.toLowerCase() === selectedCoinSym.toLowerCase());
+                    activeCoin = foundCoin || GLOBAL_COINS[0];
+                } else {
+                    // ডিফল্ট প্রথম কয়েন
+                    activeCoin = GLOBAL_COINS[0];
+                }
             }
+
             renderMarketTabs();
             
             // SMAT প্রাইস কনভার্সন লজিক
@@ -244,8 +257,22 @@
             };
         }
 
+        // --- UI আপডেট করার জন্য নতুন ফাংশন (আপনার আগের রিকোয়েস্ট অনুযায়ী) ---
+        function updateTradeUI(coinSym) {
+            const foundCoin = GLOBAL_COINS.find(c => c.sym.toLowerCase() === coinSym.toLowerCase());
+            if (foundCoin) {
+                activeCoin = foundCoin;
+                const smatVal = window["smatVal"] || 1;
+                const coinPrice = window[activeCoin.sym.toLowerCase() + "Val"] || activeCoin.price;
+                const displayPrice = activeMarket === 'SMAT' ? (coinPrice / smatVal) : coinPrice;
+                
+                document.getElementById('priceInp').value = displayPrice.toFixed(4);
+                refreshUI();
+            }
+        }
+
         function togglePopup(show) {
-            if(show && !checkAuth()) return; // ক্লিক করলে লগইন চেক
+            if(show && !checkAuth()) return; 
             const popup = document.getElementById('pairPopup');
             if(show) {
                 popup.style.display = 'flex';
@@ -269,7 +296,6 @@
             renderMarketTabs();
             renderPairs();
             updateBalanceDisplay();
-            // মার্কেট চেঞ্জ হলে প্রাইস আপডেট
             const smatVal = window["smatVal"] || 1;
             const coinPrice = window[activeCoin.sym.toLowerCase() + "Val"] || activeCoin.price;
             const displayPrice = activeMarket === 'SMAT' ? (coinPrice / smatVal) : coinPrice;
@@ -286,7 +312,7 @@
 
             container.innerHTML = filtered.map(c => {
                 let val = window[c.sym.toLowerCase() + "Val"] || c.price;
-                if(activeMarket === 'SMAT') val = val / smatVal; // SMAT কনভার্সন
+                if(activeMarket === 'SMAT') val = val / smatVal;
                 
                 return `
                 <div class="pair-row" onclick="selectCoin('${c.sym}')">
@@ -402,7 +428,8 @@
             
             let mPrice = (window[activeCoin.sym.toLowerCase() + "Val"] || activeCoin.price);
             if(activeMarket === 'SMAT') mPrice = mPrice / smatVal;
-            document.getElementById('marketPrice').innerText = mPrice.toFixed(4);
+            const priceEl = document.getElementById('marketPrice');
+            if(priceEl) priceEl.innerText = mPrice.toFixed(4);
         }
 
         function matchOrders(symbol) {
@@ -458,14 +485,12 @@
         }
 
         function processTrade() {
-            if(!checkAuth()) return; // ক্লিক করলে লগইন চেক
+            if(!checkAuth()) return; 
             const smatVal = window["smatVal"] || 1;
             let p = parseFloat(document.getElementById('priceInp').value);
             const a = parseFloat(document.getElementById('amountInp').value);
             
             if (isNaN(p) || isNaN(a) || p <= 0 || a <= 0) return alert("Invalid Amount or Price");
-            
-            // যদি SMAT মার্কেটে ট্রেড হয়, ইনপুট প্রাইসকে USDT প্রাইসে কনভার্ট করে সেভ করতে হবে যাতে ম্যাচিং ঠিক থাকে
             if(activeMarket === 'SMAT') p = p * smatVal;
 
             const s = activeCoin.sym.toUpperCase();
@@ -474,7 +499,6 @@
             if (tradeSide === 'buy') {
                 const balKey = activeMarket.toLowerCase() + '_balance';
                 const bal = parseFloat(localStorage.getItem(balKey)) || 0;
-                // SMAT মার্কেটে ক্যালকুলেশন ভিন্ন হবে
                 const displayCost = activeMarket === 'SMAT' ? (p/smatVal) * a : cost;
                 const displayFee = displayCost * FEE_RATE;
                 
@@ -502,7 +526,8 @@
             activeHTab = tab;
             historyLimit = 10;
             document.querySelectorAll('.h-tab').forEach(t => t.classList.remove('active'));
-            document.getElementById('tab-' + tab).classList.add('active');
+            const tabEl = document.getElementById('tab-' + tab);
+            if(tabEl) tabEl.classList.add('active');
             renderHistory();
         }
 
@@ -516,12 +541,14 @@
         function renderHistory() {
             const body = document.getElementById('hBody');
             const head = document.getElementById('hHead');
+            if(!body || !head) return;
+
             const data = JSON.parse(localStorage.getItem(activeHTab + 'Orders')) || [];
             const showMoreBtn = document.getElementById('showMoreBox');
             const smatVal = window["smatVal"] || 1;
             
             const visibleData = data.slice(0, historyLimit);
-            showMoreBtn.style.display = data.length > historyLimit ? 'block' : 'none';
+            if(showMoreBtn) showMoreBtn.style.display = data.length > historyLimit ? 'block' : 'none';
             
             if (activeHTab === 'un') {
                 head.innerHTML = `<tr><th>Pair</th><th>Price</th><th>Amount</th><th>Status</th></tr>`;
@@ -533,7 +560,6 @@
             } else {
                 head.innerHTML = `<tr><th>Time</th><th>Side</th><th>Price</th><th>Amount</th></tr>`;
                 body.innerHTML = visibleData.map(o => {
-                    // হিস্টোরিতেও মার্কেট অনুযায়ী প্রাইস কনভার্ট
                     let displayP = o.p;
                     if(activeMarket === 'SMAT') displayP = o.p / smatVal;
                     return `<tr><td>${o.time}</td><td class="${o.side==='buy'?'up':'down'}">${o.side.toUpperCase()}</td><td>${parseFloat(displayP).toFixed(4)}</td><td>${parseFloat(o.a).toFixed(4)}</td></tr>`;
@@ -555,15 +581,14 @@
             if (order) {
                 if (order.side === 'buy') {
                     const key = order.market.toLowerCase() + '_balance';
-                    // রিফান্ড ক্যালকুলেশন মার্কেট অনুযায়ী
                     let refundAmt = (order.p * order.a * (1 + FEE_RATE));
                     if(order.market === 'SMAT') refundAmt = ((order.p/smatVal) * order.a * (1 + FEE_RATE));
                     
-                    const bal = parseFloat(localStorage.getItem(key)) + refundAmt;
+                    const bal = (parseFloat(localStorage.getItem(key)) || 0) + refundAmt;
                     localStorage.setItem(key, bal.toFixed(4));
                 } else {
                     const key = order.s.toLowerCase() + '_balance';
-                    const bal = parseFloat(localStorage.getItem(key)) + order.a;
+                    const bal = (parseFloat(localStorage.getItem(key)) || 0) + order.a;
                     localStorage.setItem(key, bal.toFixed(4));
                 }
                 if(orderBoard[order.s]) {
@@ -576,24 +601,10 @@
             }
         }
 
-        // Trade.html এর স্ক্রিপ্টে এই অংশটি রাখুন
-window.onload = () => {
-    // ইউআরএল থেকে কয়েনের নাম খুঁজে বের করা
-    const urlParams = new URLSearchParams(window.location.search);
-    const selectedCoin = urlParams.get('coin');
-
-    if (selectedCoin) {
-        // যদি ইউআরএল এ কয়েন থাকে (যেমন: Trade.html?coin=btc)
-        console.log("Trading for:", selectedCoin.toUpperCase());
-        
-        // এখানে আপনার সেই ফাংশনটি কল করুন যা ট্রেডিং পেজের ডাটা আপডেট করে
-        // ধরুন আপনার ফাংশনের নাম updateTradeUI(coinName);
-        if(typeof updateTradeUI === "function") {
-            updateTradeUI(selectedCoin);
-        }
-    }
-};
+        // পেজ লোড হওয়ার পর init কল হবে
+        window.addEventListener('load', init);
 
     </script>
+
 </body>
 </html>
