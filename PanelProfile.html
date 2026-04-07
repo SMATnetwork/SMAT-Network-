@@ -3,12 +3,14 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>SMAT | Admin Control Panel</title>
+    <title>SMAT | User Panel</title>
     <script src="https://www.gstatic.com/firebasejs/9.0.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.0.0/firebase-database-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.0.0/firebase-auth-compat.js"></script>
     
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><circle cx='50' cy='50' r='50' fill='%23f3ba2f'/><text x='50%25' y='55%25' text-anchor='middle' dy='.3em' fill='black' font-family='Courier New, monospace' font-weight='900' font-size='60'>S</text></svg>">
+    
     <style>
         :root { --primary: #f3ba2f; --bg: #0b0e11; --card: #1e2329; --text: #eaecef; --border: #2b3139; --text-sec: #848e9c; --up: #0ecb81; --down: #f6465d; }
         body { background: var(--bg); color: var(--text); font-family: 'Segoe UI', sans-serif; margin: 0; padding: 0; }
@@ -25,18 +27,19 @@
         .header-panel { 
             position: sticky; top: 0; z-index: 100;
             display: flex; justify-content: space-between; align-items: center; 
-            background: var(--bg);
-            padding: 15px 25px; 
-            margin-bottom: 25px;
-            box-shadow: 0 8px 20px rgba(0,0,0,0.6); /* Shadow System */
+            background: #808000;
+            padding: 20px 25px; 
+            margin-bottom: 25px;          
             border-bottom: 1px solid var(--border);
+            box-shadow: rgba(0, 0, 0, 0.25) 0px 54px 55px, rgba(0, 0, 0, 0.12) 0px -12px 30px, rgba(0, 0, 0, 0.12) 0px 4px 6px, rgba(0, 0, 0, 0.17) 0px 12px 13px, rgba(0, 0, 0, 0.09) 0px -3px 5px;
         }
-        .header-panel h2 { margin: 0; font-size: 24px; color: var(--text); font-weight: 800; letter-spacing: 1px; }
+        .header-panel h2 {background :none; margin: 0; font-size: 24px; color: var(--text); font-weight: 800; letter-spacing: 1px; }
 
         .btn-logout { 
-            background: var(--down); color: white; padding: 10px 25px; 
+            background: #0000FF; color: white; padding: 10px 25px; 
             font-size: 14px; border-radius: 8px; border: none; cursor: pointer; font-weight: bold;
             transition: 0.3s;
+            box-shadow: rgba(0, 0, 0, 0.2) 0px 60px 40px -7px;
         }
         .btn-logout:hover { background: #d9394d; box-shadow: 0 0 15px rgba(246, 70, 93, 0.4); transform: translateY(-2px); }
 
@@ -80,7 +83,7 @@
 
 <div id="adminLogin">
     <div class="login-card">
-        <h2 style="color: var(--primary);">SMAT Admin</h2>
+        <h2 style="color: var(--primary);">User Management Panel</h2>
         <input type="email" id="adminEmail" placeholder="Admin Email">
         <input type="password" id="adminPassword" placeholder="Password">
         <button class="btn-login" onclick="loginAdmin()">LOGIN</button>
