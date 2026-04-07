@@ -495,6 +495,8 @@
             const container = document.getElementById('coinContainer');
             if (!container) return;
             const liveData = (typeof GLOBAL_COINS !== 'undefined') ? GLOBAL_COINS : [];
+const now = Date.now();
+            const threeDaysMs = 3 * 24 * 60 * 60 * 1000;
             let filtered = liveData;
             if (filter === 'hot') filtered = [...liveData].slice(0, 10);
             else if (filter === 'gainer') filtered = [...liveData].sort((a,b) => b.price - a.price).slice(0, 8);
