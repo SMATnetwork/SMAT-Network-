@@ -260,6 +260,8 @@
 
         @keyframes spin { 100% { transform: rotate(360deg); } }
         .login-btn { background: var(--primary); color: black; padding: 12px; border-radius: 10px; border: none; font-weight: bold; width: 100%; cursor: pointer; margin-top: 20px; }
+        .loggedInContent i{background :none;font-size:25px;color:red;padding:10px 8px;}
+    
     </style>
 </head>
 <body>
@@ -312,7 +314,7 @@
                 </div>
             </div>
             
-            <p style="margin-top:40px; text-align:center; color:#ff4d4d; font-size:14px; cursor:pointer" onclick="logout()">Secure Logout</p>
+            <p style="margin-top:40px; text-align:center; color:#ff4d4d; font-size:14px; cursor:pointer" onclick="logout()"><i class="fa-solid fa-sign-out-alt"></i></p>
         </div>
 
         <div id="loggedOutContent" style="display:none; text-align: center; margin-top: 50px;">
