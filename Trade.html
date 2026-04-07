@@ -329,6 +329,13 @@
         document.getElementById('unitAsset').innerText = activeCoin.sym.toUpperCase();
         document.getElementById('mainActionBtn').innerText = (tradeSide === 'buy' ? 'Buy ' : 'Sell ') + activeCoin.sym.toUpperCase();
         document.querySelectorAll('.activeBase').forEach(el => el.innerText = activeMarket);
+// refreshUI ফাংশনের ভেতর যেকোনো জায়গায় এটি যোগ করুন
+const volKey = activeCoin.sym.toLowerCase() + "_volume";
+const savedVol = localStorage.getItem(volKey) || "0.0";
+const volEl = document.getElementById('curVol');
+if(volEl) {
+    volEl.innerText = savedVol;
+}
         
         updateBalanceDisplay();
         calcTotal();
@@ -423,6 +430,14 @@
             const oldPrice = parseFloat(priceEl.innerText) || 0;
             const newPrice = parseFloat(mPrice);
             priceEl.innerText = newPrice.toFixed(4);
+// renderOrderBook ফাংশনের শেষে যেখানে marketPrice আপডেট হয় তার নিচে দিন
+const volKey = activeCoin.sym.toLowerCase() + "_volume";
+const totalVol = localStorage.getItem(volKey) || "0.0";
+
+const volDisplay = document.getElementById('curVol'); // আইডি এখানে curVol
+if(volDisplay) {
+    volDisplay.innerText = totalVol;
+}
             if (newPrice > oldPrice) priceEl.style.color = 'var(--up)';
             else if (newPrice < oldPrice) priceEl.style.color = 'var(--down)';
         }
@@ -439,7 +454,11 @@
             let ask = pair.asks[0]; 
             let bid = pair.bids[0]; 
             let matchQty = Math.min(ask.a, bid.a);
-            let matchPrice = ask.p; 
+            let matchPrice = ask.p;
+// --- ভলিউম সেভ করার লজিক ---
+const volKey = symbol.toLowerCase() + "_volume";
+let currentVolData = parseFloat(localStorage.getItem(volKey)) || 0;
+localStorage.setItem(volKey, (currentVolData + matchQty).toFixed(4)); 
             
             window[symbol.toLowerCase() + "Val"] = matchPrice;
             if (activeCoin && activeCoin.sym.toUpperCase() === symbol) {
