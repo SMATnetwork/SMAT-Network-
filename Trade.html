@@ -395,42 +395,60 @@
         }
 
         function renderOrderBook() {
-            const asksList = document.getElementById('asks');
-            const bidsList = document.getElementById('bids');
-            const s = activeCoin.sym.toUpperCase();
-            const pairOrders = orderBoard[s] || { asks: [], bids: [] };
-            const smatVal = window["smatVal"] || 1;
-            
-            const aggregate = (orders) => {
-                const map = {};
-                orders.forEach(o => {
-                    let pVal = parseFloat(o.p);
-                    if(activeMarket === 'SMAT') pVal = pVal / smatVal;
-                    const priceKey = pVal.toFixed(4);
-                    map[priceKey] = (map[priceKey] || 0) + parseFloat(o.a);
-                });
-                return Object.keys(map).map(p => ({ p: parseFloat(p), a: map[p] }));
-            };
+    const asksList = document.getElementById('asks');
+    const bidsList = document.getElementById('bids');
+    if (!asksList || !bidsList || !activeCoin) return;
 
-            const sortedAsks = aggregate(pairOrders.asks).sort((a, b) => a.p - b.p);
-            const sortedBids = aggregate(pairOrders.bids).sort((a, b) => b.p - a.p);
+    const s = activeCoin.sym.toUpperCase();
+    const pairOrders = orderBoard[s] || { asks: [], bids: [] };
+    const smatVal = window["smatVal"] || 1;
+    
+    const aggregate = (orders) => {
+        const map = {};
+        orders.forEach(o => {
+            let pVal = parseFloat(o.p);
+            if(activeMarket === 'SMAT') pVal = pVal / smatVal;
+            const priceKey = pVal.toFixed(4);
+            map[priceKey] = (map[priceKey] || 0) + parseFloat(o.a);
+        });
+        return Object.keys(map).map(p => ({ p: parseFloat(p), a: map[p] }));
+    };
 
-            const renderRows = (data, type) => data.map(o => `
-                <div class="ob-row" onclick="document.getElementById('priceInp').value='${o.p.toFixed(4)}'; calcTotal();">
-                    <span class="${type === 'ask' ? 'down' : 'up'}">${o.p.toFixed(4)}</span>
-                    <span>${o.a.toFixed(4)}</span>
-                    <div class="depth-bar" style="width: ${Math.min(o.a * 10, 100)}%; background: ${type === 'ask' ? 'rgba(246, 70, 93, 0.1)' : 'rgba(14, 203, 129, 0.1)'};"></div>
-                </div>
-            `).join('');
+    const sortedAsks = aggregate(pairOrders.asks).sort((a, b) => a.p - b.p);
+    const sortedBids = aggregate(pairOrders.bids).sort((a, b) => b.p - a.p);
 
-            asksList.innerHTML = renderRows(sortedAsks.slice(0, 8).reverse(), 'ask');
-            bidsList.innerHTML = renderRows(sortedBids.slice(0, 8), 'bid');
-            
-            let mPrice = (window[activeCoin.sym.toLowerCase() + "Val"] || activeCoin.price);
-            if(activeMarket === 'SMAT') mPrice = mPrice / smatVal;
-            const priceEl = document.getElementById('marketPrice');
-            if(priceEl) priceEl.innerText = mPrice.toFixed(4);
+    const renderRows = (data, type) => data.map(o => `
+        <div class="ob-row" onclick="document.getElementById('priceInp').value='${o.p.toFixed(4)}'; calcTotal();">
+            <span class="${type === 'ask' ? 'down' : 'up'}">${o.p.toFixed(4)}</span>
+            <span>${o.a.toFixed(4)}</span>
+            <div class="depth-bar" style="width: ${Math.min(o.a * 10, 100)}%; background: ${type === 'ask' ? 'rgba(246, 70, 93, 0.1)' : 'rgba(14, 203, 129, 0.1)'};"></div>
+        </div>
+    `).join('');
+
+    asksList.innerHTML = renderRows(sortedAsks.slice(0, 8).reverse(), 'ask');
+    bidsList.innerHTML = renderRows(sortedBids.slice(0, 8), 'bid');
+    
+    // --- মার্কেট প্রাইস আপডেট লজিক ---
+    // window ভেরিয়েবল চেক করা হচ্ছে যা matchOrders থেকে আপডেট হয়
+    let mPrice = window[activeCoin.sym.toLowerCase() + "Val"] || activeCoin.price;
+    if(activeMarket === 'SMAT') mPrice = mPrice / smatVal;
+
+    const priceEl = document.getElementById('marketPrice');
+    if(priceEl) {
+        const oldPrice = parseFloat(priceEl.innerText) || 0;
+        const newPrice = parseFloat(mPrice);
+        
+        priceEl.innerText = newPrice.toFixed(4);
+
+        // দাম বাড়লে সবুজ, কমলে লাল রঙ করার লজিক
+        if (newPrice > oldPrice) {
+            priceEl.style.color = 'var(--up)';
+        } else if (newPrice < oldPrice) {
+            priceEl.style.color = 'var(--down)';
         }
+    }
+}
+
 
         function matchOrders(symbol) {
             let pair = orderBoard[symbol];
@@ -444,6 +462,8 @@
                 let matchQty = Math.min(ask.a, bid.a);
                 let matchPrice = ask.p; 
                 window[symbol.toLowerCase() + "Val"] = matchPrice;
+if (activeCoin && activeCoin.sym.toUpperCase() === symbol) {
+    activeCoin.price = matchPrice;
 
                 if(bid.isUser) {
                     const coinKey = symbol.toLowerCase() + "_balance";
@@ -493,41 +513,74 @@
         }
 
         function processTrade() {
-            if(!checkAuth()) return; 
-            const smatVal = window["smatVal"] || 1;
-            let p = parseFloat(document.getElementById('priceInp').value);
-            const a = parseFloat(document.getElementById('amountInp').value);
-            
-            if (isNaN(p) || isNaN(a) || p <= 0 || a <= 0) return alert("Invalid Amount or Price");
-            if(activeMarket === 'SMAT') p = p * smatVal;
+    if(!checkAuth()) return; 
+    const smatVal = window["smatVal"] || 1;
+    let p = parseFloat(document.getElementById('priceInp').value);
+    const a = parseFloat(document.getElementById('amountInp').value);
+    
+    if (isNaN(p) || isNaN(a) || p <= 0 || a <= 0) {
+        return alert("Invalid Amount or Price");
+    }
 
-            const s = activeCoin.sym.toUpperCase();
-            const cost = p * a; const fee = cost * FEE_RATE;
-            
-            if (tradeSide === 'buy') {
-                const balKey = activeMarket.toLowerCase() + '_balance';
-                const bal = parseFloat(localStorage.getItem(balKey)) || 0;
-                const displayCost = activeMarket === 'SMAT' ? (p/smatVal) * a : cost;
-                const displayFee = displayCost * FEE_RATE;
-                
-                if (bal < (displayCost + displayFee)) return alert("Insufficient Balance!");
-                localStorage.setItem(balKey, (bal - (displayCost + displayFee)).toFixed(4));
-            } else {
-                const balKey = activeCoin.sym.toLowerCase() + '_balance';
-                let currentCoinBal = parseFloat(localStorage.getItem(balKey)) || 0;
-                if (currentCoinBal < a) return alert("Insufficient Assets!");
-                localStorage.setItem(balKey, (currentCoinBal - a).toFixed(4));
-            }
-            const orderObj = { id: Date.now(), p: p, a: a, s: s, side: tradeSide, isUser: true, time: new Date().toLocaleTimeString(), market: activeMarket };
-            if (!orderBoard[s]) orderBoard[s] = { asks: [], bids: [] };
-            if (tradeSide === 'buy') orderBoard[s].bids.push(orderObj);
-            else orderBoard[s].asks.push(orderObj);
-            saveToHistory('un', orderObj);
-            localStorage.setItem('orderBoard', JSON.stringify(orderBoard));
-            matchOrders(s);
-            alert("Order Placed!");
-            refreshUI();
-        }
+    // যদি SMAT মার্কেটে ট্রেড হয়, ইনপুট প্রাইসকে USDT বেস প্রাইসে কনভার্ট করা
+    if(activeMarket === 'SMAT') p = p * smatVal;
+
+    const s = activeCoin.sym.toUpperCase();
+    const cost = p * a; 
+    const fee = cost * FEE_RATE;
+    
+    // ব্যালেন্স চেক এবং ডিডাক্ট লজিক
+    if (tradeSide === 'buy') {
+        const balKey = activeMarket.toLowerCase() + '_balance';
+        const bal = parseFloat(localStorage.getItem(balKey)) || 0;
+        
+        // SMAT মার্কেটের জন্য ডিসপ্লে কস্ট ক্যালকুলেশন
+        const displayCost = activeMarket === 'SMAT' ? (p/smatVal) * a : cost;
+        const displayFee = displayCost * FEE_RATE;
+        
+        if (bal < (displayCost + displayFee)) return alert("Insufficient Balance!");
+        localStorage.setItem(balKey, (bal - (displayCost + displayFee)).toFixed(4));
+    } else {
+        const balKey = activeCoin.sym.toLowerCase() + '_balance';
+        let currentCoinBal = parseFloat(localStorage.getItem(balKey)) || 0;
+        if (currentCoinBal < a) return alert("Insufficient Assets!");
+        localStorage.setItem(balKey, (currentCoinBal - a).toFixed(4));
+    }
+
+    // অর্ডার অবজেক্ট তৈরি
+    const orderObj = { 
+        id: Date.now(), 
+        p: p, 
+        a: a, 
+        s: s, 
+        side: tradeSide, 
+        isUser: true, 
+        time: new Date().toLocaleTimeString(), 
+        market: activeMarket 
+    };
+
+    // অর্ডার বোর্ডে পুশ করা
+    if (!orderBoard[s]) orderBoard[s] = { asks: [], bids: [] };
+    if (tradeSide === 'buy') orderBoard[s].bids.push(orderObj);
+    else orderBoard[s].asks.push(orderObj);
+
+    // হিস্টোরি এবং লোকাল স্টোরেজ সেভ
+    saveToHistory('un', orderObj);
+    localStorage.setItem('orderBoard', JSON.stringify(orderBoard));
+
+    // --- ট্রেড ম্যাচিং এবং রিয়েল-টাইম আপডেট ---
+    matchOrders(s); 
+    
+    // অ্যামাউন্ট ইনপুট ক্লিয়ার করে দেওয়া
+    document.getElementById('amountInp').value = "";
+    
+    alert("Order Placed successfully!");
+    
+    // UI এবং অর্ডার বুক রিফ্রেশ যাতে লেটেস্ট দাম (১০.২৫) দেখায়
+    if(typeof renderOrderBook === "function") renderOrderBook(); 
+    refreshUI();
+}
+
 
         function setHTab(tab) {
             if(!checkAuth()) return;
