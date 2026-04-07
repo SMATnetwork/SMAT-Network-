@@ -576,7 +576,17 @@
             }
         }
 
-        window.onload = init;
+        // Trade.html এর স্ক্রিপ্টে এটি যোগ করুন
+window.onload = () => {
+    const urlParams = new URLSearchParams(window.location.search);
+    const selectedCoin = urlParams.get('coin');
+
+    if (selectedCoin) {
+        console.log("Selected Coin for Trading:", selectedCoin);
+        // এখানে আপনার ট্রেডিং চার্ট বা ডাটা লোড করার ফাংশনটি কল করুন
+        // উদাহরণ: loadTradingData(selectedCoin);
+    }
+};
     </script>
 </body>
 </html>
