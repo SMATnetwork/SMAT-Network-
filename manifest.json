@@ -1,0 +1,20 @@
+{
+  "short_name": "SMAT",
+  "name": "SMAT | Crypto Exchange",
+  "icons": [
+    {
+      "src": "https://i.ibb.co/S7Vp6Xm/favicon.png",
+      "type": "image/png",
+      "sizes": "192x192"
+    },
+    {
+      "src": "https://i.ibb.co/S7Vp6Xm/favicon.png",
+      "type": "image/png",
+      "sizes": "512x512"
+    }
+  ],
+  "start_url": "index.html",
+  "background_color": "#0b0e11",
+  "display": "standalone",
+  "theme_color": "#f3ba2f"
+}
