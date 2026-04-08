@@ -190,27 +190,36 @@
                 badge.className = 'status-badge status-unverified';
             }
         }
-        // --- রিয়াল-টাইম প্রাইস আপডেট লজিক শুরু ---
-        const priceRef = ref(db, 'prices'); // আপনার ডাটাবেজের 'prices' পাথ
-        onValue(priceRef, (snapshot) => {
+                // ... (আগের updateKYCUI ফাংশন এখানে শেষ হয়েছে)
+
+        // --- রিয়াল-টাইম মার্কেট লজিক (Trade.html এর সাথে মিল রেখে সরাসরি বসান) ---
+        const marketsPath = ref(db, 'market'); 
+        onValue(marketsPath, (snapshot) => {
             const data = snapshot.val();
             if (data) {
-                // ডাটাবেজ থেকে আসা প্রতিটা কয়েনের দাম localStorage-এ আপডেট করা
                 Object.keys(data).forEach(coinSym => {
-                    localStorage.setItem(coinSym.toLowerCase() + "_latest_price", data[coinSym].price);
+                    const sym = coinSym.toLowerCase();
+                    const priceValue = data[coinSym].price;
+                    const volumeValue = data[coinSym].volume || "0.00";
+                    
+                    // Trade.html এর মতো গ্লোবাল উইন্ডো অবজেক্ট এবং localStorage আপডেট
+                    window[sym + "Val"] = priceValue;
+                    localStorage.setItem(sym + "_latest_price", priceValue);
+                    localStorage.setItem(sym + "_volume", volumeValue);
                 });
                 
-                // যদি renderCoins ফাংশনটি ব্রাউজারে তৈরি থাকে, তবে কল হবে
+                // রেন্ডার ফাংশন কল করা (যাতে হোম পেজের লিস্ট আপডেট হয়)
                 if (typeof renderCoins === 'function') {
                     renderCoins(currentActiveTab); 
                 }
             }
         });
-        // --- রিয়াল-টাইম প্রাইস আপডেট লজিক শেষ ---
+        // --- রিয়াল-টাইম মার্কেট লজিক শেষ ---
 
         window.logout = () => {
             signOut(auth).then(() => { localStorage.clear(); window.location.href = 'logIn.html'; });
         };
+
     </script>
     <style>
         :root {
