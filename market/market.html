@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>SMAT CEX | Markets</title>
+    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-database-compat.js"></script>
+    <script src="coin.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+    <header class="header">
+        <h2 class="market-title">Markets</h2>
+        <div class="search-box">
+            <i class="fas fa-search" style="color:var(--text-sec)"></i>
+            <input type="text" id="marketSearch" placeholder="Search pairs..." oninput="renderMarkets()">
+        </div>
+    </header>
+
+    <div class="market-tabs" id="marketTabs"></div>
+
+    <div class="market-list">
+        <div class="market-header">
+            <span>Name / Vol</span>
+            <span>Last Price</span>
+            <span style="text-align: right;">24h Change</span>
+        </div>
+        <div id="coinListContainer"></div>
+    </div>
+
+    <footer class="footer">
+        <a href="home.html" class="f-nav"><i class="fas fa-home"></i>Home</a>
+        <a href="Market.html" class="f-nav active"><i class="fas fa-chart-pie"></i>Market</a>
+        <div class="u-curve">
+            <div class="spin-circle"></div>
+            <a href="Crash.html" class="crash-link">CRASH</a>
+        </div>
+        <a href="Trade.html" class="f-nav"><i class="fas fa-chart-line"></i>Trade</a>
+        <a href="Wallet.html" class="f-nav"><i class="fas fa-wallet"></i>Wallet</a>
+    </footer>
+
+    <script src="script.js"></script>
+</body>
+</html>
