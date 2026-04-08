@@ -491,7 +491,7 @@
             renderCoins(category);
         }
 
-        Function renderCoins(filter = 'hot') {
+        function renderCoins(filter = 'hot') {
     const container = document.getElementById('coinContainer');
     if (!container) return;
     const liveData = (typeof GLOBAL_COINS !== 'undefined') ? GLOBAL_COINS : [];
@@ -509,24 +509,15 @@
 
     let htmlContent = '';
     filtered.forEach(coin => {
-        const sym = coin.sym.toLowerCase();
-        
-        // ১. লোকাল স্টোরেজ থেকে লেটেস্ট প্রাইস নেওয়া
-        const savedPrice = localStorage.getItem(sym + "_latest_price");
-        const currentPrice = savedPrice ? parseFloat(savedPrice) : coin.price;
-        
-        // ২. লাল-সবুজ পরিবর্তনের লজিক (ডিফল্ট প্রাইসের সাথে তুলনা করে)
-        // যদি বর্তমান দাম ডিফল্ট দামের চেয়ে বেশি হয় তবে সবুজ, কম হলে লাল
-        const diff = currentPrice - coin.price;
-        const isUp = diff >= 0; 
-        const changePercent = coin.price > 0 ? ((diff / coin.price) * 100).toFixed(2) : "0.00";
-        
+        const isUp = Math.random() > 0.5;
+        const change = (Math.random() * 5).toFixed(2);
         const isNew = (now - (coin.listedAt || 0)) < threeDaysMs;
         
+        // এখানে ক্লিক করলে Trade.html?coin=smat (বা অন্য কয়েন) এ যাবে
         htmlContent += `
-            <div class="coin-row" onclick="if(checkAuth(event)) window.location.href='Trade.html?coin=${sym}'">
+            <div class="coin-row" onclick="if(checkAuth(event)) window.location.href='Trade.html?coin=${coin.sym.toLowerCase()}'">
                 <div style="display:flex; align-items:center; gap:12px;">
-                    <img src="assets/logos/${sym}.png" class="coin-icon" onerror="this.src='https://via.placeholder.com/40?text=${coin.sym[0].toUpperCase()}'">
+                    <img src="assets/logos/${coin.sym.toLowerCase()}.png" class="coin-icon" onerror="this.src='https://via.placeholder.com/40?text=${coin.sym[0].toUpperCase()}'">
                     <div>
                         <div style="font-weight:bold">
                             ${coin.sym.toUpperCase()}
@@ -536,10 +527,9 @@
                     </div>
                 </div>
                 <div style="text-align:right">
-                    <div style="font-weight:bold; font-size:16px">$${currentPrice.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 4})}</div>
-                    
+                    <div style="font-weight:bold; font-size:16px">$${coin.price.toLocaleString()}</div>
                     <div class="percent-box" style="background:${isUp ? 'rgba(14, 203, 129, 0.15)' : 'rgba(246, 70, 93, 0.15)'}; color:${isUp ? 'var(--up)' : 'var(--down)'}">
-                        ${isUp ? '+' : ''}${changePercent}%
+                        ${isUp ? '+' : '-'}${change}%
                     </div>
                 </div>
             </div>
@@ -547,7 +537,6 @@
     });
     container.innerHTML = htmlContent || '<p style="text-align:center; color:var(--text-sec); margin-top:20px;">No coins found.</p>';
 }
-
 
         
         window.onload = () => {
