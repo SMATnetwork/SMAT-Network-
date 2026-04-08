@@ -477,7 +477,7 @@ function matchOrders(symbol) {
         db.ref('market/' + symbol.toLowerCase()).update({ price: matchPrice, volume: newVol });
 
         // ২. যদি আপনার নিজের বাই অর্ডার ম্যাচ হয়
-        if(bid.userId === currentUserId) {
+        if (String(bid.userId) === String(currentUserId)) {
             const coinKey = symbol.toLowerCase() + "_balance";
             const currentBal = parseFloat(localStorage.getItem(coinKey)) || 0;
             const receivedAmt = matchQty * (1 - FEE_RATE);
@@ -492,7 +492,7 @@ function matchOrders(symbol) {
         }
 
         // ৩. যদি আপনার নিজের সেল অর্ডার ম্যাচ হয়
-        if(ask.userId === currentUserId) {
+        if (String(ask.userId) === String(currentUserId)) {
             const mKey = (ask.market || 'USDT').toLowerCase() + '_balance';
             const currentBal = parseFloat(localStorage.getItem(mKey)) || 0;
             const receivedCash = (matchQty * matchPrice) * (1 - FEE_RATE);
@@ -513,7 +513,7 @@ function matchOrders(symbol) {
             side: ask.time > bid.time ? 'sell' : 'buy'
         });
 
-        // ৫. অর্ডার বুক আপডেট
+        // ৫. অর্ডার বুক আপডেট (আংশিক বিয়োগ)
         ask.a = (parseFloat(ask.a) - matchQty).toFixed(8);
         bid.a = (parseFloat(bid.a) - matchQty).toFixed(8);
 
@@ -521,13 +521,12 @@ function matchOrders(symbol) {
         if (parseFloat(bid.a) <= 0.00000001) pair.bids.shift();
     }
 
-    if(isMatched) {
+    if (isMatched) {
         db.ref('orders/' + symbol).set(pair);
         updateBalanceDisplay();
         renderHistory(); 
     }
 }
-
 
 function processTrade() {
     if(!checkAuth()) return; 
@@ -611,20 +610,17 @@ function renderHistory() {
         db.ref('history/global').orderByChild('s').equalTo(s).limitToLast(100).once('value', (snap) => {
             const allData = [];
             snap.forEach(child => { allData.unshift(child.val()); });
-            
             const visibleData = allData.slice(0, globalLimit);
             head.innerHTML = `<tr><th>Time</th><th>Side</th><th>Price</th><th>Amount</th></tr>`;
             body.innerHTML = visibleData.map(o => {
                 let p = activeMarket === 'SMAT' ? (o.p / smatVal) : o.p;
-                return `<tr><td>${o.time}</td><td class="${o.side==='buy'?'up':'down'}">${o.side.toUpperCase()}</td><td>${p.toFixed(4)}</td><td>${o.a.toFixed(4)}</td></tr>`;
+                return `<tr><td>${o.time}</td><td class="${o.side==='buy'?'up':'down'}">${o.side.toUpperCase()}</td><td>${parseFloat(p).toFixed(4)}</td><td>${parseFloat(o.a).toFixed(4)}</td></tr>`;
             }).join('');
-
             if(showMoreBtn) showMoreBtn.style.display = allData.length > globalLimit ? 'block' : 'none';
         });
     } else {
         const key = activeHTab + 'Orders';
         const allData = (JSON.parse(localStorage.getItem(key)) || []).filter(o => o.s === s);
-        
         const currentLimit = activeHTab === 'my' ? myLimit : unLimit;
         const visibleData = allData.slice(0, currentLimit);
 
@@ -637,7 +633,7 @@ function renderHistory() {
         } else {
             head.innerHTML = `<tr><th>Time</th><th>Side</th><th>Price</th><th>Amount</th></tr>`;
             body.innerHTML = visibleData.map(o => {
-                let p = activeMarket === 'SMAT' ? (o.p / smatVal) : o.p;
+                let p = (o.market === 'SMAT' || activeMarket === 'SMAT') ? (o.p / smatVal) : o.p;
                 return `<tr><td>${o.time}</td><td class="${o.side==='buy'?'up':'down'}">${o.side.toUpperCase()}</td><td>${parseFloat(p).toFixed(4)}</td><td>${parseFloat(o.a).toFixed(4)}</td></tr>`;
             }).join('');
         }
@@ -685,18 +681,20 @@ function cancelOrder(id) {
 
 function syncUnsuccessfulOrder(id, matchQty) {
     let un = JSON.parse(localStorage.getItem('unOrders')) || [];
-    let idx = un.findIndex(o => Number(o.id) === Number(id)); // ID টাইপ ম্যাচিং নিশ্চিত করা
+    // ID টাইপ নিরাপদ করতে Number ও String উভয় চেক রাখা হয়েছে
+    let idx = un.findIndex(o => String(o.id) === String(id)); 
     
     if (idx !== -1) {
         let currentAmt = parseFloat(un[idx].a);
         let remainingAmt = currentAmt - parseFloat(matchQty);
         
         if (remainingAmt <= 0.00000001) {
-            un.splice(idx, 1); // পুরোটা শেষ হলে রিমুভ
+            un.splice(idx, 1); // পুরো অর্ডার সফল হলে মুছে ফেলুন
         } else {
-            un[idx].a = remainingAmt.toFixed(8); // আংশিক থাকলে পরিমাণ কমানো
+            un[idx].a = remainingAmt.toFixed(8); // বাকি অংশটুকু আপডেট করুন
         }
         localStorage.setItem('unOrders', JSON.stringify(un));
+        renderHistory(); // সাথে সাথে UI আপডেট করুন
     }
 }
 
