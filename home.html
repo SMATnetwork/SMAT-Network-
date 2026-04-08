@@ -484,7 +484,8 @@
     </footer>
 
     <script>
-    // ১. গ্লোবাল ভ্যারিয়েবল যাতে অন্য স্ক্রিপ্ট থেকেও অ্যাক্সেস পাওয়া যায়
+    // ১. গ্লোবাল ভ্যারিয়েবল যা Firebase থেকে আসা দাম ধরে রাখবে
+    window.currentPrices = {}; 
     window.currentActiveTab = 'hot';
 
     function checkAuth(e) {
@@ -510,12 +511,12 @@
         window.renderCoins(category);
     }
 
-    // ২. ফাংশনটিকে window.renderCoins হিসেবে সেট করা হয়েছে
+    // ২. রেন্ডার ফাংশন যা সরাসরি window.currentPrices থেকে ডাটা নেবে
     window.renderCoins = function(filter = 'hot') {
         const container = document.getElementById('coinContainer');
         if (!container) return;
-        const liveData = (typeof GLOBAL_COINS !== 'undefined') ? GLOBAL_COINS : [];
         
+        const liveData = (typeof GLOBAL_COINS !== 'undefined') ? GLOBAL_COINS : [];
         const now = Date.now();
         const threeDaysMs = 3 * 24 * 60 * 60 * 1000;
 
@@ -531,14 +532,17 @@
         filtered.forEach(coin => {
             const sym = coin.sym.toLowerCase();
             
-            // ৩. মডিউল থেকে আসা লেটেস্ট প্রাইস লোকাল স্টোরেজ থেকে চেক করা হচ্ছে
-            const savedPrice = localStorage.getItem(sym + "_latest_price");
-            const currentPrice = savedPrice ? parseFloat(savedPrice) : coin.price;
-            
-            // লাল-সবুজ লজিক
-            const diff = currentPrice - coin.price;
+            // সরাসরি ভ্যারিয়েবল থেকে লেটেস্ট প্রাইস নেওয়া
+            const basePrice = parseFloat(coin.price) || 0;
+            const currentPrice = window.currentPrices[sym] || basePrice;
+
+            const diff = currentPrice - basePrice;
             const isUp = diff >= 0; 
-            const changePercent = coin.price > 0 ? ((diff / coin.price) * 100).toFixed(2) : "0.00";
+            
+            let changePercent = "0.00";
+            if (basePrice > 0) {
+                changePercent = ((diff / basePrice) * 100).toFixed(2);
+            }
             
             const isNew = (now - (coin.listedAt || 0)) < threeDaysMs;
             
@@ -556,7 +560,6 @@
                     </div>
                     <div style="text-align:right">
                         <div style="font-weight:bold; font-size:16px">$${currentPrice.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 4})}</div>
-                        
                         <div class="percent-box" style="background:${isUp ? 'rgba(14, 203, 129, 0.15)' : 'rgba(246, 70, 93, 0.15)'}; color:${isUp ? 'var(--up)' : 'var(--down)'}">
                             ${isUp ? '+' : ''}${changePercent}%
                         </div>
@@ -569,12 +572,12 @@
 
     window.onload = () => {
         window.renderCoins(window.currentActiveTab);
-        // ৪. প্রতি ১ সেকেন্ডে রেন্ডার কল হবে নতুন দাম চেক করার জন্য
         setInterval(() => { 
             window.renderCoins(window.currentActiveTab); 
         }, 1000);
     };
 </script>
+
 
 </body>
 </html>
