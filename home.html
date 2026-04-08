@@ -9,209 +9,199 @@
     <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><circle cx='50' cy='50' r='50' fill='%23f3ba2f'/><text x='50%25' y='55%25' text-anchor='middle' dy='.3em' fill='black' font-family='Courier New, monospace' font-weight='900' font-size='60'>S</text></svg>">
     
     <script type="module">
-        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-        import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
-        import { getDatabase, ref, onValue, update, query, orderByChild, equalTo, limitToLast } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+    import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+    import { getDatabase, ref, onValue, update, query, orderByChild, equalTo } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
 
-        const firebaseConfig = {
-            apiKey: "AIzaSyAMxtJedkehhxJRMPZLjhpKHqneHEWsGlE",
-            authDomain: "smat-exchange.firebaseapp.com",
-            projectId: "smat-exchange",
-            storageBucket: "smat-exchange.firebasestorage.app",
-            messagingSenderId: "836334569396",
-            appId: "1:836334569396:web:679effe640b3453412d4e1",
-            measurementId: "G-FCE3H3F18V"
-        };
+    const firebaseConfig = {
+        apiKey: "AIzaSyAMxtJedkehhxJRMPZLjhpKHqneHEWsGlE",
+        authDomain: "smat-exchange.firebaseapp.com",
+        projectId: "smat-exchange",
+        storageBucket: "smat-exchange.firebasestorage.app",
+        messagingSenderId: "836334569396",
+        appId: "1:836334569396:web:679effe640b3453412d4e1",
+        measurementId: "G-FCE3H3F18V"
+    };
 
-        const app = initializeApp(firebaseConfig);
-        const auth = getAuth(app);
-        const db = getDatabase(app);
+    const app = initializeApp(firebaseConfig);
+    const auth = getAuth(app);
+    const db = getDatabase(app);
 
-        onAuthStateChanged(auth, (user) => {
-            const loggedInContent = document.getElementById('loggedInContent');
-            const loggedOutContent = document.getElementById('loggedOutContent');
-            const emailDisplay = document.getElementById('emailDisplay');
-            const smatIDDisplay = document.getElementById('smatID');
+    // --- সরাসরি ফায়ারবেস থেকে রিয়াল-টাইম প্রাইস আপডেট (লগইন থাকুক বা না থাকুক) ---
+    window.currentPrices = {}; // গ্লোবাল অবজেক্ট দাম ধরে রাখার জন্য
+    const priceRef = ref(db, 'prices'); 
 
-            if (user) {
-                localStorage.setItem('isLoggedIn', 'true');
-                if(loggedInContent) loggedInContent.style.display = 'block';
-                if(loggedOutContent) loggedOutContent.style.display = 'none';
-                if(emailDisplay) emailDisplay.innerText = user.email;
-
-                const userRef = ref(db, 'users/' + user.uid);
-                onValue(userRef, (snapshot) => {
-                    const data = snapshot.val();
-                    if (data) {
-                        const smatID = data.smatID || "Assigning...";
-                        if(smatIDDisplay) smatIDDisplay.innerText = smatID;
-                        updateKYCUI(data);
-                        setupReferralSystem(smatID);
-                    }
-                });
-            } else {
-                localStorage.setItem('isLoggedIn', 'false');
-                if(loggedInContent) loggedInContent.style.display = 'none';
-                if(loggedOutContent) loggedOutContent.style.display = 'block';
-            }
-        });
-
-        function setupReferralSystem(smatID) {
-            const refLink = document.getElementById('referralLink');
-            const baseUrl = window.location.origin + window.location.pathname.replace('home.html', 'logIn.html');
-            const fullLink = `${baseUrl}?ref=${smatID}`;
-            if(refLink) refLink.value = fullLink;
-
-            const usersRef = ref(db, 'users');
-            // সকল রেফারেল গুনে স্ট্যাটাস দেখানোর জন্য
-            const allRefQuery = query(usersRef, orderByChild('referredBy'), equalTo(smatID));
+    onValue(priceRef, (snapshot) => {
+        const data = snapshot.val();
+        if (data) {
+            Object.keys(data).forEach(coinSym => {
+                const sym = coinSym.toLowerCase();
+                // সরাসরি গ্লোবাল ভ্যারিয়েবলে ডাটা পুশ
+                window.currentPrices[sym] = parseFloat(data[coinSym].price) || 0;
+            });
             
-            onValue(allRefQuery, (snapshot) => {
-                const listContainer = document.getElementById('referralList');
-                const data = snapshot.val();
-                
-                let verifiedCount = 0;
-                let rejectedCount = 0;
-                let pendingCount = 0;
-
-                if (data) {
-                    const allUsers = Object.values(data);
-                    
-                    // স্ট্যাটাস কাউন্ট করা
-                    allUsers.forEach(u => {
-                        if(u.kycStatus === 'verified') verifiedCount++;
-                        else if(u.kycStatus === 'rejected') rejectedCount++;
-                        else pendingCount++;
-                    });
-
-                    // UI আপডেট (কাউন্টার)
-                    document.getElementById('ref_verified').innerText = verifiedCount;
-                    document.getElementById('ref_rejected').innerText = rejectedCount;
-
-                    // শুধুমাত্র সর্বশেষ ৫টি রেফারেল দেখানো (Reverse order for latest)
-                    const latest5 = allUsers.sort((a, b) => (b.createdAt || 0) - (a.createdAt || 0)).slice(0, 5);
-                    
-                    listContainer.innerHTML = '';
-                    latest5.forEach(refUser => {
-                        const statusClass = `status-${refUser.kycStatus || 'unverified'}`;
-                        const div = document.createElement('div');
-                        div.className = 'ref-item';
-                        div.innerHTML = `
-                            <span style="font-size:12px">${refUser.email.split('@')[0]}...</span>
-                            <span class="status-badge ${statusClass}" style="font-size:9px">${refUser.kycStatus || 'unverified'}</span>
-                        `;
-                        listContainer.appendChild(div);
-                    });
-                } else {
-                    document.getElementById('ref_verified').innerText = '0';
-                    document.getElementById('ref_rejected').innerText = '0';
-                    listContainer.innerHTML = '<p style="font-size:11px; color:var(--text-sec); text-align:center">No referrals yet.</p>';
-                }
-            });
-        }
-
-        window.copyRef = () => {
-            const copyText = document.getElementById("referralLink");
-            copyText.select();
-            copyText.setSelectionRange(0, 99999);
-            navigator.clipboard.writeText(copyText.value);
-            alert("Referral Link Copied!");
-        };
-
-        async function uploadImage(file) {
-            const apiKey = "ae6200c9d5bd021db45b02211a7f1096";
-            const formData = new FormData();
-            formData.append("image", file);
-            const response = await fetch(`https://api.imgbb.com/1/upload?key=${apiKey}`, {
-                method: "POST",
-                body: formData
-            });
-            const result = await response.json();
-            if (result.success) return result.data.url;
-            else throw new Error("Upload failed");
-        }
-
-        window.handleKYC = async () => {
-            const user = auth.currentUser;
-            const btn = document.getElementById('submitBtn');
-            const realName = document.getElementById('realName').value;
-            const nidNumber = document.getElementById('nidNumber').value;
-            const fileFront = document.getElementById('nidFront').files[0];
-            const fileBack = document.getElementById('nidBack').files[0];
-            const fileSelfie = document.getElementById('userSelfie').files[0];
-
-            if(!realName || !nidNumber || !fileFront || !fileBack || !fileSelfie) return alert("Please fill all fields.");
-
-            btn.disabled = true;
-            btn.innerText = "Uploading Photos...";
-            try {
-                const urlFront = await uploadImage(fileFront);
-                const urlBack = await uploadImage(fileBack);
-                const urlSelfie = await uploadImage(fileSelfie);
-                const userRef = ref(db, 'users/' + user.uid);
-                await update(userRef, {
-                    kycStatus: 'pending',
-                    realName: realName,
-                    nidNumber: nidNumber,
-                    nidFront: urlFront,
-                    nidBack: urlBack,
-                    userSelfie: urlSelfie,
-                    kycSubmittedAt: Date.now()
-                });
-                alert("KYC Submitted Successfully!");
-            } catch (error) { alert("Upload failed: " + error.message); }
-            finally { btn.disabled = false; btn.innerText = "Submit Details"; }
-        };
-
-        function updateKYCUI(data) {
-            const form = document.getElementById('kycForm');
-            const notice = document.getElementById('kycPendingNotice');
-            const badge = document.getElementById('kycBadge');
-            const verifiedBox = document.getElementById('kycVerifiedInfo');
-            form.style.display = 'none'; notice.style.display = 'none'; verifiedBox.style.display = 'none';
-
-            if (data.kycStatus === 'pending') {
-                notice.style.display = 'block';
-                badge.innerText = 'Pending';
-                badge.className = 'status-badge status-pending';
-            } else if (data.kycStatus === 'verified') {
-                verifiedBox.style.display = 'block';
-                badge.innerText = 'Verified';
-                badge.className = 'status-badge status-verified';
-                document.getElementById('v_name').innerText = data.realName || "N/A";
-                document.getElementById('v_nid').innerText = data.nidNumber || "N/A";
-            } else if (data.kycStatus === 'rejected') {
-                form.style.display = 'block';
-                badge.innerText = 'Rejected';
-                badge.className = 'status-badge status-rejected';
-            } else {
-                form.style.display = 'block';
-                badge.innerText = 'Unverified';
-                badge.className = 'status-badge status-unverified';
+            // রেন্ডার ফাংশন কল করা (যাতে হোম পেজে দাম পরিবর্তন দেখা যায়)
+            if (typeof window.renderCoins === 'function') {
+                window.renderCoins(window.currentActiveTab || 'hot'); 
             }
         }
-        // --- রিয়াল-টাইম প্রাইস আপডেট লজিক শুরু ---
-        const priceRef = ref(db, 'prices'); // আপনার ডাটাবেজের 'prices' পাথ
-        onValue(priceRef, (snapshot) => {
-            const data = snapshot.val();
-            if (data) {
-                // ডাটাবেজ থেকে আসা প্রতিটা কয়েনের দাম localStorage-এ আপডেট করা
-                Object.keys(data).forEach(coinSym => {
-                    localStorage.setItem(coinSym.toLowerCase() + "_latest_price", data[coinSym].price);
-                });
-                
-                // যদি renderCoins ফাংশনটি ব্রাউজারে তৈরি থাকে, তবে কল হবে
-                if (typeof renderCoins === 'function') {
-                    renderCoins(currentActiveTab); 
+    });
+
+    onAuthStateChanged(auth, (user) => {
+        const loggedInContent = document.getElementById('loggedInContent');
+        const loggedOutContent = document.getElementById('loggedOutContent');
+        const emailDisplay = document.getElementById('emailDisplay');
+        const smatIDDisplay = document.getElementById('smatID');
+
+        if (user) {
+            localStorage.setItem('isLoggedIn', 'true');
+            if(loggedInContent) loggedInContent.style.display = 'block';
+            if(loggedOutContent) loggedOutContent.style.display = 'none';
+            if(emailDisplay) emailDisplay.innerText = user.email;
+
+            const userRef = ref(db, 'users/' + user.uid);
+            onValue(userRef, (snapshot) => {
+                const data = snapshot.val();
+                if (data) {
+                    const smatID = data.smatID || "Assigning...";
+                    if(smatIDDisplay) smatIDDisplay.innerText = smatID;
+                    updateKYCUI(data);
+                    setupReferralSystem(smatID);
                 }
+            });
+        } else {
+            localStorage.setItem('isLoggedIn', 'false');
+            if(loggedInContent) loggedInContent.style.display = 'none';
+            if(loggedOutContent) loggedOutContent.style.display = 'block';
+        }
+    });
+
+    // --- রেফারেল সিস্টেম (অপরিবর্তিত) ---
+    function setupReferralSystem(smatID) {
+        const refLink = document.getElementById('referralLink');
+        const baseUrl = window.location.origin + window.location.pathname.replace('home.html', 'logIn.html');
+        const fullLink = `${baseUrl}?ref=${smatID}`;
+        if(refLink) refLink.value = fullLink;
+
+        const usersRef = ref(db, 'users');
+        const allRefQuery = query(usersRef, orderByChild('referredBy'), equalTo(smatID));
+        
+        onValue(allRefQuery, (snapshot) => {
+            const listContainer = document.getElementById('referralList');
+            const data = snapshot.val();
+            let verifiedCount = 0;
+            let rejectedCount = 0;
+
+            if (data) {
+                const allUsers = Object.values(data);
+                allUsers.forEach(u => {
+                    if(u.kycStatus === 'verified') verifiedCount++;
+                    else if(u.kycStatus === 'rejected') rejectedCount++;
+                });
+
+                document.getElementById('ref_verified').innerText = verifiedCount;
+                document.getElementById('ref_rejected').innerText = rejectedCount;
+
+                const latest5 = allUsers.sort((a, b) => (b.createdAt || 0) - (a.createdAt || 0)).slice(0, 5);
+                listContainer.innerHTML = '';
+                latest5.forEach(refUser => {
+                    const statusClass = `status-${refUser.kycStatus || 'unverified'}`;
+                    const div = document.createElement('div');
+                    div.className = 'ref-item';
+                    div.innerHTML = `
+                        <span style="font-size:12px">${refUser.email.split('@')[0]}...</span>
+                        <span class="status-badge ${statusClass}" style="font-size:9px">${refUser.kycStatus || 'unverified'}</span>
+                    `;
+                    listContainer.appendChild(div);
+                });
+            } else {
+                document.getElementById('ref_verified').innerText = '0';
+                document.getElementById('ref_rejected').innerText = '0';
+                listContainer.innerHTML = '<p style="font-size:11px; color:var(--text-sec); text-align:center">No referrals yet.</p>';
             }
         });
-        // --- রিয়াল-টাইম প্রাইস আপডেট লজিক শেষ ---
+    }
 
-        window.logout = () => {
-            signOut(auth).then(() => { localStorage.clear(); window.location.href = 'logIn.html'; });
-        };
-    </script>
+    // --- ইমেজ আপলোড এবং KYC (অপরিবর্তিত) ---
+    async function uploadImage(file) {
+        const apiKey = "ae6200c9d5bd021db45b02211a7f1096";
+        const formData = new FormData();
+        formData.append("image", file);
+        const response = await fetch(`https://api.imgbb.com/1/upload?key=${apiKey}`, { method: "POST", body: formData });
+        const result = await response.json();
+        if (result.success) return result.data.url;
+        else throw new Error("Upload failed");
+    }
+
+    window.handleKYC = async () => {
+        const user = auth.currentUser;
+        const btn = document.getElementById('submitBtn');
+        const realName = document.getElementById('realName').value;
+        const nidNumber = document.getElementById('nidNumber').value;
+        const fileFront = document.getElementById('nidFront').files[0];
+        const fileBack = document.getElementById('nidBack').files[0];
+        const fileSelfie = document.getElementById('userSelfie').files[0];
+
+        if(!realName || !nidNumber || !fileFront || !fileBack || !fileSelfie) return alert("Please fill all fields.");
+
+        btn.disabled = true;
+        btn.innerText = "Uploading Photos...";
+        try {
+            const urlFront = await uploadImage(fileFront);
+            const urlBack = await uploadImage(fileBack);
+            const urlSelfie = await uploadImage(fileSelfie);
+            const userRef = ref(db, 'users/' + user.uid);
+            await update(userRef, {
+                kycStatus: 'pending',
+                realName: realName,
+                nidNumber: nidNumber,
+                nidFront: urlFront,
+                nidBack: urlBack,
+                userSelfie: urlSelfie,
+                kycSubmittedAt: Date.now()
+            });
+            alert("KYC Submitted Successfully!");
+        } catch (error) { alert("Upload failed: " + error.message); }
+        finally { btn.disabled = false; btn.innerText = "Submit Details"; }
+    };
+
+    function updateKYCUI(data) {
+        const form = document.getElementById('kycForm');
+        const notice = document.getElementById('kycPendingNotice');
+        const badge = document.getElementById('kycBadge');
+        const verifiedBox = document.getElementById('kycVerifiedInfo');
+        if(!form) return;
+        form.style.display = 'none'; notice.style.display = 'none'; verifiedBox.style.display = 'none';
+
+        if (data.kycStatus === 'pending') {
+            notice.style.display = 'block';
+            badge.innerText = 'Pending';
+            badge.className = 'status-badge status-pending';
+        } else if (data.kycStatus === 'verified') {
+            verifiedBox.style.display = 'block';
+            badge.innerText = 'Verified';
+            badge.className = 'status-badge status-verified';
+            document.getElementById('v_name').innerText = data.realName || "N/A";
+            document.getElementById('v_nid').innerText = data.nidNumber || "N/A";
+        } else {
+            form.style.display = 'block';
+            badge.innerText = data.kycStatus || 'Unverified';
+            badge.className = `status-badge status-${data.kycStatus || 'unverified'}`;
+        }
+    }
+
+    window.logout = () => {
+        signOut(auth).then(() => { localStorage.clear(); window.location.href = 'logIn.html'; });
+    };
+
+    window.copyRef = () => {
+        const copyText = document.getElementById("referralLink");
+        copyText.select();
+        navigator.clipboard.writeText(copyText.value);
+        alert("Referral Link Copied!");
+    };
+</script>
+
     <style>
         :root {
             --primary: #f3ba2f;
