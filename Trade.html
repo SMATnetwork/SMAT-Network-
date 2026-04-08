@@ -467,68 +467,61 @@ function matchOrders(symbol) {
         isMatched = true;
         let ask = pair.asks[0]; 
         let bid = pair.bids[0]; 
-        let matchQty = Math.min(ask.a, bid.a);
-        let matchPrice = ask.p;
+        let matchQty = Math.min(parseFloat(ask.a), parseFloat(bid.a));
+        let matchPrice = parseFloat(ask.p);
 
-        // ১. মার্কেট প্রাইস ও ভলিউম আপডেট (Firebase)
+        // ১. মার্কেট প্রাইস ও ভলিউম আপডেট
         const volKey = symbol.toLowerCase() + "_volume";
         let curVol = parseFloat(localStorage.getItem(volKey)) || 0;
         let newVol = (curVol + (matchQty * matchPrice)).toFixed(2);
         db.ref('market/' + symbol.toLowerCase()).update({ price: matchPrice, volume: newVol });
 
-        // ২. আপনার নিজের বাই ট্রেড সফল বা আংশিক সফল হলে
+        // ২. যদি আপনার নিজের বাই অর্ডার ম্যাচ হয়
         if(bid.userId === currentUserId) {
             const coinKey = symbol.toLowerCase() + "_balance";
             const currentBal = parseFloat(localStorage.getItem(coinKey)) || 0;
-            const receivedAmt = matchQty * (1 - FEE_RATE); // ফি কেটে কয়েন যোগ
+            const receivedAmt = matchQty * (1 - FEE_RATE);
             localStorage.setItem(coinKey, (currentBal + receivedAmt).toFixed(8));
             
-            // My Trade এ সেভ
             saveToHistory('my', {
                 time: new Date().toLocaleTimeString(), 
                 p: matchPrice, a: matchQty, s: symbol, side: 'buy',
                 market: bid.market || 'USDT'
             });
-            
-            // Unsuccessful টেবিল থেকে ম্যাচ হওয়া অংশটুকু মাইনাস করা
             syncUnsuccessfulOrder(bid.id, matchQty);
         }
 
-        // ৩. আপনার নিজের সেল ট্রেড সফল বা আংশিক সফল হলে
+        // ৩. যদি আপনার নিজের সেল অর্ডার ম্যাচ হয়
         if(ask.userId === currentUserId) {
             const mKey = (ask.market || 'USDT').toLowerCase() + '_balance';
             const currentBal = parseFloat(localStorage.getItem(mKey)) || 0;
-            const receivedCash = matchQty * matchPrice * (1 - FEE_RATE); // ফি কেটে টাকা যোগ
+            const receivedCash = (matchQty * matchPrice) * (1 - FEE_RATE);
             localStorage.setItem(mKey, (currentBal + receivedCash).toFixed(8));
             
-            // My Trade এ সেভ
             saveToHistory('my', {
                 time: new Date().toLocaleTimeString(), 
                 p: matchPrice, a: matchQty, s: symbol, side: 'sell',
                 market: ask.market || 'USDT'
             });
-
-            // Unsuccessful টেবিল থেকে ম্যাচ হওয়া অংশটুকু মাইনাস করা
             syncUnsuccessfulOrder(ask.id, matchQty);
         }
 
-        // ৪. গ্লোবাল হিস্টোরি আপডেট (Firebase)
+        // ৪. গ্লোবাল হিস্টোরি (Firebase)
         db.ref('history/global').push({
             time: new Date().toLocaleTimeString(), 
             p: matchPrice, a: matchQty, s: symbol, 
             side: ask.time > bid.time ? 'sell' : 'buy'
         });
 
-        // ৫. অর্ডার বুকের পরিমাণ কমানো
-        ask.a -= matchQty; 
-        bid.a -= matchQty;
+        // ৫. অর্ডার বুক আপডেট
+        ask.a = (parseFloat(ask.a) - matchQty).toFixed(8);
+        bid.a = (parseFloat(bid.a) - matchQty).toFixed(8);
 
-        if (ask.a <= 0.000001) pair.asks.shift();
-        if (bid.a <= 0.000001) pair.bids.shift();
+        if (parseFloat(ask.a) <= 0.00000001) pair.asks.shift();
+        if (parseFloat(bid.a) <= 0.00000001) pair.bids.shift();
     }
 
     if(isMatched) {
-        // আপডেট হওয়া অর্ডার বুক ফায়ারবেসে পাঠানো
         db.ref('orders/' + symbol).set(pair);
         updateBalanceDisplay();
         renderHistory(); 
@@ -536,36 +529,39 @@ function matchOrders(symbol) {
 }
 
 
-// --- ৮. ট্রেড প্রসেস ---
 function processTrade() {
     if(!checkAuth()) return; 
-    const smatVal = window["smatVal"] || 1;
     let p = parseFloat(document.getElementById('priceInp').value);
     const a = parseFloat(document.getElementById('amountInp').value);
     
     if (isNaN(p) || isNaN(a) || p <= 0 || a <= 0) return alert("Invalid Input");
-    if(activeMarket === 'SMAT') p = p * smatVal;
     
     const s = activeCoin.sym.toUpperCase();
+    const orderId = Date.now(); // ইউনিক আইডি
+
     if (tradeSide === 'buy') {
         const balKey = activeMarket.toLowerCase() + '_balance';
         const bal = parseFloat(localStorage.getItem(balKey)) || 0;
-        const cost = p * a * (1 + FEE_RATE);
+        const cost = (p * a) * (1 + FEE_RATE);
         if (bal < cost) return alert("Insufficient Balance!");
-        localStorage.setItem(balKey, (bal - cost).toFixed(4));
+        localStorage.setItem(balKey, (bal - cost).toFixed(8));
     } else {
         const balKey = activeCoin.sym.toLowerCase() + '_balance';
         const bal = parseFloat(localStorage.getItem(balKey)) || 0;
         if (bal < a) return alert("Insufficient Assets!");
-        localStorage.setItem(balKey, (bal - a).toFixed(4));
+        localStorage.setItem(balKey, (bal - a).toFixed(8));
     }
     
     const orderObj = { 
-        id: Date.now(), userId: localStorage.getItem('userId'), 
-        p: p, a: a, s: s, side: tradeSide, isUser: true, 
+        id: orderId, userId: localStorage.getItem('userId'), 
+        p: p, a: a, s: s, side: tradeSide, 
         time: new Date().toLocaleTimeString(), market: activeMarket 
     };
     
+    // ১. Unsuccessful হিস্টোরিতে সেভ
+    saveToHistory('un', orderObj);
+
+    // ২. Firebase-এ পাঠানো
     db.ref('orders/' + s).once('value', (snap) => {
         let data = snap.val() || { asks: [], bids: [] };
         if (tradeSide === 'buy') (data.bids = data.bids || []).push(orderObj);
@@ -573,10 +569,10 @@ function processTrade() {
         db.ref('orders/' + s).set(data);
     });
     
-    saveToHistory('un', orderObj);
     document.getElementById('amountInp').value = "";
     refreshUI();
 }
+
 
 // --- ৯. হিস্টোরি ম্যানেজমেন্ট ---
 let globalLimit = 20;
@@ -689,28 +685,20 @@ function cancelOrder(id) {
 
 function syncUnsuccessfulOrder(id, matchQty) {
     let un = JSON.parse(localStorage.getItem('unOrders')) || [];
-    // আইডি দিয়ে নির্দিষ্ট অর্ডারটি খুঁজে বের করুন
-    let idx = un.findIndex(o => o.id === id);
+    let idx = un.findIndex(o => Number(o.id) === Number(id)); // ID টাইপ ম্যাচিং নিশ্চিত করা
     
     if (idx !== -1) {
         let currentAmt = parseFloat(un[idx].a);
-        let matchAmt = parseFloat(matchQty);
-        let remainingAmt = currentAmt - matchAmt;
+        let remainingAmt = currentAmt - parseFloat(matchQty);
         
-        if (remainingAmt <= 0.000001) {
-            // যদি পুরো অর্ডারটিই ম্যাচ হয়ে যায়, তবে লিস্ট থেকে মুছে ফেলুন
-            un.splice(idx, 1);
+        if (remainingAmt <= 0.00000001) {
+            un.splice(idx, 1); // পুরোটা শেষ হলে রিমুভ
         } else {
-            // যদি আংশিক ম্যাচ হয়, তবে হিস্টোরিতে পরিমাণ আপডেট করুন
-            un[idx].a = remainingAmt.toFixed(8);
+            un[idx].a = remainingAmt.toFixed(8); // আংশিক থাকলে পরিমাণ কমানো
         }
-        
         localStorage.setItem('unOrders', JSON.stringify(un));
-        // UI আপডেট করার জন্য রেন্ডার ফাংশন কল করুন
-        renderHistory(); 
     }
 }
-
 
 window.onload = init;
 
