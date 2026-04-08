@@ -1,0 +1,223 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>SMAT CEX | Markets</title>
+    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-database-compat.js"></script>
+    <script src="coin.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <style>
+        :root {
+            --bg: #0b0e11; --card: #1e2329; --primary: #f0b90b;
+            --up: #0ecb81; --down: #f6465d; --text-sec: #848e9c;
+            --border: #2b3139;
+        }
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Inter', sans-serif; -webkit-tap-highlight-color: transparent; }
+        body { background: var(--bg); color: white; padding-bottom: 85px; overflow-x: hidden; }
+
+        /* Header & Search */
+        .header { padding: 15px; border-bottom: 1px solid var(--border); position: sticky; top: 0; background: var(--bg); z-index: 100; }
+        .search-box { background: var(--card); border-radius: 8px; padding: 10px 15px; display: flex; align-items: center; gap: 10px; margin-top: 12px; border: 1px solid transparent; }
+        .search-box:focus-within { border-color: var(--primary); }
+        .search-box input { background: none; border: none; color: white; width: 100%; outline: none; font-size: 15px; }
+
+        /* Market Tabs with Icons */
+        .market-tabs { display: flex; gap: 15px; padding: 10px 15px; border-bottom: 1px solid var(--border); overflow-x: auto; scrollbar-width: none; }
+        .market-tabs::-webkit-scrollbar { display: none; }
+        
+        .m-tab { 
+            display: flex; align-items: center; gap: 8px; padding: 10px 15px; 
+            color: var(--text-sec); font-size: 14px; cursor: pointer; white-space: nowrap; 
+            position: relative; transition: 0.3s; font-weight: 500;
+        }
+        .m-tab.active { color: var(--primary); font-weight: 700; }
+        .m-tab.active::after { content: ''; position: absolute; bottom: 0; left: 0; width: 100%; height: 2px; background: var(--primary); }
+        
+        .m-tab-icon { width: 18px; height: 18px; border-radius: 50%; object-fit: cover; }
+
+        /* Market List Section */
+        .market-list { padding-top: 5px; }
+        .market-header { 
+            display: grid; grid-template-columns: 1.6fr 1fr 1fr; 
+            padding: 10px 15px; color: var(--text-sec); font-size: 11px; 
+            text-transform: uppercase; letter-spacing: 0.5px;
+        }
+        
+        .coin-row { 
+            display: grid; grid-template-columns: 1.6fr 1.1fr 0.9fr; 
+            padding: 14px 15px; align-items: center; border-bottom: 1px solid #1e2329; 
+            cursor: pointer; transition: background 0.2s; gap: 8px;
+        }
+        .coin-row:active { background: #1e2329; }
+        
+        .c-info { display: flex; align-items: center; gap: 12px; }
+        .c-logo { width: 32px; height: 32px; border-radius: 50%; background: var(--border); overflow: hidden; display: flex; align-items: center; justify-content: center; }
+        .c-logo img { width: 100%; height: 100%; object-fit: cover; }
+        
+        .c-name-box { display: flex; flex-direction: column; }
+        .c-name { font-weight: 700; font-size: 15px; color: #ffffff; }
+        .c-vol { font-size: 11px; color: var(--text-sec); margin-top: 2px; }
+
+        .c-price { font-weight: 600; font-size: 15px; text-align: left; }
+        .c-change { 
+            justify-self: end; padding: 7px 0; border-radius: 4px; 
+            font-weight: bold; width: 75px; text-align: center; font-size: 13px;
+        }
+        
+        .up-bg { background: rgba(14, 203, 129, 0.15); color: var(--up); }
+        .down-bg { background: rgba(246, 70, 93, 0.15); color: var(--down); }
+
+        /* Footer */
+        .footer { position: fixed; bottom: 0; width: 100%; height: 75px; background: #181a20; display: flex; justify-content: space-around; align-items: center; border-top: 1px solid #2b3139; z-index: 1000; }
+        .f-nav { text-decoration: none; color: var(--text-sec); text-align: center; font-size: 10px; flex: 1; display: flex; flex-direction: column; align-items: center; gap: 4px; }
+        .f-nav i { font-size: 22px; }
+        .f-nav.active { color: var(--primary); }
+        
+        .u-curve { position: relative; top: -22px; width: 75px; height: 75px; display: flex; justify-content: center; align-items: center; }
+        .spin-circle { position: absolute; width: 70px; height: 70px; border: 2.5px dashed var(--primary); border-radius: 50%; animation: spin 5s linear infinite; }
+        .crash-link { width: 58px; height: 58px; background: var(--primary); border-radius: 50%; color: black; font-weight: 900; font-size: 11px; display: flex; align-items: center; justify-content: center; text-decoration: none; z-index: 5; box-shadow: 0 0 15px rgba(243, 186, 47, 0.4); }
+        
+        @keyframes spin { 100% { transform: rotate(360deg); } }
+    </style>
+</head>
+<body>
+
+    <header class="header">
+        <h2 style="font-size: 20px; font-weight: 800;">Markets</h2>
+        <div class="search-box">
+            <i class="fas fa-search" style="color:var(--text-sec)"></i>
+            <input type="text" id="marketSearch" placeholder="Search pairs..." oninput="renderMarkets()">
+        </div>
+    </header>
+
+    <div class="market-tabs" id="marketTabs"></div>
+
+    <div class="market-list">
+        <div class="market-header">
+            <span>Name / Vol</span>
+            <span>Last Price</span>
+            <span style="text-align: right;">24h Change</span>
+        </div>
+        <div id="coinListContainer"></div>
+    </div>
+
+    <footer class="footer">
+        <a href="home.html" class="f-nav"><i class="fas fa-home"></i>Home</a>
+        <a href="Market.html" class="f-nav active"><i class="fas fa-chart-pie"></i>Market</a>
+        <div class="u-curve">
+            <div class="spin-circle"></div>
+            <a href="Crash.html" class="crash-link">CRASH</a>
+        </div>
+        <a href="Trade.html" class="f-nav"><i class="fas fa-chart-line"></i>Trade</a>
+        <a href="Wallet.html" class="f-nav"><i class="fas fa-wallet"></i>Wallet</a>
+    </footer>
+
+<script>
+// --- Firebase Configuration ---
+const firebaseConfig = {
+    apiKey: "AIzaSyAMxtJedkehhxJRMPZLjhpKHqneHEWsGlE",
+    authDomain: "smat-exchange.firebaseapp.com",
+    projectId: "smat-exchange",
+    storageBucket: "smat-exchange.firebasestorage.app",
+    messagingSenderId: "836334569396",
+    appId: "1:836334569396:web:679effe640b3453412d4e1"
+};
+firebase.initializeApp(firebaseConfig);
+const db = firebase.database();
+
+let activeMarket = 'USDT';
+let coinData = {}; 
+
+// --- ১. ইনিশিয়ালাইজেশন ---
+function init() {
+    renderTabs();
+    
+    // coin.js থেকে সব কয়েনের জন্য ফায়ারবেস লিসেনার সেট করা
+    GLOBAL_COINS.forEach(coin => {
+        const sym = coin.sym.toLowerCase();
+        db.ref('market/' + sym).on('value', (snapshot) => {
+            const data = snapshot.val();
+            if (data) {
+                coinData[sym] = data;
+                renderMarkets(); // ডাটা আপডেট হলে অটো রেন্ডার
+                if(sym === 'smat') renderTabs(); // SMAT প্রাইস চেঞ্জ হলে ট্যাব আপডেট হতে পারে
+            }
+        });
+    });
+}
+
+// --- ২. মার্কেট ট্যাব রেন্ডারিং (অটো লোগোসহ) ---
+function renderTabs() {
+    const markets = ['USDT', 'USDC', 'SMAT'];
+    const container = document.getElementById('marketTabs');
+    
+    container.innerHTML = markets.map(m => `
+        <div class="m-tab ${activeMarket === m ? 'active' : ''}" onclick="setMarket('${m}')">
+            <img src="assets/logos/${m.toLowerCase()}.png" class="m-tab-icon" onerror="this.src='assets/logos/generic.png'">
+            ${m}
+        </div>
+    `).join('');
+}
+
+function setMarket(m) {
+    activeMarket = m;
+    renderTabs();
+    renderMarkets();
+}
+
+// --- ৩. কয়েন লিস্ট রেন্ডারিং ---
+function renderMarkets() {
+    const query = document.getElementById('marketSearch').value.toUpperCase();
+    const container = document.getElementById('coinListContainer');
+    
+    // SMAT ভ্যালু ক্যালকুলেশন (SMAT মার্কেট পেয়ারের জন্য)
+    const smatVal = (coinData['smat'] && coinData['smat'].price) ? coinData['smat'].price : 1;
+    
+    // ফিল্টারিং: সার্চ এবং বর্তমান মার্কেট বাদে
+    let filtered = GLOBAL_COINS.filter(c => 
+        c.sym.toUpperCase().includes(query) && 
+        c.sym.toUpperCase() !== activeMarket
+    );
+
+    container.innerHTML = filtered.map(c => {
+        const symLower = c.sym.toLowerCase();
+        const data = coinData[symLower] || { price: c.price, volume: 0, change: 0 };
+        
+        let displayPrice = data.price;
+        if(activeMarket === 'SMAT') displayPrice = data.price / smatVal;
+        
+        const change = data.change || 0;
+        const changeClass = change >= 0 ? 'up-bg' : 'down-bg';
+        const changeSign = change >= 0 ? '+' : '';
+
+        return `
+            <div class="coin-row" onclick="location.href='Trade.html?coin=${c.sym.toUpperCase()}'">
+                <div class="c-info">
+                    <div class="c-logo">
+                        <img src="assets/logos/${symLower}.png" onerror="this.src='assets/logos/generic.png'">
+                    </div>
+                    <div class="c-name-box">
+                        <div class="c-name">${c.sym.toUpperCase()}<span style="font-size:11px; color:var(--text-sec); font-weight:normal;">/${activeMarket}</span></div>
+                        <div class="c-vol">Vol: ${parseFloat(data.volume).toLocaleString()}</div>
+                    </div>
+                </div>
+                
+                <div class="c-price" style="color: ${change >= 0 ? 'var(--up)' : 'var(--down)'}">
+                    ${displayPrice.toFixed(displayPrice < 1 ? 6 : 2)}
+                </div>
+
+                <div class="c-change ${changeClass}">
+                    ${changeSign}${change}%
+                </div>
+            </div>
+        `;
+    }).join('');
+}
+
+window.onload = init;
+</script>
+</body>
+</html>
