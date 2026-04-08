@@ -577,10 +577,22 @@ function processTrade() {
 }
 
 // --- ৯. হিস্টোরি ম্যানেজমেন্ট ---
+
+// প্রতিটা ট্যাবের জন্য আলাদা লিমিট ট্র্যাকিং
+let globalLimit = 20;
+let myLimit = 20;
+let unLimit = 20;
+
 function setHTab(tab) {
     activeHTab = tab;
+    // ট্যাব পরিবর্তন করলে ভিউ আবার ২০ থেকে শুরু হবে
+    globalLimit = 20; 
+    myLimit = 20;
+    unLimit = 20;
+    
     document.querySelectorAll('.h-tab').forEach(t => t.classList.remove('active'));
-    document.getElementById('tab-' + tab).classList.add('active');
+    const tabEl = document.getElementById('tab-' + tab);
+    if(tabEl) tabEl.classList.add('active');
     renderHistory();
 }
 
@@ -588,33 +600,70 @@ function saveToHistory(type, order) {
     let key = type + 'Orders';
     let history = JSON.parse(localStorage.getItem(key)) || [];
     history.unshift(order);
-    localStorage.setItem(key, JSON.stringify(history.slice(0, 50)));
+    // LocalStorage এ সর্বোচ্চ ৫০-১০০ টা হিস্টোরি রাখা ভালো
+    localStorage.setItem(key, JSON.stringify(history.slice(0, 100)));
 }
 
 function renderHistory() {
     const body = document.getElementById('hBody');
     const head = document.getElementById('hHead');
+    const showMoreBtn = document.getElementById('showMoreBox'); 
     if(!body || !activeCoin) return;
     
     const s = activeCoin.sym.toUpperCase();
+    const smatVal = window["smatVal"] || 1;
+
+    // ১. গ্লোবাল হিস্টোরি (Firebase থেকে)
     if (activeHTab === 'global') {
-        db.ref('history/global').limitToLast(20).once('value', (snap) => {
-            const data = Object.values(snap.val() || {}).reverse().filter(o => o.s === s);
+        db.ref('history/global').orderByChild('s').equalTo(s).limitToLast(100).once('value', (snap) => {
+            const allData = [];
+            snap.forEach(child => { allData.unshift(child.val()); });
+            
+            const visibleData = allData.slice(0, globalLimit);
             head.innerHTML = `<tr><th>Time</th><th>Side</th><th>Price</th><th>Amount</th></tr>`;
-            body.innerHTML = data.map(o => `<tr><td>${o.time}</td><td class="${o.side==='buy'?'up':'down'}">${o.side.toUpperCase()}</td><td>${o.p.toFixed(4)}</td><td>${o.a.toFixed(4)}</td></tr>`).join('');
+            body.innerHTML = visibleData.map(o => {
+                let p = activeMarket === 'SMAT' ? (o.p / smatVal) : o.p;
+                return `<tr><td>${o.time}</td><td class="${o.side==='buy'?'up':'down'}">${o.side.toUpperCase()}</td><td>${p.toFixed(4)}</td><td>${o.a.toFixed(4)}</td></tr>`;
+            }).join('');
+
+            if(showMoreBtn) showMoreBtn.style.display = allData.length > globalLimit ? 'block' : 'none';
         });
-    } else {
-        const data = JSON.parse(localStorage.getItem(activeHTab + 'Orders')) || [];
-        const filtered = data.filter(o => o.s === s).slice(0, historyLimit);
+    } 
+    // ২. মাই ট্রেড এবং আনসাকসেসফুল (LocalStorage থেকে)
+    else {
+        const key = activeHTab + 'Orders';
+        const allData = (JSON.parse(localStorage.getItem(key)) || []).filter(o => o.s === s);
+        
+        const currentLimit = activeHTab === 'my' ? myLimit : unLimit;
+        const visibleData = allData.slice(0, currentLimit);
+
         if (activeHTab === 'un') {
             head.innerHTML = `<tr><th>Pair</th><th>Price</th><th>Amount</th><th>Action</th></tr>`;
-            body.innerHTML = filtered.map(o => `<tr><td>${o.s}/${o.market}</td><td>${o.p.toFixed(4)}</td><td>${o.a.toFixed(4)}</td><td class="down" onclick="cancelOrder(${o.id})">Cancel</td></tr>`).join('');
+            body.innerHTML = visibleData.map(o => {
+                let p = o.market === 'SMAT' ? (o.p / smatVal) : o.p;
+                return `<tr><td>${o.s}/${o.market}</td><td>${parseFloat(p).toFixed(4)}</td><td>${parseFloat(o.a).toFixed(4)}</td><td class="down" style="cursor:pointer" onclick="cancelOrder(${o.id})">Cancel</td></tr>`;
+            }).join('');
         } else {
             head.innerHTML = `<tr><th>Time</th><th>Side</th><th>Price</th><th>Amount</th></tr>`;
-            body.innerHTML = filtered.map(o => `<tr><td>${o.time}</td><td class="${o.side==='buy'?'up':'down'}">${o.side.toUpperCase()}</td><td>${o.p.toFixed(4)}</td><td>${o.a.toFixed(4)}</td></tr>`).join('');
+            body.innerHTML = visibleData.map(o => {
+                let p = activeMarket === 'SMAT' ? (o.p / smatVal) : o.p;
+                return `<tr><td>${o.time}</td><td class="${o.side==='buy'?'up':'down'}">${o.side.toUpperCase()}</td><td>${parseFloat(p).toFixed(4)}</td><td>${parseFloat(o.a).toFixed(4)}</td></tr>`;
+            }).join('');
         }
+
+        if(showMoreBtn) showMoreBtn.style.display = allData.length > currentLimit ? 'block' : 'none';
     }
 }
+
+// Show More বাটন ফাংশন
+function showMoreHistory() {
+    if (activeHTab === 'global') globalLimit += 10;
+    else if (activeHTab === 'my') myLimit += 10;
+    else if (activeHTab === 'un') unLimit += 10;
+    
+    renderHistory();
+}
+
 
 function cancelOrder(id) {
     if(!checkAuth()) return;
