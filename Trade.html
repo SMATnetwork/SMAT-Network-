@@ -284,6 +284,17 @@
         };
     }
 
+// --- ৩. পেয়ার এবং মার্কেট ট্যাব লজিক ---
+ function togglePopup(show) {
+ if(show && !checkAuth()) return;
+ const popup = document.getElementById('pairPopup');
+ if(show) {
+ popup.style.display = 'flex';
+ renderMarketTabs();
+ renderPairs();
+ } else popup.style.display = 'none';
+ }
+
     function updatePriceInputs() {
         const smatVal = window["smatVal"] || 1;
         const currentPrice = window[activeCoin.sym.toLowerCase() + "Val"] || activeCoin.price;
