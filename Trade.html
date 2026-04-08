@@ -592,29 +592,51 @@ function renderHistory() {
 }
 
 function cancelOrder(id) {
+    if(!checkAuth()) return;
     const s = activeCoin.sym.toUpperCase();
+    
+    // ১. প্রথমে Firebase থেকে অর্ডারটি খুঁজে বের করা এবং ডিলিট করা
     db.ref('orders/' + s).once('value', (snap) => {
-        let data = snap.val();
-        const order = [...(data.asks||[]), ...(data.bids||[])].find(o => o.id === id);
-        if(order && order.userId === localStorage.getItem('userId')) {
+        let data = snap.val() || { asks: [], bids: [] };
+        
+        // আস্ক এবং বিড উভয় লিস্ট থেকেই অর্ডারটি খোঁজা
+        const allOrders = [...(data.asks || []), ...(data.bids || [])];
+        const order = allOrders.find(o => o.id === id);
+
+        if (order) {
+            // ২. ব্যালেন্স রিফান্ড লজিক
             if (order.side === 'buy') {
                 const key = order.market.toLowerCase() + '_balance';
-                const bal = (parseFloat(localStorage.getItem(key)) || 0) + (order.p * order.a * (1+FEE_RATE));
-                localStorage.setItem(key, bal.toFixed(4));
+                const refundAmt = order.p * order.a * (1 + FEE_RATE);
+                const currentBal = parseFloat(localStorage.getItem(key)) || 0;
+                localStorage.setItem(key, (currentBal + refundAmt).toFixed(4));
             } else {
                 const key = order.s.toLowerCase() + '_balance';
-                const bal = (parseFloat(localStorage.getItem(key)) || 0) + order.a;
-                localStorage.setItem(key, bal.toFixed(4));
+                const currentBal = parseFloat(localStorage.getItem(key)) || 0;
+                localStorage.setItem(key, (currentBal + order.a).toFixed(4));
             }
-            data.asks = (data.asks||[]).filter(o => o.id !== id);
-            data.bids = (data.bids||[]).filter(o => o.id !== id);
+
+            // ৩. Firebase থেকে রিমুভ করা
+            data.asks = (data.asks || []).filter(o => o.id !== id);
+            data.bids = (data.bids || []).filter(o => o.id !== id);
             db.ref('orders/' + s).set(data);
-            let un = JSON.parse(localStorage.getItem('unOrders')) || [];
-            localStorage.setItem('unOrders', JSON.stringify(un.filter(o => o.id !== id)));
+
+            // ৪. LocalStorage (Unsuccessful tab) থেকে রিমুভ করা
+            let unOrders = JSON.parse(localStorage.getItem('unOrders')) || [];
+            unOrders = unOrders.filter(o => o.id !== id);
+            localStorage.setItem('unOrders', JSON.stringify(unOrders));
+
+            alert("Order Cancelled Successfully!");
+            refreshUI();
+        } else {
+            // যদি Firebase-এ না পাওয়া যায়, শুধু লোকাল লিস্ট থেকে মুছে ফেলা (নিরাপত্তার জন্য)
+            let unOrders = JSON.parse(localStorage.getItem('unOrders')) || [];
+            localStorage.setItem('unOrders', JSON.stringify(unOrders.filter(o => o.id !== id)));
             refreshUI();
         }
     });
 }
+
 
 function syncUnsuccessfulOrder(id, qty) {
     let un = JSON.parse(localStorage.getItem('unOrders')) || [];
