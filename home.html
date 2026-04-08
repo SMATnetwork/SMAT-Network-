@@ -192,23 +192,6 @@
                 badge.className = 'status-badge status-unverified';
             }
         }
-        // --- রিয়াল-টাইম প্রাইস আপডেট লজিক শুরু ---
-        const priceRef = ref(db, 'prices'); // আপনার ডাটাবেজের 'prices' পাথ
-        onValue(priceRef, (snapshot) => {
-            const data = snapshot.val();
-            if (data) {
-                // ডাটাবেজ থেকে আসা প্রতিটা কয়েনের দাম localStorage-এ আপডেট করা
-                Object.keys(data).forEach(coinSym => {
-                    localStorage.setItem(coinSym.toLowerCase() + "_latest_price", data[coinSym].price);
-                });
-                
-                // যদি renderCoins ফাংশনটি ব্রাউজারে তৈরি থাকে, তবে কল হবে
-                if (typeof renderCoins === 'function') {
-                    renderCoins(currentActiveTab); 
-                }
-            }
-        });
-        // --- রিয়াল-টাইম প্রাইস আপডেট লজিক শেষ ---
 
         window.logout = () => {
             signOut(auth).then(() => { localStorage.clear(); window.location.href = 'logIn.html'; });
