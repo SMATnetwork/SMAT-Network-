@@ -455,13 +455,10 @@ function renderOrderBook() {
 
 function matchOrders(symbol) {
     let pair = orderBoard[symbol];
-    if (!pair || !pair.asks || !pair.bids || pair.asks.length === 0 || pair.bids.length === 0) return;
+    if (!pair || !pair.asks || !pair.bids) return;
 
-    pair.asks.sort((a, b) => a.p - b.p); 
-    pair.bids.sort((a, b) => b.p - a.p); 
-    
     let isMatched = false;
-    const currentUserId = localStorage.getItem('userId'); 
+    const currentUserId = String(localStorage.getItem('userId')); 
 
     while (pair.asks.length > 0 && pair.bids.length > 0 && parseFloat(pair.bids[0].p) >= parseFloat(pair.asks[0].p)) {
         isMatched = true;
@@ -470,14 +467,8 @@ function matchOrders(symbol) {
         let matchQty = Math.min(parseFloat(ask.a), parseFloat(bid.a));
         let matchPrice = parseFloat(ask.p);
 
-        // ১. মার্কেট প্রাইস ও ভলিউম আপডেট
-        const volKey = symbol.toLowerCase() + "_volume";
-        let curVol = parseFloat(localStorage.getItem(volKey)) || 0;
-        let newVol = (curVol + (matchQty * matchPrice)).toFixed(2);
-        db.ref('market/' + symbol.toLowerCase()).update({ price: matchPrice, volume: newVol });
-
-        // ২. যদি আপনার নিজের বাই অর্ডার ম্যাচ হয়
-        if (String(bid.userId) === String(currentUserId)) {
+        // বাইয়ার যদি আপনি হন
+        if (String(bid.userId) === currentUserId) {
             const coinKey = symbol.toLowerCase() + "_balance";
             const currentBal = parseFloat(localStorage.getItem(coinKey)) || 0;
             const receivedAmt = matchQty * (1 - FEE_RATE);
@@ -485,14 +476,13 @@ function matchOrders(symbol) {
             
             saveToHistory('my', {
                 time: new Date().toLocaleTimeString(), 
-                p: matchPrice, a: matchQty, s: symbol, side: 'buy',
-                market: bid.market || 'USDT'
+                p: matchPrice, a: matchQty, s: symbol, side: 'buy', market: bid.market
             });
             syncUnsuccessfulOrder(bid.id, matchQty);
         }
 
-        // ৩. যদি আপনার নিজের সেল অর্ডার ম্যাচ হয়
-        if (String(ask.userId) === String(currentUserId)) {
+        // সেলার যদি আপনি হন
+        if (String(ask.userId) === currentUserId) {
             const mKey = (ask.market || 'USDT').toLowerCase() + '_balance';
             const currentBal = parseFloat(localStorage.getItem(mKey)) || 0;
             const receivedCash = (matchQty * matchPrice) * (1 - FEE_RATE);
@@ -500,20 +490,16 @@ function matchOrders(symbol) {
             
             saveToHistory('my', {
                 time: new Date().toLocaleTimeString(), 
-                p: matchPrice, a: matchQty, s: symbol, side: 'sell',
-                market: ask.market || 'USDT'
+                p: matchPrice, a: matchQty, s: symbol, side: 'sell', market: ask.market
             });
             syncUnsuccessfulOrder(ask.id, matchQty);
         }
 
-        // ৪. গ্লোবাল হিস্টোরি (Firebase)
+        // গ্লোবাল হিস্টোরি
         db.ref('history/global').push({
-            time: new Date().toLocaleTimeString(), 
-            p: matchPrice, a: matchQty, s: symbol, 
-            side: ask.time > bid.time ? 'sell' : 'buy'
+            time: new Date().toLocaleTimeString(), p: matchPrice, a: matchQty, s: symbol, side: 'buy'
         });
 
-        // ৫. অর্ডার বুক আপডেট (আংশিক বিয়োগ)
         ask.a = (parseFloat(ask.a) - matchQty).toFixed(8);
         bid.a = (parseFloat(bid.a) - matchQty).toFixed(8);
 
@@ -528,6 +514,7 @@ function matchOrders(symbol) {
     }
 }
 
+
 function processTrade() {
     if(!checkAuth()) return; 
     let p = parseFloat(document.getElementById('priceInp').value);
@@ -536,7 +523,8 @@ function processTrade() {
     if (isNaN(p) || isNaN(a) || p <= 0 || a <= 0) return alert("Invalid Input");
     
     const s = activeCoin.sym.toUpperCase();
-    const orderId = Date.now(); // ইউনিক আইডি
+    const orderId = String(Date.now()); // স্ট্রিং আইডি
+    const currentUid = String(localStorage.getItem('userId')); // স্ট্রিং ইউজার আইডি
 
     if (tradeSide === 'buy') {
         const balKey = activeMarket.toLowerCase() + '_balance';
@@ -552,15 +540,15 @@ function processTrade() {
     }
     
     const orderObj = { 
-        id: orderId, userId: localStorage.getItem('userId'), 
+        id: orderId, 
+        userId: currentUid, 
         p: p, a: a, s: s, side: tradeSide, 
-        time: new Date().toLocaleTimeString(), market: activeMarket 
+        time: new Date().toLocaleTimeString(), 
+        market: activeMarket 
     };
     
-    // ১. Unsuccessful হিস্টোরিতে সেভ
     saveToHistory('un', orderObj);
 
-    // ২. Firebase-এ পাঠানো
     db.ref('orders/' + s).once('value', (snap) => {
         let data = snap.val() || { asks: [], bids: [] };
         if (tradeSide === 'buy') (data.bids = data.bids || []).push(orderObj);
@@ -571,7 +559,6 @@ function processTrade() {
     document.getElementById('amountInp').value = "";
     refreshUI();
 }
-
 
 // --- ৯. হিস্টোরি ম্যানেজমেন্ট ---
 let globalLimit = 20;
@@ -681,7 +668,6 @@ function cancelOrder(id) {
 
 function syncUnsuccessfulOrder(id, matchQty) {
     let un = JSON.parse(localStorage.getItem('unOrders')) || [];
-    // ID টাইপ নিরাপদ করতে Number ও String উভয় চেক রাখা হয়েছে
     let idx = un.findIndex(o => String(o.id) === String(id)); 
     
     if (idx !== -1) {
@@ -689,12 +675,12 @@ function syncUnsuccessfulOrder(id, matchQty) {
         let remainingAmt = currentAmt - parseFloat(matchQty);
         
         if (remainingAmt <= 0.00000001) {
-            un.splice(idx, 1); // পুরো অর্ডার সফল হলে মুছে ফেলুন
+            un.splice(idx, 1);
         } else {
-            un[idx].a = remainingAmt.toFixed(8); // বাকি অংশটুকু আপডেট করুন
+            un[idx].a = remainingAmt.toFixed(8);
         }
         localStorage.setItem('unOrders', JSON.stringify(un));
-        renderHistory(); // সাথে সাথে UI আপডেট করুন
+        renderHistory(); // এটি অত্যন্ত জরুরি
     }
 }
 
