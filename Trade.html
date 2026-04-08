@@ -454,7 +454,6 @@ function renderOrderBook() {
     document.getElementById('curVol').innerText = localStorage.getItem(activeCoin.sym.toLowerCase() + "_volume") || "0.0";
 }
 
-// --- ৭. গ্লোবাল ম্যাচিং ইঞ্জিন ---
 function matchOrders(symbol) {
     let pair = orderBoard[symbol];
     if (!pair || !pair.asks || !pair.bids || pair.asks.length === 0 || pair.bids.length === 0) return;
@@ -463,6 +462,8 @@ function matchOrders(symbol) {
     pair.bids.sort((a, b) => b.p - a.p); 
     
     let isMatched = false;
+    const currentUserId = localStorage.getItem('userId'); // আপনার লগইন করা ইউজার আইডি
+
     while (pair.asks.length > 0 && pair.bids.length > 0 && parseFloat(pair.bids[0].p) >= parseFloat(pair.asks[0].p)) {
         isMatched = true;
         let ask = pair.asks[0]; 
@@ -470,33 +471,55 @@ function matchOrders(symbol) {
         let matchQty = Math.min(ask.a, bid.a);
         let matchPrice = ask.p;
 
-        // ভলিউম ক্যালকুলেশন
+        // ১. মার্কেট প্রাইস ও ভলিউম আপডেট
         const volKey = symbol.toLowerCase() + "_volume";
         let curVol = parseFloat(localStorage.getItem(volKey)) || 0;
         let newVol = (curVol + (matchQty * matchPrice)).toFixed(2);
-        
-        // ফায়ারবেসে প্রাইস ও ভলিউম পুশ (সবার জন্য আপডেট হবে)
         db.ref('market/' + symbol.toLowerCase()).update({ price: matchPrice, volume: newVol });
 
-        // নিজের ট্রেড হলে ব্যালেন্স আপডেট
-        if(bid.isUser && bid.userId === localStorage.getItem('userId')) {
+        // ২. আপনার নিজের বাই ট্রেড সফল হলে
+        if(bid.userId === currentUserId) {
             const coinKey = symbol.toLowerCase() + "_balance";
-            const bal = (parseFloat(localStorage.getItem(coinKey)) || 0) + (matchQty * (1-FEE_RATE));
+            const bal = (parseFloat(localStorage.getItem(coinKey)) || 0) + (matchQty * (1 - FEE_RATE));
             localStorage.setItem(coinKey, bal.toFixed(4));
-            saveToHistory('my', {time: new Date().toLocaleTimeString(), p: matchPrice, a: matchQty, s: symbol, side: 'buy'});
+            
+            // My Trade History-তে সেভ
+            saveToHistory('my', {
+                time: new Date().toLocaleTimeString(), 
+                p: matchPrice, 
+                a: matchQty, 
+                s: symbol, 
+                side: 'buy',
+                market: bid.market || 'USDT'
+            });
             syncUnsuccessfulOrder(bid.id, matchQty);
         }
-        if(ask.isUser && ask.userId === localStorage.getItem('userId')) {
-            const mKey = ask.market.toLowerCase() + '_balance';
-            const bal = (parseFloat(localStorage.getItem(mKey)) || 0) + (matchQty * matchPrice * (1-FEE_RATE));
+
+        // ৩. আপনার নিজের সেল ট্রেড সফল হলে
+        if(ask.userId === currentUserId) {
+            const mKey = (ask.market || 'USDT').toLowerCase() + '_balance';
+            const bal = (parseFloat(localStorage.getItem(mKey)) || 0) + (matchQty * matchPrice * (1 - FEE_RATE));
             localStorage.setItem(mKey, bal.toFixed(4));
-            saveToHistory('my', {time: new Date().toLocaleTimeString(), p: matchPrice, a: matchQty, s: symbol, side: 'sell'});
+            
+            // My Trade History-তে সেভ
+            saveToHistory('my', {
+                time: new Date().toLocaleTimeString(), 
+                p: matchPrice, 
+                a: matchQty, 
+                s: symbol, 
+                side: 'sell',
+                market: ask.market || 'USDT'
+            });
             syncUnsuccessfulOrder(ask.id, matchQty);
         }
 
-        // গ্লোবাল হিস্টোরি
+        // ৪. গ্লোবাল হিস্টোরি (সবার জন্য)
         db.ref('history/global').push({
-            time: new Date().toLocaleTimeString(), p: matchPrice, a: matchQty, s: symbol, side: ask.time > bid.time ? 'sell' : 'buy'
+            time: new Date().toLocaleTimeString(), 
+            p: matchPrice, 
+            a: matchQty, 
+            s: symbol, 
+            side: ask.time > bid.time ? 'sell' : 'buy'
         });
 
         ask.a -= matchQty; bid.a -= matchQty;
@@ -507,8 +530,10 @@ function matchOrders(symbol) {
     if(isMatched) {
         db.ref('orders/' + symbol).set(pair);
         updateBalanceDisplay();
+        renderHistory(); // হিস্টোরি রি-রেন্ডার করা
     }
 }
+
 
 // --- ৮. ট্রেড প্রসেস ---
 function processTrade() {
