@@ -508,18 +508,20 @@
             renderCoins(category);
         }
 
-        Function renderCoins(filter = 'hot') {
+        function renderCoins(filter = 'hot') {
     const container = document.getElementById('coinContainer');
     if (!container) return;
     const liveData = (typeof GLOBAL_COINS !== 'undefined') ? GLOBAL_COINS : [];
     
+    // SMAT কনভার্সন ভ্যালু (Trade.html এর মতো)
+    const smatVal = window["smatVal"] || 1;
     const now = Date.now();
     const threeDaysMs = 3 * 24 * 60 * 60 * 1000;
 
     let filtered = liveData;
     if (filter === 'hot') filtered = [...liveData].slice(0, 10);
-    else if (filter === 'gainer') filtered = [...liveData].sort((a,b) => b.price - a.price).slice(0, 8);
-    else if (filter === 'loser') filtered = [...liveData].sort((a,b) => a.price - b.price).slice(0, 8);
+    else if (filter === 'gainer') filtered = [...liveData].sort((a,b) => (window[b.sym.toLowerCase() + "Val"] || b.price) - (window[a.sym.toLowerCase() + "Val"] || a.price)).slice(0, 8);
+    else if (filter === 'loser') filtered = [...liveData].sort((a,b) => (window[a.sym.toLowerCase() + "Val"] || a.price) - (window[b.sym.toLowerCase() + "Val"] || b.price)).slice(0, 8);
     else if (filter === 'new') {
         filtered = liveData.filter(coin => (now - (coin.listedAt || 0)) < threeDaysMs);
     }
@@ -528,16 +530,16 @@
     filtered.forEach(coin => {
         const sym = coin.sym.toLowerCase();
         
-        // ১. লোকাল স্টোরেজ থেকে লেটেস্ট প্রাইস নেওয়া
-        const savedPrice = localStorage.getItem(sym + "_latest_price");
-        const currentPrice = savedPrice ? parseFloat(savedPrice) : coin.price;
+        // সরাসরি ফায়ারবেস থেকে আসা গ্লোবাল ভ্যালু নেওয়া (Trade.html স্টাইল)
+        const currentPriceRaw = window[sym + "Val"] || parseFloat(localStorage.getItem(sym + "_latest_price")) || coin.price;
         
-        // ২. লাল-সবুজ পরিবর্তনের লজিক (ডিফল্ট প্রাইসের সাথে তুলনা করে)
-        // যদি বর্তমান দাম ডিফল্ট দামের চেয়ে বেশি হয় তবে সবুজ, কম হলে লাল
-        const diff = currentPrice - coin.price;
+        // হোম পেজে যদি ডিফল্ট USDT মার্কেট থাকে তবে সরাসরি দাম, নতুবা কনভার্ট হবে
+        const displayPrice = currentPriceRaw; 
+
+        // আগের দামের সাথে তুলনা করে কালার সেট (সরাসরি ট্রেড লজিক)
+        const diff = currentPriceRaw - coin.price;
         const isUp = diff >= 0; 
         const changePercent = coin.price > 0 ? ((diff / coin.price) * 100).toFixed(2) : "0.00";
-        
         const isNew = (now - (coin.listedAt || 0)) < threeDaysMs;
         
         htmlContent += `
@@ -546,14 +548,14 @@
                     <img src="assets/logos/${sym}.png" class="coin-icon" onerror="this.src='https://via.placeholder.com/40?text=${coin.sym[0].toUpperCase()}'">
                     <div>
                         <div style="font-weight:bold">
-                            ${coin.sym.toUpperCase()}
+                            ${coin.sym.toUpperCase()}/USDT
                             ${isNew ? '<span class="new-badge">NEW</span>' : ''}
                         </div>
                         <div style="font-size:12px; color:var(--text-sec)">${coin.name}</div>
                     </div>
                 </div>
                 <div style="text-align:right">
-                    <div style="font-weight:bold; font-size:16px">$${currentPrice.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 4})}</div>
+                    <div style="font-weight:bold; font-size:16px">$${displayPrice.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 4})}</div>
                     
                     <div class="percent-box" style="background:${isUp ? 'rgba(14, 203, 129, 0.15)' : 'rgba(246, 70, 93, 0.15)'}; color:${isUp ? 'var(--up)' : 'var(--down)'}">
                         ${isUp ? '+' : ''}${changePercent}%
@@ -565,8 +567,6 @@
     container.innerHTML = htmlContent || '<p style="text-align:center; color:var(--text-sec); margin-top:20px;">No coins found.</p>';
 }
 
-
-        
         window.onload = () => {
         renderCoins('hot');
         setInterval(() => { renderCoins(currentActiveTab); }, 1000);
