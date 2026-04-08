@@ -7,40 +7,35 @@ const firebaseConfig = {
     messagingSenderId: "836334569396",
     appId: "1:836334569396:web:679effe640b3453412d4e1"
 };
-
-// Initialize Firebase
 firebase.initializeApp(firebaseConfig);
 const db = firebase.database();
 
 let activeMarket = 'USDT';
 let coinData = {}; 
 
-// ১. ইনিশিয়ালাইজেশন
+// --- ১. ইনিশিয়ালাইজেশন ---
 function init() {
     renderTabs();
     
-    // coin.js এর GLOBAL_COINS থেকে ডেটা লোড করা
-    if (typeof GLOBAL_COINS !== 'undefined') {
-        GLOBAL_COINS.forEach(coin => {
-            const sym = coin.sym.toLowerCase();
-            db.ref('market/' + sym).on('value', (snapshot) => {
-                const data = snapshot.val();
-                if (data) {
-                    coinData[sym] = data;
-                    renderMarkets(); // লাইভ রেন্ডারিং
-                    if(sym === 'smat') renderTabs(); // SMAT প্রাইস চেঞ্জ হলে ট্যাব রি-রেন্ডার
-                }
-            });
+    // coin.js থেকে সব কয়েনের জন্য ফায়ারবেস লিসেনার সেট করা
+    GLOBAL_COINS.forEach(coin => {
+        const sym = coin.sym.toLowerCase();
+        db.ref('market/' + sym).on('value', (snapshot) => {
+            const data = snapshot.val();
+            if (data) {
+                coinData[sym] = data;
+                renderMarkets(); // ডাটা আপডেট হলে অটো রেন্ডার
+                if(sym === 'smat') renderTabs(); // SMAT প্রাইস চেঞ্জ হলে ট্যাব আপডেট হতে পারে
+            }
         });
-    }
+    });
 }
 
-// ২. মার্কেট ট্যাব রেন্ডারিং (অটো লোগোসহ)
+// --- ২. মার্কেট ট্যাব রেন্ডারিং (অটো লোগোসহ) ---
 function renderTabs() {
     const markets = ['USDT', 'USDC', 'SMAT'];
     const container = document.getElementById('marketTabs');
-    if (!container) return;
-
+    
     container.innerHTML = markets.map(m => `
         <div class="m-tab ${activeMarket === m ? 'active' : ''}" onclick="setMarket('${m}')">
             <img src="assets/logos/${m.toLowerCase()}.png" class="m-tab-icon" onerror="this.src='assets/logos/generic.png'">
@@ -55,15 +50,15 @@ function setMarket(m) {
     renderMarkets();
 }
 
-// ৩. কয়েন লিস্ট রেন্ডারিং
+// --- ৩. কয়েন লিস্ট রেন্ডারিং ---
 function renderMarkets() {
     const query = document.getElementById('marketSearch').value.toUpperCase();
     const container = document.getElementById('coinListContainer');
-    if (!container || typeof GLOBAL_COINS === 'undefined') return;
     
-    // SMAT মার্কেটের জন্য প্রাইস কনভার্সন লজিক
+    // SMAT ভ্যালু ক্যালকুলেশন (SMAT মার্কেট পেয়ারের জন্য)
     const smatVal = (coinData['smat'] && coinData['smat'].price) ? coinData['smat'].price : 1;
     
+    // ফিল্টারিং: সার্চ এবং বর্তমান মার্কেট বাদে
     let filtered = GLOBAL_COINS.filter(c => 
         c.sym.toUpperCase().includes(query) && 
         c.sym.toUpperCase() !== activeMarket
@@ -104,5 +99,4 @@ function renderMarkets() {
     }).join('');
 }
 
-// স্ক্রিপ্ট লোড হওয়ার পর রান হবে
 window.onload = init;
