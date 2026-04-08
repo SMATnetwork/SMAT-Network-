@@ -470,99 +470,94 @@
     </footer>
 
     <script>
-    // ১. গ্লোবাল ভ্যারিয়েবল যা Firebase থেকে আসা দাম ধরে রাখবে
-    window.currentPrices = {}; 
-    window.currentActiveTab = 'hot';
-
-    function checkAuth(e) {
-        if(localStorage.getItem('isLoggedIn') !== 'true') {
-            if(e) e.preventDefault();
-            alert("Access Denied! Please Login first.");
-            toggleSidebar();
-            return false;
-        }
-        return true;
-    }
-
-    function toggleSidebar() {
-        document.getElementById('sidebar').classList.toggle('active');
-        document.getElementById('overlay').style.display = 
-            document.getElementById('sidebar').classList.contains('active') ? 'block' : 'none';
-    }
-
-    function switchTab(element, category) {
-        window.currentActiveTab = category;
-        document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
-        element.classList.add('active');
-        window.renderCoins(category);
-    }
-
-    // ২. রেন্ডার ফাংশন যা সরাসরি window.currentPrices থেকে ডাটা নেবে
-    window.renderCoins = function(filter = 'hot') {
-        const container = document.getElementById('coinContainer');
-        if (!container) return;
-        
-        const liveData = (typeof GLOBAL_COINS !== 'undefined') ? GLOBAL_COINS : [];
-        const now = Date.now();
-        const threeDaysMs = 3 * 24 * 60 * 60 * 1000;
-
-        let filtered = liveData;
-        if (filter === 'hot') filtered = [...liveData].slice(0, 10);
-        else if (filter === 'gainer') filtered = [...liveData].sort((a,b) => b.price - a.price).slice(0, 8);
-        else if (filter === 'loser') filtered = [...liveData].sort((a,b) => a.price - b.price).slice(0, 8);
-        else if (filter === 'new') {
-            filtered = liveData.filter(coin => (now - (coin.listedAt || 0)) < threeDaysMs);
-        }
-
-        let htmlContent = '';
-        filtered.forEach(coin => {
-            const sym = coin.sym.toLowerCase();
-            
-            // সরাসরি ভ্যারিয়েবল থেকে লেটেস্ট প্রাইস নেওয়া
-            const basePrice = parseFloat(coin.price) || 0;
-            const currentPrice = window.currentPrices[sym] || basePrice;
-
-            const diff = currentPrice - basePrice;
-            const isUp = diff >= 0; 
-            
-            let changePercent = "0.00";
-            if (basePrice > 0) {
-                changePercent = ((diff / basePrice) * 100).toFixed(2);
+        let currentActiveTab = 'hot';
+        function checkAuth(e) {
+            if(localStorage.getItem('isLoggedIn') !== 'true') {
+                if(e) e.preventDefault();
+                alert("Access Denied! Please Login first.");
+                toggleSidebar();
+                return false;
             }
-            
-            const isNew = (now - (coin.listedAt || 0)) < threeDaysMs;
-            
-            htmlContent += `
-                <div class="coin-row" onclick="if(checkAuth(event)) window.location.href='Trade.html?coin=${sym}'">
-                    <div style="display:flex; align-items:center; gap:12px;">
-                        <img src="assets/logos/${sym}.png" class="coin-icon" onerror="this.src='https://via.placeholder.com/40?text=${coin.sym[0].toUpperCase()}'">
-                        <div>
-                            <div style="font-weight:bold">
-                                ${coin.sym.toUpperCase()}
-                                ${isNew ? '<span class="new-badge">NEW</span>' : ''}
-                            </div>
-                            <div style="font-size:12px; color:var(--text-sec)">${coin.name}</div>
+            return true;
+        }
+
+        function toggleSidebar() {
+            document.getElementById('sidebar').classList.toggle('active');
+            document.getElementById('overlay').style.display = 
+                document.getElementById('sidebar').classList.contains('active') ? 'block' : 'none';
+        }
+
+        function switchTab(element, category) {
+            currentActiveTab = category;
+            document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+            element.classList.add('active');
+            renderCoins(category);
+        }
+
+        function renderCoins(filter = 'hot') {
+    const container = document.getElementById('coinContainer');
+    if (!container) return;
+    const liveData = (typeof GLOBAL_COINS !== 'undefined') ? GLOBAL_COINS : [];
+    
+    const now = Date.now();
+    const threeDaysMs = 3 * 24 * 60 * 60 * 1000;
+
+    let filtered = liveData;
+    if (filter === 'hot') filtered = [...liveData].slice(0, 10);
+    else if (filter === 'gainer') filtered = [...liveData].sort((a,b) => b.price - a.price).slice(0, 8);
+    else if (filter === 'loser') filtered = [...liveData].sort((a,b) => a.price - b.price).slice(0, 8);
+    else if (filter === 'new') {
+        filtered = liveData.filter(coin => (now - (coin.listedAt || 0)) < threeDaysMs);
+    }
+
+    let htmlContent = '';
+    filtered.forEach(coin => {
+        const sym = coin.sym.toLowerCase();
+        
+        // ১. লোকাল স্টোরেজ থেকে লেটেস্ট প্রাইস নেওয়া
+        const savedPrice = localStorage.getItem(sym + "_latest_price");
+        const currentPrice = savedPrice ? parseFloat(savedPrice) : coin.price;
+        
+        // ২. লাল-সবুজ পরিবর্তনের লজিক (ডিফল্ট প্রাইসের সাথে তুলনা করে)
+        // যদি বর্তমান দাম ডিফল্ট দামের চেয়ে বেশি হয় তবে সবুজ, কম হলে লাল
+        const diff = currentPrice - coin.price;
+        const isUp = diff >= 0; 
+        const changePercent = coin.price > 0 ? ((diff / coin.price) * 100).toFixed(2) : "0.00";
+        
+        const isNew = (now - (coin.listedAt || 0)) < threeDaysMs;
+        
+        htmlContent += `
+            <div class="coin-row" onclick="if(checkAuth(event)) window.location.href='Trade.html?coin=${sym}'">
+                <div style="display:flex; align-items:center; gap:12px;">
+                    <img src="assets/logos/${sym}.png" class="coin-icon" onerror="this.src='https://via.placeholder.com/40?text=${coin.sym[0].toUpperCase()}'">
+                    <div>
+                        <div style="font-weight:bold">
+                            ${coin.sym.toUpperCase()}
+                            ${isNew ? '<span class="new-badge">NEW</span>' : ''}
                         </div>
-                    </div>
-                    <div style="text-align:right">
-                        <div style="font-weight:bold; font-size:16px">$${currentPrice.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 4})}</div>
-                        <div class="percent-box" style="background:${isUp ? 'rgba(14, 203, 129, 0.15)' : 'rgba(246, 70, 93, 0.15)'}; color:${isUp ? 'var(--up)' : 'var(--down)'}">
-                            ${isUp ? '+' : ''}${changePercent}%
-                        </div>
+                        <div style="font-size:12px; color:var(--text-sec)">${coin.name}</div>
                     </div>
                 </div>
-            `;
-        });
-        container.innerHTML = htmlContent || '<p style="text-align:center; color:var(--text-sec); margin-top:20px;">No coins found.</p>';
-    }
+                <div style="text-align:right">
+                    <div style="font-weight:bold; font-size:16px">$${currentPrice.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 4})}</div>
+                    
+                    <div class="percent-box" style="background:${isUp ? 'rgba(14, 203, 129, 0.15)' : 'rgba(246, 70, 93, 0.15)'}; color:${isUp ? 'var(--up)' : 'var(--down)'}">
+                        ${isUp ? '+' : ''}${changePercent}%
+                    </div>
+                </div>
+            </div>
+        `;
+    });
+    container.innerHTML = htmlContent || '<p style="text-align:center; color:var(--text-sec); margin-top:20px;">No coins found.</p>';
+}
 
-    window.onload = () => {
-        window.renderCoins(window.currentActiveTab);
-        setInterval(() => { 
-            window.renderCoins(window.currentActiveTab); 
-        }, 1000);
-    };
-</script>
+
+        
+        window.onload = () => {
+        renderCoins('hot');
+        setInterval(() => { renderCoins(currentActiveTab); }, 1000);
+        };
+    </script>
 
 
 </body>
