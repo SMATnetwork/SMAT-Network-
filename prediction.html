@@ -127,10 +127,11 @@
         sol: { symbol: 'solusdt', round: 40001, logo: "assets/logos/sol.png", unit: "SOL", currentPrice: 0, pending: null }
     };
 
-    let activeKey = 'btc';
-    let user = null;
-    let state = "TRADING";
-    let timeLeft = 0;
+    // Global variables (সব জায়গা থেকে অ্যাক্সেস করার জন্য)
+    window.activeKey = 'btc';
+    window.user = null;
+    window.state = "TRADING";
+    window.timeLeft = 0;
 
     const ctx = document.getElementById('liveChart').getContext('2d');
     const chart = new Chart(ctx, {
@@ -139,13 +140,15 @@
         options: { responsive: true, maintainAspectRatio: false, animation: false, scales: { x: { display: false }, y: { display: false } }, plugins: { legend: { display: false } } }
     });
 
-    // --- REAL-TIME TIMER SYNC (সংশোধিত অংশ) ---
+    // --- ডাটাবেস থেকে টাইমার রিড করা ---
     function syncGlobalTimer() {
+        // আপনার স্ক্রিনশট অনুযায়ী পাথ 'global_market'
         onValue(ref(db, 'global_market'), (snapshot) => {
             const data = snapshot.val();
             if (data) {
-                timeLeft = data.timeLeft; // ডাটাবেস বানান অনুযায়ী
-                state = data.State;       // ডাটাবেসে State বড় হাতের
+                // আপনার ডাটাবেস অনুযায়ী: timeLeft (ছোট হাতের) এবং State (বড় হাতের)
+                window.timeLeft = data.timeLeft || 0;
+                window.state = data.State || "TRADING";
                 updateUI();
             }
         });
@@ -158,45 +161,49 @@
         const downBtn = document.getElementById('downBtn');
         const lpd = document.getElementById('lockedPriceDisplay');
 
-        let m = Math.floor(timeLeft / 60);
-        let s = timeLeft % 60;
+        // টাইমার ফরম্যাটিং
+        let m = Math.floor(window.timeLeft / 60);
+        let s = window.timeLeft % 60;
         clk.innerText = `${m.toString().padStart(2,'0')}:${s.toString().padStart(2,'0')}`;
 
-        if (state === "TRADING") {
+        // অবস্থার ভিত্তিতে UI পরিবর্তন
+        if (window.state === "TRADING") {
             lbl.innerText = "TRADING TIME"; lbl.style.color = "var(--up)";
             upBtn.disabled = false; downBtn.disabled = false;
             lpd.style.display = "none";
-        } else if (state === "CLOSED") {
+        } else if (window.state === "CLOSED") {
             lbl.innerText = "TRADING CLOSED"; lbl.style.color = "var(--down)";
             upBtn.disabled = true; downBtn.disabled = true;
             lpd.style.display = "block";
-            lpd.innerText = "Locked: $" + assets[activeKey].currentPrice.toFixed(2);
-        } else if (state === "WAITING") {
+            lpd.innerText = "Locked: $" + assets[window.activeKey].currentPrice.toFixed(2);
+        } else if (window.state === "WAITING") {
             lbl.innerText = "WAITING RESULT"; lbl.style.color = "var(--warn)";
             upBtn.disabled = true; downBtn.disabled = true;
         }
     }
 
+    // --- ইউজার ডাটা এবং ব্যালেন্স ---
     function loadUserData() {
-        if (!user) return;
-        onValue(ref(db, `users/${user.uid}/balances/${activeKey}`), (s) => {
+        if (!window.user) return;
+        onValue(ref(db, `users/${window.user.uid}/balances/${window.activeKey}`), (s) => {
             document.getElementById('headerBalance').innerText = parseFloat(s.val() || 0).toFixed(8);
         });
-        onValue(ref(db, `history/${user.uid}/${activeKey}`), (s) => {
+        onValue(ref(db, `history/${window.user.uid}/${window.activeKey}`), (s) => {
             renderHistory(s.val() || {});
         });
     }
 
     window.switchAsset = (val) => {
-        activeKey = val;
+        window.activeKey = val;
         document.getElementById('assetLogo').src = assets[val].logo;
         document.getElementById('headerAssetUnit').innerText = assets[val].unit;
-        chart.data.datasets[0].data = Array(60).fill(assets[activeKey].currentPrice);
+        chart.data.datasets[0].data = Array(60).fill(assets[window.activeKey].currentPrice);
         loadUserData();
     };
 
+    // --- বেটিং ফাংশন ---
     window.openBetModal = (side) => {
-        if (state !== "TRADING") return alert("Trading is closed!");
+        if (window.state !== "TRADING") return alert("Trading is closed!");
         document.getElementById('modalTitle').innerText = "Bet " + side;
         document.getElementById('modalAvbl').innerText = document.getElementById('headerBalance').innerText;
         document.getElementById('betModal').style.display = 'flex';
@@ -208,58 +215,19 @@
     window.confirmBet = async () => {
         const amt = parseFloat(document.getElementById('betAmount').value);
         const side = document.getElementById('betModal').dataset.side;
-        const balRef = ref(db, `users/${user.uid}/balances/${activeKey}`);
+        const balRef = ref(db, `users/${window.user.uid}/balances/${window.activeKey}`);
         const snap = await get(balRef);
         const currentBal = parseFloat(snap.val() || 0);
 
         if (isNaN(amt) || amt <= 0 || amt > currentBal) return alert("Invalid Amount");
 
-        assets[activeKey].pending = { side, amount: amt };
-        await update(ref(db, `users/${user.uid}/balances`), { [activeKey]: (currentBal - amt).toFixed(8) });
+        assets[window.activeKey].pending = { side, amount: amt };
+        await update(ref(db, `users/${window.user.uid}/balances`), { [window.activeKey]: (currentBal - amt).toFixed(8) });
         window.closeBetModal();
         document.getElementById('betAmount').value = "";
     };
 
-    async function saveRound(key) {
-        if(!user) return;
-        const rid = assets[key].round;
-        const pb = assets[key].pending;
-        const data = {
-            rid: rid,
-            time: new Date().toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'}),
-            locked: assets[key].currentPrice,
-            action: pb ? pb.side : "---",
-            betAmt: pb ? pb.amount : 0,
-            isPending: true, resPrice: 0, win: ""
-        };
-        await set(ref(db, `history/${user.uid}/${key}/${rid}`), data);
-    }
-
-    async function finalizeRound(key) {
-        if(!user) return;
-        const snap = await get(ref(db, `history/${user.uid}/${key}`));
-        const history = snap.val() || {};
-        for (let rid in history) {
-            if (history[rid].isPending) {
-                const rec = history[rid];
-                const resPrice = assets[key].currentPrice;
-                const win = (rec.action === "UP" && resPrice > rec.locked) || (rec.action === "DOWN" && resPrice < rec.locked);
-                let winText = "Loss";
-                if (rec.action !== "---" && win) {
-                    const winAmt = rec.betAmt * 1.96;
-                    winText = "+" + winAmt.toFixed(8);
-                    const bSnap = await get(ref(db, `users/${user.uid}/balances/${key}`));
-                    const curBal = parseFloat(bSnap.val() || 0);
-                    await update(ref(db, `users/${user.uid}/balances`), { [key]: (curBal + winAmt).toFixed(8) });
-                } else if (rec.action === "---") winText = "No Trade";
-                
-                await update(ref(db, `history/${user.uid}/${key}/${rid}`), { isPending: false, resPrice: resPrice, win: winText });
-            }
-        }
-        assets[key].pending = null;
-        assets[key].round++;
-    }
-
+    // --- হিস্টোরি রেন্ডারিং ---
     function renderHistory(data) {
         const body = document.getElementById('historyBody');
         body.innerHTML = "";
@@ -275,36 +243,36 @@
         });
     }
 
-    // --- MASTER CLOCK (সংশোধিত অংশ) ---
+    // --- মাস্টার ক্লক (শুধু আপনি অ্যাডমিন হিসেবে এটা চালু রাখবেন) ---
     function startMasterClock() {
         setInterval(async () => {
-            if (timeLeft > 0) {
-                timeLeft--;
+            if (window.timeLeft > 0) {
+                window.timeLeft--;
             } else {
-                if (state === "TRADING") { 
-                    state = "CLOSED"; timeLeft = 3; 
-                    Object.keys(assets).forEach(k => saveRound(k));
-                } else if (state === "CLOSED") { 
-                    state = "WAITING"; timeLeft = 180; 
+                if (window.state === "TRADING") { 
+                    window.state = "CLOSED"; window.timeLeft = 3; 
+                } else if (window.state === "CLOSED") { 
+                    window.state = "WAITING"; window.timeLeft = 180; 
                 } else { 
-                    state = "TRADING"; timeLeft = 60; 
-                    Object.keys(assets).forEach(k => finalizeRound(k));
+                    window.state = "TRADING"; window.timeLeft = 60; 
                 }
             }
-            // ডাটাবেস পাথ 'global_market' এবং সঠিক বানান অনুযায়ী আপডেট
-            update(ref(db, 'global_market'), { timeLeft: timeLeft, State: state });
+            // ডাটাবেসে পুশ করা
+            update(ref(db, 'global_market'), { timeLeft: window.timeLeft, State: window.state });
         }, 1000);
     }
 
+    // অথেনটিকেশন চেক
     onAuthStateChanged(auth, (u) => {
         if (u) {
-            user = u;
-            syncGlobalTimer();
+            window.user = u;
+            syncGlobalTimer(); // টাইমার লোড শুরু
             loadUserData();
-            // startMasterClock(); // অ্যাডমিন ফোনের জন্য এটি চালু করুন
+            // startMasterClock(); // আপনি অ্যাডমিন হলে এটি আনকমেন্ট করে একবার পেজ রিফ্রেশ দিন
         }
     });
 
+    // Binance WebSocket (চার্ট এবং লাইভ প্রাইস)
     const streams = Object.values(assets).map(a => `${a.symbol}@aggTrade`).join('/');
     const ws = new WebSocket(`wss://stream.binance.com:9443/stream?streams=${streams}`);
     ws.onmessage = (e) => {
@@ -313,7 +281,7 @@
         for (let k in assets) {
             if (assets[k].symbol === sym) {
                 assets[k].currentPrice = parseFloat(d.data.p);
-                if (k === activeKey) {
+                if (k === window.activeKey) {
                     document.getElementById('priceDisplay').innerText = '$' + assets[k].currentPrice.toFixed(2);
                     chart.data.datasets[0].data.shift();
                     chart.data.datasets[0].data.push(assets[k].currentPrice);
