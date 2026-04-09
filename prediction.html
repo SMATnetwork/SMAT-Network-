@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>SMAT CEX | Professional Engine</title>
+    <title>SMAT CEX | Persistent Engine</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
@@ -26,7 +26,7 @@
         .chart-section { width: 100%; position: relative; background: #000; border-bottom: 1px solid var(--border); height: 32vh; }
         .chart-overlay { position: absolute; top: 0; left: 0; width: 100%; z-index: 10; display: flex; justify-content: space-between; padding: 12px; pointer-events: none; }
         .timer-clock { font-size: 26px; font-weight: 900; }
-        #chartDot { position: absolute; left: 50%; width: 12px; height: 12px; background: var(--cyan); border-radius: 50%; z-index: 5; transform: translateX(-50%); box-shadow: 0 0 15px var(--cyan); }
+        #chartDot { position: absolute; left: 50%; width: 12px; height: 12px; background: var(--cyan); border-radius: 50%; z-index: 5; transform: translateX(-50%); box-shadow: 0 0 15px var(--cyan); transition: top 0.1s linear; }
 
         .history-section { flex: 1; background: var(--card); display: flex; flex-direction: column; overflow: hidden; padding-bottom: 85px; }
         .history-header { text-align: center; padding: 10px; font-size: 15px; font-weight: 900; border-bottom: 1px solid var(--border); background: #12161c; }
@@ -182,7 +182,6 @@
         };
     }
 
-    // --- আপনার দেওয়া অরিজিনাল Timer Logic ---
     function manageTimer() {
         const lbl = document.getElementById('statusLabel');
         const clk = document.getElementById('timerClock');
@@ -224,15 +223,35 @@
     }
 
     onAuthStateChanged(auth, (u) => {
-        user = u;
-        updateBalanceDisplay();
-        renderTable();
+        if (u) {
+            user = u;
+            syncUserData();
+        }
     });
 
-    async function updateBalanceDisplay() {
+    // --- রিফ্রেশ দিলেও ডাটা থাকবে (Real-time Sync) ---
+    function syncUserData() {
         if (!user) return;
-        const snap = await get(ref(db, `users/${user.uid}/balances/${activeKey}`));
-        document.getElementById('headerBalance').innerText = parseFloat(snap.val() || 0).toFixed(8);
+        
+        // ব্যালেন্স সিঙ্ক
+        onValue(ref(db, `users/${user.uid}/balances`), (snapshot) => {
+            const bals = snapshot.val() || {};
+            const currentBal = bals[activeKey] || 0;
+            document.getElementById('headerBalance').innerText = parseFloat(currentBal).toFixed(8);
+        });
+
+        // হিস্ট্রি সিঙ্ক
+        onValue(ref(db, `history/${user.uid}`), (snapshot) => {
+            const allHistory = snapshot.val() || {};
+            // লাস্ট রাউন্ড আইডি আপডেট করা যাতে রিফ্রেশে ভুল না হয়
+            Object.keys(assets).forEach(key => {
+                if (allHistory[key]) {
+                    const rids = Object.keys(allHistory[key]).map(Number);
+                    if (rids.length > 0) assets[key].round = Math.max(...rids) + 1;
+                }
+            });
+            renderTable(allHistory[activeKey] || {});
+        });
     }
 
     async function lockRoundFirebase(key) {
@@ -250,18 +269,16 @@
             isPending: true, resPrice: 0, win: ""
         };
         await set(ref(db, `history/${user.uid}/${key}/${assets[key].round}`), roundData);
-        assets[key].round++;
-        if(key === activeKey) renderTable();
     }
 
     async function finalizeRoundFirebase(key) {
         if (!user) return;
         const snap = await get(ref(db, `history/${user.uid}/${key}`));
         const history = snap.val() || {};
-        const lastRid = Object.keys(history).sort().pop();
-        const rec = history[lastRid];
+        const pendingRid = Object.keys(history).find(rid => history[rid].isPending);
 
-        if(rec && rec.isPending) {
+        if(pendingRid) {
+            const rec = history[pendingRid];
             const resPrice = assets[key].currentPrice;
             const isUp = resPrice > rec.locked;
             let winText = "Loss";
@@ -277,40 +294,36 @@
                 }
             } else { winText = "No Trade"; }
 
-            await update(ref(db, `history/${user.uid}/${key}/${lastRid}`), { isPending: false, resPrice: resPrice, win: winText });
+            await update(ref(db, `history/${user.uid}/${key}/${pendingRid}`), { isPending: false, resPrice: resPrice, win: winText });
             assets[key].pendingBet = null;
-            if(key === activeKey) { updateBalanceDisplay(); renderTable(); }
         }
     }
 
-    async function renderTable() {
-        if (!user) return;
-        const snap = await get(ref(db, `history/${user.uid}/${activeKey}`));
-        const data = snap.val() || {};
+    function renderTable(data) {
         const body = document.getElementById('historyBody');
         body.innerHTML = "";
         
         Object.values(data).reverse().slice(0, 15).forEach(item => {
-            let res = item.isPending ? '<div class="spinner-sm"></div>' : `$${item.resPrice.toFixed(2)} ${item.resPrice > item.locked ? '🔺' : '🔻'}`;
+            let res = item.isPending ? '<div class="spinner-sm"></div>' : `$${item.resPrice.toFixed(2)} ${item.resPrice > item.locked ? '<span style="color:var(--up)">🔺</span>' : '<span style="color:var(--down)">🔻</span>'}`;
+            let winDisplay = item.isPending ? '<div class="spinner-sm"></div>' : (item.win.includes('+') ? `<img src="${item.coinLogo}" class="history-coin-icon"> ${item.win}` : item.win);
+            
             body.innerHTML += `<tr>
                 <td><div class="round-box"><img src="${item.coinLogo}" class="round-logo">${item.rid}</div></td>
                 <td>${item.time}</td>
                 <td>$${item.locked.toFixed(2)}</td>
                 <td style="color:${item.action==='UP'?'var(--up)':'var(--down)'}">${item.action}</td>
                 <td>${res}</td>
-                <td style="color:${item.win.includes('+')?'var(--up)':'white'}">${item.win || '---'}</td>
+                <td style="color:${item.win.includes('+')?'var(--up)':'white'}">${winDisplay || '---'}</td>
             </tr>`;
         });
     }
 
-    // --- Window Scope Global Functions ---
     window.switchAsset = (val) => {
         activeKey = val;
         document.getElementById('assetLogo').src = assets[val].logo;
         document.getElementById('headerAssetUnit').innerText = assets[val].unit;
         chart.data.datasets[0].data = Array(60).fill(assets[activeKey].currentPrice);
-        updateBalanceDisplay();
-        renderTable();
+        syncUserData(); // অ্যাসেট পরিবর্তনের সাথে সাথে নতুন ডাটা সিঙ্ক
     };
 
     window.openBetModal = (side) => {
@@ -333,11 +346,10 @@
         const balSnap = await get(ref(db, `users/${user.uid}/balances/${activeKey}`));
         const currentBal = parseFloat(balSnap.val() || 0);
 
-        if(isNaN(amt) || amt <= 0 || amt > currentBal) return alert("Invalid Amount");
+        if(isNaN(amt) || amt <= 0 || amt > currentBal) return alert("Insufficient Balance");
 
         assets[activeKey].pendingBet = { side: side, amount: amt };
         await update(ref(db, `users/${user.uid}/balances`), { [activeKey]: (currentBal - amt).toFixed(8) });
-        updateBalanceDisplay();
         window.closeBetModal();
         amtInput.value = "";
     };
