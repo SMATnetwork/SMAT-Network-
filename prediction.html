@@ -139,6 +139,7 @@
         options: { responsive: true, maintainAspectRatio: false, animation: false, scales: { x: { display: false }, y: { display: false } }, plugins: { legend: { display: false } } }
     });
 
+    // --- REAL-TIME SYNC ---
     function syncGlobalTimer() {
         onValue(ref(db, 'global_market'), (snapshot) => {
             const data = snapshot.val();
@@ -176,6 +177,67 @@
         }
     }
 
+    // --- LOGIC FUNCTIONS (নিখুঁত লজিক) ---
+    async function saveRound(key) {
+        if(!window.user) return;
+        const rid = assets[key].round;
+        const pb = assets[key].pending;
+        const data = {
+            rid: rid,
+            time: new Date().toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'}),
+            locked: assets[key].currentPrice,
+            action: pb ? pb.side : "---",
+            betAmt: pb ? pb.amount : 0,
+            isPending: true, resPrice: 0, win: ""
+        };
+        await set(ref(db, `history/${window.user.uid}/${key}/${rid}`), data);
+    }
+
+    async function finalizeRound(key) {
+        if(!window.user) return;
+        const snap = await get(ref(db, `history/${window.user.uid}/${key}`));
+        const history = snap.val() || {};
+        for (let rid in history) {
+            if (history[rid].isPending) {
+                const rec = history[rid];
+                const resPrice = assets[key].currentPrice;
+                const win = (rec.action === "UP" && resPrice > rec.locked) || (rec.action === "DOWN" && resPrice < rec.locked);
+                let winText = "Loss";
+                if (rec.action !== "---" && win) {
+                    const winAmt = rec.betAmt * 1.96;
+                    winText = "+" + winAmt.toFixed(8);
+                    const bSnap = await get(ref(db, `users/${window.user.uid}/balances/${key}`));
+                    const curBal = parseFloat(bSnap.val() || 0);
+                    await update(ref(db, `users/${window.user.uid}/balances`), { [key]: (curBal + winAmt).toFixed(8) });
+                } else if (rec.action === "---") winText = "No Trade";
+                await update(ref(db, `history/${window.user.uid}/${key}/${rid}`), { isPending: false, resPrice: resPrice, win: winText });
+            }
+        }
+        assets[key].pending = null;
+        assets[key].round++;
+    }
+
+    // --- MASTER CLOCK ---
+    function startMasterClock() {
+        setInterval(async () => {
+            if (window.timeLeft > 0) {
+                window.timeLeft--;
+            } else {
+                if (window.state === "TRADING") { 
+                    window.state = "CLOSED"; window.timeLeft = 3; 
+                    Object.keys(assets).forEach(k => saveRound(k));
+                } else if (window.state === "CLOSED") { 
+                    window.state = "WAITING"; window.timeLeft = 180; 
+                } else { 
+                    window.state = "TRADING"; window.timeLeft = 60; 
+                    Object.keys(assets).forEach(k => finalizeRound(k));
+                }
+            }
+            update(ref(db, 'global_market'), { timeLeft: window.timeLeft, State: window.state });
+        }, 1000);
+    }
+
+    // --- USER ACTIONS ---
     function loadUserData() {
         if (!window.user) return;
         onValue(ref(db, `users/${window.user.uid}/balances/${window.activeKey}`), (s) => {
@@ -225,19 +287,7 @@
         });
     }
 
-    function startMasterClock() {
-        setInterval(async () => {
-            if (window.timeLeft > 0) {
-                window.timeLeft--;
-            } else {
-                if (window.state === "TRADING") { window.state = "CLOSED"; window.timeLeft = 3; }
-                else if (window.state === "CLOSED") { window.state = "WAITING"; window.timeLeft = 180; }
-                else { window.state = "TRADING"; window.timeLeft = 60; }
-            }
-            update(ref(db, 'global_market'), { timeLeft: window.timeLeft, State: window.state });
-        }, 1000);
-    }
-
+    // --- INITIALIZE ---
     onAuthStateChanged(auth, (u) => {
         if (u) {
             window.user = u;
