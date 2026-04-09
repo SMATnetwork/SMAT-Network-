@@ -204,7 +204,17 @@
         } else {
             lbl.innerHTML = `<div class="spinner-sm"></div> WAITING RESULT`; 
             lbl.style.color = "var(--warn)";
-            lockedDiv.innerText = `Locked Price: $${assets[activeKey].lockedPrice.toFixed(2)}`;
+            
+            // লাইভ বক্সের Locked Price রিফ্রেশ দিলেও ডাটাবেস থেকে টেনে আনবে
+            if (user) {
+                const rid = assets[activeKey].round;
+                onValue(ref(db, `history/${user.uid}/${activeKey}/${rid}`), (snapshot) => {
+                    const rec = snapshot.val();
+                    if (rec && rec.isPending) {
+                        lockedDiv.innerText = `Locked Price: $${parseFloat(rec.lockedPrice).toFixed(2)}`;
+                    }
+                });
+            }
         }
         
         document.getElementById('upBtn').disabled = (s !== "TRADING");
@@ -221,7 +231,7 @@
         const entry = {
             rid: rid,
             time: new Date().toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'}),
-            lockedPrice: assets[key].lockedPrice,
+            lockedPrice: assets[key].currentPrice,
             action: bet ? bet.side : "No Trade",
             betAmt: bet ? bet.amount : 0,
             isPending: true,
