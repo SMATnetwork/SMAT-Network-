@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>SMAT CEX | Pro Prediction Engine</title>
+    <title>SMAT CEX | Elite Prediction Engine</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
@@ -11,24 +11,20 @@
         * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Inter', sans-serif; }
         body { background: var(--bg); color: white; height: 100vh; display: flex; flex-direction: column; overflow: hidden; }
         
-        /* Header & Assets */
         .header { display: grid; grid-template-columns: 1fr 1.2fr 1fr; align-items: center; padding: 10px 15px; background: #12161c; border-bottom: 1px solid var(--border); }
         .asset-selector { display: flex; align-items: center; gap: 8px; background: #1e2329; padding: 5px 8px; border-radius: 8px; border: 1px solid var(--border); }
-        .asset-selector img { width: 22px; height: 22px; border-radius: 50%; object-fit: cover; }
+        .asset-selector img { width: 22px; height: 22px; border-radius: 50%; }
         .asset-selector select { background: transparent; color: white; border: none; font-weight: 700; outline: none; cursor: pointer; }
         
         .bal-box { background: rgba(240, 185, 11, 0.1); border: 1px solid rgba(240, 185, 11, 0.2); padding: 5px; text-align: center; border-radius: 4px; }
         .bal-amount { font-weight: 800; font-size: 13px; color: var(--primary); }
         
-        /* Chart & Dynamic Status */
         .chart-section { width: 100%; position: relative; background: #000; height: 32vh; border-bottom: 1px solid var(--border); }
         .chart-overlay { position: absolute; top: 0; left: 0; width: 100%; z-index: 10; display: flex; justify-content: space-between; padding: 12px; pointer-events: none; }
         .status-container { display: flex; flex-direction: column; gap: 4px; }
-        .timer-clock { font-size: 26px; font-weight: 900; color: white; text-align: right; }
-        
+        .timer-clock { font-size: 26px; font-weight: 900; color: white; }
         #chartDot { position: absolute; left: 50%; width: 12px; height: 12px; background: var(--cyan); border-radius: 50%; z-index: 5; transform: translateX(-50%); box-shadow: 0 0 15px var(--cyan); }
         
-        /* History Table */
         .history-section { flex: 1; background: var(--card); display: flex; flex-direction: column; overflow: hidden; padding-bottom: 85px; }
         .history-header { text-align: center; padding: 10px; font-size: 15px; font-weight: 900; border-bottom: 1px solid var(--border); background: #12161c; }
         .table-container { flex: 1; overflow-y: auto; overflow-x: auto; }
@@ -36,23 +32,17 @@
         th { background: #12161c; padding: 12px 5px; color: #848e9c; position: sticky; top: 0; z-index: 5; }
         td { padding: 12px 2px; border-bottom: 1px solid #23272e; font-weight: 600; vertical-align: middle; }
         
-        .hist-logo { width: 16px; height: 16px; border-radius: 50%; vertical-align: middle; margin-right: 4px; border: 1px solid rgba(255,255,255,0.1); }
-        .sub-text { display: block; font-size: 9px; color: #848e9c; margin-top: 2px; }
+        .hist-logo { width: 16px; height: 16px; border-radius: 50%; vertical-align: middle; margin-right: 4px; border: 0.5px solid #444; }
+        .sub-text { display: block; font-size: 9px; color: #848e9c; }
 
-        /* Action Buttons */
         .action-area { position: fixed; bottom: 0; width: 100%; padding: 15px; background: #12161c; border-top: 1px solid var(--border); z-index: 2000; }
         .t-btn { flex: 1; padding: 16px; border: none; border-radius: 10px; font-weight: 900; font-size: 16px; color: white; cursor: pointer; text-transform: uppercase; }
-        .t-btn:disabled { opacity: 0.4; cursor: not-allowed; filter: grayscale(1); }
+        .t-btn:disabled { opacity: 0.4; filter: grayscale(1); }
         
-        /* Modals & Loaders */
-        .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.85); display: none; justify-content: center; align-items: center; z-index: 3000; }
-        .modal-box { background: var(--card); padding: 25px; border-radius: 15px; width: 90%; max-width: 360px; text-align: center; border: 1px solid var(--border); }
-        .modal-box input { width: 100%; padding: 12px; background: #0b0e11; border: 1px solid var(--border); color: white; border-radius: 8px; margin: 15px 0; font-size: 20px; text-align: center; }
-        
-        .blink { animation: blink 1s infinite; }
-        @keyframes blink { 0%, 100% { opacity: 1; } 50% { opacity: 0.2; } }
         .spinner-sm { width: 14px; height: 14px; border: 2px solid rgba(255,255,255,0.1); border-top: 2px solid var(--primary); border-radius: 50%; animation: spin 0.8s linear infinite; display: inline-block; vertical-align: middle; margin-right: 5px; }
         @keyframes spin { 100% { transform: rotate(360deg); } }
+        .blink { animation: blink 1s infinite; }
+        @keyframes blink { 0%, 100% { opacity: 1; } 50% { opacity: 0.2; } }
     </style>
 </head>
 <body>
@@ -77,9 +67,7 @@
     <div class="chart-section">
         <div class="chart-overlay">
             <div class="status-container">
-                <div id="statusLabel" class="blink" style="color:var(--up); font-weight:800; font-size:11px;">
-                    TRADING TIME
-                </div>
+                <div id="statusLabel" class="blink" style="font-weight:800; font-size:11px;">TRADING TIME</div>
                 <div id="dynamicLockedInfo" style="font-size: 10px; color: #848e9c; font-weight: 600;"></div>
             </div>
             <div id="timerClock" class="timer-clock">00:00</div>
@@ -107,18 +95,6 @@
         </div>
     </div>
 
-    <div id="betModal" class="modal-overlay">
-        <div class="modal-box">
-            <h3 id="modalTitle" style="color:var(--primary)">Bet UP</h3>
-            <p style="font-size: 11px; color: #848e9c; margin-top: 8px;">Available Balance: <span id="modalAvbl">0.00</span></p>
-            <input type="number" id="betAmount" step="0.00000001" placeholder="0.00000000">
-            <div style="display: flex; gap: 10px;">
-                <button class="t-btn" style="background:#2b3139;" onclick="window.closeBetModal()">Cancel</button>
-                <button class="t-btn" style="background:var(--primary); color:black;" onclick="window.confirmBet()">Confirm</button>
-            </div>
-        </div>
-    </div>
-
 <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
     import { getDatabase, ref, onValue, set, update, get } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
@@ -137,10 +113,10 @@
     const auth = getAuth(app);
 
     const assets = {
-        btc: { symbol: 'btcusdt', round: 10001, logo: "assets/logos/btc.png", unit: "BTC", currentPrice: 0, pending: null, lockedPrice: 0 },
-        eth: { symbol: 'ethusdt', round: 20001, logo: "assets/logos/eth.png", unit: "ETH", currentPrice: 0, pending: null, lockedPrice: 0 },
-        bnb: { symbol: 'bnbusdt', round: 30001, logo: "assets/logos/bnb.png", unit: "BNB", currentPrice: 0, pending: null, lockedPrice: 0 },
-        sol: { symbol: 'solusdt', round: 40001, logo: "assets/logos/sol.png", unit: "SOL", currentPrice: 0, pending: null, lockedPrice: 0 }
+        btc: { symbol: 'btcusdt', round: 10001, logo: "assets/logos/btc.png", unit: "BTC", currentPrice: 0 },
+        eth: { symbol: 'ethusdt', round: 20001, logo: "assets/logos/eth.png", unit: "ETH", currentPrice: 0 },
+        bnb: { symbol: 'bnbusdt', round: 30001, logo: "assets/logos/bnb.png", unit: "BNB", currentPrice: 0 },
+        sol: { symbol: 'solusdt', round: 40001, logo: "assets/logos/sol.png", unit: "SOL", currentPrice: 0 }
     };
 
     let activeKey = 'btc';
@@ -154,41 +130,17 @@
         options: { responsive: true, maintainAspectRatio: false, animation: false, scales: { x: { display: false }, y: { display: false } }, plugins: { legend: { display: false } } }
     });
 
-    // ==================== মাস্টার টাইমার ইঞ্জিন (সতর্কতার সাথে চেকড) ====================
     function initTimer() {
         onValue(ref(db, 'timerLogic'), (snap) => {
             const data = snap.val();
-            if (data) updateEngineUI(data.timeLeft, data.state);
+            if (data) {
+                globalState = data.state;
+                updateEngineUI(data.timeLeft, data.state);
+            }
         });
     }
 
-    setInterval(async () => {
-        const timerRef = ref(db, 'timerLogic');
-        const snap = await get(timerRef);
-        const data = snap.val();
-        if (!data) return;
-
-        let t = data.timeLeft;
-        let s = data.state;
-
-        if (t > 0) {
-            t--;
-        } else {
-            if (s === "TRADING") { 
-                s = "CLOSED"; t = 3; 
-                Object.keys(assets).forEach(key => lockAndSaveRound(key)); 
-            }
-            else if (s === "CLOSED") { s = "WAITING"; t = 180; }
-            else { 
-                s = "TRADING"; t = 60; 
-                Object.keys(assets).forEach(key => finalizeAndReset(key));
-            }
-        }
-        await update(timerRef, { timeLeft: t, state: s });
-    }, 1000);
-
     function updateEngineUI(t, s) {
-        globalState = s;
         const min = Math.floor(t / 60);
         const sec = t % 60;
         document.getElementById('timerClock').innerText = `${min.toString().padStart(2,'0')}:${sec.toString().padStart(2,'0')}`;
@@ -203,79 +155,93 @@
             lbl.innerHTML = `TRADING CLOSED`; lbl.style.color = "var(--down)";
             lockedDiv.innerText = "";
         } else {
-            // "Waiting Result" এর বামপাশে স্পিনিং এবং নিচে ডাইনামিক লক প্রাইস
-            lbl.innerHTML = `<div class="spinner-sm"></div> WAITING RESULT`; 
-            lbl.style.color = "var(--warn)";
-            lockedDiv.innerText = `Locked: $${assets[activeKey].lockedPrice.toFixed(2)}`;
+            lbl.innerHTML = `<div class="spinner-sm"></div> WAITING RESULT`; lbl.style.color = "var(--warn)";
+            if (user) {
+                const rid = assets[activeKey].round;
+                get(ref(db, `history/${user.uid}/${activeKey}/${rid}`)).then(snap => {
+                    const h = snap.val();
+                    if (h && h.isPending) {
+                        lockedDiv.innerText = `Locked Price: $${parseFloat(h.lockedPrice).toFixed(2)}`;
+                    }
+                });
+            }
         }
-        
         document.getElementById('upBtn').disabled = (s !== "TRADING");
         document.getElementById('downBtn').disabled = (s !== "TRADING");
-
         if (user) syncHistory();
     }
 
-    // ==================== ট্রেডিং লজিক ও ডাইনামিক হিস্ট্রি ====================
-    async function lockAndSaveRound(key) {
-        assets[key].lockedPrice = assets[key].currentPrice; // ডাইনামিক লক প্রাইস সেট
+    async function lockRound(key) {
         if (!user) return;
         const rid = assets[key].round;
-        const bet = assets[key].pending;
+        const snap = await get(ref(db, `temp_bet/${user.uid}/${key}`));
+        const bet = snap.val();
+
         const entry = {
             rid: rid,
             time: new Date().toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'}),
-            lockedPrice: assets[key].lockedPrice,
+            lockedPrice: assets[key].currentPrice,
             action: bet ? bet.side : "No Trade",
             betAmt: bet ? bet.amount : 0,
             isPending: true,
             logo: assets[key].logo
         };
         await set(ref(db, `history/${user.uid}/${key}/${rid}`), entry);
+        await set(ref(db, `temp_bet/${user.uid}/${key}`), null);
     }
 
-    async function finalizeAndReset(key) {
+    async function finalizeRound(key) {
         if (!user) return;
-        const snap = await get(ref(db, `history/${user.uid}/${key}`));
-        const history = snap.val() || {};
+        const rid = assets[key].round;
+        const snap = await get(ref(db, `history/${user.uid}/${key}/${rid}`));
+        const rec = snap.val();
+        if (!rec || !rec.isPending) return;
+
         const resPrice = assets[key].currentPrice;
+        let status = "LOSS";
+        let winAmt = 0;
 
-        for (let rid in history) {
-            if (history[rid].isPending) {
-                const rec = history[rid];
-                let status = "LOSS";
-                let winAmt = 0;
-
-                if (rec.action === "No Trade") {
-                    status = "No Trade";
-                } else if (resPrice === rec.lockedPrice) {
-                    status = "DRAW"; // ড্র হলে ৫০% রিফান্ড
-                    winAmt = rec.betAmt * 0.5;
-                } else {
-                    const win = (rec.action === "UP" && resPrice > rec.lockedPrice) || (rec.action === "DOWN" && resPrice < rec.lockedPrice);
-                    if (win) {
-                        status = "WIN";
-                        winAmt = rec.betAmt + (rec.betAmt * 0.96); // Bet + 96% Profit
-                    }
-                }
-
-                if (winAmt > 0) {
-                    const bRef = ref(db, `users/${user.uid}/balances/${key}`);
-                    const bSnap = await get(bRef);
-                    await set(bRef, (parseFloat(bSnap.val() || 0) + winAmt).toFixed(8));
-                }
-
-                await update(ref(db, `history/${user.uid}/${key}/${rid}`), {
-                    isPending: false,
-                    resultPrice: resPrice,
-                    status: status
-                });
+        if (rec.action === "No Trade") {
+            status = "No Trade";
+        } else if (resPrice === rec.lockedPrice) {
+            status = "DRAW"; 
+            winAmt = rec.betAmt * 0.5;
+        } else {
+            const isWin = (rec.action === "UP" && resPrice > rec.lockedPrice) || (rec.action === "DOWN" && resPrice < rec.lockedPrice);
+            if (isWin) {
+                status = "WIN"; 
+                winAmt = rec.betAmt + (rec.betAmt * 0.96); 
             }
         }
+
+        if (winAmt > 0) {
+            const bRef = ref(db, `users/${user.uid}/balances/${key}`);
+            const bSnap = await get(bRef);
+            await set(bRef, (parseFloat(bSnap.val() || 0) + winAmt).toFixed(8));
+        }
+
+        await update(ref(db, `history/${user.uid}/${key}/${rid}`), {
+            isPending: false, resultPrice: resPrice, status: status, finalWin: winAmt
+        });
         assets[key].round++;
-        assets[key].pending = null;
-        // রাউন্ড শেষে লক প্রাইস ইন্টারফেস থেকে মুছে ফেলুন
-        if (key === activeKey) document.getElementById('dynamicLockedInfo').innerText = "";
     }
+
+    setInterval(async () => {
+        const tRef = ref(db, 'timerLogic');
+        const snap = await get(tRef);
+        const d = snap.val();
+        if (!d) return;
+        let {timeLeft, state} = d;
+
+        if (timeLeft > 0) {
+            timeLeft--;
+        } else {
+            if (state === "TRADING") { state = "CLOSED"; timeLeft = 3; Object.keys(assets).forEach(k => lockRound(k)); }
+            else if (state === "CLOSED") { state = "WAITING"; timeLeft = 180; }
+            else { state = "TRADING"; timeLeft = 60; Object.keys(assets).forEach(k => finalizeRound(k)); }
+        }
+        await update(tRef, { timeLeft, state });
+    }, 1000);
 
     async function syncHistory() {
         if (!user) return;
@@ -285,110 +251,75 @@
         body.innerHTML = "";
 
         Object.values(data).reverse().slice(0, 15).forEach(item => {
-            const isWaiting = item.isPending && globalState === "WAITING";
-            const rowClass = isWaiting ? 'blink' : '';
+            const isWait = item.isPending && globalState === "WAITING";
+            let winDisplay = "";
             
-            body.innerHTML += `<tr class="${rowClass}">
+            if (item.isPending) {
+                winDisplay = '<div class="spinner-sm"></div>';
+            } else if (item.status === "WIN") {
+                winDisplay = `<span style="color:var(--up)"><img src="${item.logo}" class="hist-logo">${parseFloat(item.finalWin).toFixed(8)}</span>`;
+            } else if (item.status === "LOSS") {
+                winDisplay = `<span style="color:var(--down)"><img src="${item.logo}" class="hist-logo">0.00000000</span>`;
+            } else if (item.status === "DRAW") {
+                winDisplay = `<span style="color:var(--warn)"><img src="${item.logo}" class="hist-logo">${parseFloat(item.finalWin).toFixed(8)}</span>`;
+            } else {
+                winDisplay = `<span style="color:#848e9c">--</span>`;
+            }
+
+            body.innerHTML += `<tr class="${isWait ? 'blink' : ''}">
                 <td><img src="${item.logo}" class="hist-logo"> ${item.rid}</td>
                 <td>${item.time}</td>
-                <td>
-                    $${parseFloat(item.lockedPrice || 0).toFixed(2)}
-                    <span class="sub-text">Locked Price</span>
-                </td>
+                <td>$${parseFloat(item.lockedPrice).toFixed(2)}<span class="sub-text">Locked Price</span></td>
                 <td style="color:${item.action==='UP'?'var(--up)':(item.action==='DOWN'?'var(--down)':'#848e9c')}">${item.action}</td>
-                <td>
-                    ${item.isPending ? '<div class="spinner-sm"></div>' : '$'+parseFloat(item.resultPrice).toFixed(2)}
-                </td>
-                <td style="color:${item.status==='WIN'?'var(--up)':(item.status==='LOSS'?'var(--down)':'#848e9c')}">
-                    ${item.isPending ? '<div class="spinner-sm"></div>' : (item.status === 'WIN' ? '<img src="'+item.logo+'" class="hist-logo">'+item.status : item.status)}
-                </td>
+                <td>${item.isPending ? '<div class="spinner-sm"></div>' : '$'+parseFloat(item.resultPrice).toFixed(2)}</td>
+                <td>${winDisplay}</td>
             </tr>`;
         });
     }
 
-    // ==================== অ্যাসেট ও ব্যালেন্স হ্যান্ডলার ====================
     window.switchAsset = (val) => {
         activeKey = val;
         document.getElementById('assetLogo').src = assets[val].logo;
         document.getElementById('headerAssetUnit').innerText = assets[val].unit;
-        // চার্ট রিসেট যাতে নতুন কয়েনের ডেটা ক্লিনার দেখায়
-        chart.data.datasets[0].data = Array(50).fill(assets[val].currentPrice);
         syncUser();
     };
 
-    window.openBetModal = (side) => {
+    window.openBetModal = async (side) => {
         if (globalState !== "TRADING") return;
-        document.getElementById('modalTitle').innerText = "Bet " + side;
-        document.getElementById('modalAvbl').innerText = document.getElementById('headerBalance').innerText + " " + assets[activeKey].unit;
-        document.getElementById('betModal').style.display = 'flex';
-        document.getElementById('betModal').dataset.side = side;
-    };
+        const amt = prompt(`Enter ${activeKey.toUpperCase()} amount:`);
+        if (!amt || isNaN(amt) || amt <= 0) return;
+        
+        const bSnap = await get(ref(db, `users/${user.uid}/balances/${activeKey}`));
+        const bal = parseFloat(bSnap.val() || 0);
+        if (parseFloat(amt) > bal) return alert("Low Balance!");
 
-    window.closeBetModal = () => document.getElementById('betModal').style.display = 'none';
-
-    window.confirmBet = async () => {
-        const amtInput = document.getElementById('betAmount');
-        const amt = parseFloat(amtInput.value);
-        if (isNaN(amt) || amt <= 0) return alert("পরিমাণ লিখুন");
-
-        const balRef = ref(db, `users/${user.uid}/balances/${activeKey}`);
-        const bSnap = await get(balRef);
-        const curBal = parseFloat(bSnap.val() || 0);
-
-        if (amt > curBal) return alert("পর্যাপ্ত ব্যালেন্স নেই");
-
-        await set(balRef, (curBal - amt).toFixed(8));
-        assets[activeKey].pending = { side: document.getElementById('betModal').dataset.side, amount: amt };
-        window.closeBetModal();
-        amtInput.value = "";
+        await set(ref(db, `users/${user.uid}/balances/${activeKey}`), (bal - parseFloat(amt)).toFixed(8));
+        await set(ref(db, `temp_bet/${user.uid}/${activeKey}`), { side, amount: parseFloat(amt) });
     };
 
     function syncUser() {
-        if (!user) return;
-        onValue(ref(db, `users/${user.uid}/balances/${activeKey}`), (s) => {
+        onValue(ref(db, `users/${user.uid}/balances/${activeKey}`), s => {
             document.getElementById('headerBalance').innerText = parseFloat(s.val() || 0).toFixed(8);
         });
         syncHistory();
     }
 
-    // ==================== হাই-স্পিড WebSocket (বাইনান্স) ====================
-    // প্রাইস আপডেট কেন স্লো মনে হয়? 
-    // ১. aggTrade এভারেজ ডেটা দেয়। ২. কানেকশন ল্যাটেন্সি।
-    // সমাধান: আমরা 'trade' স্ট্রিম ব্যবহার করছি যা প্রতি মিলি-সেকেন্ডে ডেটা পাঠায়।
     function initWS() {
-        const streamList = Object.values(assets).map(a => `${a.symbol}@trade`).join('/');
-        const ws = new WebSocket(`wss://stream.binance.com:9443/stream?streams=${streamList}`);
-        
+        const ws = new WebSocket(`wss://stream.binance.com:9443/stream?streams=btcusdt@trade/ethusdt@trade/bnbusdt@trade/solusdt@trade`);
         ws.onmessage = (e) => {
             const d = JSON.parse(e.data);
-            const key = Object.keys(assets).find(k => assets[k].symbol === d.data.s.toLowerCase());
-            
-            if (key) {
-                const price = parseFloat(d.data.p);
-                assets[key].currentPrice = price; // ব্যাকগ্রাউন্ড আপডেট
-
-                if (key === activeKey) {
-                    // ডোম আপডেট
-                    document.getElementById('priceDisplay').innerText = '$' + price.toFixed(2);
-                    
-                    // চার্ট স্মুথ আপডেট
-                    chart.data.datasets[0].data.shift();
-                    chart.data.datasets[0].data.push(price);
-                    chart.update('none'); // 'none' দিলে রেন্ডারিং ফাস্ট হয়
-                    
-                    // চার্ট ডট ডাইনামিক মুভমেন্ট
-                    const meta = chart.getDatasetMeta(0).data[49];
-                    if (meta) document.getElementById('chartDot').style.top = (meta.y - 6) + 'px';
-                }
+            const key = d.data.s.toLowerCase().replace('usdt','');
+            assets[key].currentPrice = parseFloat(d.data.p);
+            if (key === activeKey) {
+                document.getElementById('priceDisplay').innerText = '$' + assets[key].currentPrice.toFixed(2);
+                chart.data.datasets[0].data.shift(); chart.data.datasets[0].data.push(assets[key].currentPrice); chart.update('none');
+                const meta = chart.getDatasetMeta(0).data[49];
+                if (meta) document.getElementById('chartDot').style.top = (meta.y - 6) + 'px';
             }
         };
-
-        ws.onclose = () => setTimeout(initWS, 1000);
     }
 
-    onAuthStateChanged(auth, (u) => {
-        if (u) { user = u; syncUser(); initWS(); initTimer(); }
-    });
+    onAuthStateChanged(auth, u => { if(u){ user=u; syncUser(); initWS(); initTimer(); } });
 </script>
 </body>
 </html>
