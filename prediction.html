@@ -133,19 +133,33 @@
     let activeKey = 'btc';
     let user = null;
 
-    let timerEndsAt = 0;        // Absolute end timestamp in ms
+    // Timer variables
+    let timerEndsAt = 0;
     let currentState = "TRADING";
-    let timerInterval = null;
 
     // Chart Setup
     const ctx = document.getElementById('liveChart').getContext('2d');
     const chart = new Chart(ctx, {
         type: 'line',
-        data: { labels: Array(60).fill(''), datasets: [{ 
-            data: Array(60).fill(0), borderColor: '#00ffff', borderWidth: 2, pointRadius: 0, tension: 0.4, fill: true,
-            backgroundColor: 'rgba(0, 255, 255, 0.1)' 
-        }] },
-        options: { responsive: true, maintainAspectRatio: false, animation: false, scales: { x: { display: false }, y: { display: false } }, plugins: { legend: { display: false } } }
+        data: { 
+            labels: Array(60).fill(''), 
+            datasets: [{ 
+                data: Array(60).fill(0), 
+                borderColor: '#00ffff', 
+                borderWidth: 2, 
+                pointRadius: 0, 
+                tension: 0.4, 
+                fill: true,
+                backgroundColor: 'rgba(0, 255, 255, 0.1)' 
+            }] 
+        },
+        options: { 
+            responsive: true, 
+            maintainAspectRatio: false, 
+            animation: false, 
+            scales: { x: { display: false }, y: { display: false } }, 
+            plugins: { legend: { display: false } } 
+        }
     });
 
     let balanceUnsubscribe = null;
@@ -163,78 +177,63 @@
 
         const histRef = ref(db, `history/\( {user.uid}/ \){activeKey}`);
         historyUnsubscribe = onValue(histRef, (s) => {
-            const data = s.val() || {};
-            const rids = Object.keys(data).map(Number);
-            if (rids.length > 0) assets[activeKey].round = Math.max(...rids) + 1;
-            renderHistory(data);
+            renderHistory(s.val() || {});
         });
     }
 
-    // ==================== IMPROVED TIMER ====================
-    function initGlobalTimer() {
+    // ==================== Synced Timer with Firebase ====================
+    function initSyncedTimer() {
         const timerRef = ref(db, 'global_market/timer');
-        
+
         onValue(timerRef, (snapshot) => {
             const data = snapshot.val();
-            console.log("Firebase Timer Data:", data);   // Debug
-
             if (!data) {
-                initializeTimerInFirebase();
+                createInitialTimer();
                 return;
             }
-
             timerEndsAt = data.endsAt || (Date.now() + 60000);
             currentState = data.state || "TRADING";
-
-            console.log(`State: ${currentState}, Ends At: ${new Date(timerEndsAt)}`);
             updateTimerUI();
         });
     }
 
-    async function initializeTimerInFirebase() {
-        console.log("Initializing new timer in Firebase...");
+    async function createInitialTimer() {
         const now = Date.now();
         await set(ref(db, 'global_market/timer'), {
             state: "TRADING",
-            endsAt: now + 60000,        // 60 seconds
+            endsAt: now + 60000,   // 60 seconds trading
             lastUpdated: serverTimestamp()
         });
     }
 
-    function startLocalTimer() {
-        if (timerInterval) clearInterval(timerInterval);
+    function startLocalCountdown() {
+        setInterval(() => {
+            const remaining = Math.max(0, Math.floor((timerEndsAt - Date.now()) / 1000));
 
-        timerInterval = setInterval(() => {
-            const now = Date.now();
-            let timeLeft = Math.max(0, Math.floor((timerEndsAt - now) / 1000));
-
-            // Auto transition when time is up
-            if (timeLeft <= 0 && timerEndsAt > 0) {
-                handleStateTransition();
+            if (remaining <= 0) {
+                handlePhaseTransition();
+            } else {
+                updateTimerUI(remaining);
             }
-
-            updateTimerUI(timeLeft);
-        }, 250);
+        }, 200);
     }
 
-    async function handleStateTransition() {
-        console.log(`Transitioning from ${currentState}`);
-
+    async function handlePhaseTransition() {
         const now = Date.now();
 
         if (currentState === "TRADING") {
             currentState = "CLOSED";
-            timerEndsAt = now + 5000;           // 5 seconds closed
+            timerEndsAt = now + 5000;     // 5 seconds closed
             lockCurrentPriceForAll();
         } 
         else if (currentState === "CLOSED") {
             currentState = "WAITING";
-            timerEndsAt = now + 180000;         // 3 minutes
+            timerEndsAt = now + 180000;   // 3 minutes waiting
             await finalizeAllPendingRounds();
         } 
         else if (currentState === "WAITING") {
             currentState = "TRADING";
-            timerEndsAt = now + 60000;          // 60 seconds
+            timerEndsAt = now + 60000;    // 60 seconds trading
             advanceRoundForAllAssets();
         }
 
@@ -258,23 +257,22 @@
         }
     }
 
-    async function advanceRoundForAllAssets() {
+    function advanceRoundForAllAssets() {
         Object.keys(assets).forEach(key => {
             assets[key].round++;
             assets[key].pending = null;
         });
     }
 
-    function updateTimerUI(forcedTimeLeft = null) {
-        const lbl = document.getElementById('statusLabel');
-        const clk = document.getElementById('timerClock');
-        const lpd = document.getElementById('lockedPriceDisplay');
-
-        let timeLeft = forcedTimeLeft !== null ? forcedTimeLeft : Math.max(0, Math.floor((timerEndsAt - Date.now()) / 1000));
+    function updateTimerUI(forcedTime = null) {
+        let timeLeft = forcedTime !== null ? forcedTime : Math.max(0, Math.floor((timerEndsAt - Date.now()) / 1000));
 
         const m = Math.floor(timeLeft / 60);
         const s = timeLeft % 60;
-        clk.innerText = `\( {m.toString().padStart(2,'0')}: \){s.toString().padStart(2,'0')}`;
+        document.getElementById('timerClock').innerText = `\( {m.toString().padStart(2,'0')}: \){s.toString().padStart(2,'0')}`;
+
+        const lbl = document.getElementById('statusLabel');
+        const lpd = document.getElementById('lockedPriceDisplay');
 
         if (currentState === "TRADING") {
             lbl.innerText = "TRADING TIME";
@@ -291,7 +289,7 @@
         }
     }
 
-    // ==================== বাকি ফাংশন (আগের মতো) ====================
+    // ==================== Round & Bet Functions ====================
     async function saveRoundToFirebase(key) {
         if (!user) return;
         const rid = assets[key].round;
@@ -357,6 +355,7 @@
         });
     }
 
+    // ==================== UI Controls ====================
     window.switchAsset = (val) => {
         activeKey = val;
         document.getElementById('assetLogo').src = assets[val].logo;
@@ -396,6 +395,7 @@
         document.getElementById('betAmount').value = "";
     };
 
+    // WebSocket for live price
     function initWS() {
         const streams = Object.values(assets).map(a => `${a.symbol}@aggTrade`).join('/');
         const ws = new WebSocket(`wss://stream.binance.com:9443/stream?streams=${streams}`);
@@ -422,19 +422,15 @@
         };
     }
 
-    // Final Init
+    // Final Initialization
     onAuthStateChanged(auth, (u) => {
         if (u) {
             user = u;
             syncActiveAsset();
             initWS();
-            initGlobalTimer();
-            startLocalTimer();
-
-            // Force initial UI update after 1 second
+            initSyncedTimer();
+            startLocalCountdown();
             setTimeout(() => updateTimerUI(), 1000);
-        } else {
-            console.log("No user logged in");
         }
     });
 </script>
