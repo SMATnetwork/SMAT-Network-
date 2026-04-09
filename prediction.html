@@ -139,13 +139,13 @@
         options: { responsive: true, maintainAspectRatio: false, animation: false, scales: { x: { display: false }, y: { display: false } }, plugins: { legend: { display: false } } }
     });
 
-    // --- REAL-TIME TIMER SYNC ---
+    // --- REAL-TIME TIMER SYNC (সংশোধিত অংশ) ---
     function syncGlobalTimer() {
         onValue(ref(db, 'global_market'), (snapshot) => {
             const data = snapshot.val();
             if (data) {
-                timeLeft = data.timeLeft;
-                state = data.state;
+                timeLeft = data.timeLeft; // ডাটাবেস বানান অনুযায়ী
+                state = data.State;       // ডাটাবেসে State বড় হাতের
                 updateUI();
             }
         });
@@ -177,7 +177,6 @@
         }
     }
 
-    // --- DATA LOADING ---
     function loadUserData() {
         if (!user) return;
         onValue(ref(db, `users/${user.uid}/balances/${activeKey}`), (s) => {
@@ -196,7 +195,6 @@
         loadUserData();
     };
 
-    // --- BETTING LOGIC ---
     window.openBetModal = (side) => {
         if (state !== "TRADING") return alert("Trading is closed!");
         document.getElementById('modalTitle').innerText = "Bet " + side;
@@ -216,7 +214,6 @@
 
         if (isNaN(amt) || amt <= 0 || amt > currentBal) return alert("Invalid Amount");
 
-        // Save bet to local asset object to update history when round closes
         assets[activeKey].pending = { side, amount: amt };
         await update(ref(db, `users/${user.uid}/balances`), { [activeKey]: (currentBal - amt).toFixed(8) });
         window.closeBetModal();
@@ -278,8 +275,7 @@
         });
     }
 
-    // --- MASTER CLOCK ---
-    // Note: আপনি যখন অ্যাডমিন হিসেবে ব্রাউজারে থাকবেন, তখন এটি অটো আপডেট করবে।
+    // --- MASTER CLOCK (সংশোধিত অংশ) ---
     function startMasterClock() {
         setInterval(async () => {
             if (timeLeft > 0) {
@@ -295,7 +291,8 @@
                     Object.keys(assets).forEach(k => finalizeRound(k));
                 }
             }
-            update(ref(db, 'global_market'), { timeLeft, state });
+            // ডাটাবেস পাথ 'global_market' এবং সঠিক বানান অনুযায়ী আপডেট
+            update(ref(db, 'global_market'), { timeLeft: timeLeft, State: state });
         }, 1000);
     }
 
@@ -304,11 +301,10 @@
             user = u;
             syncGlobalTimer();
             loadUserData();
-            // startMasterClock(); // অ্যাডমিন হিসেবে এটি আনকমেন্ট করে একবার রান করবেন।
+            // startMasterClock(); // অ্যাডমিন ফোনের জন্য এটি চালু করুন
         }
     });
 
-    // Binance WS
     const streams = Object.values(assets).map(a => `${a.symbol}@aggTrade`).join('/');
     const ws = new WebSocket(`wss://stream.binance.com:9443/stream?streams=${streams}`);
     ws.onmessage = (e) => {
