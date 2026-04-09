@@ -262,16 +262,7 @@
         }, 1000);
     }
 
-    // অথেনটিকেশন চেক
-    onAuthStateChanged(auth, (u) => {
-        if (u) {
-            window.user = u;
-            syncGlobalTimer(); // টাইমার লোড শুরু
-            loadUserData();
-            // startMasterClock(); // আপনি অ্যাডমিন হলে এটি আনকমেন্ট করে একবার পেজ রিফ্রেশ দিন
-        }
-    });
-
+  
     // Binance WebSocket (চার্ট এবং লাইভ প্রাইস)
     const streams = Object.values(assets).map(a => `${a.symbol}@aggTrade`).join('/');
     const ws = new WebSocket(`wss://stream.binance.com:9443/stream?streams=${streams}`);
