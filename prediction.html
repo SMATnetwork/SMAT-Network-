@@ -16,7 +16,6 @@
         * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Inter', sans-serif; }
         body { background: var(--bg); color: white; height: 100vh; display: flex; flex-direction: column; overflow: hidden; }
 
-        /* Header */
         .header { display: grid; grid-template-columns: 1fr 1.2fr 1fr; align-items: center; padding: 10px 15px; background: #12161c; border-bottom: 1px solid var(--border); }
         .asset-selector { display: flex; align-items: center; gap: 8px; background: #1e2329; padding: 5px 8px; border-radius: 8px; border: 1px solid var(--border); }
         .asset-selector img { width: 20px; height: 20px; border-radius: 50%; }
@@ -24,13 +23,11 @@
         .bal-box { background: rgba(240, 185, 11, 0.1); border: 1px solid rgba(240, 185, 11, 0.2); padding: 5px 5px; text-align: center; }
         .bal-amount { font-weight: 800; font-size: 14px; color: var(--primary); }
 
-        /* Chart */
         .chart-section { width: 100%; position: relative; background: #000; border-bottom: 1px solid var(--border); height: 32vh; }
         .chart-overlay { position: absolute; top: 0; left: 0; width: 100%; z-index: 10; display: flex; justify-content: space-between; padding: 12px; pointer-events: none; }
         .timer-clock { font-size: 26px; font-weight: 900; }
         #chartDot { position: absolute; left: 50%; width: 12px; height: 12px; background: var(--cyan); border-radius: 50%; z-index: 5; transform: translateX(-50%); box-shadow: 0 0 15px var(--cyan); }
 
-        /* History Table */
         .history-section { flex: 1; background: var(--card); display: flex; flex-direction: column; overflow: hidden; padding-bottom: 85px; }
         .history-header { text-align: center; padding: 10px; font-size: 15px; font-weight: 900; border-bottom: 1px solid var(--border); background: #12161c; }
         .table-container { flex: 1; overflow-y: auto; overflow-x: auto; }
@@ -38,18 +35,15 @@
         th { background: #12161c; padding: 12px; color: #848e9c; position: sticky; top: 0; }
         td { padding: 12px 5px; border-bottom: 1px solid #23272e; font-weight: 600; }
         
-        /* Round Box - Background Removed */
         .round-box { display: flex; align-items: center; justify-content: center; gap: 4px; padding: 3px 6px; font-weight: 900; }
         .round-logo { width: 12px; height: 12px; border-radius: 50%; }
         .history-coin-icon { width: 12px; height: 12px; vertical-align: middle; margin-right: 4px; border-radius: 50%; }
 
-        /* Action Buttons */
         .action-area { position: fixed; bottom: 0; width: 100%; padding: 15px; background: #12161c; border-top: 1px solid var(--border); z-index: 2000; }
         .btn-flex { display: flex; gap: 12px; max-width: 600px; margin: 0 auto; }
         .t-btn { flex: 1; padding: 16px; border: none; border-radius: 10px; font-weight: 900; font-size: 16px; color: white; cursor: pointer; text-transform: uppercase; }
-        .t-btn:disabled { background: #2b3139 !important; opacity: 0.5; }
+        .t-btn:disabled { background: #2b3139 !important; opacity: 0.5; cursor: not-allowed; }
 
-        /* Modal */
         .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.85); display: none; justify-content: center; align-items: center; z-index: 3000; }
         .modal-box { background: var(--card); padding: 25px; border-radius: 15px; width: 90%; max-width: 360px; border: 1px solid var(--border); text-align: center; }
         .modal-box input { width: 100%; padding: 12px; background: #0b0e11; border: 1px solid var(--border); color: white; border-radius: 8px; margin: 15px 0; font-size: 20px; text-align: center; outline: none; }
@@ -57,7 +51,6 @@
         .blink { animation: blink 1s infinite; }
         @keyframes blink { 0%, 100% { opacity: 1; } 50% { opacity: 0.3; } }
         .spinner-sm { width: 12px; height: 12px; border: 2px solid rgba(255,255,255,0.2); border-top: 2px solid white; border-radius: 50%; animation: spin 0.8s linear infinite; display: inline-block; vertical-align: middle; }
-        .spinner-warn { border: 2px solid rgba(240, 185, 11, 0.2); border-top: 2px solid var(--warn); }
         @keyframes spin { 100% { transform: rotate(360deg); } }
     </style>
 </head>
@@ -66,7 +59,7 @@
     <header class="header">
         <div class="asset-selector">
             <img id="assetLogo" src="assets/logos/btc.png">
-            <select id="assetSelect" onchange="switchAsset(this.value)">
+            <select id="assetSelect" onchange="window.switchAsset(this.value)">
                 <option value="btc">Bitcoin</option>
                 <option value="eth">Ethereum</option>
                 <option value="bnb">Binance</option>
@@ -108,8 +101,8 @@
 
     <div class="action-area">
         <div class="btn-flex">
-            <button id="upBtn" class="t-btn" style="background: var(--up);" onclick="openBetModal('UP')">UP</button>
-            <button id="downBtn" class="t-btn" style="background: var(--down);" onclick="openBetModal('DOWN')">DOWN</button>
+            <button id="upBtn" class="t-btn" style="background: var(--up);" onclick="window.openBetModal('UP')">UP</button>
+            <button id="downBtn" class="t-btn" style="background: var(--down);" onclick="window.openBetModal('DOWN')">DOWN</button>
         </div>
     </div>
 
@@ -119,122 +112,77 @@
             <p style="font-size: 12px; color: #848e9c; margin-top: 10px;">Available: <span id="modalAvbl">0.00000000</span> <span class="modalUnit">BTC</span></p>
             <input type="number" id="betAmount" step="0.00000001" placeholder="0.00000000">
             <div style="display: flex; gap: 10px;">
-                <button class="t-btn" style="background:#2b3139; font-size:14px;" onclick="closeBetModal()">Cancel</button>
-                <button class="t-btn" style="background:var(--primary); color:black; font-size:14px;" onclick="confirmBet()">Confirm Bet</button>
+                <button class="t-btn" style="background:#2b3139; font-size:14px;" onclick="window.closeBetModal()">Cancel</button>
+                <button class="t-btn" style="background:var(--primary); color:black; font-size:14px;" onclick="window.confirmBet()">Confirm Bet</button>
             </div>
         </div>
     </div>
 
-<script>
+<script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+    import { getDatabase, ref, onValue, set, update, get } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
+    import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+
+    const firebaseConfig = {
+        apiKey: "AIzaSyAMxtJedkehhxJRMPZLjhpKHqneHEWsGlE",
+        authDomain: "smat-exchange.firebaseapp.com",
+        projectId: "smat-exchange",
+        storageBucket: "smat-exchange.firebasestorage.app",
+        messagingSenderId: "836334569396",
+        appId: "1:836334569396:web:679effe640b3453412d4e1"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const db = getDatabase(app);
+    const auth = getAuth(app);
+
     const assets = {
-        btc: { symbol: 'btcusdt', round: 10001, currentPrice: 0, lockedPrice: 0, logo: "assets/logos/btc.png", history: [], unit: "BTC", pendingBet: null },
-        eth: { symbol: 'ethusdt', round: 20001, currentPrice: 0, lockedPrice: 0, logo: "assets/logos/eth.png", history: [], unit: "ETH", pendingBet: null },
-        bnb: { symbol: 'bnbusdt', round: 30001, currentPrice: 0, lockedPrice: 0, logo: "assets/logos/bnb.png", history: [], unit: "BNB", pendingBet: null },
-        sol: { symbol: 'solusdt', round: 40001, currentPrice: 0, lockedPrice: 0, logo: "assets/logos/sol.png", history: [], unit: "SOL", pendingBet: null }
+        btc: { symbol: 'btcusdt', round: 10001, currentPrice: 0, lockedPrice: 0, logo: "assets/logos/btc.png", unit: "BTC", pendingBet: null },
+        eth: { symbol: 'ethusdt', round: 20001, currentPrice: 0, lockedPrice: 0, logo: "assets/logos/eth.png", unit: "ETH", pendingBet: null },
+        bnb: { symbol: 'bnbusdt', round: 30001, currentPrice: 0, lockedPrice: 0, logo: "assets/logos/bnb.png", unit: "BNB", pendingBet: null },
+        sol: { symbol: 'solusdt', round: 40001, currentPrice: 0, lockedPrice: 0, logo: "assets/logos/sol.png", unit: "SOL", pendingBet: null }
     };
 
     let activeKey = 'btc';
+    let user = null;
     let timeLeft = 60; 
     let state = "TRADING";
-    let ws;
 
     const ctx = document.getElementById('liveChart').getContext('2d');
-    const cyanGrad = ctx.createLinearGradient(0, 0, 0, 300);
-    cyanGrad.addColorStop(0, 'rgba(0, 255, 255, 0.4)');
-    cyanGrad.addColorStop(1, 'rgba(0, 0, 0, 0)');
-
     const chart = new Chart(ctx, {
         type: 'line',
         data: { labels: Array(60).fill(''), datasets: [{ 
             data: Array(60).fill(0), 
-            borderColor: '#00ffff', 
-            borderWidth: 2, 
-            pointRadius: 0, 
-            tension: 0.4, 
-            fill: true, 
-            backgroundColor: cyanGrad 
+            borderColor: '#00ffff', borderWidth: 2, pointRadius: 0, tension: 0.4, fill: true,
+            backgroundColor: 'rgba(0, 255, 255, 0.1)' 
         }] },
         options: { responsive: true, maintainAspectRatio: false, animation: false, scales: { x: { display: false }, y: { display: false } }, plugins: { legend: { display: false } } }
     });
 
     function initBinanceWS() {
         const streams = Object.values(assets).map(a => `${a.symbol}@aggTrade`).join('/');
-        ws = new WebSocket(`wss://stream.binance.com:9443/stream?streams=${streams}`);
-
+        const ws = new WebSocket(`wss://stream.binance.com:9443/stream?streams=${streams}`);
         ws.onmessage = (event) => {
             const msg = JSON.parse(event.data);
             const symbol = msg.data.s.toLowerCase();
             const price = parseFloat(msg.data.p);
-
-            for (let key in assets) {
-                if (assets[key].symbol === symbol) {
-                    assets[key].currentPrice = price;
-                    if (key === activeKey) {
-                        updateLiveDisplay(price);
+            for (let k in assets) {
+                if (assets[k].symbol === symbol) {
+                    assets[k].currentPrice = price;
+                    if (k === activeKey) {
+                        document.getElementById('priceDisplay').innerText = '$' + price.toFixed(2);
+                        chart.data.datasets[0].data.shift();
+                        chart.data.datasets[0].data.push(price);
+                        chart.update('none');
+                        const pt = chart.getDatasetMeta(0).data[30]; 
+                        if(pt) document.getElementById('chartDot').style.top = (pt.y - 6) + 'px';
                     }
                 }
             }
         };
-        ws.onclose = () => setTimeout(initBinanceWS, 1000);
     }
 
-    function updateLiveDisplay(price) {
-        document.getElementById('priceDisplay').innerText = '$' + price.toFixed(2);
-        chart.data.datasets[0].data.shift();
-        chart.data.datasets[0].data.push(price);
-        chart.update('none');
-        const pt = chart.getDatasetMeta(0).data[30];
-        if(pt) document.getElementById('chartDot').style.top = (pt.y - 6) + 'px';
-    }
-
-    function switchAsset(val) {
-        activeKey = val;
-        document.getElementById('assetLogo').src = assets[val].logo;
-        document.getElementById('headerAssetUnit').innerText = assets[val].unit;
-        
-        const lpd = document.getElementById('lockedPriceDisplay');
-        if (state !== "TRADING" && assets[activeKey].lockedPrice > 0) {
-            lpd.innerText = "$" + assets[activeKey].lockedPrice.toFixed(2);
-            lpd.style.display = "block";
-        } else {
-            lpd.style.display = "none";
-        }
-
-        chart.data.datasets[0].data = Array(60).fill(assets[val].currentPrice);
-        updateBalanceDisplay();
-        renderTable();
-    }
-
-    function updateBalanceDisplay() {
-        const bal = parseFloat(localStorage.getItem(activeKey.toLowerCase() + '_balance')) || 0.00000000;
-        document.getElementById('headerBalance').innerText = bal.toFixed(8);
-    }
-
-    function openBetModal(side) {
-        if(state !== "TRADING") return;
-        if(assets[activeKey].pendingBet) return alert("Already bet on " + assets[activeKey].unit);
-        document.getElementById('modalTitle').innerText = "Bet " + side;
-        document.getElementById('modalAvbl').innerText = document.getElementById('headerBalance').innerText;
-        document.querySelectorAll('.modalUnit').forEach(el => el.innerText = assets[activeKey].unit);
-        document.getElementById('betModal').setAttribute('data-side', side);
-        document.getElementById('betModal').style.display = 'flex';
-    }
-
-    function closeBetModal() { document.getElementById('betModal').style.display = 'none'; }
-
-    function confirmBet() {
-        const amtInput = document.getElementById('betAmount');
-        const amt = parseFloat(amtInput.value);
-        const avbl = parseFloat(localStorage.getItem(activeKey.toLowerCase() + '_balance')) || 0;
-        const side = document.getElementById('betModal').getAttribute('data-side');
-        if(isNaN(amt) || amt <= 0 || amt > avbl) return alert("Insufficient Balance!");
-        assets[activeKey].pendingBet = { side: side, amount: amt };
-        localStorage.setItem(activeKey.toLowerCase() + '_balance', (avbl - amt).toFixed(8));
-        updateBalanceDisplay();
-        closeBetModal();
-        amtInput.value = "";
-    }
-
+    // --- আপনার দেওয়া অরিজিনাল Timer Logic ---
     function manageTimer() {
         const lbl = document.getElementById('statusLabel');
         const clk = document.getElementById('timerClock');
@@ -250,9 +198,7 @@
             lpd.style.display = "none"; upBtn.disabled = false; downBtn.disabled = false;
             if (timeLeft <= 0) { 
                 state = "CLOSED"; timeLeft = 3; 
-                Object.keys(assets).forEach(k => {
-                    assets[k].lockedPrice = assets[k].currentPrice;
-                });
+                Object.keys(assets).forEach(k => { assets[k].lockedPrice = assets[k].currentPrice; });
                 lpd.innerText = "$" + assets[activeKey].lockedPrice.toFixed(2);
                 lpd.style.display = "block";
             }
@@ -261,30 +207,40 @@
             lbl.innerText = "TRADING CLOSED"; lbl.style.color = "var(--down)";
             upBtn.disabled = true; downBtn.disabled = true;
             if (timeLeft <= 0) { 
-                Object.keys(assets).forEach(k => lockRound(k));
+                Object.keys(assets).forEach(k => lockRoundFirebase(k));
                 state = "WAITING"; timeLeft = 180; 
             }
         }
         else if (state === "WAITING") {
-            lbl.innerHTML = '<div class="spinner-sm spinner-warn" style="margin-right:8px"></div>WAITING For RESULT'; 
+            lbl.innerHTML = '<div class="spinner-sm" style="border-top-color:var(--warn); margin-right:8px"></div>WAITING For RESULT'; 
             lbl.style.color = "var(--warn)";
             upBtn.disabled = true; downBtn.disabled = true;
             if (timeLeft <= 0) { 
-                Object.keys(assets).forEach(k => {
-                    finalizeRound(k);
-                    assets[k].lockedPrice = 0;
-                }); 
+                Object.keys(assets).forEach(k => { finalizeRoundFirebase(k); assets[k].lockedPrice = 0; }); 
                 state = "TRADING"; timeLeft = 60; 
             }
         }
         timeLeft--;
     }
 
-    function lockRound(key) {
+    onAuthStateChanged(auth, (u) => {
+        user = u;
+        updateBalanceDisplay();
+        renderTable();
+    });
+
+    async function updateBalanceDisplay() {
+        if (!user) return;
+        const snap = await get(ref(db, `users/${user.uid}/balances/${activeKey}`));
+        document.getElementById('headerBalance').innerText = parseFloat(snap.val() || 0).toFixed(8);
+    }
+
+    async function lockRoundFirebase(key) {
+        if (!user) return;
         let now = new Date();
-        now.setMinutes(now.getMinutes() + 3); 
+        now.setMinutes(now.getMinutes() + 3);
         const pb = assets[key].pendingBet;
-        assets[key].history.unshift({
+        const roundData = {
             rid: assets[key].round,
             time: now.toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'}),
             locked: assets[key].lockedPrice,
@@ -292,63 +248,102 @@
             betAmt: pb ? pb.amount : 0,
             coinLogo: assets[key].logo,
             isPending: true, resPrice: 0, win: ""
-        });
+        };
+        await set(ref(db, `history/${user.uid}/${key}/${assets[key].round}`), roundData);
         assets[key].round++;
         if(key === activeKey) renderTable();
     }
 
-    function finalizeRound(key) {
-        let rec = assets[key].history.find(r => r.isPending);
-        if(rec) {
-            rec.isPending = false;
-            rec.resPrice = assets[key].currentPrice;
-            let isUp = rec.resPrice > rec.locked;
+    async function finalizeRoundFirebase(key) {
+        if (!user) return;
+        const snap = await get(ref(db, `history/${user.uid}/${key}`));
+        const history = snap.val() || {};
+        const lastRid = Object.keys(history).sort().pop();
+        const rec = history[lastRid];
+
+        if(rec && rec.isPending) {
+            const resPrice = assets[key].currentPrice;
+            const isUp = resPrice > rec.locked;
+            let winText = "Loss";
+            
             if(rec.action !== "---") {
-                let win = (rec.action === "UP" && isUp) || (rec.action === "DOWN" && !isUp);
+                const win = (rec.action === "UP" && isUp) || (rec.action === "DOWN" && !isUp);
                 if(win) {
-                    let totalReturn = rec.betAmt + (rec.betAmt * 0.96);
-                    rec.win = "+" + totalReturn.toFixed(8);
-                    let currentBal = parseFloat(localStorage.getItem(key.toLowerCase() + '_balance')) || 0;
-                    localStorage.setItem(key.toLowerCase() + '_balance', (currentBal + totalReturn).toFixed(8));
-                } else { rec.win = "Loss"; }
-            } else { rec.win = "No Trade"; }
+                    const totalReturn = rec.betAmt + (rec.betAmt * 0.96);
+                    winText = "+" + totalReturn.toFixed(8);
+                    const balSnap = await get(ref(db, `users/${user.uid}/balances/${key}`));
+                    const currentBal = parseFloat(balSnap.val() || 0);
+                    await update(ref(db, `users/${user.uid}/balances`), { [key]: (currentBal + totalReturn).toFixed(8) });
+                }
+            } else { winText = "No Trade"; }
+
+            await update(ref(db, `history/${user.uid}/${key}/${lastRid}`), { isPending: false, resPrice: resPrice, win: winText });
             assets[key].pendingBet = null;
             if(key === activeKey) { updateBalanceDisplay(); renderTable(); }
         }
     }
 
-    function renderTable() {
+    async function renderTable() {
+        if (!user) return;
+        const snap = await get(ref(db, `history/${user.uid}/${activeKey}`));
+        const data = snap.val() || {};
         const body = document.getElementById('historyBody');
         body.innerHTML = "";
-        assets[activeKey].history.forEach(item => {
-            let resultStatus = item.isPending ? '<div class="spinner-sm"></div>' : 
-                               (item.resPrice > item.locked ? 
-                               `$${item.resPrice.toFixed(2)} <span style="color:var(--up)">🔺</span>` : 
-                               `$${item.resPrice.toFixed(2)} <span style="color:var(--down)">🔻</span>`);
-            
-            let winDisplay = item.isPending ? '<div class="spinner-sm"></div>' : 
-                             (item.win.includes('+') ? `<img src="${item.coinLogo}" class="history-coin-icon"> ${item.win}` : item.win);
-
+        
+        Object.values(data).reverse().slice(0, 15).forEach(item => {
+            let res = item.isPending ? '<div class="spinner-sm"></div>' : `$${item.resPrice.toFixed(2)} ${item.resPrice > item.locked ? '🔺' : '🔻'}`;
             body.innerHTML += `<tr>
-                <td>
-                    <div class="round-box ${item.isPending ? 'blink' : ''}">
-                        <img src="${item.coinLogo}" class="round-logo"> ${item.rid}
-                    </div>
-                </td>
-                <td class="${item.isPending ? 'blink' : ''}">${item.time}</td>
+                <td><div class="round-box"><img src="${item.coinLogo}" class="round-logo">${item.rid}</div></td>
+                <td>${item.time}</td>
                 <td>$${item.locked.toFixed(2)}</td>
-                <td style="color:${item.action==='UP'?'var(--up)':item.action==='DOWN'?'var(--down)':'#848e9c'}">${item.action}</td>
-                <td>${resultStatus}</td>
-                <td style="color:${item.win.includes('+')?'var(--up)':'white'}">${winDisplay}</td>
+                <td style="color:${item.action==='UP'?'var(--up)':'var(--down)'}">${item.action}</td>
+                <td>${res}</td>
+                <td style="color:${item.win.includes('+')?'var(--up)':'white'}">${item.win || '---'}</td>
             </tr>`;
         });
     }
 
-    setInterval(manageTimer, 1000);
-    window.onload = () => { 
-        initBinanceWS();
-        switchAsset('btc'); 
+    // --- Window Scope Global Functions ---
+    window.switchAsset = (val) => {
+        activeKey = val;
+        document.getElementById('assetLogo').src = assets[val].logo;
+        document.getElementById('headerAssetUnit').innerText = assets[val].unit;
+        chart.data.datasets[0].data = Array(60).fill(assets[activeKey].currentPrice);
+        updateBalanceDisplay();
+        renderTable();
     };
+
+    window.openBetModal = (side) => {
+        if(!user || state !== "TRADING") return;
+        if(assets[activeKey].pendingBet) return alert("Already bet on " + assets[activeKey].unit);
+        document.getElementById('modalTitle').innerText = "Bet " + side;
+        document.getElementById('modalAvbl').innerText = document.getElementById('headerBalance').innerText;
+        document.querySelectorAll('.modalUnit').forEach(el => el.innerText = assets[activeKey].unit);
+        document.getElementById('betModal').setAttribute('data-side', side);
+        document.getElementById('betModal').style.display = 'flex';
+    };
+
+    window.closeBetModal = () => { document.getElementById('betModal').style.display = 'none'; };
+
+    window.confirmBet = async () => {
+        const amtInput = document.getElementById('betAmount');
+        const amt = parseFloat(amtInput.value);
+        const side = document.getElementById('betModal').getAttribute('data-side');
+        if(!user) return;
+        const balSnap = await get(ref(db, `users/${user.uid}/balances/${activeKey}`));
+        const currentBal = parseFloat(balSnap.val() || 0);
+
+        if(isNaN(amt) || amt <= 0 || amt > currentBal) return alert("Invalid Amount");
+
+        assets[activeKey].pendingBet = { side: side, amount: amt };
+        await update(ref(db, `users/${user.uid}/balances`), { [activeKey]: (currentBal - amt).toFixed(8) });
+        updateBalanceDisplay();
+        window.closeBetModal();
+        amtInput.value = "";
+    };
+
+    initBinanceWS();
+    setInterval(manageTimer, 1000);
 </script>
 </body>
 </html>
