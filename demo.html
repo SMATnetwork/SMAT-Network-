@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>SMAT CEX | Prediction Market</title>
+    
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
+
+    <style>
+        :root { --bg: #0b0e11; --card: #181a20; --border: #2b3139; --up: #0ecb81; --down: #f6465d; --primary: #f0b90b; }
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Inter', sans-serif; }
+        body { background: var(--bg); color: white; height: 100vh; display: flex; flex-direction: column; overflow: hidden; }
+        
+        .header { display: flex; justify-content: space-between; align-items: center; padding: 12px 15px; background: #12161c; border-bottom: 1px solid var(--border); }
+        .price-box { color: var(--up); font-weight: 800; font-size: 18px; }
+        
+        .chart-section { width: 100%; position: relative; background: #000; height: 35vh; border-bottom: 1px solid var(--border); }
+        .timer-display { position: absolute; top: 10px; right: 15px; font-size: 28px; font-weight: 900; color: white; z-index: 10; }
+        .status-label { position: absolute; top: 12px; left: 15px; font-size: 12px; font-weight: 800; text-transform: uppercase; z-index: 10; }
+
+        .history-section { flex: 1; background: var(--card); overflow-y: auto; }
+        .history-header { text-align: center; padding: 10px; font-size: 14px; font-weight: 900; border-bottom: 1px solid var(--border); background: #12161c; color: #848e9c; }
+        table { width: 100%; border-collapse: collapse; font-size: 11px; text-align: center; }
+        th { padding: 12px; color: #848e9c; border-bottom: 1px solid var(--border); }
+        td { padding: 12px; border-bottom: 1px solid #23272e; }
+
+        .action-area { padding: 15px; background: #12161c; display: flex; gap: 12px; border-top: 1px solid var(--border); }
+        .btn { flex: 1; padding: 16px; border: none; border-radius: 8px; font-weight: 900; font-size: 16px; color: white; cursor: pointer; }
+        .btn:disabled { opacity: 0.4; cursor: not-allowed; }
+    </style>
+</head>
+<body>
+
+    <div class="header">
+        <div style="background:#1e2329; padding:5px 10px; border-radius:5px; font-weight:700;">BTC/USDT</div>
+        <div id="livePrice" class="price-box">$0.00</div>
+    </div>
+
+    <div class="chart-section">
+        <div id="statusText" class="status-label" style="color:var(--up);">TRADING TIME</div>
+        <div id="timerClock" class="timer-display">00:00</div>
+        <canvas id="liveChart"></canvas>
+    </div>
+
+    <div class="history-section">
+        <div class="history-header">HISTORY</div>
+        <table>
+            <thead>
+                <tr><th>Round</th><th>Time</th><th>Locked</th><th>Action</th><th>Result</th></tr>
+            </thead>
+            <tbody id="historyBody"></tbody>
+        </table>
+    </div>
+
+    <div class="action-area">
+        <button id="upBtn" class="btn" style="background: var(--up);">UP</button>
+        <button id="downBtn" class="btn" style="background: var(--down);">DOWN</button>
+    </div>
+
+<script>
+    // ১. আপনার ফায়ারবেস কনফিগারেশন
+    const firebaseConfig = {
+        apiKey: "AIzaSyAMxtJedkehhxJRMPZLjhpKHqneHEWsGlE",
+        authDomain: "smat-exchange.firebaseapp.com",
+        databaseURL: "https://smat-exchange-default-rtdb.firebaseio.com",
+        projectId: "smat-exchange",
+        appId: "1:836334569396:web:679effe640b3453412d4e1"
+    };
+
+    firebase.initializeApp(firebaseConfig);
+    const db = firebase.database();
+    
+    // ডাটাবেস রুট রেফারেন্স (timerLogic)
+    const timerRef = db.ref('timerLogic');
+
+    // ২. চার্ট সেটআপ
+    const ctx = document.getElementById('liveChart').getContext('2d');
+    const chart = new Chart(ctx, {
+        type: 'line',
+        data: { labels: Array(40).fill(''), datasets: [{ data: Array(40).fill(0), borderColor: '#00ffff', borderWidth: 2, pointRadius: 0, fill: false, tension: 0.4 }] },
+        options: { responsive: true, maintainAspectRatio: false, scales: { x: { display: false }, y: { display: false } }, plugins: { legend: false } }
+    });
+
+    // ৩. ডাটাবেস থেকে টাইমার সিঙ্ক করা (রিফ্রেশ দিলেও এখান থেকেই শুরু হবে)
+    timerRef.on('value', (snapshot) => {
+        const data = snapshot.val();
+        if (data) {
+            const time = data.timeLeft;
+            const state = data.state;
+
+            // টাইমার ডিসপ্লে আপডেট
+            const m = Math.floor(time / 60);
+            const s = time % 60;
+            document.getElementById('timerClock').innerText = `${m.toString().padStart(2,'0')}:${s.toString().padStart(2,'0')}`;
+            
+            // স্টেট অনুযায়ী UI পরিবর্তন
+            const statusLabel = document.getElementById('statusText');
+            const upBtn = document.getElementById('upBtn');
+            const downBtn = document.getElementById('downBtn');
+
+            if (state === "TRADING") {
+                statusLabel.innerText = "TRADING TIME";
+                statusLabel.style.color = "#0ecb81";
+                upBtn.disabled = false;
+                downBtn.disabled = false;
+            } else {
+                statusLabel.innerText = "TRADING CLOSED";
+                statusLabel.style.color = "#f6465d";
+                upBtn.disabled = true;
+                downBtn.disabled = true;
+            }
+        }
+    });
+
+    // ৪. মাস্টার ক্লক লজিক (এটি ডাটাবেস আপডেট করবে)
+    // নোট: এটি যেকোনো একজন ইউজারের ব্রাউজার থেকে চললেই সবার জন্য সিঙ্ক হবে
+    setInterval(() => {
+        timerRef.once('value').then((snap) => {
+            const data = snap.val();
+            let t = data.timeLeft;
+            let s = data.state;
+
+            if (t > 0) {
+                t--;
+            } else {
+                if (s === "TRADING") {
+                    s = "CLOSED";
+                    t = 10; // ১০ সেকেন্ড ক্লোজড থাকবে
+                } else {
+                    s = "TRADING";
+                    t = 60; // আবার ট্রেডিং শুরু
+                }
+            }
+            // ডাটাবেস আপডেট
+            timerRef.update({ timeLeft: t, state: s });
+        });
+    }, 1000);
+
+    // ৫. বিনান্স লাইভ প্রাইস এবং চার্ট আপডেট
+    const ws = new WebSocket('wss://stream.binance.com:9443/ws/btcusdt@aggTrade');
+    ws.onmessage = (e) => {
+        const d = JSON.parse(e.data);
+        const price = parseFloat(d.p);
+        document.getElementById('livePrice').innerText = '$' + price.toFixed(2);
+        
+        chart.data.datasets[0].data.shift();
+        chart.data.datasets[0].data.push(price);
+        chart.update('none');
+    };
+</script>
+</body>
+</html>
