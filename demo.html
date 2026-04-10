@@ -147,12 +147,54 @@
     let user = null;
     let globalState = "TRADING";
 
-    const ctx = document.getElementById('liveChart').getContext('2d');
+        const ctx = document.getElementById('liveChart').getContext('2d');
+
+    // সবুজ রঙের গ্রেডিয়েন্ট তৈরি (উপর থেকে নিচে হালকা হবে)
+    const gradient = ctx.createLinearGradient(0, 0, 0, 400);
+    gradient.addColorStop(0, 'rgba(14, 203, 129, 0.3)'); // উপরের গাঢ় সবুজ
+    gradient.addColorStop(1, 'rgba(14, 203, 129, 0)');   // নিচে একদম হালকা
+
     const chart = new Chart(ctx, {
         type: 'line',
-        data: { labels: Array(50).fill(''), datasets: [{ data: Array(50).fill(0), borderColor: '#00ffff', borderWidth: 2, pointRadius: 0, tension: 0.4, fill: true, backgroundColor: 'rgba(0, 255, 255, 0.05)' }] },
-        options: { responsive: true, maintainAspectRatio: false, animation: false, scales: { x: { display: false }, y: { display: false } }, plugins: { legend: { display: false } } }
+        data: { 
+            labels: Array(50).fill(''), 
+            datasets: [{ 
+                data: Array(50).fill(0), 
+                borderColor: '#0ecb81',     // প্রফেশনাল সবুজ বর্ডার
+                borderWidth: 2, 
+                pointRadius: 0, 
+                tension: 0.45,             // রেখাটি মসৃণ বা কার্ভি দেখাবে
+                fill: true, 
+                backgroundColor: gradient, // সলিড কালারের বদলে গ্রেডিয়েন্ট ব্যবহার
+                capBezierPoints: true
+            }] 
+        },
+        options: { 
+            responsive: true, 
+            maintainAspectRatio: false, 
+            animation: {
+                duration: 800,             // ডাটা আসার সময় রেখাটি স্মুথলি নড়বে
+                easing: 'easeInOutQuad'
+            },
+            scales: { 
+                x: { display: false }, 
+                y: { 
+                    display: true,          // সাইডে প্রাইজ দেখার জন্য এটি true করা ভালো
+                    position: 'right',      // ট্রেডিং ভিউয়ের মতো ডানে দেখাবে
+                    grid: {
+                        color: 'rgba(255, 255, 255, 0.05)', // খুব হালকা গ্রিড লাইন
+                        drawTicks: false
+                    },
+                    ticks: {
+                        color: '#848e9c',   // টেক্সট কালার
+                        font: { size: 10 }
+                    }
+                } 
+            }, 
+            plugins: { legend: { display: false } } 
+        }
     });
+
 
     function initTimer() {
     // initTimer ফাংশনের ভেতরে এটি ঢুকিয়ে দিন
