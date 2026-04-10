@@ -12,7 +12,7 @@
         body { background: var(--bg); color: white; height: 100vh; display: flex; flex-direction: column; overflow: hidden; }
         
         .header { display: grid; grid-template-columns: 1fr 1.2fr 1fr; align-items: center; padding: 10px 15px; background: #12161c; border-bottom: 1px solid var(--border); }
-        .asset-selector { display: flex; align-items: center; gap: 8px; background: #1e2329; padding: 5px 8px; border-radius: 8px; border: 1px solid var(--border); }
+        .asset-selector { display: flex; align-items: center; gap: 8px; background: #1e2329; padding: 5px 5px; border-radius: 8px; border: 1px solid var(--border); }
         .asset-selector img { width: 22px; height: 22px; border-radius: 50%; object-fit: cover; }
         .asset-selector select { background: transparent; color: white; border: none; font-weight: 700; outline: none; cursor: pointer; }
         
@@ -57,10 +57,10 @@ td {
 /* কলামগুলোর উইথ ডিস্ট্রিবিউশন */
 th:nth-child(1), td:nth-child(1) { width: 16%; } /* Round */
 th:nth-child(2), td:nth-child(2) { width: 14%; } /* Time */
-th:nth-child(3), td:nth-child(3) { width: 22%; } /* Locked Price */
+th:nth-child(3), td:nth-child(3) { width: 18%; } /* Locked Price */
 th:nth-child(4), td:nth-child(4) { width: 12%; } /* Action (UP/DOWN) */
 th:nth-child(5), td:nth-child(5) { width: 18%; } /* Result */
-th:nth-child(6), td:nth-child(6) { width: 18%; } /* My Win */
+th:nth-child(6), td:nth-child(6) { width: 22%; } /* My Win */
 
 .hist-logo { 
     width: 12px; /* লোগো একটু ছোট করা হয়েছে */
@@ -72,7 +72,7 @@ th:nth-child(6), td:nth-child(6) { width: 18%; } /* My Win */
 
 .sub-text { 
     display: block; 
-    font-size: 8px; /* সাব-টেক্সট আরও ছোট করা হয়েছে */
+    font-size: 7px; /* সাব-টেক্সট আরও ছোট করা হয়েছে */
     color: #848e9c; 
     margin-top: 1px; 
 }
@@ -99,7 +99,7 @@ th:nth-child(6), td:nth-child(6) { width: 18%; } /* My Win */
             <img id="assetLogo" src="">
             <select id="assetSelect" onchange="window.switchAsset(this.value)"></select>
         </div>
-        <div class="bal-box"> Aval:
+        <div class="bal-box">
             <span id="headerBalance" class="bal-amount">0.00000000</span>
             <span id="headerAssetUnit" style="font-size:10px; color:#848e9c;">...</span>
         </div>
@@ -301,7 +301,7 @@ th:nth-child(6), td:nth-child(6) { width: 18%; } /* My Win */
                 let winAmt = 0;
 
                 if (rec.action === "No Trade") {
-                    status = "No Trade";
+                    status = "Next";
                 } else if (resPrice === rec.lockedPrice) {
                     status = "DRAW"; 
                     winAmt = rec.betAmt * 0.5; // অরিজিনাল শর্ত: ড্র হলে ৫০% ফেরত
@@ -384,7 +384,7 @@ th:nth-child(6), td:nth-child(6) { width: 18%; } /* My Win */
             body.innerHTML += `<tr class="${isWaiting ? 'blink' : ''}">
                 <td><img src="assets/logos/${item.logo}" class="hist-logo"> ${item.rid}</td>
                 <td>${item.time}</td>
-                <td>$${parseFloat(item.lockedPrice || 0).toFixed(4)}<span class="sub-text">Locked Price</span></td>
+                <td>$${parseFloat(item.lockedPrice || 0).toFixed(4)}<span class="sub-text">Locked </span></td>
                 <td style="color:${item.action==='UP'?'var(--up)':(item.action==='DOWN'?'var(--down)':'#848e9c')}">${item.action || '--'}</td>
                 <td>${(item.isPending || !item.resultPrice) ? '<div class="spinner-sm"></div>' : '$'+parseFloat(item.resultPrice).toFixed(4)}</td>
                 <td>${winHtml}</td>
