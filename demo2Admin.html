@@ -1,0 +1,365 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SMAT CEX | অ্যাডমিন কন্ট্রোল প্যানেল</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        /* HOT Wallet Style Font & Root Colors */
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;700;900&display=swap');
+
+        :root {
+            --bg: #0b0e11;
+            --card: #181a20;
+            --border: #2b3139;
+            --primary: #f0b90b;
+            --up: #0ecb81;
+            --down: #f6465d;
+            --text-main: #ffffff;
+            --text-muted: #848e9c;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Inter', sans-serif; /* ক্লিন এবং জিওমেট্রিক ফন্ট */
+        }
+
+        body {
+            background: var(--bg);
+            color: var(--text-main);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* --- Header Style --- */
+        .header {
+            background: var(--card);
+            padding: 15px 25px;
+            border-bottom: 1px solid var(--border);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        .logo-area {
+            font-size: 22px;
+            font-weight: 900; /* HOT Font Weight */
+            color: var(--primary);
+            letter-spacing: -0.5px;
+        }
+
+        .logout-btn {
+            background: rgba(246, 70, 93, 0.1);
+            color: var(--down);
+            border: 1px solid var(--down);
+            padding: 8px 15px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: 700;
+            font-size: 13px;
+        }
+
+        /* --- Login Overlay --- */
+        #loginOverlay {
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: var(--bg);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 9999;
+        }
+
+        .login-box {
+            background: var(--card);
+            padding: 40px;
+            border-radius: 15px;
+            width: 100%;
+            max-width: 400px;
+            border: 1px solid var(--border);
+            text-align: center;
+        }
+
+        .login-box h2 {
+            font-weight: 900;
+            margin-bottom: 25px;
+            color: var(--primary);
+        }
+
+        /* --- Main Content --- */
+        .container {
+            max-width: 1000px;
+            margin: 30px auto;
+            padding: 0 20px;
+            flex: 1;
+        }
+
+        .card {
+            background: var(--card);
+            border: 1px solid var(--border);
+            padding: 25px;
+            border-radius: 12px;
+            margin-bottom: 30px;
+        }
+
+        h2 {
+            font-weight: 900; /* HOT Style */
+            font-size: 18px;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .grid-inputs {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+        }
+
+        .input-group { margin-bottom: 15px; }
+        
+        label {
+            display: block;
+            font-size: 12px;
+            color: var(--text-muted);
+            margin-bottom: 8px;
+            font-weight: 700;
+        }
+
+        input {
+            width: 100%;
+            padding: 14px;
+            background: #0b0e11;
+            border: 1px solid var(--border);
+            color: white;
+            border-radius: 8px;
+            outline: none;
+            font-size: 14px;
+            font-weight: 600;
+        }
+
+        input:focus { border-color: var(--primary); }
+
+        .btn {
+            padding: 15px 25px;
+            border: none;
+            border-radius: 8px;
+            font-weight: 900;
+            cursor: pointer;
+            text-transform: uppercase;
+            transition: 0.3s;
+        }
+
+        .btn-primary { background: var(--primary); color: #000; width: 100%; margin-top: 10px; }
+        .btn-primary:hover { opacity: 0.9; }
+
+        /* --- Table Style --- */
+        .table-container { overflow-x: auto; }
+        table { width: 100%; border-collapse: collapse; margin-top: 10px; }
+        th { text-align: left; color: var(--text-muted); padding: 15px; border-bottom: 1px solid var(--border); font-size: 12px; text-transform: uppercase; }
+        td { padding: 15px; border-bottom: 1px solid #23272e; font-size: 14px; font-weight: 700; }
+
+        .coin-icon { width: 32px; height: 32px; border-radius: 50%; vertical-align: middle; margin-right: 10px; }
+        
+        .badge {
+            background: rgba(240, 185, 11, 0.1);
+            color: var(--primary);
+            padding: 4px 10px;
+            border-radius: 4px;
+            font-size: 11px;
+        }
+
+        .btn-del {
+            background: rgba(246, 70, 93, 0.1);
+            color: var(--down);
+            border: none;
+            padding: 8px 12px;
+            border-radius: 4px;
+            font-size: 12px;
+            font-weight: 700;
+        }
+
+        /* --- Footer --- */
+        .footer {
+            background: var(--card);
+            text-align: center;
+            padding: 20px;
+            border-top: 1px solid var(--border);
+            color: var(--text-muted);
+            font-size: 12px;
+            font-weight: 600;
+        }
+
+        .blink { animation: blink 1s infinite; }
+        @keyframes blink { 50% { opacity: 0.5; } }
+    </style>
+</head>
+<body>
+
+<div id="loginOverlay">
+    <div class="login-box">
+        <h2>অ্যাডমিন লগইন</h2>
+        <div class="input-group">
+            <label>অ্যাডমিন ইমেইল</label>
+            <input type="email" id="loginEmail" placeholder="admin@smat.com">
+        </div>
+        <div class="input-group">
+            <label>পাসওয়ার্ড</label>
+            <input type="password" id="loginPass" placeholder="••••••••">
+        </div>
+        <button class="btn btn-primary" onclick="handleLogin()">প্রবেশ করুন</button>
+    </div>
+</div>
+
+<header class="header">
+    <div class="logo-area">SMAT <span style="color:white">ADMIN</span></div>
+    <button class="logout-btn" onclick="handleLogout()">লগআউট</button>
+</header>
+
+<div class="container">
+    <div class="card">
+        <h2><i class="fas fa-plus-circle" style="color:var(--up)"></i> নতুন কয়েন যুক্ত করুন</h2>
+        <div class="grid-inputs">
+            <div class="input-group">
+                <label>কয়েন আইডি (যেমন: btc, eth)</label>
+                <input type="text" id="assetKey" placeholder="doge">
+            </div>
+            <div class="input-group">
+                <label>প্রদর্শিত নাম (যেমন: DOGE/USDT)</label>
+                <input type="text" id="assetName" placeholder="DOGE/USDT">
+            </div>
+            <div class="input-group">
+                <label>বাইন্যান্স সিম্বল (ছোট হাতের)</label>
+                <input type="text" id="assetSymbol" placeholder="dogeusdt">
+            </div>
+            <div class="input-group">
+                <label>লোগো ফাইল (যেমন: doge.png)</label>
+                <input type="text" id="assetLogo" placeholder="doge.png">
+            </div>
+        </div>
+        <div class="input-group">
+            <label>শুরুর রাউন্ড আইডি (যেমন: 50001)</label>
+            <input type="number" id="assetRound" placeholder="50001">
+        </div>
+        <button class="btn btn-primary" onclick="addNewAsset()">কয়েন আপলোড এবং সচল করুন</button>
+    </div>
+
+    <div class="card">
+        <h2><i class="fas fa-list" style="color:var(--primary)"></i> বর্তমানে সচল কয়েনসমূহ</h2>
+        <div class="table-container">
+            <table>
+                <thead>
+                    <tr>
+                        <th>কয়েন ইনফো</th>
+                        <th>বাইন্যান্স সিম্বল</th>
+                        <th>রাউন্ড আইডি</th>
+                        <th>অ্যাকশন</th>
+                    </tr>
+                </thead>
+                <tbody id="assetTableBody"></tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<footer class="footer">
+    &copy; 2026 SMAT Network | অল রাইট রিজার্ভড | <span class="blink">সিস্টেম রানিং</span>
+</footer>
+
+<script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+    import { getDatabase, ref, set, onValue, remove, update } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
+    import { getAuth, signInWithEmailAndPassword, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+
+    const firebaseConfig = {
+        apiKey: "AIzaSyAMxtJedkehhxJRMPZLjhpKHqneHEWsGlE",
+        authDomain: "smat-exchange.firebaseapp.com",
+        databaseURL: "https://smat-exchange-default-rtdb.firebaseio.com",
+        projectId: "smat-exchange",
+        appId: "1:836334569396:web:679effe640b3453412d4e1"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const db = getDatabase(app);
+    const auth = getAuth(app);
+
+    // ১. লগইন লজিক
+    window.handleLogin = () => {
+        const email = document.getElementById('loginEmail').value;
+        const pass = document.getElementById('loginPass').value;
+        signInWithEmailAndPassword(auth, email, pass)
+            .catch(err => alert("লগইন ব্যর্থ! সঠিক তথ্য দিন।"));
+    };
+
+    window.handleLogout = () => signOut(auth);
+
+    onAuthStateChanged(auth, (user) => {
+        if (user) {
+            document.getElementById('loginOverlay').style.display = 'none';
+            loadAssets();
+        } else {
+            document.getElementById('loginOverlay').style.display = 'flex';
+        }
+    });
+
+    // ২. কয়েন লিস্ট লোড করা
+    function loadAssets() {
+        onValue(ref(db, 'predictionAssets'), (snapshot) => {
+            const data = snapshot.val();
+            const tbody = document.getElementById('assetTableBody');
+            tbody.innerHTML = "";
+            if (data) {
+                Object.keys(data).forEach(key => {
+                    const item = data[key];
+                    tbody.innerHTML += `
+                        <tr>
+                            <td>
+                                <img src="assets/logos/${item.logo}" class="coin-icon" onerror="this.src='https://via.placeholder.com/32'">
+                                ${item.name}
+                            </td>
+                            <td><span class="badge">${item.symbol}</span></td>
+                            <td>${item.round}</td>
+                            <td><button class="btn-del" onclick="deleteAsset('${key}')">ডিলিট</button></td>
+                        </tr>
+                    `;
+                });
+            }
+        });
+    }
+
+    // ৩. নতুন কয়েন যুক্ত করা
+    window.addNewAsset = function() {
+        const key = document.getElementById('assetKey').value.toLowerCase().trim();
+        const name = document.getElementById('assetName').value.trim();
+        const symbol = document.getElementById('assetSymbol').value.toLowerCase().trim();
+        const logo = document.getElementById('assetLogo').value.trim();
+        const round = document.getElementById('assetRound').value.trim();
+
+        if (!key || !name || !symbol || !logo || !round) return alert("সব ঘর পূরণ করুন!");
+
+        const newAsset = { name, symbol, logo, unit: key.toUpperCase(), round: parseInt(round), currentPrice: 0 };
+        
+        set(ref(db, 'predictionAssets/' + key), newAsset).then(() => {
+            update(ref(db, 'roundLogic'), { [key]: parseInt(round) });
+            alert("কয়েন সফলভাবে যুক্ত হয়েছে!");
+            document.querySelectorAll('input').forEach(i => i.value = "");
+        });
+    };
+
+    // ৪. ডিলিট লজিক
+    window.deleteAsset = (key) => {
+        if (confirm(`${key} ডিলিট করতে চান?`)) {
+            remove(ref(db, 'predictionAssets/' + key));
+        }
+    };
+</script>
+</body>
+</html>
