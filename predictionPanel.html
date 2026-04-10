@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SMAT CEX | Prediction Admin Control</title>
+    <style>
+        :root { --bg: #0b0e11; --card: #181a20; --border: #2b3139; --primary: #f0b90b; --up: #0ecb81; --down: #f6465d; }
+        body { background: var(--bg); color: white; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; padding: 20px; margin: 0; }
+        .container { max-width: 900px; margin: 0 auto; }
+        .header { text-align: center; margin-bottom: 30px; border-bottom: 2px solid var(--primary); padding-bottom: 10px; }
+        .card { background: var(--card); border: 1px solid var(--border); padding: 25px; border-radius: 12px; margin-bottom: 20px; box-shadow: 0 4px 15px rgba(0,0,0,0.3); }
+        
+        h2 { color: var(--primary); margin-top: 0; font-size: 20px; text-transform: uppercase; }
+        .grid-inputs { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; }
+        .input-group { margin-bottom: 15px; }
+        label { display: block; font-size: 12px; color: #848e9c; margin-bottom: 5px; }
+        input { width: 100%; padding: 12px; background: #0b0e11; border: 1px solid var(--border); color: white; border-radius: 6px; box-sizing: border-box; outline: none; }
+        input:focus { border-color: var(--primary); }
+        
+        .btn { padding: 14px 20px; border: none; border-radius: 6px; font-weight: bold; cursor: pointer; transition: 0.3s; text-transform: uppercase; }
+        .btn-add { background: var(--primary); color: #000; width: 100%; margin-top: 10px; }
+        .btn-add:hover { background: #d9a808; }
+        .btn-del { background: var(--down); color: #fff; padding: 6px 12px; font-size: 11px; }
+        .btn-del:hover { background: #cf3044; }
+
+        table { width: 100%; border-collapse: collapse; margin-top: 20px; background: var(--card); }
+        th { text-align: left; color: #848e9c; padding: 15px 10px; border-bottom: 1px solid var(--border); font-size: 13px; }
+        td { padding: 15px 10px; border-bottom: 1px solid #23272e; font-size: 14px; }
+        .coin-info { display: flex; align-items: center; gap: 10px; }
+        .coin-icon { width: 30px; height: 30px; border-radius: 50%; object-fit: cover; background: #2b3139; }
+        
+        .badge { background: #2b3139; padding: 2px 8px; border-radius: 4px; font-size: 11px; color: var(--primary); }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <div class="header">
+        <h1>SMAT PREDICTION ADMIN</h1>
+    </div>
+
+    <div class="card">
+        <h2><i class="fas fa-plus-circle"></i> Add New Trading Asset</h2>
+        <div class="grid-inputs">
+            <div class="input-group">
+                <label>Asset ID (Unique, e.g: btc, eth, doge)</label>
+                <input type="text" id="assetKey" placeholder="doge">
+            </div>
+            <div class="input-group">
+                <label>Display Name (e.g: DOGE/USDT)</label>
+                <input type="text" id="assetName" placeholder="DOGE/USDT">
+            </div>
+            <div class="input-group">
+                <label>Binance Symbol (Lower case, e.g: dogeusdt)</label>
+                <input type="text" id="assetSymbol" placeholder="dogeusdt">
+            </div>
+            <div class="input-group">
+                <label>Logo File Name (e.g: doge.png)</label>
+                <input type="text" id="assetLogo" placeholder="doge.png">
+            </div>
+        </div>
+        <div class="input-group">
+            <label>Initial Round ID (Numeric, e.g: 50001)</label>
+            <input type="number" id="assetRound" placeholder="50001">
+        </div>
+        <button class="btn btn-add" onclick="addNewAsset()">Upload & Activate Asset</button>
+    </div>
+
+    <div class="card">
+        <h2><i class="fas fa-list"></i> Active Prediction Assets</h2>
+        <table>
+            <thead>
+                <tr>
+                    <th>Asset</th>
+                    <th>Binance Symbol</th>
+                    <th>Round ID</th>
+                    <th>Action</th>
+                </tr>
+            </thead>
+            <tbody id="assetTableBody">
+                </tbody>
+        </table>
+    </div>
+</div>
+
+<script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+    import { getDatabase, ref, set, onValue, remove, update } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
+
+    // আপনার অরিজিনাল কনফিগ
+    const firebaseConfig = {
+        apiKey: "AIzaSyAMxtJedkehhxJRMPZLjhpKHqneHEWsGlE",
+        authDomain: "smat-exchange.firebaseapp.com",
+        databaseURL: "https://smat-exchange-default-rtdb.firebaseio.com",
+        projectId: "smat-exchange",
+        appId: "1:836334569396:web:679effe640b3453412d4e1"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const db = getDatabase(app);
+
+    const assetTableBody = document.getElementById('assetTableBody');
+
+    // ১. ডাটাবেস থেকে কয়েন লিস্ট রিড করা
+    onValue(ref(db, 'predictionAssets'), (snapshot) => {
+        const data = snapshot.val();
+        assetTableBody.innerHTML = "";
+        
+        if (data) {
+            Object.keys(data).forEach(key => {
+                const item = data[key];
+                const row = `
+                    <tr>
+                        <td>
+                            <div class="coin-info">
+                                <img src="assets/logos/${item.logo}" class="coin-icon" onerror="this.src='https://via.placeholder.com/30'">
+                                <div>
+                                    <strong>${item.name}</strong><br>
+                                    <span style="font-size:10px; color:#848e9c;">ID: ${key}</span>
+                                </div>
+                            </div>
+                        </td>
+                        <td><span class="badge">${item.symbol}</span></td>
+                        <td>${item.round || 'N/A'}</td>
+                        <td>
+                            <button class="btn btn-del" onclick="deleteAsset('${key}')">Delete</button>
+                        </td>
+                    </tr>
+                `;
+                assetTableBody.insertAdjacentHTML('beforeend', row);
+            });
+        } else {
+            assetTableBody.innerHTML = "<tr><td colspan='4' style='text-align:center;'>No assets found. Add one above!</td></tr>";
+        }
+    });
+
+    // ২. নতুন কয়েন অ্যাড করা
+    window.addNewAsset = function() {
+        const key = document.getElementById('assetKey').value.toLowerCase().trim();
+        const name = document.getElementById('assetName').value.trim();
+        const symbol = document.getElementById('assetSymbol').value.toLowerCase().trim();
+        const logo = document.getElementById('assetLogo').value.trim();
+        const round = document.getElementById('assetRound').value.trim();
+
+        if (!key || !name || !symbol || !logo || !round) {
+            alert("সবগুলো ঘর পূরণ করুন!");
+            return;
+        }
+
+        const newAsset = {
+            name: name,
+            symbol: symbol,
+            logo: logo,
+            unit: key.toUpperCase(),
+            round: parseInt(round),
+            currentPrice: 0
+        };
+
+        // predictionAssets এ সেভ করা
+        set(ref(db, 'predictionAssets/' + key), newAsset)
+        .then(() => {
+            // রাউন্ড লজিকেও এন্ট্রি দেওয়া যাতে টাইমার কাজ করে
+            update(ref(db, 'roundLogic'), { [key]: parseInt(round) });
+            
+            alert("কয়েন সফলভাবে আপলোড হয়েছে!");
+            document.querySelectorAll('input').forEach(input => input.value = "");
+        })
+        .catch((error) => alert("Error: " + error.message));
+    };
+
+    // ৩. কয়েন ডিলিট করা
+    window.deleteAsset = function(key) {
+        if (confirm(`আপনি কি নিশ্চিতভাবে ${key} ডিলিট করতে চান?`)) {
+            remove(ref(db, 'predictionAssets/' + key))
+            .then(() => alert("কয়েন ডিলিট করা হয়েছে।"));
+        }
+    };
+</script>
+
+</body>
+</html>
