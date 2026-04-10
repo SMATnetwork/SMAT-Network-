@@ -432,7 +432,7 @@ th:nth-child(6), td:nth-child(6) { width: 18%; } /* My Win */
             if (key) {
                 const price = parseFloat(d.data.p); assets[key].currentPrice = price; 
                 if (key === activeKey) {
-                    document.getElementById('priceDisplay').innerText = '$' + price.toFixed(6);
+                    document.getElementById('priceDisplay').innerText = '$' + price.toFixed(4);
                     chart.data.datasets[0].data.shift(); 
                     chart.data.datasets[0].data.push(price);
                     chart.update('none');
