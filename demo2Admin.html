@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>SMAT CEX | ওমনি অ্যাডমিন প্যানেল</title>
+    <title>SMAT | Coin Panel</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;700;900&display=swap');
@@ -14,58 +14,76 @@
             --text-main: #ffffff; --text-muted: #848e9c;
         }
 
+        /* স্ক্রিন সাইজ ফিক্স করার জন্য */
         * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Inter', sans-serif; }
 
-        body { 
-            background: var(--bg); color: var(--text-main); height: 100vh; width: 100vw;
-            display: flex; flex-direction: column; overflow: hidden; margin: 0;
+        html, body {
+            height: 100%;
+            width: 100%;
+            overflow: hidden; /* পুরো পেজের স্ক্রল বন্ধ */
+            background: var(--bg);
+        }
+
+        body {
+            display: flex;
+            flex-direction: column;
         }
 
         /* --- ফিক্সড হেডার --- */
         .header { 
-            background: var(--card); padding: 0 20px; border-bottom: 1px solid var(--border); 
-            display: flex; justify-content: space-between; align-items: center; 
-            height: 65px; flex-shrink: 0; z-index: 1000;
+            background: var(--card); 
+            padding: 0 20px; 
+            border-bottom: 1px solid var(--border); 
+            display: flex; 
+            justify-content: space-between; 
+            align-items: center; 
+            height: 60px; 
+            flex-shrink: 0;
+            z-index: 1000;
         }
-        .logo-area { font-size: 20px; font-weight: 900; color: var(--primary); letter-spacing: -1px; }
+        .logo-area { font-size: 18px; font-weight: 900; color: var(--primary); letter-spacing: -1px; }
 
-        /* --- স্ক্রলেবল মেইন কন্টেইনার --- */
+        /* --- স্ক্রলেবল মেইন এরিয়া --- */
         .main-content { 
-            flex: 1; overflow-y: auto; padding: 15px; 
-            -webkit-overflow-scrolling: touch; background: #000;
+            flex: 1; 
+            overflow-y: auto; 
+            padding: 15px; 
+            background: #000;
+            -webkit-overflow-scrolling: touch;
         }
 
         .card { background: var(--card); border: 1px solid var(--border); padding: 18px; border-radius: 15px; margin-bottom: 20px; }
-        h2 { font-weight: 900; font-size: 15px; margin-bottom: 15px; color: var(--primary); display: flex; align-items: center; gap: 8px; text-transform: uppercase; }
+        h2 { font-weight: 900; font-size: 14px; margin-bottom: 15px; color: var(--primary); display: flex; align-items: center; gap: 8px; text-transform: uppercase; }
 
-        /* গ্রিড ইনপুট সিস্টেম */
+        /* গ্রিড ইনপুট */
         .grid-inputs { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
         .full-row { grid-column: span 2; }
-        .input-group { margin-bottom: 5px; }
         label { display: block; font-size: 9px; color: var(--text-muted); margin-bottom: 5px; font-weight: 900; text-transform: uppercase; }
         input { width: 100%; padding: 12px; background: #0b0e11; border: 1px solid var(--border); color: white; border-radius: 8px; outline: none; font-size: 13px; font-weight: 700; }
-        input:focus { border-color: var(--primary); }
+        
+        .btn-main { background: var(--primary); color: #000; width: 100%; padding: 15px; border: none; border-radius: 10px; font-weight: 900; cursor: pointer; text-transform: uppercase; font-size: 14px; margin-top: 15px; }
 
-        .btn-main { background: var(--primary); color: #000; width: 100%; padding: 15px; border: none; border-radius: 10px; font-weight: 900; cursor: pointer; text-transform: uppercase; font-size: 14px; margin-top: 15px; transition: 0.2s; }
-        .btn-main:active { transform: scale(0.98); opacity: 0.9; }
-
-        /* --- ফিক্সড ফুটার --- */
+        /* --- ফিক্সড ফুটার (অবশ্যই দৃশ্যমান হবে) --- */
         .admin-footer { 
-            background: var(--card); border-top: 1px solid var(--border); 
-            display: grid; grid-template-columns: 1fr 1fr 1fr; 
-            height: 75px; flex-shrink: 0; z-index: 1000;
+            background: var(--card); 
+            border-top: 1px solid var(--border); 
+            display: grid; 
+            grid-template-columns: 1fr 1fr 1fr; 
+            height: 70px; 
+            flex-shrink: 0;
+            z-index: 1000;
+            padding-bottom: env(safe-area-inset-bottom);
         }
-        .footer-item { background: none; border: none; color: var(--text-muted); display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 5px; cursor: pointer; }
+        .footer-item { background: none; border: none; color: var(--text-muted); display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 5px; cursor: pointer; text-decoration: none; }
         .footer-item i { font-size: 18px; }
         .footer-item span { font-size: 10px; font-weight: 900; text-transform: uppercase; }
-        .footer-item.active { color: var(--primary); border-top: 3px solid var(--primary); background: rgba(240, 185, 11, 0.05); }
+        .footer-item.active { color: var(--primary); background: rgba(240, 185, 11, 0.05); }
 
-        /* এসেট লিস্ট টেবিল */
-        table { width: 100%; border-collapse: collapse; margin-top: 10px; }
-        td { padding: 12px 0; border-bottom: 1px solid #23272e; font-size: 13px; font-weight: 900; }
-        .coin-info { display: flex; align-items: center; gap: 10px; }
-        .coin-icon { width: 28px; height: 28px; border-radius: 50%; background: #2b3139; object-fit: cover; }
-        .btn-del { color: var(--down); background: transparent; border: 1px solid var(--down); padding: 5px 8px; border-radius: 5px; cursor: pointer; font-weight: 900; font-size: 10px; }
+        /* লিস্ট টেবিল */
+        table { width: 100%; border-collapse: collapse; }
+        td { padding: 12px 0; border-bottom: 1px solid #23272e; font-size: 12px; font-weight: 900; }
+        .coin-icon { width: 25px; height: 25px; border-radius: 50%; background: #2b3139; vertical-align: middle; margin-right: 8px; }
+        .btn-del { color: var(--down); background: transparent; border: 1px solid var(--down); padding: 4px 8px; border-radius: 4px; cursor: pointer; font-size: 10px; font-weight: 900; }
 
         .tab-content { display: none; }
         .tab-content.active { display: block; }
@@ -75,7 +93,7 @@
 
 <header class="header">
     <div class="logo-area">SMAT <span style="color:white">NETWORK</span></div>
-    <div style="font-size: 10px; font-weight: 900; background: #2b3139; padding: 4px 10px; border-radius: 5px;">MAINNET 1.0</div>
+    <div style="font-size: 9px; font-weight: 900; background: #2b3139; padding: 3px 8px; border-radius: 4px;">ADMIN</div>
 </header>
 
 <div class="main-content">
@@ -84,53 +102,51 @@
         <div class="card">
             <h2><i class="fas fa-coins"></i> লঞ্চ স্পট এসেট</h2>
             <div class="grid-inputs">
-                <div class="input-group"><label>Asset Symbol (BTC)</label><input type="text" id="sSym" placeholder="btc"></div>
-                <div class="input-group"><label>Full Name</label><input type="text" id="sName" placeholder="Bitcoin"></div>
-                <div class="input-group"><label>Listing Price ($)</label><input type="number" id="sPrice" placeholder="65000"></div>
+                <div class="input-group"><label>Symbol</label><input type="text" id="sSym" placeholder="btc"></div>
+                <div class="input-group"><label>Name</label><input type="text" id="sName" placeholder="Bitcoin"></div>
+                <div class="input-group"><label>Initial Price</label><input type="number" id="sPrice" placeholder="65000"></div>
                 <div class="input-group"><label>Decimal</label><input type="number" id="sDec" placeholder="8"></div>
-                <div class="full-row input-group"><label>Contract Address</label><input type="text" id="sCon" placeholder="0x... or Native"></div>
-                <div class="full-row input-group"><label>Support Networks (Comma separated)</label><input type="text" id="sNet" placeholder="BEP20, ERC20, TRC20"></div>
-                <div class="full-row input-group"><label>Logo Image File</label><input type="text" id="sLogo" placeholder="btc.png"></div>
+                <div class="full-row"><label>Contract</label><input type="text" id="sCon" placeholder="0x... or Native"></div>
+                <div class="full-row"><label>Networks</label><input type="text" id="sNet" placeholder="BEP20, ERC20"></div>
+                <div class="full-row"><label>Logo File</label><input type="text" id="sLogo" placeholder="btc.png"></div>
             </div>
             <button class="btn-main" onclick="saveData('spotAssets', 's')">অ্যাড স্পট মার্কেট</button>
         </div>
         <div class="card">
-            <h2>Active Spot Assets</h2>
+            <h2>Active Spot</h2>
             <table><tbody id="spotTable"></tbody></table>
         </div>
     </div>
 
     <div id="predictionSec" class="tab-content">
         <div class="card">
-            <h2><i class="fas fa-chart-line"></i> প্রিডিকশন লিস্টিং</h2>
+            <h2><i class="fas fa-clock"></i> প্রিডিকশন মার্কেট</h2>
             <div class="grid-inputs">
                 <div class="input-group"><label>Unit ID</label><input type="text" id="pID" placeholder="eth"></div>
-                <div class="input-group"><label>Binance Symbol</label><input type="text" id="pBin" placeholder="ethusdt"></div>
-                <div class="full-row input-group"><label>Pair Name</label><input type="text" id="pName" placeholder="ETH/USDT"></div>
-                <div class="input-group"><label>Initial Round</label><input type="number" id="pRound" placeholder="10001"></div>
-                <div class="input-group"><label>Logo File</label><input type="text" id="pLogo" placeholder="eth.png"></div>
+                <div class="input-group"><label>Binance Sym</label><input type="text" id="pBin" placeholder="ethusdt"></div>
+                <div class="full-row"><label>Pair Name</label><input type="text" id="pName" placeholder="ETH/USDT"></div>
+                <div class="input-group"><label>Round</label><input type="number" id="pRound" placeholder="1001"></div>
+                <div class="input-group"><label>Logo</label><input type="text" id="pLogo" placeholder="eth.png"></div>
             </div>
-            <button class="btn-main" onclick="saveData('predictionAssets', 'p')">অ্যাড প্রিডিকশন মার্কেট</button>
+            <button class="btn-main" onclick="saveData('predictionAssets', 'p')">অ্যাড প্রিডিকশন</button>
         </div>
         <div class="card">
-            <h2>Active Predictions</h2>
             <table><tbody id="preTable"></tbody></table>
         </div>
     </div>
 
     <div id="featureSec" class="tab-content">
         <div class="card">
-            <h2><i class="fas fa-bolt"></i> ফিউচার এসেট লঞ্চার</h2>
+            <h2><i class="fas fa-bolt"></i> ফিউচার মার্কেট</h2>
             <div class="grid-inputs">
                 <div class="input-group"><label>Asset ID</label><input type="text" id="fID" placeholder="sol"></div>
                 <div class="input-group"><label>Max Leverage</label><input type="number" id="fLev" placeholder="50"></div>
-                <div class="full-row input-group"><label>Pair Name</label><input type="text" id="fName" placeholder="SOLUSDT"></div>
-                <div class="full-row input-group"><label>Logo File</label><input type="text" id="fLogo" placeholder="sol.png"></div>
+                <div class="full-row"><label>Pair Name</label><input type="text" id="fName" placeholder="SOLUSDT"></div>
+                <div class="full-row"><label>Logo File</label><input type="text" id="fLogo" placeholder="sol.png"></div>
             </div>
-            <button class="btn-main" onclick="saveData('featureAssets', 'f')">অ্যাড ফিউচার মার্কেট</button>
+            <button class="btn-main" onclick="saveData('featureAssets', 'f')">অ্যাড ফিউচার</button>
         </div>
         <div class="card">
-            <h2>Active Futures</h2>
             <table><tbody id="featTable"></tbody></table>
         </div>
     </div>
@@ -138,15 +154,15 @@
 </div>
 
 <footer class="admin-footer">
-    <button class="footer-item active" onclick="switchTab('spot', this)">
+    <div class="footer-item active" onclick="switchTab('spot', this)">
         <i class="fas fa-wallet"></i><span>Spot</span>
-    </button>
-    <button class="footer-item" onclick="switchTab('prediction', this)">
+    </div>
+    <div class="footer-item" onclick="switchTab('prediction', this)">
         <i class="fas fa-chart-line"></i><span>Prediction</span>
-    </button>
-    <button class="footer-item" onclick="switchTab('feature', this)">
+    </div>
+    <div class="footer-item" onclick="switchTab('feature', this)">
         <i class="fas fa-bolt"></i><span>Future</span>
-    </button>
+    </div>
 </footer>
 
 <script type="module">
@@ -164,69 +180,41 @@
     const app = initializeApp(firebaseConfig);
     const db = getDatabase(app);
 
-    window.switchTab = (tab, btn) => {
+    window.switchTab = (tab, el) => {
         document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
         document.querySelectorAll('.footer-item').forEach(i => i.classList.remove('active'));
         document.getElementById(tab + 'Sec').classList.add('active');
-        btn.classList.add('active');
+        el.classList.add('active');
     };
 
     window.saveData = (path, pre) => {
-        const id = document.getElementById(pre+'ID' || pre+'Sym').value.toLowerCase().trim();
-        if(!id) return alert("ID/Symbol দিন!");
-
+        const id = document.getElementById(pre==='s'?'sSym':pre+'ID').value.toLowerCase().trim();
+        if(!id) return alert("ID দিন!");
         let data = {};
         if(pre === 's') {
-            data = {
-                sym: id, name: document.getElementById('sName').value,
-                price: parseFloat(document.getElementById('sPrice').value) || 0,
-                decimal: parseInt(document.getElementById('sDec').value) || 8,
-                contract: document.getElementById('sCon').value,
-                networks: document.getElementById('sNet').value.split(',').map(n => n.trim()),
-                logo: document.getElementById('sLogo').value,
-                key: id + "_balance"
-            };
+            data = { sym: id, name: document.getElementById('sName').value, price: document.getElementById('sPrice').value, decimal: document.getElementById('sDec').value, contract: document.getElementById('sCon').value, networks: document.getElementById('sNet').value.split(','), logo: document.getElementById('sLogo').value, key: id+"_balance" };
         } else if(pre === 'p') {
-            data = {
-                unit: id.toUpperCase(), name: document.getElementById('pName').value,
-                symbol: document.getElementById('pBin').value.toLowerCase(),
-                logo: document.getElementById('pLogo').value,
-                round: parseInt(document.getElementById('pRound').value) || 0
-            };
+            data = { unit: id.toUpperCase(), name: document.getElementById('pName').value, symbol: document.getElementById('pBin').value, logo: document.getElementById('pLogo').value, round: document.getElementById('pRound').value };
         } else {
-            data = {
-                unit: id.toUpperCase(), name: document.getElementById('fName').value,
-                logo: document.getElementById('fLogo').value,
-                lev: document.getElementById('fLev').value
-            };
+            data = { unit: id.toUpperCase(), name: document.getElementById('fName').value, logo: document.getElementById('fLogo').value, lev: document.getElementById('fLev').value };
         }
-
-        set(ref(db, path + '/' + id), data).then(() => {
-            if(pre === 'p') update(ref(db, 'roundLogic'), {[id]: data.round});
-            alert("সফলভাবে লঞ্চ হয়েছে!");
-        });
+        set(ref(db, path + '/' + id), data).then(() => alert("সেভ হয়েছে!"));
     };
 
-    window.del = (path, id) => { if(confirm("মুছে ফেলবেন?")) remove(ref(db, path+'/'+id)); };
+    window.del = (p, i) => { if(confirm("মুছবেন?")) remove(ref(db, p+'/'+i)); };
 
     function sync() {
         const conf = { spotAssets: 'spotTable', predictionAssets: 'preTable', featureAssets: 'featTable' };
         Object.entries(conf).forEach(([path, tID]) => {
-            onValue(ref(db, path), (snap) => {
-                const data = snap.val();
-                const tbody = document.getElementById(tID);
-                tbody.innerHTML = "";
-                if(data) Object.entries(data).forEach(([key, val]) => {
-                    const logo = val.logo ? `assets/logos/${val.logo}` : 'https://via.placeholder.com/28';
-                    tbody.innerHTML += `<tr>
-                        <td>
-                            <div class="coin-info">
-                                <img src="${logo}" class="coin-icon" onerror="this.src='https://via.placeholder.com/28'">
-                                <div>${val.name || val.unit} <br><small style="color:var(--text-muted)">${key.toUpperCase()}</small></div>
-                            </div>
-                        </td>
-                        <td style="color:var(--primary)">${val.price ? '$'+val.price : (val.lev ? val.lev+'x' : 'Active')}</td>
-                        <td style="text-align:right;"><button class="btn-del" onclick="del('${path}','${key}')">REMOVE</button></td>
+            onValue(ref(db, path), (s) => {
+                const d = s.val();
+                const b = document.getElementById(tID);
+                b.innerHTML = "";
+                if(d) Object.entries(d).forEach(([k, v]) => {
+                    b.innerHTML += `<tr>
+                        <td><img src="assets/logos/${v.logo}" class="coin-icon"> ${v.unit || v.sym.toUpperCase()}</td>
+                        <td style="color:var(--primary)">${v.price ? '$'+v.price : (v.lev ? v.lev+'x' : 'Active')}</td>
+                        <td style="text-align:right;"><button class="btn-del" onclick="del('${path}','${k}')">DEL</button></td>
                     </tr>`;
                 });
             });
