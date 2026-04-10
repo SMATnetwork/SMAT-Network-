@@ -12,16 +12,16 @@
         body { background: var(--bg); color: white; height: 100vh; display: flex; flex-direction: column; overflow: hidden; }
         
         .header { display: grid; grid-template-columns: 1fr 1.2fr 1fr; align-items: center; padding: 10px 15px; background: #12161c; border-bottom: 1px solid var(--border); }
-        .asset-selector { display: flex; align-items: center; gap: 8px; background: #1e2329; padding: 5px 8px; border-radius: 8px; border: 1px solid var(--border); }
+        .asset-selector { display: flex; align-items: center; gap: 8px; background: #1e2329; padding: 5px 5px; border-radius: 8px; border: 1px solid var(--border); }
         .asset-selector img { width: 22px; height: 22px; border-radius: 50%; object-fit: cover; }
         .asset-selector select { background: transparent; color: white; border: none; font-weight: 700; outline: none; cursor: pointer; }
         
-        .bal-box { background:none; border: none; text-align: center; font-size: 13px; color: #848e9c; }
-        .bal-amount { font-weight: 800; font-size: 14px; color: var(--primary); }
+        .bal-box { background:none; border: none; text-align: center; font-size: 12px; color: #848e9c; }
+        .bal-amount { font-weight: 800; font-size: 12px; color: var(--primary); }
         
         .chart-section { width: 100%; position: relative; background: #000; height: 25vh; border-bottom: 1px solid var(--border); overflow: hidden; }
         .chart-overlay { position: absolute; top: 0; left: 0; width: 100%; z-index: 10; display: flex; justify-content: space-between; padding: 12px; pointer-events: none; }
-        .timer-clock { font-size: 26px; font-weight: 900; color: white; text-align: right; }
+        .timer-clock { font-size: 20px; font-weight: 900; color: white; text-align: right; }
         
         .history-section { flex: 1; background: var(--card); display: flex; flex-direction: column; overflow: hidden; padding-bottom: 85px; }
         .history-header { text-align: center; padding: 10px; font-size: 15px; font-weight: 900; border-bottom: 1px solid var(--border); background: #12161c; }
@@ -99,7 +99,7 @@ th:nth-child(6), td:nth-child(6) { width: 20%; } /* My Win */
             <img id="assetLogo" src="">
             <select id="assetSelect" onchange="window.switchAsset(this.value)"></select>
         </div>
-        <div class="bal-box"> Aval:
+        <div class="bal-box"> Balance
             <span id="headerBalance" class="bal-amount">0.00000000</span>
             <span id="headerAssetUnit" style="font-size:10px; color:#848e9c;">...</span>
         </div>
