@@ -21,12 +21,12 @@
         .bal-amount { font-weight: 800; font-size: 13px; color: var(--primary); }
         
         /* Chart & Dynamic Status */
-        .chart-section { width: 100%; position: relative; background: #000; height: 32vh; border-bottom: 1px solid var(--border); }
+        .chart-section { width: 100%; position: relative; background: #000; height: 32vh; border-bottom: 1px solid var(--border); overflow: hidden; } /* overflow: hidden যোগ করা হয়েছে */
         .chart-overlay { position: absolute; top: 0; left: 0; width: 100%; z-index: 10; display: flex; justify-content: space-between; padding: 12px; pointer-events: none; }
         .status-container { display: flex; flex-direction: column; gap: 4px; }
         .timer-clock { font-size: 26px; font-weight: 900; color: white; text-align: right; }
         
-        #chartDot { position: absolute; left: 50%; width: 12px; height: 12px; background: var(--cyan); border-radius: 50%; z-index: 5; transform: translateX(-50%); box-shadow: 0 0 15px var(--cyan); }
+        /* chartDot সিএসএস পুরোপুরি সরিয়ে দেওয়া হয়েছে */
         
         /* History Table */
         .history-section { flex: 1; background: var(--card); display: flex; flex-direction: column; overflow: hidden; padding-bottom: 85px; }
@@ -84,7 +84,6 @@
             </div>
             <div id="timerClock" class="timer-clock">00:00</div>
         </div>
-        <div id="chartDot"></div>
         <canvas id="liveChart"></canvas>
     </div>
 
@@ -147,25 +146,26 @@
     let user = null;
     let globalState = "TRADING";
 
-        const ctx = document.getElementById('liveChart').getContext('2d');
+    const ctx = document.getElementById('liveChart').getContext('2d');
 
-    // সবুজ রঙের গ্রেডিয়েন্ট তৈরি (উপর থেকে নিচে হালকা হবে)
-    const gradient = ctx.createLinearGradient(0, 0, 0, 400);
-    gradient.addColorStop(0, 'rgba(14, 203, 129, 0.3)'); // উপরের গাঢ় সবুজ
+    // সবুজ রঙের গ্রেডিয়েন্ট তৈরি (উপর থেকে নিচে হালকা হবে) - ফিচার মার্কেট থেকে কপি করা হয়েছে
+    const gradient = ctx.createLinearGradient(0, 0, 0, 300);
+    gradient.addColorStop(0, 'rgba(14, 203, 129, 0.4)'); // উপরের গাঢ় সবুজ
     gradient.addColorStop(1, 'rgba(14, 203, 129, 0)');   // নিচে একদম হালকা
 
+    // চার্ট ইনিশিয়ালাইজেশন - ফিচার মার্কেট থেকে কপি করা হয়েছে
     const chart = new Chart(ctx, {
         type: 'line',
         data: { 
             labels: Array(50).fill(''), 
             datasets: [{ 
                 data: Array(50).fill(0), 
-                borderColor: '#0ecb81',     // প্রফেশনাল সবুজ বর্ডার
+                borderColor: '#0ecb81',     // প্রফেশনাল বাইনান্স গ্রিন বর্ডার
                 borderWidth: 2, 
                 pointRadius: 0, 
                 tension: 0.45,             // রেখাটি মসৃণ বা কার্ভি দেখাবে
                 fill: true, 
-                backgroundColor: gradient, // সলিড কালারের বদলে গ্রেডিয়েন্ট ব্যবহার
+                backgroundColor: gradient, // গ্রেডিয়েন্ট ব্যাকগ্রাউন্ড
                 capBezierPoints: true
             }] 
         },
@@ -173,21 +173,22 @@
             responsive: true, 
             maintainAspectRatio: false, 
             animation: {
-                duration: 800,             // ডাটা আসার সময় রেখাটি স্মুথলি নড়বে
+                duration: 800,             // চার্ট মুভমেন্ট স্মুথ করার জন্য
                 easing: 'easeInOutQuad'
             },
             scales: { 
                 x: { display: false }, 
                 y: { 
-                    display: true,          // সাইডে প্রাইজ দেখার জন্য এটি true করা ভালো
-                    position: 'right',      // ট্রেডিং ভিউয়ের মতো ডানে দেখাবে
+                    display: true,
+                    position: 'right',      // প্রাইস লেভেল ডানে দেখাবে
                     grid: {
-                        color: 'rgba(255, 255, 255, 0.05)', // খুব হালকা গ্রিড লাইন
+                        color: 'rgba(255, 255, 255, 0.03)', // খুব হালকা গ্রিড
                         drawTicks: false
                     },
                     ticks: {
                         color: '#848e9c',   // টেক্সট কালার
-                        font: { size: 10 }
+                        font: { size: 10 },
+                        count: 6 // খুব বেশি হিজিবিজি হবে না
                     }
                 } 
             }, 
@@ -197,16 +198,15 @@
 
 
     function initTimer() {
-    // initTimer ফাংশনের ভেতরে এটি ঢুকিয়ে দিন
-    onValue(ref(db, 'roundLogic'), (snap) => {
-    const rounds = snap.val();
-    if (rounds) {
-    Object.keys(rounds).forEach(key => { 
-    if(assets[key]) assets[key].round = rounds[key]; 
-    });
-    }
-    });
-    
+        onValue(ref(db, 'roundLogic'), (snap) => {
+            const rounds = snap.val();
+            if (rounds) {
+                Object.keys(rounds).forEach(key => { 
+                    if(assets[key]) assets[key].round = rounds[key]; 
+                });
+            }
+        });
+        
         onValue(ref(db, 'timerLogic'), (snap) => {
             const data = snap.val();
             if (data) updateEngineUI(data.timeLeft, data.state);
@@ -239,45 +239,45 @@
     }, 1000);
 
     function updateEngineUI(t, s) {
-    globalState = s;
-    const min = Math.floor(t / 60);
-    const sec = t % 60;
-    document.getElementById('timerClock').innerText = `${min.toString().padStart(2,'0')}:${sec.toString().padStart(2,'0')}`;
-    
-    const lbl = document.getElementById('statusLabel');
-    const lockedDiv = document.getElementById('dynamicLockedInfo');
-    
-    if (s === "TRADING") {
-    lbl.innerHTML = `TRADING TIME`; 
-    lbl.style.color = "var(--up)";
-    lockedDiv.innerText = ""; 
-    } else if (s === "CLOSED") {
-    lbl.innerHTML = `TRADING CLOSED`; 
-    lbl.style.color = "var(--down)";
-    lockedDiv.innerText = "";
-    } else {
-    // WAITING RESULT স্টেট
-    lbl.innerHTML = `<div class="spinner-sm"></div> WAITING RESULT`; 
-    lbl.style.color = "var(--warn)";
-    
-    // রিফ্রেশ দিলেও ডাটাবেস থেকে Locked Price রিকভার করার লজিক
-    if (user) {
-    const rid = assets[activeKey].round;
-    onValue(ref(db, `history/${user.uid}/${activeKey}/${rid}`), (snapshot) => {
-    const rec = snapshot.val();
-    if (rec && rec.isPending) {
-    lockedDiv.innerText = `Locked Price: $${parseFloat(rec.lockedPrice).toFixed(2)}`;
-    }
-    });
-    }
-    }
-    
-    // বাটন কন্ট্রোল
-    document.getElementById('upBtn').disabled = (s !== "TRADING");
-    document.getElementById('downBtn').disabled = (s !== "TRADING");
-    
-    // হিস্ট্রি সিঙ্ক্রোনাইজেশন
-    if (user) syncHistory();
+        globalState = s;
+        const min = Math.floor(t / 60);
+        const sec = t % 60;
+        document.getElementById('timerClock').innerText = `${min.toString().padStart(2,'0')}:${sec.toString().padStart(2,'0')}`;
+        
+        const lbl = document.getElementById('statusLabel');
+        const lockedDiv = document.getElementById('dynamicLockedInfo');
+        
+        if (s === "TRADING") {
+            lbl.innerHTML = `TRADING TIME`; 
+            lbl.style.color = "var(--up)";
+            lockedDiv.innerText = ""; 
+        } else if (s === "CLOSED") {
+            lbl.innerHTML = `TRADING CLOSED`; 
+            lbl.style.color = "var(--down)";
+            lockedDiv.innerText = "";
+        } else {
+            // WAITING RESULT স্টেট
+            lbl.innerHTML = `<div class="spinner-sm"></div> WAITING RESULT`; 
+            lbl.style.color = "var(--warn)";
+            
+            // রিফ্রেশ দিলেও ডাটাবেস থেকে Locked Price রিকভার করার লজিক
+            if (user) {
+                const rid = assets[activeKey].round;
+                onValue(ref(db, `history/${user.uid}/${activeKey}/${rid}`), (snapshot) => {
+                    const rec = snapshot.val();
+                    if (rec && rec.isPending) {
+                        lockedDiv.innerText = `Locked Price: $${parseFloat(rec.lockedPrice).toFixed(2)}`;
+                    }
+                });
+            }
+        }
+        
+        // বাটন কন্ট্রোল
+        document.getElementById('upBtn').disabled = (s !== "TRADING");
+        document.getElementById('downBtn').disabled = (s !== "TRADING");
+        
+        // হিস্ট্রি সিঙ্ক্রোনাইজেশন
+        if (user) syncHistory();
     }
     
 
@@ -298,7 +298,7 @@
         await set(ref(db, `history/${user.uid}/${key}/${rid}`), entry);
     }
 
-            async function finalizeAndReset(key) {
+    async function finalizeAndReset(key) {
         if (!user) return;
         const snap = await get(ref(db, `history/${user.uid}/${key}`));
         const history = snap.val() || {};
@@ -457,11 +457,13 @@
 
                 if (key === activeKey) {
                     document.getElementById('priceDisplay').innerText = '$' + price.toFixed(2);
+                    
+                    // চার্ট ডাটা আপডেট - ফিচার মার্কেট থেকে কপি করা হয়েছে
                     chart.data.datasets[0].data.shift();
                     chart.data.datasets[0].data.push(price);
-                    chart.update('none'); 
-                    const meta = chart.getDatasetMeta(0).data[49];
-                    if (meta) document.getElementById('chartDot').style.top = (meta.y - 6) + 'px';
+                    chart.update('none'); // 'none' দিলে এনিমেশন ছাড়াই আপডেট হবে যা দ্রুত কাজ করে
+
+                    // চার্টের ডট (chartDot) মুভ করার লজিক পুরোপুরি সরিয়ে দেওয়া হয়েছে
                 }
             }
         };
