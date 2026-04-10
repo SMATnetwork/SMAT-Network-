@@ -1,0 +1,322 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>SMAT CEX | Ultra Futures</title>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-database-compat.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --primary: #f3ba2f; --bg: #0b0e11; --card: #181a20;
+            --text-main: #eaecef; --text-sec: #848e9c; --up: #0ecb81;
+            --down: #f6465d; --border: #2b3139; --input-bg: #202630;
+        }
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Inter', sans-serif; }
+        body { background: var(--bg); color: var(--text-main); font-size: 11px; overflow-x: hidden; padding-bottom: 80px; }
+
+        /* Header & Coin Selector */
+        .trade-header { display: flex; align-items: center; justify-content: space-between; padding: 10px 15px; border-bottom: 1px solid var(--border); background: var(--bg); position: sticky; top: 0; z-index: 1000; }
+        .coin-select-btn { display: flex; align-items: center; gap: 8px; background: var(--border); padding: 6px 15px; border-radius: 20px; cursor: pointer; border: 1px solid transparent; }
+        .coin-logo { width: 22px; height: 22px; border-radius: 50%; }
+
+        .coin-dropdown { position: absolute; top: 55px; left: 15px; background: var(--card); border: 1px solid var(--border); border-radius: 8px; width: 180px; display: none; z-index: 2000; box-shadow: 0 10px 30px rgba(0,0,0,0.5); }
+        .coin-item { display: flex; align-items: center; gap: 10px; padding: 12px; border-bottom: 1px solid var(--border); cursor: pointer; }
+
+        /* Layout */
+        .trading-grid { display: grid; grid-template-columns: 1.15fr 0.85fr; gap: 8px; padding: 8px; }
+        .side-tabs { display: grid; grid-template-columns: 1fr 1fr; gap: 4px; margin-bottom: 10px; }
+        .side-btn { padding: 12px; border: none; border-radius: 4px; font-weight: 800; cursor: pointer; background: var(--border); color: var(--text-sec); text-transform: uppercase; }
+        .side-btn.buy.active { background: var(--up); color: white; }
+        .side-btn.sell.active { background: var(--down); color: white; }
+
+        .input-group { background: var(--input-bg); border: 1px solid var(--border); border-radius: 4px; padding: 10px; display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
+        .input-group input { background: transparent; border: none; color: white; width: 60%; outline: none; font-size: 14px; text-align: right; font-weight: bold; }
+        input[type="range"] { width: 100%; accent-color: var(--primary); height: 5px; margin: 8px 0; }
+
+        /* Metrics */
+        .metrics-box { background: rgba(255,255,255,0.03); padding: 12px; border-radius: 6px; border: 1px solid var(--border); margin-top: 5px; }
+        .m-row { display: flex; justify-content: space-between; margin-bottom: 6px; color: var(--text-sec); font-size: 10px; }
+        .val-white { color: var(--text-main); font-weight: bold; }
+        .btn-action { width: 100%; padding: 16px; border-radius: 6px; border: none; font-weight: 800; font-size: 15px; cursor: pointer; margin-top: 10px; }
+
+        /* Order Book */
+        .order-book { border-left: 1px solid var(--border); padding-left: 10px; }
+        .ob-row { display: flex; justify-content: space-between; line-height: 1.8; font-family: 'Roboto Mono', monospace; font-size: 10px; }
+        .price-mid { font-size: 16px; font-weight: bold; text-align: center; padding: 12px 0; margin: 8px 0; background: rgba(255,255,255,0.02); border-radius: 4px; }
+
+        /* Positions */
+        .pos-section { margin-top: 20px; padding: 0 10px; }
+        .pos-card { background: var(--card); border: 1px solid var(--border); border-radius: 8px; padding: 15px; margin-bottom: 12px; }
+        .pos-header { display: flex; justify-content: space-between; margin-bottom: 10px; border-bottom: 1px solid var(--border); padding-bottom: 8px; }
+        .close-btn { background: #2b3139; color: #fff; border: 1px solid #474d57; padding: 6px 12px; border-radius: 4px; font-size: 10px; cursor: pointer; font-weight: bold; }
+        .show-more-btn { width: 100%; background: var(--border); color: var(--text-sec); border: none; padding: 12px; border-radius: 6px; cursor: pointer; margin-top: 10px; font-weight: bold; }
+
+        /* Footer */
+        .footer { position: fixed; bottom: 0; width: 100%; height: 65px; background: #111418; display: flex; justify-content: space-around; align-items: center; border-top: 1px solid var(--border); z-index: 1000; }
+        .f-nav { text-decoration: none; color: var(--text-sec); text-align: center; font-size: 10px; flex: 1; }
+        .f-nav i { display: block; font-size: 20px; margin-bottom: 4px; }
+        .f-nav.active { color: var(--primary); }
+    </style>
+</head>
+<body>
+
+    <header class="trade-header">
+        <div class="coin-select-btn" onclick="toggleDropdown()">
+            <img id="active-logo" src="https://cryptologos.cc/logos/bitcoin-btc-logo.png" class="coin-logo">
+            <b id="active-pair">BTC/USDT</b>
+            <i class="fas fa-caret-down"></i>
+        </div>
+        
+        <div id="coin-dropdown" class="coin-dropdown">
+            <div class="coin-item" onclick="selectCoin('btc', 'BTC/USDT', 73128, 'https://cryptologos.cc/logos/bitcoin-btc-logo.png')">BTC/USDT</div>
+            <div class="coin-item" onclick="selectCoin('eth', 'ETH/USDT', 3820, 'https://cryptologos.cc/logos/ethereum-eth-logo.png')">ETH/USDT</div>
+            <div class="coin-item" onclick="selectCoin('sol', 'SOL/USDT', 145, 'https://cryptologos.cc/logos/solana-sol-logo.png')">SOL/USDT</div>
+        </div>
+
+        <div style="text-align: right;">
+            <div style="font-size: 8px; color: var(--text-sec); text-transform: uppercase;">Fund Countdown</div>
+            <div id="countdown" style="color:var(--primary); font-weight:bold; font-size: 13px;">--:--:--</div>
+        </div>
+    </header>
+
+    <div class="trading-grid">
+        <div class="trade-panel">
+            <div class="side-tabs">
+                <button class="side-btn buy active" onclick="setSide('buy')">Buy</button>
+                <button class="side-btn sell" onclick="setSide('sell')">Sell</button>
+            </div>
+
+            <div style="display:flex; justify-content:space-between; margin-bottom:8px;">
+                <span style="color:var(--text-sec)">Avbl Balance</span>
+                <span id="display-bal" style="font-weight:bold; color:var(--primary)">0.00 USDT</span>
+            </div>
+
+            <div style="margin-bottom:12px;">
+                <div style="display:flex; justify-content:space-between; margin-bottom:4px;">
+                    <span style="color:var(--text-sec)">Leverage</span>
+                    <b id="lev-label" style="color:var(--primary)">20x</b>
+                </div>
+                <input type="range" min="10" max="100" step="10" value="20" oninput="updateLev(this.value)">
+            </div>
+
+            <div class="input-group"><span>Price</span><input type="number" id="trade-price" value="73128.5" oninput="updateMetrics()"></div>
+            <div class="input-group"><span>Amount</span><input type="number" id="trade-amt" placeholder="0.00" oninput="updateMetrics()"></div>
+
+            <div class="metrics-box">
+                <div class="m-row"><span>Margin (Cost)</span><span class="val-white" id="cost-disp">0.00 USDT</span></div>
+                <div class="m-row"><span>Entry Fee (0.1%)</span><span id="fee-disp" style="color:var(--primary)">0.00 USDT</span></div>
+                <div class="m-row"><span>Liq. Price (Est.)</span><span id="liq-disp" style="color:orange">--</span></div>
+            </div>
+
+            <button id="main-btn" class="btn-action" style="background:var(--up); color:white;" onclick="placeOrder()">Open Long</button>
+        </div>
+
+        <div class="order-book">
+            <div style="display:flex; justify-content:space-between; color:var(--text-sec); font-size:9px; margin-bottom:6px;"><span>Price</span><span>Qty</span></div>
+            <div id="ob-asks" style="color:var(--down)"></div>
+            <div class="price-mid" id="live-price">73128.5</div>
+            <div id="ob-bids" style="color:var(--up)"></div>
+        </div>
+    </div>
+
+    <div class="pos-section">
+        <h3 style="margin-bottom:15px; font-size:14px; border-left:4px solid var(--primary); padding-left:10px;">My Trading History</h3>
+        <div id="pos-container"></div>
+        <button id="show-more" class="show-more-btn" style="display:none;" onclick="loadMore()">Show More</button>
+    </div>
+
+    <footer class="footer">
+        <a href="Home.html" class="f-nav"><i class="fas fa-home"></i>Home</a>
+        <a href="Trade.html" class="f-nav active"><i class="fas fa-chart-line"></i>Trade</a>
+        <a href="Wallet.html" class="f-nav"><i class="fas fa-wallet"></i>Assets</a>
+    </footer>
+
+    <script>
+        // --- Firebase Setup ---
+        const firebaseConfig = {
+            apiKey: "YOUR_API_KEY",
+            databaseURL: "https://smat-exchange-default-rtdb.firebaseio.com",
+            projectId: "smat-exchange"
+        };
+        firebase.initializeApp(firebaseConfig);
+        const db = firebase.database();
+
+        // --- Auth Check ---
+        const smatID = localStorage.getItem('smatID');
+        if (!smatID) { window.location.href = "logIn.html"; }
+
+        // --- Variables ---
+        let currentPair = 'BTC/USDT', currentSide = 'buy', leverage = 20;
+        let userBalance = 0, allPositions = [], visibleCount = 10;
+
+        // --- Sync Firebase Timer (timerLogic/timeLeft) ---
+        function syncTimer() {
+            db.ref('timerLogic/timeLeft').on('value', (snap) => {
+                const sec = snap.val() || 0;
+                const h = Math.floor(sec / 3600);
+                const m = Math.floor((sec % 3600) / 60);
+                const s = sec % 60;
+                document.getElementById('countdown').innerText = 
+                    `${String(h).padStart(2,'0')}:${String(m).padStart(2,'0')}:${String(s).padStart(2,'0')}`;
+                
+                // 0.1% Funding Fee Deduct when timer hits 0
+                if(sec === 0) {
+                    allPositions.forEach(p => {
+                        db.ref(`users/${smatID}/active_positions/${p.firebaseKey}/margin`).set(p.margin * 0.999);
+                    });
+                }
+            });
+        }
+
+        // --- Firebase Listeners ---
+        function initListeners() {
+            db.ref(`users/${smatID}/balance`).on('value', (snap) => {
+                userBalance = snap.val() || 0;
+                document.getElementById('display-bal').innerText = userBalance.toFixed(2) + " USDT";
+            });
+
+            db.ref(`users/${smatID}/active_positions`).limitToLast(100).on('value', (snap) => {
+                const data = snap.val();
+                allPositions = [];
+                if(data) {
+                    Object.keys(data).forEach(key => {
+                        allPositions.unshift({ firebaseKey: key, ...data[key] });
+                    });
+                }
+                renderPositions();
+            });
+        }
+
+        // --- Design & UI ---
+        function toggleDropdown() {
+            const dp = document.getElementById('coin-dropdown');
+            dp.style.display = dp.style.display === 'block' ? 'none' : 'block';
+        }
+
+        function selectCoin(lower, upper, price, logo) {
+            currentPair = upper;
+            document.getElementById('active-logo').src = logo;
+            document.getElementById('active-pair').innerText = upper;
+            document.getElementById('trade-price').value = price;
+            document.getElementById('live-price').innerText = price;
+            toggleDropdown(); updateMetrics();
+        }
+
+        function updateMetrics() {
+            const p = parseFloat(document.getElementById('trade-price').value) || 0;
+            const a = parseFloat(document.getElementById('trade-amt').value) || 0;
+            const fee = (p * a) * 0.001;
+            const margin = (p * a) / leverage;
+            document.getElementById('cost-disp').innerText = margin.toFixed(2) + " USDT";
+            document.getElementById('fee-disp').innerText = fee.toFixed(2) + " USDT";
+            if(a > 0) {
+                let liq = (currentSide === 'buy') ? p * (1 - (0.9/leverage)) : p * (1 + (0.9/leverage));
+                document.getElementById('liq-disp').innerText = liq.toFixed(2);
+            } else { document.getElementById('liq-disp').innerText = "--"; }
+        }
+
+        function setSide(s) {
+            currentSide = s;
+            document.querySelectorAll('.side-btn').forEach(b => b.classList.remove('active'));
+            const btn = document.getElementById('main-btn');
+            if(s === 'buy') {
+                document.querySelector('.side-btn.buy').classList.add('active');
+                btn.style.background = "var(--up)"; btn.innerText = "Open Long";
+            } else {
+                document.querySelector('.side-btn.sell').classList.add('active');
+                btn.style.background = "var(--down)"; btn.innerText = "Open Short";
+            }
+            updateMetrics();
+        }
+
+        function updateLev(val) {
+            leverage = parseInt(val);
+            document.getElementById('lev-label').innerText = val + 'x';
+            updateMetrics();
+        }
+
+        // --- Core Logic ---
+        function placeOrder() {
+            const p = parseFloat(document.getElementById('trade-price').value);
+            const a = parseFloat(document.getElementById('trade-amt').value);
+            if(!a || a <= 0) return alert("Enter valid amount");
+
+            const margin = (p * a) / leverage;
+            const fee = (p * a) * 0.001;
+            const totalCost = margin + fee;
+
+            if(totalCost > userBalance) return alert("Insufficient Balance!");
+
+            // Firebase Deduct & Push
+            db.ref(`users/${smatID}/balance`).set(userBalance - totalCost);
+            db.ref(`users/${smatID}/active_positions`).push({
+                pair: currentPair, side: currentSide, entry: p, amount: a, leverage: leverage, margin: margin,
+                liq: document.getElementById('liq-disp').innerText,
+                timestamp: firebase.database.ServerValue.TIMESTAMP
+            });
+            alert("Position Opened Successfully!");
+        }
+
+        function renderPositions() {
+            const container = document.getElementById('pos-container');
+            container.innerHTML = '';
+            const livePrice = parseFloat(document.getElementById('live-price').innerText);
+            const toShow = allPositions.slice(0, visibleCount);
+
+            toShow.forEach(pos => {
+                let pnl = (pos.side === 'buy') ? (livePrice - pos.entry) * pos.amount : (pos.entry - livePrice) * pos.amount;
+                let roe = (pnl / pos.margin) * 100;
+                let pnlColor = pnl >= 0 ? 'var(--up)' : 'var(--down)';
+
+                container.innerHTML += `
+                    <div class="pos-card">
+                        <div class="pos-header">
+                            <b>${pos.pair} <span style="color:${pos.side==='buy'?'var(--up)':'var(--down)'}">${pos.side.toUpperCase()} ${pos.leverage}x</span></b>
+                            <button class="close-btn" onclick="closePos('${pos.firebaseKey}', ${pnl}, ${pos.margin})">Close Position</button>
+                        </div>
+                        <div style="display:grid; grid-template-columns: 1fr 1fr; gap:10px;">
+                            <div><span style="color:var(--text-sec)">Unrealized PNL (USDT)</span>
+                                 <div style="color:${pnlColor}; font-size:15px; font-weight:bold;">${pnl.toFixed(2)} (${roe.toFixed(2)}%)</div></div>
+                            <div style="text-align:right"><span style="color:var(--text-sec)">Margin</span>
+                                 <div class="val-white">${pos.margin.toFixed(2)} USDT</div></div>
+                        </div>
+                        <div style="display:flex; justify-content:space-between; margin-top:10px; font-size:9px; color:var(--text-sec)">
+                            <span>Entry: ${pos.entry}</span><span>Mark: ${livePrice.toFixed(1)}</span>
+                            <span style="color:orange">Liq: ${pos.liq}</span>
+                        </div>
+                    </div>`;
+            });
+            document.getElementById('show-more').style.display = (allPositions.length > visibleCount) ? 'block' : 'none';
+        }
+
+        function closePos(key, pnl, margin) {
+            db.ref(`users/${smatID}/balance`).set(userBalance + (margin + pnl));
+            db.ref(`users/${smatID}/active_positions/${key}`).remove();
+        }
+
+        function loadMore() { visibleCount += 10; renderPositions(); }
+
+        // --- Simulation ---
+        window.onload = () => {
+            syncTimer(); initListeners();
+            setInterval(() => {
+                const lp = document.getElementById('live-price');
+                const newPrice = (parseFloat(lp.innerText) + (Math.random()*2-1)).toFixed(1);
+                lp.innerText = newPrice;
+                renderPositions();
+
+                // Order Book Simulation
+                let a = '', b = '';
+                for(let i=1; i<=6; i++) {
+                    a = `<div class="ob-row"><span>${(parseFloat(newPrice) + i*0.5).toFixed(1)}</span><span>${(Math.random()*0.8).toFixed(3)}</span></div>` + a;
+                    b += `<div class="ob-row"><span>${(parseFloat(newPrice) - i*0.5).toFixed(1)}</span><span>${(Math.random()*0.8).toFixed(3)}</span></div>`;
+                }
+                document.getElementById('ob-asks').innerHTML = a;
+                document.getElementById('ob-bids').innerHTML = b;
+            }, 1000);
+        };
+    </script>
+</body>
+</html>
