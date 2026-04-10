@@ -155,6 +155,16 @@
     });
 
     function initTimer() {
+    // initTimer ফাংশনের ভেতরে এটি ঢুকিয়ে দিন
+    onValue(ref(db, 'roundLogic'), (snap) => {
+    const rounds = snap.val();
+    if (rounds) {
+    Object.keys(rounds).forEach(key => { 
+    if(assets[key]) assets[key].round = rounds[key]; 
+    });
+    }
+    });
+    
         onValue(ref(db, 'timerLogic'), (snap) => {
             const data = snap.val();
             if (data) updateEngineUI(data.timeLeft, data.state);
@@ -187,41 +197,47 @@
     }, 1000);
 
     function updateEngineUI(t, s) {
-        globalState = s;
-        const min = Math.floor(t / 60);
-        const sec = t % 60;
-        document.getElementById('timerClock').innerText = `${min.toString().padStart(2,'0')}:${sec.toString().padStart(2,'0')}`;
-        
-        const lbl = document.getElementById('statusLabel');
-        const lockedDiv = document.getElementById('dynamicLockedInfo');
-        
-        if (s === "TRADING") {
-            lbl.innerHTML = `TRADING TIME`; lbl.style.color = "var(--up)";
-            lockedDiv.innerText = "";
-        } else if (s === "CLOSED") {
-            lbl.innerHTML = `TRADING CLOSED`; lbl.style.color = "var(--down)";
-            lockedDiv.innerText = "";
-        } else {
-            lbl.innerHTML = `<div class="spinner-sm"></div> WAITING RESULT`; 
-            lbl.style.color = "var(--warn)";
-            
-            // লাইভ বক্সের Locked Price রিফ্রেশ দিলেও ডাটাবেস থেকে টেনে আনবে
-            if (user) {
-                const rid = assets[activeKey].round;
-                onValue(ref(db, `history/${user.uid}/${activeKey}/${rid}`), (snapshot) => {
-                    const rec = snapshot.val();
-                    if (rec && rec.isPending) {
-                        lockedDiv.innerText = `Locked Price: $${parseFloat(rec.lockedPrice).toFixed(2)}`;
-                    }
-                });
-            }
-        }
-        
-        document.getElementById('upBtn').disabled = (s !== "TRADING");
-        document.getElementById('downBtn').disabled = (s !== "TRADING");
-
-        if (user) syncHistory();
+    globalState = s;
+    const min = Math.floor(t / 60);
+    const sec = t % 60;
+    document.getElementById('timerClock').innerText = `${min.toString().padStart(2,'0')}:${sec.toString().padStart(2,'0')}`;
+    
+    const lbl = document.getElementById('statusLabel');
+    const lockedDiv = document.getElementById('dynamicLockedInfo');
+    
+    if (s === "TRADING") {
+    lbl.innerHTML = `TRADING TIME`; 
+    lbl.style.color = "var(--up)";
+    lockedDiv.innerText = ""; 
+    } else if (s === "CLOSED") {
+    lbl.innerHTML = `TRADING CLOSED`; 
+    lbl.style.color = "var(--down)";
+    lockedDiv.innerText = "";
+    } else {
+    // WAITING RESULT স্টেট
+    lbl.innerHTML = `<div class="spinner-sm"></div> WAITING RESULT`; 
+    lbl.style.color = "var(--warn)";
+    
+    // রিফ্রেশ দিলেও ডাটাবেস থেকে Locked Price রিকভার করার লজিক
+    if (user) {
+    const rid = assets[activeKey].round;
+    onValue(ref(db, `history/${user.uid}/${activeKey}/${rid}`), (snapshot) => {
+    const rec = snapshot.val();
+    if (rec && rec.isPending) {
+    lockedDiv.innerText = `Locked Price: $${parseFloat(rec.lockedPrice).toFixed(2)}`;
     }
+    });
+    }
+    }
+    
+    // বাটন কন্ট্রোল
+    document.getElementById('upBtn').disabled = (s !== "TRADING");
+    document.getElementById('downBtn').disabled = (s !== "TRADING");
+    
+    // হিস্ট্রি সিঙ্ক্রোনাইজেশন
+    if (user) syncHistory();
+    }
+    
 
     async function lockAndSaveRound(key) {
         assets[key].lockedPrice = assets[key].currentPrice; 
@@ -280,6 +296,9 @@
             }
         }
         assets[key].round++;
+        // finalizeAndReset ফাংশনের শেষে round++ এর নিচে এটি দিন
+        await update(ref(db, 'roundLogic'), { [key]: assets[key].round });
+        
         assets[key].pending = null;
         if (key === activeKey) document.getElementById('dynamicLockedInfo').innerText = "";
     }
