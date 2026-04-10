@@ -3,275 +3,147 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>SMAT CEX | অ্যাডমিন কন্ট্রোল প্যানেল</title>
+    <title>SMAT CEX | অল-ইন-ওয়ান অ্যাডমিন প্যানেল</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
-        /* HOT Wallet Style Font & Root Colors */
+        /* HOT Wallet Style Font & Colors */
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;700;900&display=swap');
 
         :root {
-            --bg: #0b0e11;
-            --card: #181a20;
-            --border: #2b3139;
-            --primary: #f0b90b;
-            --up: #0ecb81;
-            --down: #f6465d;
-            --text-main: #ffffff;
-            --text-muted: #848e9c;
+            --bg: #0b0e11; --card: #181a20; --border: #2b3139;
+            --primary: #f0b90b; --up: #0ecb81; --down: #f6465d;
+            --text-main: #ffffff; --text-muted: #848e9c;
         }
 
-        * {
-            box-sizing: border-box;
-            margin: 0;
-            padding: 0;
-            font-family: 'Inter', sans-serif; /* ক্লিন এবং জিওমেট্রিক ফন্ট */
-        }
-
-        body {
-            background: var(--bg);
-            color: var(--text-main);
-            min-height: 100vh;
-            display: flex;
-            flex-direction: column;
-        }
-
-        /* --- Header Style --- */
-        .header {
-            background: var(--card);
-            padding: 15px 25px;
-            border-bottom: 1px solid var(--border);
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            position: sticky;
-            top: 0;
-            z-index: 100;
-        }
-
-        .logo-area {
-            font-size: 22px;
-            font-weight: 900; /* HOT Font Weight */
-            color: var(--primary);
-            letter-spacing: -0.5px;
-        }
-
-        .logout-btn {
-            background: rgba(246, 70, 93, 0.1);
-            color: var(--down);
-            border: 1px solid var(--down);
-            padding: 8px 15px;
-            border-radius: 6px;
-            cursor: pointer;
-            font-weight: 700;
-            font-size: 13px;
-        }
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Inter', sans-serif; }
+        body { background: var(--bg); color: var(--text-main); min-height: 100vh; display: flex; flex-direction: column; padding-bottom: 80px; }
 
         /* --- Login Overlay --- */
-        #loginOverlay {
-            position: fixed;
-            top: 0; left: 0; width: 100%; height: 100%;
-            background: var(--bg);
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            z-index: 9999;
-        }
+        #loginOverlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: var(--bg); display: flex; justify-content: center; align-items: center; z-index: 9999; }
+        .login-box { background: var(--card); padding: 40px; border-radius: 15px; width: 90%; max-width: 400px; border: 1px solid var(--border); text-align: center; }
+        .login-box h2 { font-weight: 900; margin-bottom: 25px; color: var(--primary); }
 
-        .login-box {
-            background: var(--card);
-            padding: 40px;
-            border-radius: 15px;
-            width: 100%;
-            max-width: 400px;
-            border: 1px solid var(--border);
-            text-align: center;
-        }
+        /* --- Header --- */
+        .header { background: var(--card); padding: 15px 25px; border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; position: sticky; top: 0; z-index: 100; }
+        .logo-area { font-size: 20px; font-weight: 900; color: var(--primary); }
+        .current-tab-title { font-size: 14px; color: white; background: #2b3139; padding: 5px 12px; border-radius: 20px; font-weight: 700; }
 
-        .login-box h2 {
-            font-weight: 900;
-            margin-bottom: 25px;
-            color: var(--primary);
-        }
+        /* --- Container & Cards --- */
+        .container { max-width: 1000px; margin: 20px auto; padding: 0 15px; flex: 1; }
+        .card { background: var(--card); border: 1px solid var(--border); padding: 20px; border-radius: 12px; margin-bottom: 20px; }
+        .tab-content { display: none; animation: fadeIn 0.3s ease; }
+        .tab-content.active { display: block; }
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
 
-        /* --- Main Content --- */
-        .container {
-            max-width: 1000px;
-            margin: 30px auto;
-            padding: 0 20px;
-            flex: 1;
-        }
-
-        .card {
-            background: var(--card);
-            border: 1px solid var(--border);
-            padding: 25px;
-            border-radius: 12px;
-            margin-bottom: 30px;
-        }
-
-        h2 {
-            font-weight: 900; /* HOT Style */
-            font-size: 18px;
-            margin-bottom: 20px;
-            display: flex;
-            align-items: center;
-            gap: 10px;
-        }
-
-        .grid-inputs {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-            gap: 20px;
-        }
-
-        .input-group { margin-bottom: 15px; }
+        h2 { font-weight: 900; font-size: 17px; margin-bottom: 15px; color: var(--primary); display: flex; align-items: center; gap: 8px; }
         
-        label {
-            display: block;
-            font-size: 12px;
-            color: var(--text-muted);
-            margin-bottom: 8px;
-            font-weight: 700;
-        }
-
-        input {
-            width: 100%;
-            padding: 14px;
-            background: #0b0e11;
-            border: 1px solid var(--border);
-            color: white;
-            border-radius: 8px;
-            outline: none;
-            font-size: 14px;
-            font-weight: 600;
-        }
-
+        /* --- Inputs & Buttons --- */
+        .grid-inputs { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; }
+        .input-group { margin-bottom: 12px; }
+        label { display: block; font-size: 11px; color: var(--text-muted); margin-bottom: 5px; font-weight: 700; }
+        input { width: 100%; padding: 12px; background: #0b0e11; border: 1px solid var(--border); color: white; border-radius: 8px; outline: none; font-weight: 600; }
         input:focus { border-color: var(--primary); }
+        .btn-primary { background: var(--primary); color: #000; width: 100%; padding: 14px; border: none; border-radius: 8px; font-weight: 900; cursor: pointer; text-transform: uppercase; margin-top: 10px; }
 
-        .btn {
-            padding: 15px 25px;
-            border: none;
-            border-radius: 8px;
-            font-weight: 900;
-            cursor: pointer;
-            text-transform: uppercase;
-            transition: 0.3s;
-        }
-
-        .btn-primary { background: var(--primary); color: #000; width: 100%; margin-top: 10px; }
-        .btn-primary:hover { opacity: 0.9; }
-
-        /* --- Table Style --- */
+        /* --- Table --- */
         .table-container { overflow-x: auto; }
-        table { width: 100%; border-collapse: collapse; margin-top: 10px; }
-        th { text-align: left; color: var(--text-muted); padding: 15px; border-bottom: 1px solid var(--border); font-size: 12px; text-transform: uppercase; }
-        td { padding: 15px; border-bottom: 1px solid #23272e; font-size: 14px; font-weight: 700; }
+        table { width: 100%; border-collapse: collapse; }
+        th { text-align: left; color: var(--text-muted); padding: 12px; border-bottom: 1px solid var(--border); font-size: 11px; }
+        td { padding: 12px; border-bottom: 1px solid #23272e; font-size: 13px; font-weight: 700; }
+        .coin-icon { width: 28px; height: 28px; border-radius: 50%; vertical-align: middle; margin-right: 8px; }
+        .btn-del { background: rgba(246, 70, 93, 0.1); color: var(--down); border: none; padding: 6px 10px; border-radius: 4px; font-weight: 700; cursor: pointer; }
 
-        .coin-icon { width: 32px; height: 32px; border-radius: 50%; vertical-align: middle; margin-right: 10px; }
-        
-        .badge {
-            background: rgba(240, 185, 11, 0.1);
-            color: var(--primary);
-            padding: 4px 10px;
-            border-radius: 4px;
-            font-size: 11px;
-        }
-
-        .btn-del {
-            background: rgba(246, 70, 93, 0.1);
-            color: var(--down);
-            border: none;
-            padding: 8px 12px;
-            border-radius: 4px;
-            font-size: 12px;
-            font-weight: 700;
-        }
-
-        /* --- Footer --- */
-        .footer {
-            background: var(--card);
-            text-align: center;
-            padding: 20px;
-            border-top: 1px solid var(--border);
-            color: var(--text-muted);
-            font-size: 12px;
-            font-weight: 600;
-        }
-
-        .blink { animation: blink 1s infinite; }
-        @keyframes blink { 50% { opacity: 0.5; } }
+        /* --- Universal Footer Navigation --- */
+        .admin-footer { position: fixed; bottom: 0; left: 0; width: 100%; background: var(--card); border-top: 1px solid var(--border); display: grid; grid-template-columns: 1fr 1fr 1fr; padding: 10px 0; z-index: 1000; }
+        .footer-item { background: none; border: none; color: var(--text-muted); display: flex; flex-direction: column; align-items: center; gap: 5px; cursor: pointer; transition: 0.3s; }
+        .footer-item i { font-size: 18px; }
+        .footer-item span { font-size: 10px; font-weight: 900; text-transform: uppercase; }
+        .footer-item.active { color: var(--primary); }
     </style>
 </head>
 <body>
 
 <div id="loginOverlay">
     <div class="login-box">
-        <h2>অ্যাডমিন লগইন</h2>
-        <div class="input-group">
-            <label>অ্যাডমিন ইমেইল</label>
-            <input type="email" id="loginEmail" placeholder="admin@smat.com">
-        </div>
-        <div class="input-group">
-            <label>পাসওয়ার্ড</label>
-            <input type="password" id="loginPass" placeholder="••••••••">
-        </div>
-        <button class="btn btn-primary" onclick="handleLogin()">প্রবেশ করুন</button>
+        <h2>SMAT ADMIN</h2>
+        <input type="email" id="loginEmail" placeholder="ইমেইল" style="margin-bottom: 10px;">
+        <input type="password" id="loginPass" placeholder="পাসওয়ার্ড" style="margin-bottom: 20px;">
+        <button class="btn-primary" onclick="handleLogin()">লগইন করুন</button>
     </div>
 </div>
 
 <header class="header">
-    <div class="logo-area">SMAT <span style="color:white">ADMIN</span></div>
-    <button class="logout-btn" onclick="handleLogout()">লগআউট</button>
+    <div class="logo-area">SMAT <span style="color:white">NETWORK</span></div>
+    <div id="activeTabName" class="current-tab-title">PREDICTION</div>
+    <i class="fas fa-sign-out-alt" onclick="handleLogout()" style="color:var(--down); cursor:pointer;"></i>
 </header>
 
 <div class="container">
-    <div class="card">
-        <h2><i class="fas fa-plus-circle" style="color:var(--up)"></i> নতুন কয়েন যুক্ত করুন</h2>
-        <div class="grid-inputs">
-            <div class="input-group">
-                <label>কয়েন আইডি (যেমন: btc, eth)</label>
-                <input type="text" id="assetKey" placeholder="doge">
+    
+    <div id="predictionSec" class="tab-content active">
+        <div class="card">
+            <h2><i class="fas fa-chart-line"></i> Prediction কয়েন যুক্ত করুন</h2>
+            <div class="grid-inputs">
+                <input type="text" id="preKey" placeholder="ID (btc)">
+                <input type="text" id="preName" placeholder="Name (BTC/USDT)">
+                <input type="text" id="preSymbol" placeholder="Binance Sym (btcusdt)">
+                <input type="text" id="preLogo" placeholder="Logo (btc.png)">
+                <input type="number" id="preRound" placeholder="Round ID">
             </div>
-            <div class="input-group">
-                <label>প্রদর্শিত নাম (যেমন: DOGE/USDT)</label>
-                <input type="text" id="assetName" placeholder="DOGE/USDT">
-            </div>
-            <div class="input-group">
-                <label>বাইন্যান্স সিম্বল (ছোট হাতের)</label>
-                <input type="text" id="assetSymbol" placeholder="dogeusdt">
-            </div>
-            <div class="input-group">
-                <label>লোগো ফাইল (যেমন: doge.png)</label>
-                <input type="text" id="assetLogo" placeholder="doge.png">
-            </div>
+            <button class="btn-primary" onclick="addCoin('predictionAssets', 'pre')">সেভ করুন</button>
         </div>
-        <div class="input-group">
-            <label>শুরুর রাউন্ড আইডি (যেমন: 50001)</label>
-            <input type="number" id="assetRound" placeholder="50001">
+        <div class="card">
+            <h2>Active Prediction Coins</h2>
+            <div class="table-container"><table><tbody id="preTable"></tbody></table></div>
         </div>
-        <button class="btn btn-primary" onclick="addNewAsset()">কয়েন আপলোড এবং সচল করুন</button>
     </div>
 
-    <div class="card">
-        <h2><i class="fas fa-list" style="color:var(--primary)"></i> বর্তমানে সচল কয়েনসমূহ</h2>
-        <div class="table-container">
-            <table>
-                <thead>
-                    <tr>
-                        <th>কয়েন ইনফো</th>
-                        <th>বাইন্যান্স সিম্বল</th>
-                        <th>রাউন্ড আইডি</th>
-                        <th>অ্যাকশন</th>
-                    </tr>
-                </thead>
-                <tbody id="assetTableBody"></tbody>
-            </table>
+    <div id="spotSec" class="tab-content">
+        <div class="card">
+            <h2><i class="fas fa-coins"></i> Spot কয়েন যুক্ত করুন</h2>
+            <div class="grid-inputs">
+                <input type="text" id="spotKey" placeholder="ID (btc)">
+                <input type="text" id="spotName" placeholder="Name (Bitcoin)">
+                <input type="text" id="spotSymbol" placeholder="Symbol (BTC)">
+                <input type="text" id="spotLogo" placeholder="Logo (btc.png)">
+            </div>
+            <button class="btn-primary" onclick="addCoin('spotAssets', 'spot')">স্পট কয়েন সেভ করুন</button>
+        </div>
+        <div class="card">
+            <h2>Active Spot Coins</h2>
+            <div class="table-container"><table><tbody id="spotTable"></tbody></table></div>
         </div>
     </div>
+
+    <div id="featureSec" class="tab-content">
+        <div class="card">
+            <h2><i class="fas fa-bolt"></i> Futures কয়েন যুক্ত করুন</h2>
+            <div class="grid-inputs">
+                <input type="text" id="featKey" placeholder="ID (eth)">
+                <input type="text" id="featName" placeholder="Pair (ETHUSDT)">
+                <input type="text" id="featSymbol" placeholder="Sym (ethusdt)">
+                <input type="text" id="featLogo" placeholder="Logo (eth.png)">
+            </div>
+            <button class="btn-primary" onclick="addCoin('featureAssets', 'feat')">ফিউচার কয়েন সেভ করুন</button>
+        </div>
+        <div class="card">
+            <h2>Active Futures Coins</h2>
+            <div class="table-container"><table><tbody id="featTable"></tbody></table></div>
+        </div>
+    </div>
+
 </div>
 
-<footer class="footer">
-    &copy; 2026 SMAT Network | অল রাইট রিজার্ভড | <span class="blink">সিস্টেম রানিং</span>
+<footer class="admin-footer">
+    <button class="footer-item active" onclick="switchTab('prediction', this)">
+        <i class="fas fa-clock"></i><span>Prediction</span>
+    </button>
+    <button class="footer-item" onclick="switchTab('spot', this)">
+        <i class="fas fa-layer-group"></i><span>Spot</span>
+    </button>
+    <button class="footer-item" onclick="switchTab('feature', this)">
+        <i class="fas fa-bolt"></i><span>Feature</span>
+    </button>
 </footer>
 
 <script type="module">
@@ -291,75 +163,70 @@
     const db = getDatabase(app);
     const auth = getAuth(app);
 
-    // ১. লগইন লজিক
-    window.handleLogin = () => {
-        const email = document.getElementById('loginEmail').value;
-        const pass = document.getElementById('loginPass').value;
-        signInWithEmailAndPassword(auth, email, pass)
-            .catch(err => alert("লগইন ব্যর্থ! সঠিক তথ্য দিন।"));
+    // --- Tab Switcher ---
+    window.switchTab = (tab, btn) => {
+        document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+        document.querySelectorAll('.footer-item').forEach(i => i.classList.remove('active'));
+        document.getElementById(tab + 'Sec').classList.add('active');
+        btn.classList.add('active');
+        document.getElementById('activeTabName').innerText = tab.toUpperCase();
     };
 
+    // --- Auth ---
+    window.handleLogin = () => {
+        const e = document.getElementById('loginEmail').value;
+        const p = document.getElementById('loginPass').value;
+        signInWithEmailAndPassword(auth, e, p).catch(() => alert("ভুল তথ্য!"));
+    };
     window.handleLogout = () => signOut(auth);
 
     onAuthStateChanged(auth, (user) => {
         if (user) {
             document.getElementById('loginOverlay').style.display = 'none';
-            loadAssets();
+            syncAllData();
         } else {
             document.getElementById('loginOverlay').style.display = 'flex';
         }
     });
 
-    // ২. কয়েন লিস্ট লোড করা
-    function loadAssets() {
-        onValue(ref(db, 'predictionAssets'), (snapshot) => {
-            const data = snapshot.val();
-            const tbody = document.getElementById('assetTableBody');
-            tbody.innerHTML = "";
-            if (data) {
-                Object.keys(data).forEach(key => {
-                    const item = data[key];
-                    tbody.innerHTML += `
-                        <tr>
-                            <td>
-                                <img src="assets/logos/${item.logo}" class="coin-icon" onerror="this.src='https://via.placeholder.com/32'">
-                                ${item.name}
-                            </td>
-                            <td><span class="badge">${item.symbol}</span></td>
-                            <td>${item.round}</td>
-                            <td><button class="btn-del" onclick="deleteAsset('${key}')">ডিলিট</button></td>
-                        </tr>
-                    `;
+    // --- Data Management ---
+    window.addCoin = (path, prefix) => {
+        const key = document.getElementById(prefix+'Key').value.toLowerCase().trim();
+        const data = {
+            name: document.getElementById(prefix+'Name').value,
+            symbol: document.getElementById(prefix+'Symbol').value.toLowerCase(),
+            logo: document.getElementById(prefix+'Logo').value,
+            unit: key.toUpperCase()
+        };
+        if(prefix === 'pre') data.round = parseInt(document.getElementById('preRound').value);
+
+        set(ref(db, `${path}/${key}`), data).then(() => {
+            if(prefix === 'pre') update(ref(db, 'roundLogic'), {[key]: data.round});
+            alert("সফলভাবে সেভ হয়েছে!");
+        });
+    };
+
+    window.deleteCoin = (path, key) => {
+        if(confirm("ডিলিট করতে চান?")) remove(ref(db, `${path}/${key}`));
+    };
+
+    function syncAllData() {
+        const paths = { predictionAssets: 'preTable', spotAssets: 'spotTable', featureAssets: 'featTable' };
+        Object.entries(paths).forEach(([path, tableId]) => {
+            onValue(ref(db, path), (snap) => {
+                const data = snap.val();
+                const tbody = document.getElementById(tableId);
+                tbody.innerHTML = "";
+                if(data) Object.entries(data).forEach(([key, val]) => {
+                    tbody.innerHTML += `<tr>
+                        <td><img src="assets/logos/${val.logo}" class="coin-icon"> ${val.name}</td>
+                        <td>${val.symbol}</td>
+                        <td><button class="btn-del" onclick="deleteCoin('${path}', '${key}')">ডিলিট</button></td>
+                    </tr>`;
                 });
-            }
+            });
         });
     }
-
-    // ৩. নতুন কয়েন যুক্ত করা
-    window.addNewAsset = function() {
-        const key = document.getElementById('assetKey').value.toLowerCase().trim();
-        const name = document.getElementById('assetName').value.trim();
-        const symbol = document.getElementById('assetSymbol').value.toLowerCase().trim();
-        const logo = document.getElementById('assetLogo').value.trim();
-        const round = document.getElementById('assetRound').value.trim();
-
-        if (!key || !name || !symbol || !logo || !round) return alert("সব ঘর পূরণ করুন!");
-
-        const newAsset = { name, symbol, logo, unit: key.toUpperCase(), round: parseInt(round), currentPrice: 0 };
-        
-        set(ref(db, 'predictionAssets/' + key), newAsset).then(() => {
-            update(ref(db, 'roundLogic'), { [key]: parseInt(round) });
-            alert("কয়েন সফলভাবে যুক্ত হয়েছে!");
-            document.querySelectorAll('input').forEach(i => i.value = "");
-        });
-    };
-
-    // ৪. ডিলিট লজিক
-    window.deleteAsset = (key) => {
-        if (confirm(`${key} ডিলিট করতে চান?`)) {
-            remove(ref(db, 'predictionAssets/' + key));
-        }
-    };
 </script>
 </body>
 </html>
