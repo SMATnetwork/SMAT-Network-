@@ -358,7 +358,7 @@ th:nth-child(6), td:nth-child(6) { width: 18%; } /* My Win */
             if (user && assets[activeKey]) {
                 onValue(ref(db, `history/${user.uid}/${activeKey}/${assets[activeKey].round}`), (snapshot) => {
                     const rec = snapshot.val();
-                    if (rec && rec.isPending) lockedDiv.innerText = `Locked Price: $${parseFloat(rec.lockedPrice).toFixed(2)}`;
+                    if (rec && rec.isPending) lockedDiv.innerText = `Locked Price: $${parseFloat(rec.lockedPrice).toFixed(6)}`;
                 });
             }
         }
@@ -386,7 +386,7 @@ th:nth-child(6), td:nth-child(6) { width: 18%; } /* My Win */
                 <td>${item.time}</td>
                 <td>$${parseFloat(item.lockedPrice || 0).toFixed(6)}<span class="sub-text">Locked Price</span></td>
                 <td style="color:${item.action==='UP'?'var(--up)':(item.action==='DOWN'?'var(--down)':'#848e9c')}">${item.action || '--'}</td>
-                <td>${(item.isPending || !item.resultPrice) ? '<div class="spinner-sm"></div>' : '$'+parseFloat(item.resultPrice).toFixed(2)}</td>
+                <td>${(item.isPending || !item.resultPrice) ? '<div class="spinner-sm"></div>' : '$'+parseFloat(item.resultPrice).toFixed(6)}</td>
                 <td>${winHtml}</td>
             </tr>`;
         });
@@ -432,7 +432,7 @@ th:nth-child(6), td:nth-child(6) { width: 18%; } /* My Win */
             if (key) {
                 const price = parseFloat(d.data.p); assets[key].currentPrice = price; 
                 if (key === activeKey) {
-                    document.getElementById('priceDisplay').innerText = '$' + price.toFixed(2);
+                    document.getElementById('priceDisplay').innerText = '$' + price.toFixed(6);
                     chart.data.datasets[0].data.shift(); 
                     chart.data.datasets[0].data.push(price);
                     chart.update('none');
