@@ -26,12 +26,57 @@
         .history-section { flex: 1; background: var(--card); display: flex; flex-direction: column; overflow: hidden; padding-bottom: 85px; }
         .history-header { text-align: center; padding: 10px; font-size: 15px; font-weight: 900; border-bottom: 1px solid var(--border); background: #12161c; }
         .table-container { flex: 1; overflow-y: auto; overflow-x: auto; }
-        table { width: 100%; border-collapse: collapse; font-size: 11px; text-align: center; min-width: 520px; }
-        th { background: #12161c; padding: 12px 5px; color: #848e9c; position: sticky; top: 0; z-index: 5; }
-        td { padding: 12px 2px; border-bottom: 1px solid #23272e; font-weight: 600; vertical-align: middle; }
-        
-        .hist-logo { width: 16px; height: 16px; border-radius: 50%; vertical-align: middle; margin-right: 4px; border: 1px solid rgba(255,255,255,0.1); }
-        .sub-text { display: block; font-size: 9px; color: #848e9c; margin-top: 2px; }
+        /* টেবিল ছোট স্ক্রিনে ফিট করার জন্য অপ্টিমাইজড সিএসএস */
+table { 
+    width: 100%; 
+    border-collapse: collapse; 
+    font-size: 10px; /* ফন্ট ১ পিক্সেল কমানো হয়েছে */
+    text-align: center; 
+    table-layout: fixed; /* কলামগুলোর উইথ নির্দিষ্ট রাখার জন্য */
+}
+
+th { 
+    background: #12161c; 
+    padding: 10px 2px; 
+    color: #848e9c; 
+    position: sticky; 
+    top: 0; 
+    z-index: 5; 
+    font-size: 9px; 
+    text-transform: uppercase;
+}
+
+td { 
+    padding: 10px 2px; 
+    border-bottom: 1px solid #23272e; 
+    font-weight: 600; 
+    vertical-align: middle; 
+    word-break: break-all; /* বড় সংখ্যা ভেঙে নিচে নামার জন্য */
+}
+
+/* কলামগুলোর উইথ ডিস্ট্রিবিউশন */
+th:nth-child(1), td:nth-child(1) { width: 16%; } /* Round */
+th:nth-child(2), td:nth-child(2) { width: 14%; } /* Time */
+th:nth-child(3), td:nth-child(3) { width: 22%; } /* Locked Price */
+th:nth-child(4), td:nth-child(4) { width: 12%; } /* Action (UP/DOWN) */
+th:nth-child(5), td:nth-child(5) { width: 18%; } /* Result */
+th:nth-child(6), td:nth-child(6) { width: 18%; } /* My Win */
+
+.hist-logo { 
+    width: 12px; /* লোগো একটু ছোট করা হয়েছে */
+    height: 12px; 
+    border-radius: 50%; 
+    vertical-align: middle; 
+    margin-right: 2px; 
+}
+
+.sub-text { 
+    display: block; 
+    font-size: 8px; /* সাব-টেক্সট আরও ছোট করা হয়েছে */
+    color: #848e9c; 
+    margin-top: 1px; 
+}
+
 
         .action-area { position: fixed; bottom: 0; width: 100%; padding: 15px; background: #12161c; border-top: 1px solid var(--border); z-index: 2000; }
         .t-btn { flex: 1; padding: 16px; border: none; border-radius: 10px; font-weight: 900; font-size: 16px; color: white; cursor: pointer; text-transform: uppercase; }
