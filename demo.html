@@ -256,17 +256,15 @@
         await set(ref(db, `history/${user.uid}/${key}/${rid}`), entry);
     }
 
-        async function finalizeAndReset(key) {
+            async function finalizeAndReset(key) {
         if (!user) return;
         const snap = await get(ref(db, `history/${user.uid}/${key}`));
         const history = snap.val() || {};
         const resPrice = assets[key].currentPrice;
-        let lastLockedPrice = assets[key].currentPrice; // ব্যাকআপ যদি ট্রেড না থাকে
 
         for (let rid in history) {
             if (history[rid].isPending) {
                 const rec = history[rid];
-                lastLockedPrice = rec.lockedPrice; // ট্রেড থাকলে সেই লক প্রাইস নিবে
                 let status = "LOSS";
                 let winAmt = 0;
 
@@ -298,16 +296,15 @@
             }
         }
 
-        // --- গ্লোবাল মার্কেট হিস্ট্রি সেভ (নতুন পুরাতন সবাই দেখতে পাবে) ---
-        const rid = assets[key].round;
-        const globalEntry = {
-            rid: rid,
+        // --- নতুন ইউজারের জন্য গ্লোবাল হিস্ট্রি সেভ (আপনার লজিকের বাইরে আলাদা সেভ হবে) ---
+        const currentRid = assets[key].round;
+        await set(ref(db, `marketHistory/${key}/${currentRid}`), {
+            rid: currentRid,
             time: new Date().toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'}),
-            lockedPrice: lastLockedPrice,
+            lockedPrice: assets[key].lockedPrice || assets[key].currentPrice,
             resultPrice: resPrice,
             logo: assets[key].logo
-        };
-        await set(ref(db, `marketHistory/${key}/${rid}`), globalEntry);
+        });
 
         assets[key].round++;
         await update(ref(db, 'roundLogic'), { [key]: assets[key].round });
@@ -317,47 +314,45 @@
     }
 
     async function syncHistory() {
-        // গ্লোবাল মার্কেট ডাটা আনা হচ্ছে
-        const snap = await get(ref(db, `marketHistory/${activeKey}`));
-        const globalData = snap.val() || {};
+        if (!user) return;
         
-        // ইউজারের ব্যক্তিগত বেট চেক করার জন্য ডাটা আনা
-        let personalData = {};
-        if (user) {
-            const pSnap = await get(ref(db, `history/${user.uid}/${activeKey}`));
-            personalData = pSnap.val() || {};
-        }
-
+        // গ্লোবাল ডাটা (আগের রাউন্ডগুলো দেখানোর জন্য)
+        const gSnap = await get(ref(db, `marketHistory/${activeKey}`));
+        const globalData = gSnap.val() || {};
+        
+        // ইউজারের নিজস্ব ডাটা (Action এবং Win দেখানোর জন্য)
+        const snap = await get(ref(db, `history/${user.uid}/${activeKey}`));
+        const data = snap.val() || {};
+        
+        // গ্লোবাল এবং পার্সোনাল ডাটা মার্জ করা হচ্ছে যাতে আপনার কন্ডিশন ঠিক থাকে
+        const mergedData = { ...globalData, ...data };
+        
         const body = document.getElementById('historyBody');
         body.innerHTML = "";
 
-        Object.values(globalData).reverse().slice(0, 15).forEach(item => {
-            const rid = item.rid;
-            const pItem = personalData[rid]; // এই রাউন্ডে ইউজারের ট্রেড আছে কি না
-            
-            let actionHtml = pItem ? `<span style="color:${pItem.action==='UP'?'var(--up)':'var(--down)'}">${pItem.action}</span>` : '<span style="color:#848e9c">--</span>';
-            
+        Object.values(mergedData).reverse().slice(0, 15).forEach(item => {
+            const isWaiting = item.isPending && globalState === "WAITING";
             let winHtml = "";
-            if (pItem) {
-                if (pItem.isPending) {
-                    winHtml = '<div class="spinner-sm"></div>';
-                } else if (pItem.status === "WIN") {
-                    winHtml = `<div style="color:var(--up)"><img src="${item.logo}" class="hist-logo">${parseFloat(pItem.finalWin || 0).toFixed(8)}</div>`;
-                } else if (pItem.status === "LOSS") {
-                    winHtml = `<div style="color:var(--down)"><img src="${item.logo}" class="hist-logo">0.00000000</div>`;
-                } else {
-                    winHtml = `<div style="color:var(--warn)">${parseFloat(pItem.finalWin || 0).toFixed(8)}</div>`;
-                }
+
+            if (item.isPending) {
+                winHtml = '<div class="spinner-sm"></div>';
+            } else if (item.status === "WIN") {
+                winHtml = `<div style="color:var(--up)"><img src="${item.logo}" class="hist-logo">${parseFloat(item.finalWin || 0).toFixed(8)}</div>`;
+            } else if (item.status === "LOSS") {
+                winHtml = `<div style="color:var(--down)"><img src="${item.logo}" class="hist-logo">0.00000000</div>`;
+            } else if (item.status === "DRAW") {
+                winHtml = `<div style="color:var(--warn)"><img src="${item.logo}" class="hist-logo">${parseFloat(item.finalWin || 0).toFixed(8)}</div>`;
             } else {
                 winHtml = '<span style="color:#848e9c">--</span>';
             }
 
-            body.innerHTML += `<tr>
+            // আপনার অরিজিনাল Blink এবং Table কন্ডিশন হুবহু রাখা হয়েছে
+            body.innerHTML += `<tr class="${isWaiting ? 'blink' : ''}">
                 <td><img src="${item.logo}" class="hist-logo"> ${item.rid}</td>
                 <td>${item.time}</td>
                 <td>$${parseFloat(item.lockedPrice || 0).toFixed(2)}<span class="sub-text">Locked Price</span></td>
-                <td>${actionHtml}</td>
-                <td>${item.resultPrice ? '$'+parseFloat(item.resultPrice).toFixed(2) : '<div class="spinner-sm"></div>'}</td>
+                <td style="color:${item.action==='UP'?'var(--up)':(item.action==='DOWN'?'var(--down)':'#848e9c')}">${item.action || '--'}</td>
+                <td>${(item.isPending || !item.resultPrice) ? '<div class="spinner-sm"></div>' : '$'+parseFloat(item.resultPrice).toFixed(2)}</td>
                 <td>${winHtml}</td>
             </tr>`;
         });
@@ -434,6 +429,7 @@
     onAuthStateChanged(auth, (u) => {
         if (u) { user = u; syncUser(); initWS(); initTimer(); }
     });
+
 
 </script>
 </body>
