@@ -21,7 +21,7 @@
         .bal-amount { font-weight: 800; font-size: 13px; color: var(--primary); }
         
         /* Chart & Dynamic Status */
-        .chart-section { width: 100%; position: relative; background: #000; height: 32vh; border-bottom: 1px solid var(--border); overflow: hidden; } /* overflow: hidden যোগ করা হয়েছে */
+        .chart-section { width: 100%; position: relative; background: #000; height: 26vh; border-bottom: 1px solid var(--border); overflow: hidden; } /* overflow: hidden যোগ করা হয়েছে */
         .chart-overlay { position: absolute; top: 0; left: 0; width: 100%; z-index: 10; display: flex; justify-content: space-between; padding: 12px; pointer-events: none; }
         .status-container { display: flex; flex-direction: column; gap: 4px; }
         .timer-clock { font-size: 26px; font-weight: 900; color: white; text-align: right; }
@@ -148,53 +148,46 @@
 
     const ctx = document.getElementById('liveChart').getContext('2d');
 
-    // সবুজ রঙের গ্রেডিয়েন্ট তৈরি (উপর থেকে নিচে হালকা হবে) - ফিচার মার্কেট থেকে কপি করা হয়েছে
-    const gradient = ctx.createLinearGradient(0, 0, 0, 300);
-    gradient.addColorStop(0, 'rgba(14, 203, 129, 0.4)'); // উপরের গাঢ় সবুজ
-    gradient.addColorStop(1, 'rgba(14, 203, 129, 0)');   // নিচে একদম হালকা
+// ফিচার মার্কেটের সেই সুন্দর গ্রেডিয়েন্ট
+const gradient = ctx.createLinearGradient(0, 0, 0, 400);
+gradient.addColorStop(0, 'rgba(14, 203, 129, 0.3)'); 
+gradient.addColorStop(1, 'rgba(14, 203, 129, 0)');
 
-    // চার্ট ইনিশিয়ালাইজেশন - ফিচার মার্কেট থেকে কপি করা হয়েছে
-    const chart = new Chart(ctx, {
-        type: 'line',
-        data: { 
-            labels: Array(50).fill(''), 
-            datasets: [{ 
-                data: Array(50).fill(0), 
-                borderColor: '#0ecb81',     // প্রফেশনাল বাইনান্স গ্রিন বর্ডার
-                borderWidth: 2, 
-                pointRadius: 0, 
-                tension: 0.45,             // রেখাটি মসৃণ বা কার্ভি দেখাবে
-                fill: true, 
-                backgroundColor: gradient, // গ্রেডিয়েন্ট ব্যাকগ্রাউন্ড
-                capBezierPoints: true
-            }] 
+const chart = new Chart(ctx, {
+    type: 'line',
+    data: { 
+        labels: Array(60).fill(''), // ডাটা পয়েন্ট একটু বাড়িয়ে ৬০ করা হলো স্মুথনেসের জন্য
+        datasets: [{ 
+            data: Array(60).fill(0), 
+            borderColor: '#0ecb81', 
+            borderWidth: 2, 
+            pointRadius: 0, 
+            tension: 0.4, // এই ভ্যালুটা চার্টকে কার্ভি এবং স্মুথ রাখবে
+            fill: true, 
+            backgroundColor: gradient,
+        }] 
+    },
+    options: { 
+        responsive: true, 
+        maintainAspectRatio: false, 
+        // এনিমেশন সেটিংস যা লাফালাফি বন্ধ করবে
+        animation: {
+            duration: 1000, 
+            easing: 'linear' // লিনিয়ার মোড মুভমেন্টকে একদম ফ্লুইড রাখে
         },
-        options: { 
-            responsive: true, 
-            maintainAspectRatio: false, 
-            animation: {
-                duration: 800,             // চার্ট মুভমেন্ট স্মুথ করার জন্য
-                easing: 'easeInOutQuad'
-            },
-            scales: { 
-                x: { display: false }, 
-                y: { 
-                    display: true,
-                    position: 'right',      // প্রাইস লেভেল ডানে দেখাবে
-                    grid: {
-                        color: 'rgba(255, 255, 255, 0.03)', // খুব হালকা গ্রিড
-                        drawTicks: false
-                    },
-                    ticks: {
-                        color: '#848e9c',   // টেক্সট কালার
-                        font: { size: 10 },
-                        count: 6 // খুব বেশি হিজিবিজি হবে না
-                    }
-                } 
-            }, 
-            plugins: { legend: { display: false } } 
-        }
-    });
+        hover: { mode: null },
+        plugins: { legend: { display: false } },
+        scales: { 
+            x: { display: false }, 
+            y: { 
+                position: 'right',
+                grid: { color: 'rgba(255,255,255,0.03)', drawTicks: false },
+                ticks: { color: '#848e9c', font: { size: 10 }, count: 6 }
+            } 
+        } 
+    }
+});
+
 
 
     function initTimer() {
@@ -448,27 +441,34 @@
         const ws = new WebSocket(`wss://stream.binance.com:9443/stream?streams=${streamList}`);
         
         ws.onmessage = (e) => {
-            const d = JSON.parse(e.data);
-            const key = Object.keys(assets).find(k => assets[k].symbol === d.data.s.toLowerCase());
+    const d = JSON.parse(e.data);
+    const key = Object.keys(assets).find(k => assets[k].symbol === d.data.s.toLowerCase());
+    
+    if (key) {
+        const price = parseFloat(d.data.p);
+        assets[key].currentPrice = price; 
+
+        if (key === activeKey) {
+            // ১. প্রাইস ডিসপ্লে আপডেট
+            const priceEl = document.getElementById('priceDisplay');
+            priceEl.innerText = '$' + price.toFixed(2);
             
-            if (key) {
-                const price = parseFloat(d.data.p);
-                assets[key].currentPrice = price; 
+            // ২. চার্ট ডাটা আপডেট
+            chart.data.datasets[0].data.shift();
+            chart.data.datasets[0].data.push(price);
 
-                if (key === activeKey) {
-                    document.getElementById('priceDisplay').innerText = '$' + price.toFixed(2);
-                    
-                    // চার্ট ডাটা আপডেট - ফিচার মার্কেট থেকে কপি করা হয়েছে
-                    chart.data.datasets[0].data.shift();
-                    chart.data.datasets[0].data.push(price);
-                    chart.update('none'); // 'none' দিলে এনিমেশন ছাড়াই আপডেট হবে যা দ্রুত কাজ করে
-
-                    // চার্টের ডট (chartDot) মুভ করার লজিক পুরোপুরি সরিয়ে দেওয়া হয়েছে
-                }
-            }
-        };
-        ws.onclose = () => setTimeout(initWS, 1000);
+            // ৩. 'none' সরিয়ে ডিফল্ট আপডেট ব্যবহার করা হয়েছে যাতে এনিমেশন স্মুথ হয়
+            // চার্ট কনফিগারেশনে এনিমেশন ডিউরেশন ১০০০ms থাকলে এটি পানির মতো বয়ে চলবে
+            chart.update(); 
+        }
     }
+};
+
+ws.onclose = () => {
+    console.log("WebSocket closed. Reconnecting...");
+    setTimeout(initWS, 1000);
+};
+
 
     onAuthStateChanged(auth, (u) => {
         if (u) { user = u; syncUser(); initWS(); initTimer(); }
