@@ -316,7 +316,7 @@ th:nth-child(6), td:nth-child(6) { width: 20%; } /* My Win */
                 if (winAmt > 0) {
                     const bRef = ref(db, `users/${user.uid}/balances/${key}`);
                     const bSnap = await get(bRef);
-                    await set(bRef, (parseFloat(bSnap.val() || 0) + winAmt).toFixed(8));
+                    await set(bRef, (parseFloat(bSnap.val() || 0) + winAmt).toFixed(6));
                 }
 
                 await update(ref(db, `history/${user.uid}/${key}/${rid}`), {
@@ -379,7 +379,7 @@ th:nth-child(6), td:nth-child(6) { width: 20%; } /* My Win */
 
         Object.values(mergedData).reverse().slice(0, 15).forEach(item => {
             const isWaiting = item.isPending && globalState === "WAITING";
-            let winHtml = item.isPending ? '<div class="spinner-sm"></div>' : (item.status === "WIN" ? `<div style="color:var(--up)"><img src="assets/logos/${item.logo}" class="hist-logo">${parseFloat(item.finalWin).toFixed(8)}</div>` : (item.status === "LOSS" ? `<div style="color:var(--down)"><img src="assets/logos/${item.logo}" class="hist-logo">0.00000000</div>` : (item.status === "DRAW" ? `<div style="color:var(--warn)"><img src="assets/logos/${item.logo}" class="hist-logo">${parseFloat(item.finalWin).toFixed(8)}</div>` : '<span style="color:#848e9c">--</span>')));
+            let winHtml = item.isPending ? '<div class="spinner-sm"></div>' : (item.status === "WIN" ? `<div style="color:var(--up)"><img src="assets/logos/${item.logo}" class="hist-logo">${parseFloat(item.finalWin).toFixed(8)}</div>` : (item.status === "LOSS" ? `<div style="color:var(--down)"><img src="assets/logos/${item.logo}" class="hist-logo">0.00000000</div>` : (item.status === "DRAW" ? `<div style="color:var(--warn)"><img src="assets/logos/${item.logo}" class="hist-logo">${parseFloat(item.finalWin).toFixed(6)}</div>` : '<span style="color:#848e9c">--</span>')));
             
             body.innerHTML += `<tr class="${isWaiting ? 'blink' : ''}">
                 <td><img src="assets/logos/${item.logo}" class="hist-logo"> ${item.rid}</td>
@@ -404,10 +404,10 @@ th:nth-child(6), td:nth-child(6) { width: 20%; } /* My Win */
 
     window.confirmBet = async () => {
         const amtInput = document.getElementById('betAmount'); const amt = parseFloat(amtInput.value);
-        if (isNaN(amt) || amt <= 0) return alert("পরিমাণ লিখুন");
+        if (isNaN(amt) || amt <= 0) return alert("Input Amount");
         const balRef = ref(db, `users/${user.uid}/balances/${activeKey}`);
         const bSnap = await get(balRef); const curBal = parseFloat(bSnap.val() || 0);
-        if (amt > curBal) return alert("পর্যাপ্ত ব্যালেন্স নেই");
+        if (amt > curBal) return alert("Insufficient Balance");
         await set(balRef, (curBal - amt).toFixed(8));
         assets[activeKey].pending = { side: document.getElementById('betModal').dataset.side, amount: amt };
         window.closeBetModal();
