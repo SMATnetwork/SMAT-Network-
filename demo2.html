@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>SMAT CEX | Pro Prediction Engine</title>
+    <title>SMAT | Prediction Market</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
@@ -384,7 +384,7 @@ th:nth-child(6), td:nth-child(6) { width: 18%; } /* My Win */
             body.innerHTML += `<tr class="${isWaiting ? 'blink' : ''}">
                 <td><img src="assets/logos/${item.logo}" class="hist-logo"> ${item.rid}</td>
                 <td>${item.time}</td>
-                <td>$${parseFloat(item.lockedPrice || 0).toFixed(2)}<span class="sub-text">Locked Price</span></td>
+                <td>$${parseFloat(item.lockedPrice || 0).toFixed(6)}<span class="sub-text">Locked Price</span></td>
                 <td style="color:${item.action==='UP'?'var(--up)':(item.action==='DOWN'?'var(--down)':'#848e9c')}">${item.action || '--'}</td>
                 <td>${(item.isPending || !item.resultPrice) ? '<div class="spinner-sm"></div>' : '$'+parseFloat(item.resultPrice).toFixed(2)}</td>
                 <td>${winHtml}</td>
