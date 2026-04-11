@@ -66,9 +66,7 @@
             <b id="active-pair">BTC/USDT</b>
             <i class="fas fa-caret-down"></i>
         </div>
-        
         <div id="coin-dropdown" class="coin-dropdown"></div>
-
         <div class="header-right">
             <div>
                 <div id="price-change-pc" class="price-change">0.00%</div>
@@ -152,10 +150,7 @@
             db.ref('fundingLogic/timeLeft').on('value', (snap) => {
                 const totalSeconds = snap.val();
                 if (totalSeconds !== null) {
-                    if (totalSeconds === 28800 && lastFundingTimestamp !== totalSeconds) { 
-                        applyFundingFee(); 
-                        lastFundingTimestamp = totalSeconds;
-                    }
+                    if (totalSeconds === 28800 && lastFundingTimestamp !== totalSeconds) { applyFundingFee(); lastFundingTimestamp = totalSeconds; }
                     const h = Math.floor(totalSeconds / 3600);
                     const m = Math.floor((totalSeconds % 3600) / 60);
                     const s = totalSeconds % 60;
@@ -167,13 +162,8 @@
         function applyFundingFee() {
             if (allPositions.length > 0 && currentUserFirebaseKey) {
                 let totalFee = 0;
-                allPositions.forEach(pos => {
-                    const positionValue = pos.entry * pos.amount;
-                    totalFee += positionValue * 0.001; 
-                });
-                if (totalFee > 0) {
-                    db.ref(`users/${currentUserFirebaseKey}/balance`).set(userBalance - totalFee);
-                }
+                allPositions.forEach(pos => { totalFee += (pos.entry * pos.amount) * 0.001; });
+                if (totalFee > 0) db.ref(`users/${currentUserFirebaseKey}/balance`).set(userBalance - totalFee);
             }
         }
 
@@ -184,12 +174,8 @@
                     Object.keys(users).forEach(key => {
                         if (users[key].smatID === smatID) {
                             currentUserFirebaseKey = key;
-                            if (users[key].balance === undefined) {
-                                db.ref(`users/${key}/balance`).set(0.00);
-                            } else {
-                                userBalance = users[key].balance;
-                                document.getElementById('display-bal').innerText = userBalance.toFixed(2) + " USDT";
-                            }
+                            userBalance = users[key].balance || 0;
+                            document.getElementById('display-bal').innerText = userBalance.toFixed(2) + " USDT";
                             db.ref(`users/${key}/active_positions`).on('value', (posSnap) => {
                                 const data = posSnap.val();
                                 allPositions = [];
@@ -210,11 +196,7 @@
                 if(data) {
                     Object.keys(data).forEach(key => {
                         const coin = data[key];
-                        dropdown.innerHTML += `
-                            <div class="coin-item" onclick="selectCoin('${coin.symbol}', '${coin.name}', '${coin.logo}')">
-                                <img src="assets/logos/${coin.logo}" class="coin-logo" onerror="this.src='assets/logos/default.png'"> 
-                                ${coin.name}
-                            </div>`;
+                        dropdown.innerHTML += `<div class="coin-item" onclick="selectCoin('${coin.symbol}', '${coin.name}', '${coin.logo}')"><img src="assets/logos/${coin.logo}" class="coin-logo"> ${coin.name}</div>`;
                     });
                 }
             });
@@ -233,16 +215,16 @@
             binanceWS = new WebSocket(`wss://stream.binance.com:9443/ws/${symbol.toLowerCase()}@ticker`);
             binanceWS.onmessage = (event) => {
                 const data = JSON.parse(event.data);
-                const change = parseFloat(data.P).toFixed(2);
-                const changeEl = document.getElementById('price-change-pc');
-                changeEl.innerText = (change >= 0 ? '+' : '') + change + '%';
-                changeEl.style.color = change >= 0 ? 'var(--up)' : 'var(--down)';
-
-                const price = parseFloat(data.c).toFixed(2);
+                const price = parseFloat(data.c).toFixed(symbol.includes('DOGE') || symbol.includes('TRX') ? 4 : 2);
                 const priceEl = document.getElementById('live-price');
                 const oldPrice = parseFloat(priceEl.innerText);
                 priceEl.innerText = price;
                 priceEl.style.color = price >= oldPrice ? 'var(--up)' : 'var(--down)';
+
+                const change = parseFloat(data.P).toFixed(2);
+                const changeEl = document.getElementById('price-change-pc');
+                changeEl.innerText = (change >= 0 ? '+' : '') + change + '%';
+                changeEl.style.color = change >= 0 ? 'var(--up)' : 'var(--down)';
                 
                 if(document.activeElement !== document.getElementById('trade-price')) {
                     document.getElementById('trade-price').value = price;
@@ -261,13 +243,13 @@
         function updateMetrics() {
             const p = parseFloat(document.getElementById('trade-price').value) || 0;
             const a = parseFloat(document.getElementById('trade-amt').value) || 0;
-            const fee = (p * a) * 0.001;
             const margin = (p * a) / leverage;
+            const fee = (p * a) * 0.001;
             document.getElementById('cost-disp').innerText = margin.toFixed(2) + " USDT";
             document.getElementById('fee-disp').innerText = fee.toFixed(2) + " USDT";
             if(a > 0) {
                 let liq = (currentSide === 'buy') ? p * (1 - (0.9/leverage)) : p * (1 + (0.9/leverage));
-                document.getElementById('liq-disp').innerText = liq.toFixed(2);
+                document.getElementById('liq-disp').innerText = liq.toFixed(p < 1 ? 4 : 2);
             } else { document.getElementById('liq-disp').innerText = "--"; }
         }
 
@@ -295,8 +277,6 @@
             const p = parseFloat(document.getElementById('trade-price').value);
             const a = parseFloat(document.getElementById('trade-amt').value);
             if(!a || a <= 0) return alert("Enter valid amount");
-            if(!currentUserFirebaseKey) return alert("User key error!");
-
             const margin = (p * a) / leverage;
             const fee = (p * a) * 0.001;
             if((margin + fee) > userBalance) return alert("Insufficient Balance!");
@@ -314,75 +294,63 @@
             const activePair = document.getElementById('active-pair').innerText;
             
             const visiblePositions = allPositions.slice(0, historyLimit);
-            if(allPositions.length > historyLimit) {
-                document.getElementById('show-more-btn').style.display = 'block';
-            } else {
-                document.getElementById('show-more-btn').style.display = 'none';
-            }
+            document.getElementById('show-more-btn').style.display = allPositions.length > historyLimit ? 'block' : 'none';
 
             let html = '';
             visiblePositions.forEach(pos => {
-                // FIXED: Only calculate PNL if the live price matches the position's pair
-                let displayPnl = "--";
+                let displayPnl = "Calculated Only for " + pos.pair;
                 let displayRoe = "--";
                 let pnlColor = 'var(--text-sec)';
 
+                // Fixed: Only use livePrice if the pairs match, otherwise keep it static but visible
                 if(pos.pair === activePair) {
                     let pnl = (pos.side === 'buy') ? (livePrice - pos.entry) * pos.amount : (pos.entry - livePrice) * pos.amount;
                     let roe = (pnl / pos.margin) * 100;
-                    displayPnl = pnl.toFixed(2);
+                    displayPnl = pnl.toFixed(2) + " USDT";
                     displayRoe = roe.toFixed(2) + "%";
                     pnlColor = pnl >= 0 ? 'var(--up)' : 'var(--down)';
+                } else {
+                    displayPnl = "Wait for " + pos.pair;
                 }
 
                 html += `
                     <div class="pos-card">
                         <div class="pos-header">
                             <b>${pos.pair} <span style="color:${pos.side==='buy'?'var(--up)':'var(--down)'}">${pos.side.toUpperCase()} ${pos.leverage}x</span></b>
-                            <button class="close-btn" onclick="closePos('${pos.firebaseKey}', ${displayPnl === "--" ? 0 : parseFloat(displayPnl)}, ${pos.margin})">Close</button>
+                            <button class="close-btn" onclick="closePos('${pos.firebaseKey}', ${pos.pair === activePair ? parseFloat(displayPnl) : 0}, ${pos.margin})">Close</button>
                         </div>
                         <div style="display:grid; grid-template-columns: 1fr 1fr;">
                             <div><small>PNL</small><div style="color:${pnlColor}">${displayPnl} (${displayRoe})</div></div>
                             <div style="text-align:right"><small>Margin</small><div>${pos.margin.toFixed(2)}</div></div>
-                            <div style="margin-top:5px;"><small>Entry Price</small><div>${parseFloat(pos.entry).toFixed(2)}</div></div>
+                            <div style="margin-top:5px;"><small>Entry Price</small><div>${parseFloat(pos.entry).toFixed(pos.entry < 1 ? 4 : 2)}</div></div>
+                            <div style="margin-top:5px; text-align:right"><small>Liq. Price</small><div>${pos.liq}</div></div>
                         </div>
                     </div>`;
             });
-            
-            if(container.innerHTML !== html) {
-                container.innerHTML = html;
-            }
-        }
-
-        function increaseLimit() {
-            historyLimit += 10;
-            renderPositions();
+            container.innerHTML = html;
         }
 
         function closePos(key, pnl, margin) {
-            if(!currentUserFirebaseKey) return;
-            // Balance logic remains safe
             db.ref(`users/${currentUserFirebaseKey}/balance`).set(userBalance + (margin + pnl));
             db.ref(`users/${currentUserFirebaseKey}/active_positions/${key}`).remove();
         }
 
         function updateOrderBook(price) {
             const p = parseFloat(price);
+            // Dynamic Gap based on price: DOGE/TRX needs much smaller gap than BTC
+            const gap = p < 1 ? 0.0005 : p < 100 ? 0.01 : 0.5;
             let a = '', b = '';
             for(let i=1; i<=8; i++) {
-                a = `<div class="ob-row"><span>${(p + i*0.4).toFixed(2)}</span><span>${(Math.random()*0.8).toFixed(3)}</span></div>` + a;
-                b += `<div class="ob-row"><span>${(p - i*0.4).toFixed(2)}</span><span>${(Math.random()*0.8).toFixed(3)}</span></div>`;
+                let askPrice = (p + i * gap).toFixed(p < 1 ? 4 : 2);
+                let bidPrice = (p - i * gap).toFixed(p < 1 ? 4 : 2);
+                a = `<div class="ob-row"><span>${askPrice}</span><span>${(Math.random()*0.8).toFixed(3)}</span></div>` + a;
+                b += `<div class="ob-row"><span>${bidPrice}</span><span>${(Math.random()*0.8).toFixed(3)}</span></div>`;
             }
             document.getElementById('ob-asks').innerHTML = a;
             document.getElementById('ob-bids').innerHTML = b;
         }
 
-        window.onload = () => {
-            listenToTimer();
-            initListeners();
-            loadDynamicCoins();
-            connectBinance('btcusdt');
-        };
+        window.onload = () => { listenToTimer(); initListeners(); loadDynamicCoins(); connectBinance('btcusdt'); };
     </script>
 </body>
 </html>
