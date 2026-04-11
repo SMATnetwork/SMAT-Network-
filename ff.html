@@ -45,7 +45,6 @@
         .ob-row { display: flex; justify-content: space-between; line-height: 1.6; font-family: 'Roboto Mono', monospace; font-size: 10px; }
         .price-mid { font-size: 16px; font-weight: bold; text-align: center; padding: 12px 0; margin: 8px 0; background: rgba(255,255,255,0.02); border-radius: 4px; }
 
-        /* History Section Fix */
         .pos-section { margin-top: 20px; padding: 0 10px; min-height: 400px; }
         .pos-card { background: var(--card); border: 1px solid var(--border); border-radius: 8px; padding: 15px; margin-bottom: 12px; display: block; }
         .pos-header { display: flex; justify-content: space-between; margin-bottom: 10px; border-bottom: 1px solid var(--border); padding-bottom: 8px; }
@@ -231,11 +230,9 @@
 
         function connectBinance(symbol) {
             if (binanceWS) binanceWS.close();
-            // Fast Stream using ticker instead of kline
             binanceWS = new WebSocket(`wss://stream.binance.com:9443/ws/${symbol.toLowerCase()}@ticker`);
             binanceWS.onmessage = (event) => {
                 const data = JSON.parse(event.data);
-                
                 const change = parseFloat(data.P).toFixed(2);
                 const changeEl = document.getElementById('price-change-pc');
                 changeEl.innerText = (change >= 0 ? '+' : '') + change + '%';
@@ -244,8 +241,6 @@
                 const price = parseFloat(data.c).toFixed(2);
                 const priceEl = document.getElementById('live-price');
                 const oldPrice = parseFloat(priceEl.innerText);
-                
-                // Real-time Update
                 priceEl.innerText = price;
                 priceEl.style.color = price >= oldPrice ? 'var(--up)' : 'var(--down)';
                 
@@ -316,6 +311,7 @@
         function renderPositions() {
             const container = document.getElementById('pos-container');
             const livePrice = parseFloat(document.getElementById('live-price').innerText);
+            const activePair = document.getElementById('active-pair').innerText;
             
             const visiblePositions = allPositions.slice(0, historyLimit);
             if(allPositions.length > historyLimit) {
@@ -326,22 +322,33 @@
 
             let html = '';
             visiblePositions.forEach(pos => {
-                let pnl = (pos.side === 'buy') ? (livePrice - pos.entry) * pos.amount : (pos.entry - livePrice) * pos.amount;
-                let roe = (pnl / pos.margin) * 100;
+                // FIXED: Only calculate PNL if the live price matches the position's pair
+                let displayPnl = "--";
+                let displayRoe = "--";
+                let pnlColor = 'var(--text-sec)';
+
+                if(pos.pair === activePair) {
+                    let pnl = (pos.side === 'buy') ? (livePrice - pos.entry) * pos.amount : (pos.entry - livePrice) * pos.amount;
+                    let roe = (pnl / pos.margin) * 100;
+                    displayPnl = pnl.toFixed(2);
+                    displayRoe = roe.toFixed(2) + "%";
+                    pnlColor = pnl >= 0 ? 'var(--up)' : 'var(--down)';
+                }
+
                 html += `
                     <div class="pos-card">
                         <div class="pos-header">
                             <b>${pos.pair} <span style="color:${pos.side==='buy'?'var(--up)':'var(--down)'}">${pos.side.toUpperCase()} ${pos.leverage}x</span></b>
-                            <button class="close-btn" onclick="closePos('${pos.firebaseKey}', ${pnl}, ${pos.margin})">Close</button>
+                            <button class="close-btn" onclick="closePos('${pos.firebaseKey}', ${displayPnl === "--" ? 0 : parseFloat(displayPnl)}, ${pos.margin})">Close</button>
                         </div>
                         <div style="display:grid; grid-template-columns: 1fr 1fr;">
-                            <div><small>PNL</small><div style="color:${pnl>=0?'var(--up)':'var(--down)'}">${pnl.toFixed(2)} (${roe.toFixed(2)}%)</div></div>
+                            <div><small>PNL</small><div style="color:${pnlColor}">${displayPnl} (${displayRoe})</div></div>
                             <div style="text-align:right"><small>Margin</small><div>${pos.margin.toFixed(2)}</div></div>
                             <div style="margin-top:5px;"><small>Entry Price</small><div>${parseFloat(pos.entry).toFixed(2)}</div></div>
                         </div>
                     </div>`;
             });
-            // Update only if data changed or content is empty
+            
             if(container.innerHTML !== html) {
                 container.innerHTML = html;
             }
@@ -354,6 +361,7 @@
 
         function closePos(key, pnl, margin) {
             if(!currentUserFirebaseKey) return;
+            // Balance logic remains safe
             db.ref(`users/${currentUserFirebaseKey}/balance`).set(userBalance + (margin + pnl));
             db.ref(`users/${currentUserFirebaseKey}/active_positions/${key}`).remove();
         }
