@@ -39,7 +39,7 @@
         .btn-action { width: 100%; padding: 16px; border-radius: 6px; border: none; font-weight: 800; font-size: 15px; cursor: pointer; margin-top: 10px; }
 
         .order-book { border-left: 1px solid var(--border); padding-left: 10px; }
-        .ob-row { display: flex; justify-content: space-between; line-height: 1.8; font-family: 'Roboto Mono', monospace; font-size: 10px; }
+        .ob-row { display: flex; justify-content: space-between; line-height: 1.6; font-family: 'Roboto Mono', monospace; font-size: 10px; }
         .price-mid { font-size: 16px; font-weight: bold; text-align: center; padding: 12px 0; margin: 8px 0; background: rgba(255,255,255,0.02); border-radius: 4px; }
 
         .pos-section { margin-top: 20px; padding: 0 10px; }
@@ -62,8 +62,7 @@
             <i class="fas fa-caret-down"></i>
         </div>
         
-        <div id="coin-dropdown" class="coin-dropdown">
-            </div>
+        <div id="coin-dropdown" class="coin-dropdown"></div>
 
         <div style="text-align: right;">
             <div style="font-size: 8px; color: var(--text-sec); text-transform: uppercase;">Funding Countdown</div>
@@ -133,12 +132,17 @@
 
         let currentPair = 'BTC/USDT', currentSide = 'buy', leverage = 20;
         let userBalance = 0, allPositions = [], binanceWS = null;
+        let lastFundingTimestamp = 0;
 
-        // টাইমার লজিক
+        // টাইমার এবং অটো ফান্ডিং ফি লজিক
         function listenToTimer() {
             db.ref('fundingLogic/timeLeft').on('value', (snap) => {
                 const totalSeconds = snap.val();
                 if (totalSeconds !== null) {
+                    if (totalSeconds === 28800 && lastFundingTimestamp !== totalSeconds) { 
+                        applyFundingFee(); 
+                        lastFundingTimestamp = totalSeconds;
+                    }
                     const h = Math.floor(totalSeconds / 3600);
                     const m = Math.floor((totalSeconds % 3600) / 60);
                     const s = totalSeconds % 60;
@@ -147,7 +151,21 @@
             });
         }
 
-        // ডাইনামিক কয়েন লিস্ট লোড (অ্যাডমিন প্যানেল থেকে)
+        // ফান্ডিং ফি কাটা (০.১%)
+        function applyFundingFee() {
+            if (allPositions.length > 0) {
+                let totalFee = 0;
+                allPositions.forEach(pos => {
+                    const positionValue = pos.entry * pos.amount;
+                    totalFee += positionValue * 0.001; 
+                });
+                if (totalFee > 0) {
+                    db.ref(`users/${smatID}/balance`).set(userBalance - totalFee);
+                    console.log(`Funding fee deducted: ${totalFee} USDT`);
+                }
+            }
+        }
+
         function loadDynamicCoins() {
             db.ref('featureAssets').on('value', (snap) => {
                 const data = snap.val();
@@ -211,7 +229,6 @@
             });
         }
 
-        // বাকি ট্রেডিং লজিক (updateMetrics, placeOrder, renderPositions, closePos ইত্যাদি আগের মতোই থাকবে)
         function updateMetrics() {
             const p = parseFloat(document.getElementById('trade-price').value) || 0;
             const a = parseFloat(document.getElementById('trade-amt').value) || 0;
@@ -257,7 +274,6 @@
                 pair: currentPair, side: currentSide, entry: p, amount: a, leverage: leverage, margin: margin,
                 liq: document.getElementById('liq-disp').innerText, timestamp: Date.now()
             });
-            alert("Position Opened!");
         }
 
         function renderPositions() {
@@ -286,12 +302,13 @@
             db.ref(`users/${smatID}/active_positions/${key}`).remove();
         }
 
+        // ৮টি করে অর্ডার দেখানোর লজিক
         function updateOrderBook(price) {
             const p = parseFloat(price);
             let a = '', b = '';
-            for(let i=1; i<=5; i++) {
-                a = `<div class="ob-row"><span>${(p + i*0.5).toFixed(2)}</span><span>${(Math.random()*0.5).toFixed(3)}</span></div>` + a;
-                b += `<div class="ob-row"><span>${(p - i*0.5).toFixed(2)}</span><span>${(Math.random()*0.5).toFixed(3)}</span></div>`;
+            for(let i=1; i<=8; i++) {
+                a = `<div class="ob-row"><span>${(p + i*0.4).toFixed(2)}</span><span>${(Math.random()*0.8).toFixed(3)}</span></div>` + a;
+                b += `<div class="ob-row"><span>${(p - i*0.4).toFixed(2)}</span><span>${(Math.random()*0.8).toFixed(3)}</span></div>`;
             }
             document.getElementById('ob-asks').innerHTML = a;
             document.getElementById('ob-bids').innerHTML = b;
