@@ -34,7 +34,7 @@
 
         .input-group { background: var(--input-bg); border: 1px solid var(--border); border-radius: 4px; padding: 10px; display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
         .input-group input { background: transparent; border: none; color: white; width: 60%; outline: none; font-size: 14px; text-align: right; font-weight: bold; }
-        input[type="range"] { width: 100%; accent-color: var(--primary); height: 5px; margin: 8px 0; }
+        input[type="range"] { width: 100%; accent-color: var(--primary); height: 5px; margin: 8px 0; cursor: pointer; }
 
         .metrics-box { background: rgba(255,255,255,0.03); padding: 12px; border-radius: 6px; border: 1px solid var(--border); margin-top: 5px; }
         .m-row { display: flex; justify-content: space-between; margin-bottom: 6px; color: var(--text-sec); font-size: 10px; }
@@ -50,6 +50,10 @@
         .pos-header { display: flex; justify-content: space-between; margin-bottom: 10px; border-bottom: 1px solid var(--border); padding-bottom: 8px; }
         .close-btn { background: #2b3139; color: #fff; border: 1px solid #474d57; padding: 6px 12px; border-radius: 4px; font-size: 10px; cursor: pointer; font-weight: bold; }
         
+        .pos-details { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 5px; margin-top: 5px; }
+        .pos-details div { font-size: 9px; }
+        .pos-details span { display: block; color: var(--text-main); font-weight: bold; font-size: 11px; margin-top: 2px; }
+
         .show-more-btn { width: 100%; padding: 12px; background: var(--card); border: 1px solid var(--border); color: var(--primary); font-weight: bold; border-radius: 6px; cursor: pointer; margin-bottom: 20px; }
 
         .footer { position: fixed; bottom: 0; width: 100%; height: 65px; background: #111418; display: flex; justify-content: space-around; align-items: center; border-top: 1px solid var(--border); z-index: 1000; }
@@ -96,7 +100,7 @@
                     <span style="color:var(--text-sec)">Leverage</span>
                     <b id="lev-label" style="color:var(--primary)">20x</b>
                 </div>
-                <input type="range" min="10" max="100" step="10" value="20" oninput="updateLev(this.value)">
+                <input type="range" min="1" max="100" step="1" value="20" oninput="updateLev(this.value)">
             </div>
             <div class="input-group"><span>Price</span><input type="number" id="trade-price" value="0.00" oninput="updateMetrics()"></div>
             <div class="input-group"><span>Amount</span><input type="number" id="trade-amt" placeholder="0.00" oninput="updateMetrics()"></div>
@@ -233,8 +237,6 @@
             binanceWS = new WebSocket(`wss://stream.binance.com:9443/ws/${symbol.toLowerCase()}@ticker`);
             binanceWS.onmessage = (event) => {
                 const data = JSON.parse(event.data);
-                
-                // % Change Logic
                 const change = parseFloat(data.P).toFixed(2);
                 const changeEl = document.getElementById('price-change-pc');
                 changeEl.innerText = (change >= 0 ? '+' : '') + change + '%';
@@ -315,7 +317,6 @@
             container.innerHTML = '';
             const livePrice = parseFloat(document.getElementById('live-price').innerText);
             
-            // Limit and Show More Logic
             const visiblePositions = allPositions.slice(0, historyLimit);
             if(allPositions.length > historyLimit) {
                 document.getElementById('show-more-btn').style.display = 'block';
@@ -332,9 +333,13 @@
                             <b>${pos.pair} <span style="color:${pos.side==='buy'?'var(--up)':'var(--down)'}">${pos.side.toUpperCase()} ${pos.leverage}x</span></b>
                             <button class="close-btn" onclick="closePos('${pos.firebaseKey}', ${pnl}, ${pos.margin})">Close</button>
                         </div>
-                        <div style="display:grid; grid-template-columns: 1fr 1fr;">
-                            <div><small>PNL</small><div style="color:${pnl>=0?'var(--up)':'var(--down)'}">${pnl.toFixed(2)} (${roe.toFixed(2)}%)</div></div>
-                            <div style="text-align:right"><small>Margin</small><div>${pos.margin.toFixed(2)}</div></div>
+                        <div style="display:grid; grid-template-columns: 1fr 1fr; margin-bottom: 8px;">
+                            <div><small style="color:var(--text-sec)">PNL (USDT)</small><div style="color:${pnl>=0?'var(--up)':'var(--down)'; font-weight:bold; font-size:13px;">${pnl.toFixed(2)} (${roe.toFixed(2)}%)</div></div>
+                        </div>
+                        <div class="pos-details">
+                            <div><small style="color:var(--text-sec)">Entry Price</small><span>${parseFloat(pos.entry).toFixed(2)}</span></div>
+                            <div><small style="color:var(--text-sec)">Liq. Price</small><span style="color:orange">${pos.liq}</span></div>
+                            <div><small style="color:var(--text-sec)">Margin</small><span>${parseFloat(pos.margin).toFixed(2)}</span></div>
                         </div>
                     </div>`;
             });
