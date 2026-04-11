@@ -1,0 +1,433 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>SMAT | Home</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@700;800;900&family=Inter:wght@400;600&display=swap" rel="stylesheet">
+    
+    <style>
+        :root {
+            --primary: #f3ba2f;
+            --bg: #0b0e11;
+            --card-bg: #1e2329;
+            --text-main: #eaecef;
+            --text-sec: #848e9c;
+            --up: #0ecb81;
+            --down: #f6465d;
+            --border: rgba(255, 255, 255, 0.08);
+            --font-bold: 'Montserrat', sans-serif;
+        }
+
+        * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+        body {
+            margin: 0; background: var(--bg); color: var(--text-main);
+            font-family: 'Inter', sans-serif; padding-bottom: 90px;
+            overflow-x: hidden;
+        }
+
+        /* --- Header --- */
+        .header {
+            padding: 15px 20px; display: flex; align-items: center; justify-content: space-between;
+            position: sticky; top: 0; background: var(--bg); z-index: 100;
+        }
+        .header-left i { font-size: 24px; color: var(--text-main); cursor: pointer; }
+        .header-title { font-family: var(--font-bold); font-size: 20px; font-weight: 900; }
+        .header-right { display: flex; gap: 18px; position: relative; }
+        .header-right i { font-size: 20px; color: var(--text-sec); cursor: pointer; }
+        .notif-badge {
+            position: absolute; top: -5px; right: -5px;
+            background: var(--down); color: white; font-size: 9px;
+            padding: 2px 5px; border-radius: 50%; display: none;
+        }
+
+        /* --- Sidebar --- */
+        .sidebar {
+            position: fixed; top: 0; left: -100%; width: 80%; max-width: 300px; height: 100%;
+            background: #181a20; z-index: 4000; transition: 0.4s; padding: 20px;
+            box-shadow: 20px 0 50px rgba(0,0,0,0.8); overflow-y: auto;
+        }
+        .sidebar.active { left: 0; }
+        .sidebar-overlay {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.7); display: none; z-index: 3500;
+        }
+
+        .side-user-box { background: var(--card-bg); padding: 15px; border-radius: 12px; margin-bottom: 15px; }
+        .side-label { font-size: 11px; color: var(--text-sec); margin-bottom: 4px; display: block; }
+        .side-val { font-weight: 700; font-size: 14px; word-break: break-all; }
+
+        .kyc-status-btn {
+            background: linear-gradient(135deg, #2b3139, #1e2329);
+            padding: 20px; border-radius: 15px; text-align: center;
+            border: 1px solid var(--border); margin: 15px 0; cursor: pointer;
+        }
+        .kyc-status-btn i { font-size: 30px; color: var(--primary); margin-bottom: 8px; }
+
+        .side-menu { margin-top: 25px; }
+        .menu-item {
+            display: flex; align-items: center; gap: 15px; padding: 14px 0;
+            text-decoration: none; color: var(--text-main); border-bottom: 1px solid var(--border);
+        }
+        .menu-item i { font-size: 18px; color: var(--primary); width: 25px; }
+        .menu-text b { display: block; font-size: 14px; }
+        .menu-text span { font-size: 11px; color: var(--text-sec); }
+
+        /* --- Portfolio Card --- */
+        .asset-card {
+            margin: 10px 20px; background: linear-gradient(135deg, #1e2329 0%, #0b0e11 100%);
+            padding: 20px; border-radius: 20px; border: 1px solid var(--border);
+            position: relative; overflow: hidden;
+        }
+        .asset-card::after {
+            content: ''; position: absolute; bottom: -10px; right: -10px;
+            width: 80px; height: 80px; background: var(--primary);
+            filter: blur(50px); opacity: 0.1;
+        }
+        .asset-label { font-size: 13px; color: var(--text-sec); display: flex; justify-content: space-between; }
+        .asset-balance { font-family: var(--font-bold); font-size: 28px; margin: 10px 0; }
+        .asset-pnl { font-size: 13px; font-weight: 600; color: var(--up); }
+
+        /* --- Market Section --- */
+        .market-header { 
+            width: 100%; padding: 15px 20px; 
+            background: linear-gradient(90deg, #1e2329, transparent);
+            font-family: var(--font-bold); font-size: 16px; letter-spacing: 1px;
+        }
+        .market-tabs { display: flex; padding: 0 20px; gap: 20px; margin: 10px 0; }
+        .tab { font-size: 14px; font-weight: 700; color: var(--text-sec); cursor: pointer; padding-bottom: 5px; }
+        .tab.active { color: var(--primary); border-bottom: 2px solid var(--primary); }
+
+        .list-header {
+            display: grid; grid-template-columns: 1.5fr 1fr 1fr;
+            padding: 10px 20px; font-size: 11px; color: var(--text-sec);
+            border-bottom: 1px solid var(--border);
+        }
+
+        .coin-row {
+            display: grid; grid-template-columns: 1.5fr 1fr 1fr;
+            padding: 15px 20px; align-items: center; border-bottom: 1px solid var(--border);
+        }
+        .coin-info { display: flex; align-items: center; gap: 10px; }
+        .coin-icon { width: 32px; height: 32px; border-radius: 50%; }
+        .coin-name { font-weight: 700; font-size: 14px; }
+        .coin-sym { font-size: 10px; color: var(--text-sec); }
+        .change-badge {
+            padding: 5px 8px; border-radius: 6px; font-weight: 700; font-size: 12px;
+            text-align: center; width: fit-content;
+        }
+
+        /* --- KYC Popup --- */
+        .popup-overlay {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.9); z-index: 5000; display: none;
+            justify-content: center; align-items: center; padding: 20px;
+        }
+        .popup-content {
+            background: #181a20; width: 100%; max-width: 400px; padding: 25px;
+            border-radius: 24px; max-height: 90vh; overflow-y: auto; border: 1px solid var(--primary);
+        }
+        .kyc-input-group { margin-bottom: 15px; }
+        .kyc-input-group label { display: block; font-size: 12px; color: var(--text-sec); margin-bottom: 5px; }
+        .kyc-input-group input {
+            width: 100%; background: #2b3139; border: 1px solid var(--border);
+            padding: 12px; border-radius: 10px; color: white;
+        }
+        .file-upload {
+            background: #2b3139; border: 1px dashed var(--primary);
+            padding: 15px; border-radius: 10px; text-align: center; cursor: pointer; margin-top: 5px;
+        }
+
+        /* --- Marquee --- */
+        .notice-bar { margin: 10px 20px; background: #1e2329; padding: 8px 12px; border-radius: 8px; display: flex; gap: 10px; font-size: 12px; }
+
+        /* --- Footer --- */
+        .footer { position: fixed; bottom: 0; width: 100%; height: 70px; background: #181a20; display: flex; justify-content: space-around; align-items: center; border-top: 1px solid var(--border); z-index: 3000; }
+        .f-nav { text-decoration: none; color: var(--text-sec); text-align: center; font-size: 10px; display: flex; flex-direction: column; }
+        .f-nav i { font-size: 20px; margin-bottom: 4px; }
+        .f-nav.active { color: var(--primary); }
+        .crash-btn { width: 55px; height: 55px; background: var(--primary); border-radius: 50%; color: black; font-weight: 900; display: flex; align-items: center; justify-content: center; margin-top: -30px; box-shadow: 0 5px 15px rgba(243,186,47,0.3); }
+
+        .spinner { animation: rotate 2s linear infinite; display: none; }
+        @keyframes rotate { 100% { transform: rotate(360deg); } }
+    </style>
+</head>
+<body>
+
+    <div class="sidebar-overlay" id="sidebarOverlay" onclick="closeSidebar()"></div>
+
+    <div class="sidebar" id="sidebar">
+        <div class="side-user-box">
+            <span class="side-label">LogIn Gmail</span>
+            <div class="side-val" id="userEmail">Not Logged In</div>
+        </div>
+        <div class="side-user-box">
+            <span class="side-label">Your SMAT ID</span>
+            <div class="side-val" id="displaySmatID" style="color:var(--primary)">--------</div>
+        </div>
+
+        <div class="kyc-status-btn" id="kycBtn" onclick="openKYC()">
+            <i class="fa-solid fa-id-card"></i>
+            <div id="kycStatusText" style="font-weight:bold">Click Here</div>
+            <div style="font-size:10px; color:var(--text-sec)">Identity Verification</div>
+        </div>
+
+        <div class="side-menu">
+            <a href="mining.html" class="menu-item"><i class="fa-solid fa-pickaxe"></i><div class="menu-text"><b>Mining</b><span>Earn SMAT daily</span></div></a>
+            <a href="crash.html" class="menu-item"><i class="fa-solid fa-dice"></i><div class="menu-text"><b>Crash Casino</b><span>Play and Win</span></div></a>
+            <a href="prediction.html" class="menu-item"><i class="fa-solid fa-chart-line"></i><div class="menu-text"><b>Prediction Market</b><span>Predict Price</span></div></a>
+            <a href="paper.html" class="menu-item"><i class="fa-solid fa-file-lines"></i><div class="menu-text"><b>Whitepaper</b><span>Project Details</span></div></a>
+            <a href="explore.html" class="menu-item"><i class="fa-solid fa-cubes"></i><div class="menu-text"><b>SMAT Blockchain</b><span>Explorer</span></div></a>
+        </div>
+
+        <div style="margin-top: 40px; text-align: center;">
+            <i class="fa-solid fa-power-off" style="color:var(--down); font-size:24px; cursor:pointer" onclick="logout()"></i>
+        </div>
+    </div>
+
+    <div class="popup-overlay" id="kycPopup">
+        <div class="popup-content">
+            <div style="display:flex; justify-content:space-between; margin-bottom:20px">
+                <h3 style="margin:0">Verify Identity</h3>
+                <i class="fa-solid fa-xmark" onclick="closeKYC()" style="cursor:pointer"></i>
+            </div>
+            
+            <div id="kycForm">
+                <div class="kyc-input-group"><label>Real Name</label><input type="text" id="realName" placeholder="As per NID"></div>
+                <div class="kyc-input-group"><label>NID Number</label><input type="number" id="nidNumber" placeholder="ID Number"></div>
+                <div class="kyc-input-group"><label>NID Front</label><div class="file-upload" onclick="document.getElementById('f1').click()">Upload Front</div><input type="file" id="f1" hidden></div>
+                <div class="kyc-input-group"><label>NID Back</label><div class="file-upload" onclick="document.getElementById('f2').click()">Upload Back</div><input type="file" id="f2" hidden></div>
+                <div class="kyc-input-group"><label>Hold NID with Picture</label><div class="file-upload" onclick="document.getElementById('f3').click()">Upload Selfie</div><input type="file" id="f3" hidden></div>
+                
+                <button id="kycSubmitBtn" onclick="handleKYCSubmit()" style="width:100%; padding:15px; background:var(--primary); border:none; border-radius:12px; font-weight:bold; margin-top:10px">Submit Verification</button>
+            </div>
+
+            <div id="kycProcessing" style="text-align:center; display:none; padding:20px">
+                <i class="fa-solid fa-circle-notch fa-spin" style="font-size:40px; color:var(--primary)"></i>
+                <p style="margin-top:15px; color:var(--primary); font-weight:bold">KYC Processing...</p>
+                <p style="font-size:11px; color:var(--text-sec)">It may take up to 72 hours to verify. Do not submit again.</p>
+            </div>
+        </div>
+    </div>
+
+    <div class="header">
+        <div class="header-left"><i class="fa-solid fa-bars-staggered" onclick="openSidebar()"></i></div>
+        <div class="header-title">SMAT <span style="color:var(--primary)">EXCHANGE</span></div>
+        <div class="header-right">
+            <a href="chat.html"><i class="fa-solid fa-comment-dots"></i></a>
+            <i class="fa-solid fa-bell" onclick="showNotif()"></i>
+            <div class="notif-badge" id="notifBadge">@</div>
+        </div>
+    </div>
+
+    <div class="asset-card">
+        <div class="asset-label">Portfolio Assets <i class="fa-solid fa-eye" style="font-size:12px"></i></div>
+        <div class="asset-balance">$ <span id="totalBalance">0.00</span></div>
+        <div class="asset-pnl" id="pnlDisplay">+$0.00 (0.00%)</div>
+    </div>
+
+    <div class="notice-bar">
+        <i class="fa-solid fa-bullhorn" style="color:var(--primary)"></i>
+        <marquee id="marqueeText">Welcome to SMAT CEX! KYC verification is now open. Trading starts soon.</marquee>
+    </div>
+
+    <div class="market-header">REAL MARKET HISTORY</div>
+    <div class="market-tabs">
+        <div class="tab active" onclick="switchTab(this, 'hot')">HOT</div>
+        <div class="tab" onclick="switchTab(this, 'gainer')">GANINER</div>
+        <div class="tab" onclick="switchTab(this, 'loser')">LOSSER</div>
+        <div class="tab" onclick="switchTab(this, 'new')">NEW</div>
+    </div>
+
+    <div class="list-header">
+        <span>Name and Symbol</span>
+        <span style="text-align:center">24Hours Change</span>
+        <span style="text-align:right">Volume</span>
+    </div>
+
+    <div id="coinContainer">
+        </div>
+
+    <footer class="footer">
+        <a href="home.html" class="f-nav active"><i class="fas fa-home"></i>Home</a>
+        <a href="Trade.html" class="f-nav"><i class="fas fa-chart-line"></i>Trade</a>
+        <a href="Crash.html" class="crash-btn">CRASH</a>
+        <a href="Explorer.html" class="f-nav"><i class="fas fa-compass"></i>Explore</a>
+        <a href="Wallet.html" class="f-nav"><i class="fas fa-wallet"></i>Wallet</a>
+    </footer>
+
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+        import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+        import { getDatabase, ref, onValue, update } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
+
+        // Firebase Configuration (Using your previous config)
+        const firebaseConfig = {
+            apiKey: "AIzaSyAMxtJedkehhxJRMPZLjhpKHqneHEWsGlE",
+            authDomain: "smat-exchange.firebaseapp.com",
+            projectId: "smat-exchange",
+            storageBucket: "smat-exchange.firebasestorage.app",
+            messagingSenderId: "836334569396",
+            appId: "1:836334569396:web:679effe640b3453412d4e1"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+        const db = getDatabase(app);
+
+        let currentTab = 'hot';
+
+        // --- Auth & User Data ---
+        onAuthStateChanged(auth, (user) => {
+            if (user) {
+                document.getElementById('userEmail').innerText = user.email;
+                const userRef = ref(db, 'users/' + user.uid);
+                onValue(userRef, (snapshot) => {
+                    const data = snapshot.val();
+                    if (data) {
+                        document.getElementById('displaySmatID').innerText = data.smatID || "Assigning...";
+                        updateKYCUI(data.kycStatus);
+                        // Total Balance Update (Logic from previous file)
+                        document.getElementById('totalBalance').innerText = (data.balance || 0).toFixed(2);
+                    }
+                });
+            } else {
+                window.location.href = 'logIn.html';
+            }
+        });
+
+        function updateKYCUI(status) {
+            const btnText = document.getElementById('kycStatusText');
+            const kycBtn = document.getElementById('kycBtn');
+            const processing = document.getElementById('kycProcessing');
+            const form = document.getElementById('kycForm');
+
+            if(status === 'verified') {
+                btnText.innerText = "Verified ✅";
+                btnText.style.color = "var(--up)";
+                kycBtn.onclick = null;
+            } else if(status === 'pending') {
+                btnText.innerText = "Processing...";
+                btnText.style.color = "var(--primary)";
+                form.style.display = 'none';
+                processing.style.display = 'block';
+            } else if(status === 'rejected') {
+                btnText.innerText = "Rejected (Retry)";
+                btnText.style.color = "var(--down)";
+            } else {
+                btnText.innerText = "Click Here";
+            }
+        }
+
+        // --- Market Logic ---
+        const marketRef = ref(db, 'market');
+        onValue(marketRef, (snapshot) => {
+            const data = snapshot.val();
+            if (data) {
+                window.marketData = data;
+                renderCoins();
+            }
+        });
+
+        window.switchTab = (el, type) => {
+            document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+            el.classList.add('active');
+            currentTab = type;
+            renderCoins();
+        };
+
+        function renderCoins() {
+            const container = document.getElementById('coinContainer');
+            if (!window.marketData) return;
+
+            let coins = Object.keys(window.marketData).map(key => ({
+                sym: key,
+                ...window.marketData[key]
+            }));
+
+            // ক্যাটেগরি অনুযায়ী সর্টিং (আগের লজিক)
+            if (currentTab === 'gainer') coins.sort((a,b) => b.priceChange - a.priceChange);
+            else if (currentTab === 'loser') coins.sort((a,b) => a.priceChange - b.priceChange);
+            else if (currentTab === 'new') coins.sort((a,b) => b.listedAt - a.listedAt);
+            
+            // প্রতি ট্যাবে ৫টি কয়েন
+            const displayCoins = coins.slice(0, 5);
+            
+            container.innerHTML = displayCoins.map(coin => {
+                const isUp = coin.priceChange >= 0;
+                const vol = coin.volume || "0.00";
+                return `
+                    <div class="coin-row" onclick="window.location.href='Trade.html?coin=${coin.sym.toLowerCase()}'">
+                        <div class="coin-info">
+                            <img src="assets/logos/${coin.sym.toLowerCase()}.png" class="coin-icon" onerror="this.src='https://via.placeholder.com/32'">
+                            <div>
+                                <div class="coin-name">${coin.sym.toUpperCase()}/USDT</div>
+                                <div class="coin-sym">${coin.name || ''}</div>
+                            </div>
+                        </div>
+                        <div style="display:flex; justify-content:center">
+                            <div class="change-badge" style="background:${isUp ? 'rgba(14,203,129,0.15)' : 'rgba(246,70,93,0.15)'}; color:${isUp ? 'var(--up)' : 'var(--down)'}">
+                                ${isUp ? '+' : ''}${coin.priceChange}%
+                            </div>
+                        </div>
+                        <div style="text-align:right; font-weight:600; font-size:13px">
+                            $${parseFloat(vol).toLocaleString()}
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        // --- KYC Handle ---
+        window.handleKYCSubmit = async () => {
+            const user = auth.currentUser;
+            const name = document.getElementById('realName').value;
+            const nid = document.getElementById('nidNumber').value;
+            
+            if(!name || !nid) return alert("Fill all details");
+
+            document.getElementById('kycForm').style.display = 'none';
+            document.getElementById('kycProcessing').style.display = 'block';
+
+            try {
+                // এখানে আপনার আগের ImgBB আপলোড লজিক কাজ করবে
+                // সিম্পল ডেমো হিসেবে ডাটাবেস আপডেট:
+                await update(ref(db, 'users/' + user.uid), {
+                    kycStatus: 'pending',
+                    realName: name,
+                    nidNumber: nid,
+                    submittedAt: Date.now()
+                });
+            } catch (e) {
+                alert("Submission failed!");
+                document.getElementById('kycForm').style.display = 'block';
+                document.getElementById('kycProcessing').style.display = 'none';
+            }
+        };
+
+        // --- Global Helpers ---
+        window.openSidebar = () => {
+            document.getElementById('sidebar').classList.add('active');
+            document.getElementById('sidebarOverlay').style.display = 'block';
+        };
+        window.closeSidebar = () => {
+            document.getElementById('sidebar').classList.remove('active');
+            document.getElementById('sidebarOverlay').style.display = 'none';
+        };
+        window.openKYC = () => { document.getElementById('kycPopup').style.display = 'flex'; };
+        window.closeKYC = () => { document.getElementById('kycPopup').style.display = 'none'; };
+        window.logout = () => { signOut(auth).then(() => location.reload()); };
+
+        // Notification logic
+        window.showNotif = () => {
+            document.getElementById('notifBadge').style.display = 'none';
+            alert("Latest Notice: Trading pair SMAT/USDT listing in 48 hours!");
+        };
+        
+        // ডেমো নোটিফিকেশন চেক
+        setTimeout(() => { document.getElementById('notifBadge').style.display = 'block'; }, 2000);
+
+    </script>
+</body>
+</html>
