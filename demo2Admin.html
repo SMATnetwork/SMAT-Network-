@@ -197,6 +197,24 @@
         if(u) sync();
     });
 
+// ফাণ্ডিং টাইমার লজিক (প্রতি সেকেন্ডে ১ কমাবে)
+function startFundingTimer() {
+    const timerRef = db.ref('fundingLogic/timeLeft');
+    
+    setInterval(() => {
+        timerRef.transaction((currentValue) => {
+            if (currentValue === null || currentValue <= 0) {
+                return 28800; // ৮ ঘণ্টা (২৮৮০০ সেকেন্ড) পর আবার রিসেট হবে
+            } else {
+                return currentValue - 1;
+            }
+        });
+    }, 1000);
+}
+
+// অ্যাডমিন প্যানেল ওপেন হলেই টাইমার স্টার্ট হবে
+startFundingTimer();
+
     window.switchTab = (tab, el) => {
         document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
         document.querySelectorAll('.footer-item').forEach(i => i.classList.remove('active'));
