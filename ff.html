@@ -140,13 +140,13 @@
     let currentPair = 'BTC/USDT', currentSide = 'buy', leverage = 20;
     let userBalance = 0, allPositions = [], binanceWS = null;
     let currentUserFirebaseKey = null;
-    let globalPrices = {}; // এখানে সব কয়েনের প্রাইস থাকবে
+    let globalPrices = {}; 
 
     function initListeners() {
-        // ১. সরাসরি ডাটাবেস থেকে লাইভ প্রাইস শোনা
+        // ১. ডাটাবেস থেকে গ্লোবাল প্রাইস রিড করা
         db.ref('livePrices').on('value', (snap) => {
             globalPrices = snap.val() || {};
-            renderPositions(); // প্রাইস আপডেট হলেই PNL আপডেট হবে
+            renderPositions(); 
         });
 
         db.ref('users').on('value', (snap) => {
@@ -169,14 +169,13 @@
         });
     }
 
-    // পজিশন রেন্ডার করার জন্য উন্নত লজিক
     function renderPositions() {
         const container = document.getElementById('pos-container');
         let html = '';
 
         allPositions.forEach(pos => {
             const symbol = pos.pair.replace('/', '') + "USDT";
-            const currentPrice = globalPrices[symbol] || 0; // globalPrices থেকে ডাটা নেয়া হচ্ছে
+            const currentPrice = globalPrices[symbol] || 0; 
 
             let pnl = 0, roe = 0, pnlColor = 'var(--text-sec)', displayPnl = "Updating...", displayRoe = "";
 
@@ -191,26 +190,45 @@
             html += `
                 <div class="pos-card">
                     <div class="pos-header">
-                        <b>${pos.pair} <span style="color:${pos.side==='buy'?'var(--up)':'var(--down)'}">${pos.side.toUpperCase()} ${pos.leverage}x</span></b>
-                        <button class="close-btn" onclick="closePos('${pos.firebaseKey}', ${currentPrice > 0 ? pnl : 0}, ${pos.margin})">Close</button>
+                        <b>\${pos.pair} <span style="color:\${pos.side==='buy'?'var(--up)':'var(--down)'}">\${pos.side.toUpperCase()} \${pos.leverage}x</span></b>
+                        <button class="close-btn" onclick="closePos('\${pos.firebaseKey}', \${currentPrice > 0 ? pnl : 0}, \${pos.margin})">Close</button>
                     </div>
                     <div style="display:grid; grid-template-columns: 1fr 1fr; gap: 8px;">
-                        <div><small style="color:var(--text-sec)">PNL (USDT)</small><div style="color:${pnlColor}; font-weight:bold;">${displayPnl} ${displayRoe}</div></div>
-                        <div style="text-align:right"><small style="color:var(--text-sec)">Margin</small><div>${pos.margin.toFixed(2)}</div></div>
-                        <div style="margin-top:5px;"><small style="color:var(--text-sec)">Entry Price</small><div>${parseFloat(pos.entry).toFixed(pos.entry < 1 ? 4 : 2)}</div></div>
-                        <div style="margin-top:5px; text-align:right"><small style="color:var(--text-sec)">Liq. Price</small><div style="color:orange">${pos.liq}</div></div>
+                        <div><small style="color:var(--text-sec)">PNL (USDT)</small><div style="color:\${pnlColor}; font-weight:bold;">\${displayPnl} \${displayRoe}</div></div>
+                        <div style="text-align:right"><small style="color:var(--text-sec)">Margin</small><div>\${pos.margin.toFixed(2)}</div></div>
+                        <div style="margin-top:5px;"><small style="color:var(--text-sec)">Entry Price</small><div>\${parseFloat(pos.entry).toFixed(pos.entry < 1 ? 4 : 2)}</div></div>
+                        <div style="margin-top:5px; text-align:right"><small style="color:var(--text-sec)">Liq. Price</small><div style="color:orange">\${pos.liq}</div></div>
                     </div>
                 </div>`;
         });
         container.innerHTML = html || '<div style="text-align:center; padding:20px; color:var(--text-sec)">No active positions</div>';
     }
 
-    // বাকি সব ফাংশন (connectBinance, placeOrder ইত্যাদি) আগের মতোই থাকবে।
-    // শুধুমাত্র connectBinance-এ live-price এলিমেন্ট আপডেট নিশ্চিত করুন।
+    function loadDynamicCoins() {
+        db.ref('featureAssets').on('value', (snap) => {
+            const data = snap.val();
+            const dropdown = document.getElementById('coin-dropdown');
+            dropdown.innerHTML = '';
+            if(data) {
+                Object.keys(data).forEach(key => {
+                    const coin = data[key];
+                    dropdown.innerHTML += `<div class="coin-item" onclick="selectCoin('\${coin.symbol}', '\${coin.name}', '\${coin.logo}')"><img src="assets/logos/\${coin.logo}" class="coin-logo"> \${coin.name}</div>`;
+                });
+            }
+        });
+    }
+
+    function selectCoin(symbol, display, logo) {
+        currentPair = display;
+        document.getElementById('active-logo').src = `assets/logos/\${logo}`;
+        document.getElementById('active-pair').innerText = display;
+        connectBinance(symbol);
+        toggleDropdown();
+    }
 
     function connectBinance(symbol) {
         if (binanceWS) binanceWS.close();
-        binanceWS = new WebSocket(`wss://stream.binance.com:9443/ws/${symbol.toLowerCase()}@ticker`);
+        binanceWS = new WebSocket(`wss://stream.binance.com:9443/ws/\${symbol.toLowerCase()}@ticker`);
         binanceWS.onmessage = (event) => {
             const data = JSON.parse(event.data);
             const price = parseFloat(data.c).toFixed(symbol.includes('DOGE') || symbol.includes('TRX') ? 4 : 2);
@@ -223,9 +241,67 @@
         };
     }
 
-    // আগের বাকি ফাংশনগুলো এখানে থাকবে...
+    function updateMetrics() {
+        const p = parseFloat(document.getElementById('trade-price').value) || 0;
+        const a = parseFloat(document.getElementById('trade-amt').value) || 0;
+        const margin = (p * a) / leverage;
+        const fee = (p * a) * 0.001;
+        document.getElementById('cost-disp').innerText = margin.toFixed(2) + " USDT";
+        document.getElementById('fee-disp').innerText = fee.toFixed(2) + " USDT";
+        if(a > 0) {
+            let liq = (currentSide === 'buy') ? p * (1 - (0.9/leverage)) : p * (1 + (0.9/leverage));
+            document.getElementById('liq-disp').innerText = liq.toFixed(p < 1 ? 4 : 2);
+        } else { document.getElementById('liq-disp').innerText = "--"; }
+    }
+
+    function placeOrder() {
+        const p = parseFloat(document.getElementById('trade-price').value);
+        const a = parseFloat(document.getElementById('trade-amt').value);
+        if(!a || a <= 0) return alert("Enter valid amount");
+        const margin = (p * a) / leverage;
+        const fee = (p * a) * 0.001;
+        if((margin + fee) > userBalance) return alert("Insufficient Balance!");
+
+        db.ref(`users/\${currentUserFirebaseKey}/balance`).set(userBalance - (margin + fee));
+        db.ref(`users/\${currentUserFirebaseKey}/active_positions`).push({
+            pair: currentPair, side: currentSide, entry: p, amount: a, leverage: leverage, margin: margin,
+            liq: document.getElementById('liq-disp').innerText, timestamp: Date.now()
+        });
+    }
+
+    function closePos(key, pnl, margin) {
+        db.ref(`users/\${currentUserFirebaseKey}/balance`).set(userBalance + (margin + pnl));
+        db.ref(`users/\${currentUserFirebaseKey}/active_positions/\${key}`).remove();
+    }
+
+    function toggleDropdown() {
+        const dp = document.getElementById('coin-dropdown');
+        dp.style.display = dp.style.display === 'block' ? 'none' : 'block';
+    }
+
+    function setSide(s) {
+        currentSide = s;
+        document.querySelectorAll('.side-btn').forEach(b => b.classList.remove('active'));
+        const btn = document.getElementById('main-btn');
+        if(s === 'buy') {
+            document.querySelector('.side-btn.buy').classList.add('active');
+            btn.style.background = "var(--up)"; btn.innerText = "Open Long";
+        } else {
+            document.querySelector('.side-btn.sell').classList.add('active');
+            btn.style.background = "var(--down)"; btn.innerText = "Open Short";
+        }
+        updateMetrics();
+    }
+
+    function updateLev(val) {
+        leverage = parseInt(val);
+        document.getElementById('lev-label').innerText = val + 'x';
+        updateMetrics();
+    }
+
     window.onload = () => { initListeners(); loadDynamicCoins(); connectBinance('btcusdt'); };
 </script>
+
 
 </body>
 </html>
