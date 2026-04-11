@@ -434,64 +434,78 @@
             renderCoins();
         };
 
-        function renderCoins() {
-    const container = document.getElementById('coinList');
+        function renderCoins(filter = 'hot') {
+    const container = document.getElementById('coinList'); // আপনার UI অনুযায়ী ID 'coinList' বা 'coinContainer' নিশ্চিত করুন
+    if (!container) return;
     
-    // আপনার ফাইল অনুযায়ী ডাটা সোর্স (ধরে নিচ্ছি এটি window.marketData তে আছে)
-    const coinData = window.marketData; 
-    if (!coinData) return;
-
-    // ১. আপনার ফাইলের লজিক: অবজেক্ট থেকে কি (Key) গুলো নিয়ে লুপ চালানো
-    let coinKeys = Object.keys(coinData);
-
-    // ২. ফিল্টারিং এবং সর্টিং লজিক (আপনার ফাইল থেকে নেওয়া)
-    const now = Date.now();
-    const threeDaysMs = 3 * 24 * 60 * 60 * 1000;
-
-    if (activeTab === 'gainer') {
-        coinKeys.sort((a, b) => parseFloat(coinData[b].change) - parseFloat(coinData[a].change));
-    } else if (activeTab === 'loser') {
-        coinKeys.sort((a, b) => parseFloat(coinData[a].change) - parseFloat(coinData[b].change));
-    } else if (activeTab === 'new') {
-        coinKeys = coinKeys.filter(key => (now - coinData[key].listedAt) < threeDaysMs);
+    // আপনার ফাইল অনুযায়ী ডাটা সোর্স
+    const liveData = getMarketData(); 
+    if (!liveData || liveData.length === 0) {
+        container.innerHTML = `<p style="text-align:center; color:var(--text-sec); margin-top:20px;">No coins found.</p>`;
+        return;
     }
 
-    container.innerHTML = coinKeys.map(key => {
-        const coin = coinData[key];
-        const sym = key.toUpperCase();
+    let filtered = [];
+
+    // ১. আপনার ফাইলের হুবহু সর্টিং লজিক
+    if (filter === 'hot') {
+        filtered = [...liveData].sort((a, b) => {
+            let volA = parseFloat(window[a.sym.toLowerCase() + "Vol"]) || 0;
+            let volB = parseFloat(window[b.sym.toLowerCase() + "Vol"]) || 0;
+            return volB - volA;
+        }).slice(0, 10);
+    } else if (filter === 'gainer') {
+        filtered = [...liveData].sort((a, b) => {
+            let priceA = window[a.sym.toLowerCase() + "Val"] || a.price;
+            let priceB = window[b.sym.toLowerCase() + "Val"] || b.price;
+            return (priceB - b.price) - (priceA - a.price);
+        });
+    } else if (filter === 'loser') {
+        filtered = [...liveData].sort((a, b) => {
+            let priceA = window[a.sym.toLowerCase() + "Val"] || a.price;
+            let priceB = window[b.sym.toLowerCase() + "Val"] || b.price;
+            return (priceA - a.price) - (priceB - b.price);
+        });
+    } else if (filter === 'new') {
+        filtered = [...liveData].slice(-5).reverse();
+    }
+
+    let htmlContent = '';
+    
+    // ২. আপনার ফাইলের ডিসপ্লে লজিক
+    filtered.forEach(coin => {
+        // currentPrice এবং change ক্যালকুলেশন (আপনার ফাইল থেকে নেওয়া)
+        const currentPrice = window[coin.sym.toLowerCase() + "Val"] || coin.price || 0;
+        const startPrice = coin.price || currentPrice;
         
-        // ৩. "Undefined" দূর করার আসল লজিক (আপনার ফাইলের ভ্যারিয়েবল নাম অনুযায়ী)
-        // আপনার ফাইলে 'price' এবং 'change' নাম ব্যবহার করা হয়েছে
-        const displayPrice = coin.price || "0.00"; 
-        const displayChange = coin.change || "0.00"; 
-        const fullName = coin.name || "Crypto Asset"; // নামের নিচের undefined দূর করতে
+        // পারসেন্টেজ ক্যালকুলেশন লজিক
+        const change = startPrice !== 0 ? ((currentPrice - startPrice) / startPrice * 100).toFixed(2) : "0.00";
+        const isUp = parseFloat(change) >= 0;
+        const logoSrc = `assets/logos/${coin.sym.toLowerCase()}.png`;
 
-        const isUp = parseFloat(displayChange) >= 0;
-        const isNew = (now - coin.listedAt) < threeDaysMs;
-
-        return `
-            <div class="coin-row" onclick="if(checkAuth(event)) window.location.href='Trade.html?coin=${key.toLowerCase()}'">
-                <div class="coin-meta">
-                    <img src="assets/logos/${key.toLowerCase()}.png" class="coin-icon" onerror="this.src='https://via.placeholder.com/40?text=${sym[0]}'">
-                    <div class="coin-name-sym">
-                        <b>
-                            ${sym}/USDT
-                            ${isNew ? '<span class="status-badge status-verified" style="font-size:8px; padding:2px 4px; margin-left:4px">NEW</span>' : ''}
-                        </b>
-                        <span style="color:var(--text-sec)">${fullName}</span> 
+        htmlContent += `
+            <div class="coin-row" onclick="if(checkAuth(event)) window.location.href='Trade.html?coin=${coin.sym}'">
+                <div style="display:flex; align-items:center; gap:12px;">
+                    <img src="${logoSrc}" class="coin-icon" onerror="this.src='https://via.placeholder.com/40?text=${coin.sym[0].toUpperCase()}'">
+                    <div>
+                        <div style="font-weight:bold; color:white;">${coin.sym.toUpperCase()}/USDT</div>
+                        <div style="font-size:12px; color:var(--text-sec)">${coin.name || 'Crypto Asset'}</div>
                     </div>
                 </div>
-                <div class="price-col">
-                    <span class="price">$${parseFloat(displayPrice).toLocaleString(undefined, {minimumFractionDigits: 2})}</span>
-                    <div class="percent-box" style="background:${isUp ? 'rgba(14, 203, 129, 0.15)' : 'rgba(246, 70, 93, 0.15)'}; color:${isUp ? 'var(--up)' : 'var(--down)'}">
-                        ${isUp ? '+' : ''}${displayChange}%
+                <div style="text-align:right">
+                    <div style="font-weight:bold; font-size:16px; color:white;">
+                        $${parseFloat(currentPrice).toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 4})}
+                    </div>
+                    <div class="percent-box" style="background:${isUp ? 'rgba(14, 203, 129, 0.15)' : 'rgba(246, 70, 93, 0.15)'}; color:${isUp ? 'var(--up)' : 'var(--down)'}; padding: 2px 6px; border-radius: 4px; display: inline-block; font-size: 12px;">
+                        ${isUp ? '+' : ''}${change}%
                     </div>
                 </div>
-                <div style="text-align:right; font-size:12px; font-weight:600; color:var(--text-sec)">
-                    $${parseFloat(coin.volume || 0).toLocaleString()}
-                </div>
-            </div>`;
-    }).join('');
+            </div>
+        `;
+    });
+
+    container.innerHTML = htmlContent;
+    if (typeof updatePortfolio === 'function') updatePortfolio(); 
 }
 
 
