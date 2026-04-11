@@ -3,248 +3,11 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>SMAT | Home</title>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
-    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@700;800;900&family=Inter:wght@400;600&display=swap" rel="stylesheet">
+    <title>SMAT | Home </title>
     <script src="coin.js"></script>
-
-    <style>
-        :root {
-            --primary: #f3ba2f;
-            --bg: #0b0e11;
-            --card-bg: #1e2329;
-            --text-main: #eaecef;
-            --text-sec: #848e9c;
-            --up: #0ecb81;
-            --down: #f6465d;
-            --border: rgba(255, 255, 255, 0.08);
-            --font-bold: 'Montserrat', sans-serif;
-        }
-
-        * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; outline: none; }
-        body {
-            margin: 0; background: var(--bg); color: var(--text-main);
-            font-family: 'Inter', sans-serif; padding-bottom: 90px; overflow-x: hidden;
-        }
-
-        /* --- Header --- */
-        .header {
-            padding: 15px 20px; display: flex; align-items: center; justify-content: space-between;
-            position: sticky; top: 0; background: var(--bg); z-index: 100;
-        }
-        .profile-trigger { font-size: 26px; color: var(--primary); cursor: pointer; }
-        .header-title { font-family: var(--font-bold); font-size: 20px; font-weight: 900; }
-        .header-right { display: flex; gap: 15px; position: relative; align-items: center; }
-        .header-right i { font-size: 20px; color: var(--text-sec); cursor: pointer; }
-        .notif-badge {
-            position: absolute; top: -5px; right: -5px; background: var(--down);
-            color: white; font-size: 9px; padding: 2px 5px; border-radius: 50%; display: none;
-        }
-
-        /* --- Sidebar & Overlay --- */
-        .sidebar {
-            position: fixed; top: 0; left: -100%; width: 85%; max-width: 320px; height: 100%;
-            background: #181a20; z-index: 4000; transition: 0.4s; padding: 25px;
-            box-shadow: 20px 0 50px rgba(0,0,0,0.8); overflow-y: auto;
-        }
-        .sidebar.active { left: 0; }
-        .sidebar-overlay {
-            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(0,0,0,0.8); display: none; z-index: 3500;
-        }
-
-        /* --- Sidebar Items --- */
-        .side-user-box { background: var(--card-bg); padding: 15px; border-radius: 12px; margin-bottom: 12px; }
-        .side-label { font-size: 11px; color: var(--text-sec); margin-bottom: 4px; display: block; }
-        .side-val { font-weight: 700; font-size: 14px; word-break: break-all; }
-        
-        .kyc-status-card {
-            background: linear-gradient(135deg, #2b3139, #1e2329);
-            padding: 18px; border-radius: 15px; text-align: center;
-            border: 1px solid var(--border); margin: 15px 0; cursor: pointer;
-        }
-        .kyc-status-card i { font-size: 28px; color: var(--primary); margin-bottom: 8px; }
-
-        .menu-item {
-            display: flex; align-items: center; gap: 15px; padding: 12px 0;
-            text-decoration: none; color: var(--text-main); border-bottom: 1px solid var(--border);
-        }
-        .menu-item i { font-size: 18px; color: var(--primary); width: 25px; }
-        .menu-text b { display: block; font-size: 14px; }
-        .menu-text span { font-size: 10px; color: var(--text-sec); }
-
-        /* --- Popup Common --- */
-        .popup-overlay {
-            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(0,0,0,0.95); z-index: 5000; display: none;
-            justify-content: center; align-items: center; padding: 20px;
-        }
-        .popup-content {
-            background: #181a20; width: 100%; max-width: 400px; padding: 25px;
-            border-radius: 24px; border: 1px solid var(--border); max-height: 90vh; overflow-y: auto;
-        }
-
-        /* --- Asset Card --- */
-        .asset-card {
-            margin: 15px 20px; background: linear-gradient(135deg, #1e2329 0%, #0b0e11 100%);
-            padding: 25px; border-radius: 20px; border: 1px solid var(--border);
-        }
-        .asset-balance { font-family: var(--font-bold); font-size: 30px; margin: 10px 0; color: var(--primary); }
-        
-        /* --- Market List --- */
-        .market-tabs { display: flex; padding: 0 20px; gap: 20px; margin-top: 15px; border-bottom: 1px solid var(--border); }
-        .tab { font-size: 14px; font-weight: 700; color: var(--text-sec); cursor: pointer; padding-bottom: 10px; }
-        .tab.active { color: var(--primary); border-bottom: 3px solid var(--primary); }
-
-        .coin-row {
-            display: flex; justify-content: space-between; align-items: center;
-            padding: 15px 20px; border-bottom: 1px solid rgba(255,255,255,0.03);
-        }
-        .coin-icon { width: 38px; height: 38px; border-radius: 50%; }
-        .percent-badge {
-            padding: 5px 10px; border-radius: 6px; font-weight: 700; font-size: 12px;
-            width: 75px; text-align: center; margin-top: 4px;
-        }
-
-        /* --- Footer --- */
-        .footer { position: fixed; bottom: 0; width: 100%; height: 75px; background: #181a20; display: flex; justify-content: space-around; align-items: center; border-top: 1px solid var(--border); z-index: 3000; }
-        .f-nav { text-decoration: none; color: var(--text-sec); text-align: center; font-size: 10px; flex: 1; display: flex; flex-direction: column; align-items: center; }
-        .f-nav i { font-size: 22px; margin-bottom: 5px; }
-        .f-nav.active { color: var(--primary); }
-        .crash-link { width: 60px; height: 60px; background: var(--primary); border-radius: 50%; color: black; font-weight: 900; display: flex; align-items: center; justify-content: center; text-decoration: none; margin-top: -30px; box-shadow: 0 5px 15px rgba(243,186,47,0.4); }
-
-        .status-badge { font-size: 10px; padding: 2px 6px; border-radius: 4px; font-weight: bold; text-transform: uppercase; }
-        .status-verified { background: rgba(14,203,129,0.2); color: var(--up); }
-        .status-pending { background: rgba(243,186,47,0.2); color: var(--primary); }
-        .status-rejected { background: rgba(246,70,93,0.2); color: var(--down); }
-
-        .loading-spin { animation: spin 1s linear infinite; }
-        @keyframes spin { 100% { transform: rotate(360deg); } }
-    </style>
-</head>
-<body>
-
-    <div class="sidebar-overlay" id="sidebarOverlay" onclick="toggleSidebar()"></div>
-
-    <div class="sidebar" id="sidebar">
-        <div class="side-user-box">
-            <span class="side-label">LogIn Gmail</span>
-            <div class="side-val" id="emailDisplay">Loading...</div>
-        </div>
-        <div class="side-user-box">
-            <span class="side-label">Your SMAT ID</span>
-            <div class="side-val" id="smatIDDisplay" style="color:var(--primary)">--------</div>
-        </div>
-
-        <div class="kyc-status-card" id="kycBtn" onclick="openKYC()">
-            <i class="fa-solid fa-id-card" id="kycIcon"></i>
-            <div id="kycStatusText" style="font-weight:bold; margin-top:5px">Click Here</div>
-            <div style="font-size:10px; color:var(--text-sec)">Verify Identity</div>
-        </div>
-
-        <div class="side-menu">
-            <a href="javascript:void(0)" onclick="openRefPopup()" class="menu-item"><i class="fa-solid fa-user-plus"></i><div class="menu-text"><b>Invited Friends</b><span>Referral Statistics</span></div></a>
-            <a href="mining.html" class="menu-item"><i class="fa-solid fa-microchip"></i><div class="menu-text"><b>Mining</b><span>Earn SMAT Daily</span></div></a>
-            <a href="crash.html" class="menu-item"><i class="fa-solid fa-dice"></i><div class="menu-text"><b>Crash Casino</b><span>Play & Win</span></div></a>
-            <a href="prediction.html" class="menu-item"><i class="fa-solid fa-arrow-trend-up"></i><div class="menu-text"><b>Prediction Market</b><span>Market Sentiment</span></div></a>
-            <a href="paper.html" class="menu-item"><i class="fa-solid fa-file-contract"></i><div class="menu-text"><b>Whitepaper</b><span>Project Info</span></div></a>
-            <a href="explore.html" class="menu-item"><i class="fa-solid fa-cubes"></i><div class="menu-text"><b>SMAT Blockchain</b><span>Explorer</span></div></a>
-        </div>
-
-        <div style="margin-top: 30px; text-align: center;"><i class="fa-solid fa-power-off" style="color:var(--down); font-size:24px; cursor:pointer" onclick="logout()"></i></div>
-    </div>
-
-    <div class="popup-overlay" id="kycPopup">
-        <div class="popup-content">
-            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px">
-                <h3 style="margin:0">KYC Verification</h3>
-                <i class="fa-solid fa-xmark" onclick="closePopup('kycPopup')" style="cursor:pointer"></i>
-            </div>
-            
-            <div id="kycForm">
-                <input type="text" id="realName" placeholder="Real Name" style="width:100%; padding:12px; background:#2b3139; border:1px solid var(--border); border-radius:10px; color:white; margin-bottom:12px">
-                <input type="number" id="nidNumber" placeholder="NID Number" style="width:100%; padding:12px; background:#2b3139; border:1px solid var(--border); border-radius:10px; color:white; margin-bottom:12px">
-                <p style="font-size:11px; color:var(--text-sec); margin:5px 0">Upload NID (Front, Back & Selfie)</p>
-                <input type="file" id="nidFront" style="margin-bottom:10px">
-                <input type="file" id="nidBack" style="margin-bottom:10px">
-                <input type="file" id="userSelfie" style="margin-bottom:15px">
-                <button id="kycSubmitBtn" onclick="handleKYC()" style="width:100%; padding:15px; background:var(--primary); border:none; border-radius:12px; font-weight:800; cursor:pointer">Submit Details</button>
-            </div>
-
-            <div id="kycWait" style="display:none; text-align:center; padding:20px">
-                <i class="fa-solid fa-circle-notch fa-spin" style="font-size:40px; color:var(--primary)"></i>
-                <p style="color:var(--primary); font-weight:bold; margin-top:15px">Reviewing Application...</p>
-                <p style="font-size:11px; color:var(--text-sec)">Processing time: 24-72 hours. Please wait.</p>
-            </div>
-        </div>
-    </div>
-
-    <div class="popup-overlay" id="refPopup">
-        <div class="popup-content">
-            <div style="display:flex; justify-content:space-between; margin-bottom:15px">
-                <h3 style="margin:0">Invited Friends</h3>
-                <i class="fa-solid fa-xmark" onclick="closePopup('refPopup')" style="cursor:pointer"></i>
-            </div>
-            <div style="display:flex; gap:10px; margin-bottom:15px">
-                <div style="flex:1; background:#2b3139; padding:10px; border-radius:10px; text-align:center">
-                    <span style="font-size:10px; color:var(--text-sec)">Verified</span><br><b id="ref_verified" style="color:var(--up)">0</b>
-                </div>
-                <div style="flex:1; background:#2b3139; padding:10px; border-radius:10px; text-align:center">
-                    <span style="font-size:10px; color:var(--text-sec)">Rejected</span><br><b id="ref_rejected" style="color:var(--down)">0</b>
-                </div>
-            </div>
-            <div style="background:#0b0e11; padding:10px; border-radius:10px; border:1px dashed var(--primary); display:flex; align-items:center">
-                <input type="text" id="referralLink" readonly style="flex:1; background:transparent; border:none; color:var(--text-sec); font-size:11px">
-                <button onclick="copyRef()" style="background:var(--primary); border:none; padding:5px 10px; border-radius:5px; font-weight:bold; font-size:10px">COPY</button>
-            </div>
-            <div style="margin-top:20px">
-                <span style="font-size:12px; font-weight:bold">Recent Referrals (Last 5)</span>
-                <div id="referralList" style="margin-top:10px"></div>
-            </div>
-        </div>
-    </div>
-
-    <div class="header">
-        <i class="fa-solid fa-circle-user profile-trigger" onclick="toggleSidebar()"></i>
-        <div class="header-title">SMAT <span style="color:var(--primary)">EXCHANGE</span></div>
-        <div class="header-right">
-            <a href="fox.html"><i class="fa-solid fa-comment-dots"></i></a>
-            <i class="fa-solid fa-bell" onclick="toggleNotifBadge()"></i>
-            <div class="notif-badge" id="nBadge">@</div>
-        </div>
-    </div>
-
-    <div class="asset-card">
-        <div style="display:flex; justify-content:space-between; font-size:13px; color:var(--text-sec)">
-            Portfolio Assets <i class="fa-solid fa-eye-slash" id="eyeIcon" onclick="toggleBalance()" style="cursor:pointer"></i>
-        </div>
-        <div class="asset-balance">$ <span id="totalValDisplay">0.00</span></div>
-        <div style="font-size:12px; font-weight:600">
-            <span style="color:var(--up)" id="pnlDisplay">+$0.00</span> <span style="color:var(--text-sec); margin-left:5px">Today's PNL</span>
-        </div>
-    </div>
-
-    <marquee style="margin: 10px 20px; background: rgba(243,186,47,0.05); padding: 6px; border-radius: 8px; font-size: 12px; color: var(--text-sec);">
-        System: SMAT Network Mainnet integration is 90% complete. | Verify KYC for internal zero-fee transfers. | Trading Pair SMAT/USDT live now.
-    </marquee>
-
-    <div class="market-tabs">
-        <div class="tab active" onclick="switchTab(this, 'hot')">Hot</div>
-        <div class="tab" onclick="switchTab(this, 'gainer')">Gainers</div>
-        <div class="tab" onclick="switchTab(this, 'loser')">Losers</div>
-        <div class="tab" onclick="switchTab(this, 'new')">New</div>
-    </div>
-
-    <div id="coinContainer"></div>
-
-    <footer class="footer">
-        <a href="home.html" class="f-nav active"><i class="fas fa-home"></i>Home</a>
-        <a href="Trade.html" class="f-nav" onclick="return checkAuth(event)"><i class="fas fa-chart-line"></i>Trade</a>
-        <a href="Crash.html" class="crash-link" onclick="return checkAuth(event)">CRASH</a>
-        <a href="Explorer.html" class="f-nav" onclick="return checkAuth(event)"><i class="fas fa-compass"></i>Explore</a>
-        <a href="Wallet.html" class="f-nav" onclick="return checkAuth(event)"><i class="fas fa-wallet"></i>Wallet</a>
-    </footer>
-
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><circle cx='50' cy='50' r='50' fill='%23f3ba2f'/><text x='50%25' y='55%25' text-anchor='middle' dy='.3em' fill='black' font-family='Courier New, monospace' font-weight='900' font-size='60'>S</text></svg>">
+    
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
         import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
@@ -263,23 +26,24 @@
         const auth = getAuth(app);
         const db = getDatabase(app);
 
-        let activeFilter = 'hot';
-        let isBalanceHidden = false;
         let userBalance = 0;
+        let isBalanceHidden = false;
 
         onAuthStateChanged(auth, (user) => {
             if (user) {
                 localStorage.setItem('isLoggedIn', 'true');
                 document.getElementById('emailDisplay').innerText = user.email;
-                onValue(ref(db, 'users/' + user.uid), (snapshot) => {
+                
+                const userRef = ref(db, 'users/' + user.uid);
+                onValue(userRef, (snapshot) => {
                     const data = snapshot.val();
-                    if(data) {
-                        const sid = data.smatID || "Assigning...";
-                        document.getElementById('smatIDDisplay').innerText = sid;
+                    if (data) {
                         userBalance = data.balance || 0;
                         updateBalanceUI();
+                        const smatID = data.smatID || "Assigning...";
+                        document.getElementById('smatID').innerText = smatID;
                         updateKYCUI(data);
-                        setupReferral(sid);
+                        setupReferralSystem(smatID);
                     }
                 });
             } else {
@@ -288,138 +52,258 @@
             }
         });
 
-        // --- KYC Logic ---
-        function updateKYCUI(data) {
-            const btnText = document.getElementById('kycStatusText');
-            const kycIcon = document.getElementById('kycIcon');
-            const form = document.getElementById('kycForm');
-            const wait = document.getElementById('kycWait');
+        // --- Balance Logic ---
+        window.toggleBalance = () => {
+            isBalanceHidden = !isBalanceHidden;
+            const eye = document.getElementById('eyeIcon');
+            eye.className = isBalanceHidden ? "fa-solid fa-eye" : "fa-solid fa-eye-slash";
+            updateBalanceUI();
+        };
 
-            if(data.kycStatus === 'verified') {
-                btnText.innerText = "Verified ✅";
-                btnText.style.color = "var(--up)";
-                kycIcon.className = "fa-solid fa-user-check";
-                document.getElementById('kycBtn').onclick = null;
-            } else if(data.kycStatus === 'pending') {
-                btnText.innerText = "Processing...";
-                btnText.style.color = "var(--primary)";
-                kycIcon.className = "fa-solid fa-circle-notch fa-spin";
-                form.style.display = 'none'; wait.style.display = 'block';
-            } else if(data.kycStatus === 'rejected') {
-                btnText.innerText = "Rejected (Re-apply)";
-                btnText.style.color = "var(--down)";
-                kycIcon.className = "fa-solid fa-triangle-exclamation";
-            }
+        function updateBalanceUI() {
+            document.getElementById('totalValue').innerText = isBalanceHidden ? "******" : userBalance.toFixed(2);
         }
 
-        // --- Referral Logic ---
-        function setupReferral(sid) {
-            const baseUrl = window.location.origin + "/logIn.html?ref=" + sid;
-            document.getElementById('referralLink').value = baseUrl;
+        // --- Referral Logic (Popup + Info) ---
+        function setupReferralSystem(smatID) {
+            const baseUrl = window.location.origin + window.location.pathname.replace('home.html', 'logIn.html');
+            document.getElementById('referralLink').value = `${baseUrl}?ref=${smatID}`;
 
-            const refQuery = query(ref(db, 'users'), orderByChild('referredBy'), equalTo(sid));
-            onValue(refQuery, (snap) => {
-                const data = snap.val();
-                let v = 0, r = 0, listHtml = '';
-                if(data) {
-                    const users = Object.values(data).sort((a,b) => (b.createdAt || 0) - (a.createdAt || 0));
-                    users.forEach(u => {
-                        if(u.kycStatus === 'verified') v++;
-                        else if(u.kycStatus === 'rejected') r++;
+            onValue(query(ref(db, 'users'), orderByChild('referredBy'), equalTo(smatID)), (snapshot) => {
+                const data = snapshot.val();
+                let verifiedCount = 0, rejectedCount = 0;
+                const listContainer = document.getElementById('referralList');
+                listContainer.innerHTML = '';
+
+                if (data) {
+                    const allUsers = Object.values(data).sort((a, b) => (b.createdAt || 0) - (a.createdAt || 0));
+                    allUsers.forEach(u => {
+                        if(u.kycStatus === 'verified') verifiedCount++;
+                        else if(u.kycStatus === 'rejected') rejectedCount++;
                     });
-                    users.slice(0, 5).forEach(u => {
-                        listHtml += `<div style="display:flex; justify-content:space-between; font-size:11px; margin-bottom:8px">
-                            <span>${u.email.split('@')[0]}...</span>
-                            <span class="status-badge status-${u.kycStatus || 'unverified'}">${u.kycStatus || 'unverified'}</span>
-                        </div>`;
+                    
+                    allUsers.slice(0, 5).forEach(refUser => {
+                        const div = document.createElement('div');
+                        div.className = 'ref-item';
+                        div.innerHTML = `<span>${refUser.email.split('@')[0]}...</span><span class="status-badge status-${refUser.kycStatus || 'unverified'}">${refUser.kycStatus || 'unverified'}</span>`;
+                        listContainer.appendChild(div);
                     });
                 }
-                document.getElementById('ref_verified').innerText = v;
-                document.getElementById('ref_rejected').innerText = r;
-                document.getElementById('referralList').innerHTML = listHtml || '<p style="font-size:10px; color:var(--text-sec); text-align:center">No referrals yet</p>';
+                document.getElementById('ref_verified').innerText = verifiedCount;
+                document.getElementById('ref_rejected').innerText = rejectedCount;
             });
         }
 
-        // --- Market Logic (Direct from Trade.html Context) ---
+        window.copyRef = () => {
+            const copyText = document.getElementById("referralLink");
+            copyText.select();
+            navigator.clipboard.writeText(copyText.value);
+            alert("Link Copied!");
+        };
+
+        // --- Market Logic (Direct Price Link) ---
         onValue(ref(db, 'market'), (snapshot) => {
             const data = snapshot.val();
-            if(data) {
-                window.marketData = data;
-                renderCoins();
+            if (data) {
+                Object.keys(data).forEach(coinSym => {
+                    const sym = coinSym.toLowerCase();
+                    window[sym + "Val"] = data[coinSym].price;
+                });
+                renderCoins(currentActiveTab);
             }
         });
 
-        window.switchTab = (el, filter) => {
+        window.logout = () => { signOut(auth).then(() => { localStorage.clear(); window.location.href = 'logIn.html'; }); };
+
+        // KYC UI Logic
+        function updateKYCUI(data) {
+            const form = document.getElementById('kycForm');
+            const notice = document.getElementById('kycPendingNotice');
+            const badge = document.getElementById('kycBadge');
+            const verifiedBox = document.getElementById('kycVerifiedInfo');
+            form.style.display = 'none'; notice.style.display = 'none'; verifiedBox.style.display = 'none';
+
+            if (data.kycStatus === 'pending') {
+                notice.style.display = 'block';
+                badge.innerText = 'Pending'; badge.className = 'status-badge status-pending';
+            } else if (data.kycStatus === 'verified') {
+                verifiedBox.style.display = 'block';
+                badge.innerText = 'Verified'; badge.className = 'status-badge status-verified';
+                document.getElementById('v_name').innerText = data.realName;
+                document.getElementById('v_nid').innerText = data.nidNumber;
+            } else {
+                form.style.display = 'block';
+                badge.innerText = data.kycStatus || 'Unverified';
+                badge.className = `status-badge status-${data.kycStatus || 'unverified'}`;
+            }
+        }
+    </script>
+
+    <style>
+        :root { --primary: #f3ba2f; --bg: #0b0e11; --card-bg: #1e2329; --text-main: #eaecef; --text-sec: #848e9c; --up: #0ecb81; --down: #f6465d; --border: #2b3139; }
+        * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+        body { margin: 0; background: var(--bg); color: var(--text-main); font-family: 'Segoe UI', sans-serif; padding-bottom: 90px; }
+
+        .header { padding: 15px; display: flex; align-items: center; justify-content: space-between; position: sticky; top: 0; background: var(--bg); z-index: 100; }
+        .sidebar { position: fixed; top: 0; left: -100%; width: 85%; max-width: 320px; height: 100%; background: var(--card-bg); z-index: 4000; transition: 0.4s; padding: 25px; box-shadow: 15px 0 40px rgba(0,0,0,0.7); overflow-y: auto; }
+        .sidebar.active { left: 0; }
+        .sidebar-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); display: none; z-index: 3500; }
+
+        .user-id-box { background: #181a20; padding: 15px; border-radius: 12px; margin: 15px 0; border: 1px dashed var(--primary); }
+        .kyc-section, .referral-section { background: #2b3139; padding: 20px; border-radius: 20px; margin-top: 20px; border: 1px solid var(--border); }
+        
+        .ref-stats { display: flex; justify-content: space-between; margin-bottom: 12px; }
+        .stat-item { background: #181a20; padding: 8px; border-radius: 8px; flex: 1; margin: 0 4px; text-align: center; }
+        .ref-box { display: flex; gap: 5px; margin-top: 10px; }
+        .ref-box input { flex: 1; background: #181a20; border: 1px solid var(--border); color: var(--text-sec); padding: 8px; border-radius: 6px; font-size: 11px; }
+        .ref-box button { background: var(--primary); border: none; padding: 0 12px; border-radius: 6px; font-weight: bold; cursor: pointer; }
+
+        .status-badge { padding: 4px 10px; border-radius: 6px; font-size: 11px; font-weight: bold; }
+        .status-verified { background: rgba(14, 203, 129, 0.2); color: var(--up); }
+        .status-pending { background: rgba(243, 186, 47, 0.2); color: var(--primary); }
+
+        .asset-card { margin: 15px; background: linear-gradient(135deg, #2b3139 0%, #1e2329 100%); padding: 25px; border-radius: 24px; border: 1px solid var(--border); }
+        .asset-val { font-size: 32px; font-weight: 800; color: var(--primary); margin: 12px 0; }
+
+        .market-tabs { display: flex; padding: 0 15px; gap: 20px; border-bottom: 1px solid var(--border); margin-top: 15px; }
+        .tab { padding: 12px 5px; color: var(--text-sec); font-size: 15px; font-weight: 600; cursor: pointer; position: relative; }
+        .tab.active { color: var(--primary); }
+        .tab.active::after { content: ''; position: absolute; bottom: 0; left: 0; width: 100%; height: 3px; background: var(--primary); }
+
+        .coin-row { display: flex; justify-content: space-between; align-items: center; padding: 18px 15px; border-bottom: 1px solid rgba(255,255,255,0.03); }
+        .coin-icon { width: 40px; height: 40px; border-radius: 50%; }
+        .percent-box { padding: 6px 12px; border-radius: 8px; font-weight: 700; font-size: 13px; min-width: 75px; text-align: center; margin-top: 4px; }
+
+        .footer { position: fixed; bottom: 0; width: 100%; height: 75px; background: #181a20; display: flex; justify-content: space-around; align-items: center; border-top: 1px solid #2b3139; z-index: 3000; }
+        .f-nav { text-decoration: none; color: var(--text-sec); text-align: center; font-size: 10px; flex: 1; display: flex; flex-direction: column; align-items: center; }
+        .u-curve { position: relative; top: -22px; width: 75px; height: 75px; display: flex; justify-content: center; align-items: center; }
+        .spin-circle { position: absolute; width: 70px; height: 70px; border: 2.5px dashed var(--primary); border-radius: 50%; animation: spin 5s linear infinite; }
+        .crash-link { width: 58px; height: 58px; background: var(--primary); border-radius: 50%; color: black; font-weight: 900; display: flex; align-items: center; justify-content: center; text-decoration: none; z-index: 5; }
+        @keyframes spin { 100% { transform: rotate(360deg); } }
+    </style>
+</head>
+<body>
+
+    <div class="sidebar-overlay" id="overlay" onclick="toggleSidebar()"></div>
+
+    <div class="sidebar" id="sidebar">
+        <div id="loggedInContent">
+            <span style="font-size:12px; color:var(--text-sec)">Account Email</span>
+            <div id="emailDisplay" style="font-weight:600; margin-top:4px;">Loading...</div>
+            
+            <div class="user-id-box">
+                <span style="font-size:11px; color:var(--text-sec);">Your SMAT ID</span>
+                <div id="smatID" style="font-size:18px; font-weight:800; color:var(--primary);">Checking...</div>
+            </div>
+
+            <div class="referral-section">
+                <span style="font-weight:bold; font-size:14px"><i class="fa-solid fa-users"></i> Invited Friends</span>
+                <div class="ref-stats" style="margin-top: 10px;">
+                    <div class="stat-item"><span>Verified</span><b id="ref_verified" style="color:var(--up)">0</b></div>
+                    <div class="stat-item"><span>Rejected</span><b id="ref_rejected" style="color:var(--down)">0</b></div>
+                </div>
+                <div class="ref-box">
+                    <input type="text" id="referralLink" readonly>
+                    <button onclick="copyRef()">Copy</button>
+                </div>
+                <div id="referralList" style="margin-top:15px; font-size:12px"></div>
+            </div>
+
+            <div class="kyc-section">
+                <div style="display:flex; justify-content:space-between">
+                    <span style="font-weight:bold; font-size:14px">KYC Status</span>
+                    <span id="kycBadge" class="status-badge">Unverified</span>
+                </div>
+                <div id="kycForm" style="margin-top:10px; font-size:12px; color:var(--text-sec); text-align:center">
+                    <button onclick="alert('Open KYC Process')" style="width:100%; padding:10px; background:var(--primary); border:none; border-radius:8px; font-weight:bold; cursor:pointer">Verify Now</button>
+                </div>
+                <div id="kycPendingNotice" style="display:none; text-align:center; color:var(--primary); padding:10px">Processing KYC...</div>
+                <div id="kycVerifiedInfo" style="display:none; margin-top:10px">
+                    <div id="v_name" style="font-weight:bold; color:var(--up)"></div>
+                    <div id="v_nid" style="font-size:11px"></div>
+                </div>
+            </div>
+            
+            <p style="margin-top:40px; text-align:center; color:#ff4d4d; font-size:30px; cursor:pointer" onclick="logout()"><i class="fa-solid fa-sign-out-alt"></i></p>
+        </div>
+    </div>
+
+    <div class="header">
+        <i class="fa-solid fa-circle-user profile-trigger" onclick="toggleSidebar()"></i>
+        <div style="font-weight: 900; font-size: 20px;">SMAT <span style="color:var(--primary)">Exchange</span></div>
+        <div style="display: flex; gap: 18px;"><i class="fas fa-comments" onclick="location.href='fox.html'"></i><i class="fa-solid fa-bell"></i></div>
+    </div>
+
+    <div class="asset-card">
+        <div style="font-size: 14px; color: var(--text-sec);">Total Assets <i class="fa-solid fa-eye-slash" id="eyeIcon" onclick="toggleBalance()" style="cursor:pointer"></i></div>
+        <div class="asset-val">$ <span id="totalValue">0.00</span></div>
+        <div style="color:var(--up); font-size:13px; font-weight:600;" id="pnlValue">+$0.00 Today</div>
+    </div>
+
+    <div class="market-tabs">
+        <div class="tab active" onclick="switchTab(this, 'hot')">Hot</div>
+        <div class="tab" onclick="switchTab(this, 'gainer')">Gainers</div>
+        <div class="tab" onclick="switchTab(this, 'loser')">Losers</div>
+        <div class="tab" onclick="switchTab(this, 'new')">New</div>
+    </div>
+
+    <div id="coinContainer"></div>
+
+    <footer class="footer">
+        <a href="home.html" class="f-nav active"><i class="fas fa-home"></i>Home</a>
+        <a href="Trade.html" class="f-nav"><i class="fas fa-chart-line"></i>Trade</a>
+        <div class="u-curve"><div class="spin-circle"></div><a href="Crash.html" class="crash-link">CRASH</a></div>
+        <a href="Explorer.html" class="f-nav"><i class="fas fa-compass"></i>Explore</a>
+        <a href="Wallet.html" class="f-nav"><i class="fas fa-wallet"></i>Wallet</a>
+    </footer>
+
+    <script>
+        let currentActiveTab = 'hot';
+        function toggleSidebar() {
+            const sb = document.getElementById('sidebar');
+            sb.classList.toggle('active');
+            document.getElementById('overlay').style.display = sb.classList.contains('active') ? 'block' : 'none';
+        }
+
+        function switchTab(el, cat) {
+            currentActiveTab = cat;
             document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
             el.classList.add('active');
-            activeFilter = filter;
-            renderCoins();
-        };
+            renderCoins(cat);
+        }
 
-        function renderCoins() {
+        function renderCoins(filter) {
             const container = document.getElementById('coinContainer');
-            if(!window.marketData) return;
+            if (!container || !window.marketData) return;
+            const liveData = Object.keys(window.marketData).map(k => ({ sym: k, ...window.marketData[k] }));
 
-            let coins = Object.keys(window.marketData).map(key => ({ sym: key, ...window.marketData[key] }));
-            const now = Date.now();
+            let coins = [...liveData];
+            if(filter === 'gainer') coins.sort((a,b) => b.priceChange - a.priceChange);
+            else if(filter === 'loser') coins.sort((a,b) => a.priceChange - b.priceChange);
 
-            if(activeFilter === 'gainer') coins.sort((a,b) => b.priceChange - a.priceChange);
-            else if(activeFilter === 'loser') coins.sort((a,b) => a.priceChange - b.priceChange);
-            else if(activeFilter === 'new') coins.sort((a,b) => (b.listedAt || 0) - (a.listedAt || 0));
-
-            container.innerHTML = coins.slice(0, 5).map(coin => {
-                const s = coin.sym.toLowerCase();
+            container.innerHTML = coins.slice(0, 10).map(coin => {
+                const sym = coin.sym.toLowerCase();
+                const price = window[sym + "Val"] || coin.price;
                 const isUp = coin.priceChange >= 0;
-                const price = window[s + "Val"] || coin.price || 0;
-                
                 return `
-                    <div class="coin-row" onclick="location.href='Trade.html?coin=${s}'">
-                        <div style="display:flex; align-items:center; gap:12px">
-                            <img src="assets/logos/${s}.png" class="coin-icon" onerror="this.src='https://via.placeholder.com/40'">
+                    <div class="coin-row" onclick="location.href='Trade.html?coin=${sym}'">
+                        <div style="display:flex; align-items:center; gap:12px;">
+                            <img src="assets/logos/${sym}.png" class="coin-icon" onerror="this.src='https://via.placeholder.com/40'">
                             <div>
                                 <div style="font-weight:bold">${coin.sym.toUpperCase()}/USDT</div>
-                                <div style="font-size:11px; color:var(--text-sec)">${coin.name}</div>
+                                <div style="font-size:12px; color:var(--text-sec)">${coin.name}</div>
                             </div>
                         </div>
                         <div style="text-align:right">
-                            <div style="font-weight:bold; font-size:16px">$${parseFloat(price).toLocaleString(undefined, {minimumFractionDigits: 2})}</div>
-                            <div class="percent-badge" style="background:${isUp?'rgba(14,203,129,0.15)':'rgba(246,70,93,0.15)'}; color:${isUp?'var(--up)':'var(--down)'}">
-                                ${isUp?'+':''}${coin.priceChange}%
+                            <div style="font-weight:bold; font-size:16px">$${parseFloat(price).toLocaleString()}</div>
+                            <div class="percent-box" style="background:${isUp ? 'rgba(14, 203, 129, 0.15)' : 'rgba(246, 70, 93, 0.15)'}; color:${isUp ? 'var(--up)' : 'var(--down)'}">
+                                ${isUp ? '+' : ''}${coin.priceChange}%
                             </div>
                         </div>
-                    </div>
-                `;
+                    </div>`;
             }).join('');
         }
-
-        // --- Global UI Helpers ---
-        window.toggleSidebar = () => {
-            document.getElementById('sidebar').classList.toggle('active');
-            document.getElementById('sidebarOverlay').style.display = document.getElementById('sidebar').classList.contains('active') ? 'block' : 'none';
-        };
-        window.openKYC = () => { document.getElementById('kycPopup').style.display = 'flex'; };
-        window.openRefPopup = () => { document.getElementById('refPopup').style.display = 'flex'; };
-        window.closePopup = (id) => { document.getElementById(id).style.display = 'none'; };
-        window.copyRef = () => {
-            const link = document.getElementById('referralLink');
-            link.select(); navigator.clipboard.writeText(link.value); alert("Link Copied!");
-        };
-        window.toggleBalance = () => {
-            isBalanceHidden = !isBalanceHidden;
-            document.getElementById('eyeIcon').className = isBalanceHidden ? "fa-solid fa-eye" : "fa-solid fa-eye-slash";
-            updateBalanceUI();
-        };
-        function updateBalanceUI() {
-            document.getElementById('totalValDisplay').innerText = isBalanceHidden ? "******" : userBalance.toFixed(2);
-        }
-        window.logout = () => { signOut(auth).then(() => location.reload()); };
-        window.checkAuth = (e) => {
-            if(localStorage.getItem('isLoggedIn') !== 'true') { e.preventDefault(); alert("Login Required"); return false; }
-            return true;
-        };
-        window.toggleNotifBadge = () => { document.getElementById('nBadge').style.display = 'none'; };
-
-        setInterval(renderCoins, 2000); // ২ সেকেন্ড পর পর প্রাইস রিফ্রেশ
+        setInterval(() => renderCoins(currentActiveTab), 2000);
     </script>
 </body>
 </html>
