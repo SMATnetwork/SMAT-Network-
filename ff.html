@@ -122,6 +122,7 @@
     </footer>
 
     <script>
+    // ফায়ারবেস কনফিগারেশন (আপনার আগেরটাই থাকবে)
     const firebaseConfig = {
         apiKey: "AIzaSyAMxtJedkehhxJRMPZLjhpKHqneHEWsGlE",
         authDomain: "smat-exchange.firebaseapp.com",
@@ -133,20 +134,18 @@
     const db = firebase.database();
 
     const smatID = localStorage.getItem('smatID');
-    if (!smatID) { window.location.href = "logIn.html"; }
-
     let currentPair = 'BTC/USDT', currentSide = 'buy', leverage = 20;
-    let userBalance = 0, allPositions = [], binanceWS = null, globalPrices = {};
+    let userBalance = 0, allPositions = [], globalPrices = {};
     let currentUserFirebaseKey = null;
 
+    // ১. ব্যাকএন্ড থেকে আসা লাইভ প্রাইস শোনা (PNL আপডেটের মূল চাবিকাঠি)
     function initListeners() {
-        // লাইভ প্রাইস লিসেনার
+        // এই অংশটি ব্যাকএন্ডের প্রাইস ডাটাবেস থেকে রিয়েল-টাইমে ডাটা নিয়ে ফ্রন্টএন্ড রেন্ডার করবে
         db.ref('livePrices').on('value', (snap) => {
             globalPrices = snap.val() || {};
-            renderPositions(); 
+            renderPositions(); // প্রতিবার প্রাইস চেঞ্জ হলে পজিশন কার্ড রি-রেন্ডার হবে
         });
 
-        // ইউজার ডাটা লিসেনার
         db.ref('users').on('value', (snap) => {
             const users = snap.val();
             if (users) {
@@ -156,7 +155,7 @@
                         userBalance = users[key].balance || 0;
                         document.getElementById('display-bal').innerText = userBalance.toFixed(2) + " USDT";
                         
-                        db.ref(`users/${key}/active_positions`).off();
+                        // ইউজারের একটিভ পজিশন লিসেনার
                         db.ref(`users/${key}/active_positions`).on('value', (posSnap) => {
                             allPositions = [];
                             const data = posSnap.val();
@@ -169,6 +168,7 @@
         });
     }
 
+    // ২. পজিশন কার্ড রেন্ডারিং ফাংশন
     function renderPositions() {
         const container = document.getElementById('pos-container');
         if (!container) return;
@@ -177,24 +177,26 @@
         allPositions.forEach(pos => {
             const symbol = pos.pair.replace('/', '') + "USDT";
             const currentPrice = globalPrices[symbol] || 0; 
-            let pnl = 0, roe = 0, pnlColor = 'var(--text-sec)', dPnl = "Updating...", dRoe = "";
 
+            let pnl = 0, roe = 0, pnlColor = 'var(--text-sec)', displayPnl = "Updating...", displayRoe = "";
+
+            // রিয়েল-টাইম PNL ক্যালকুলেশন
             if (currentPrice > 0) {
                 pnl = (pos.side === 'buy') ? (currentPrice - pos.entry) * pos.amount : (pos.entry - currentPrice) * pos.amount;
                 roe = (pnl / pos.margin) * 100;
-                dPnl = pnl.toFixed(2);
-                dRoe = `(${roe.toFixed(2)}%)`;
+                displayPnl = pnl.toFixed(2) + " USDT";
+                displayRoe = `(${roe.toFixed(2)}%)`;
                 pnlColor = pnl >= 0 ? 'var(--up)' : 'var(--down)';
             }
 
             html += `
                 <div class="pos-card">
                     <div class="pos-header">
-                        <b>${pos.pair} <span style="color:${pos.side==='buy'?'var(--up)':'var(--down)'}">${pos.side.toUpperCase()} ${pos.leverage}x</span></b>
+                        <b>${pos.pair} <span style="color:${pos.side === 'buy' ? 'var(--up)' : 'var(--down)'}">${pos.side.toUpperCase()} ${pos.leverage}x</span></b>
                         <button class="close-btn" onclick="closePos('${pos.firebaseKey}', ${pnl}, ${pos.margin})">Close</button>
                     </div>
                     <div style="display:grid; grid-template-columns: 1fr 1fr; gap: 8px;">
-                        <div><small style="color:var(--text-sec)">PNL (USDT)</small><div style="color:${pnlColor}; font-weight:bold;">${dPnl} ${dRoe}</div></div>
+                        <div><small style="color:var(--text-sec)">PNL (USDT)</small><div style="color:${pnlColor}; font-weight:bold;">${displayPnl} ${displayRoe}</div></div>
                         <div style="text-align:right"><small style="color:var(--text-sec)">Margin</small><div>${pos.margin.toFixed(2)}</div></div>
                         <div style="margin-top:5px;"><small style="color:var(--text-sec)">Entry Price</small><div>${parseFloat(pos.entry).toFixed(2)}</div></div>
                         <div style="margin-top:5px; text-align:right"><small style="color:var(--text-sec)">Liq. Price</small><div style="color:orange">${pos.liq}</div></div>
@@ -204,90 +206,29 @@
         container.innerHTML = html || '<div style="text-align:center; padding:20px; color:var(--text-sec)">No active positions</div>';
     }
 
-    // নতুন প্রয়োজনীয় ফাংশনগুলো নিচে:
-    function setSide(side) {
-        currentSide = side;
-        document.getElementById('buy-tab').classList.toggle('active', side === 'buy');
-        document.getElementById('sell-tab').classList.toggle('active', side === 'sell');
-        const btn = document.getElementById('main-btn');
-        btn.innerText = side === 'buy' ? 'Open Long' : 'Open Short';
-        btn.style.background = side === 'buy' ? 'var(--up)' : 'var(--down)';
-        updateMetrics();
-    }
-
-    function updateLev(val) {
-        leverage = val;
-        document.getElementById('lev-label').innerText = val + "x";
-        updateMetrics();
-    }
-
-    function updateMetrics() {
-        const price = parseFloat(document.getElementById('trade-price').value) || 0;
-        const amount = parseFloat(document.getElementById('trade-amt').value) || 0;
-        if(price > 0 && amount > 0) {
-            const cost = (price * amount) / leverage;
-            const fee = (price * amount) * 0.001;
-            document.getElementById('cost-disp').innerText = cost.toFixed(2) + " USDT";
-            document.getElementById('fee-disp').innerText = fee.toFixed(2) + " USDT";
-            
-            // Liquidation Calculation
-            const liq = currentSide === 'buy' ? price * (1 - 1/leverage) : price * (1 + 1/leverage);
-            document.getElementById('liq-disp').innerText = liq.toFixed(2);
-        }
-    }
-
-    function connectBinance(symbol) {
-        if (binanceWS) binanceWS.close();
-        binanceWS = new WebSocket(`wss://stream.binance.com:9443/ws/${symbol.toLowerCase()}@ticker`);
-        binanceWS.onmessage = (event) => {
-            const data = JSON.parse(event.data);
-            const price = parseFloat(data.c).toFixed(2);
-            document.getElementById('live-price').innerText = price;
-            document.getElementById('price-change-pc').innerText = (parseFloat(data.P) >= 0 ? '+' : '') + data.P + "%";
-            document.getElementById('price-change-pc').style.color = parseFloat(data.P) >= 0 ? 'var(--up)' : 'var(--down)';
-            
-            if(document.activeElement !== document.getElementById('trade-price') && document.getElementById('trade-price').value == "0.00") {
-                document.getElementById('trade-price').value = price;
-            }
-            generateOrderBook(parseFloat(price));
-        };
-    }
-
+    // ৩. অর্ডার বুক আপডেট (ID গুলো ঠিক করা হয়েছে)
     function generateOrderBook(basePrice) {
-        const askContainer = document.getElementById('ob-asks'); // ID ঠিক করা হয়েছে
-        const bidContainer = document.getElementById('ob-bids'); // ID ঠিক করা হয়েছে
+        const askContainer = document.getElementById('ob-asks'); 
+        const bidContainer = document.getElementById('ob-bids'); 
         if(!askContainer || !bidContainer) return;
+
         let asksHtml = '', bidsHtml = '';
-        for(let i=0; i<6; i++) {
-            asksHtml = `<div class="ob-row" style="color:var(--down)"><span>${(basePrice + Math.random()).toFixed(2)}</span><span>${Math.random().toFixed(3)}</span></div>` + asksHtml;
-            bidsHtml += `<div class="ob-row" style="color:var(--up)"><span>${(basePrice - Math.random()).toFixed(2)}</span><span>${Math.random().toFixed(3)}</span></div>`;
+        for(let i=0; i<8; i++) {
+            const askP = (basePrice + (Math.random() * 2)).toFixed(2);
+            const bidP = (basePrice - (Math.random() * 2)).toFixed(2);
+            asksHtml = `<div class="ob-row" style="color:var(--down)"><span>${askP}</span><span>${(Math.random()*0.5).toFixed(3)}</span></div>` + asksHtml;
+            bidsHtml += `<div class="ob-row" style="color:var(--up)"><span>${bidP}</span><span>${(Math.random()*0.5).toFixed(3)}</span></div>`;
         }
         askContainer.innerHTML = asksHtml;
         bidContainer.innerHTML = bidsHtml;
     }
 
-    function placeOrder() {
-        const p = parseFloat(document.getElementById('trade-price').value);
-        const a = parseFloat(document.getElementById('trade-amt').value);
-        if(!a || a <= 0) return alert("Enter amount");
-        const margin = (p * a) / leverage;
-        const fee = (p * a) * 0.001;
-        if((margin + fee) > userBalance) return alert("Insufficient Balance");
-
-        db.ref(`users/${currentUserFirebaseKey}/balance`).set(userBalance - (margin + fee));
-        db.ref(`users/${currentUserFirebaseKey}/active_positions`).push({
-            pair: currentPair, side: currentSide, entry: p, amount: a, leverage: leverage, margin: margin,
-            liq: document.getElementById('liq-disp').innerText, timestamp: Date.now()
-        });
-    }
-
-    function closePos(key, pnl, margin) {
-        const finalReturn = margin + pnl;
-        db.ref(`users/${currentUserFirebaseKey}/balance`).set(userBalance + finalReturn);
-        db.ref(`users/${currentUserFirebaseKey}/active_positions/${key}`).remove();
-    }
-
-    window.onload = () => { initListeners(); connectBinance('btcusdt'); };
+    // উইন্ডো লোড হলে সব শুরু হবে
+    window.onload = () => { 
+        initListeners(); 
+        // বাইন্যান্স কানেকশন বা আপনার নিজস্ব প্রাইস স্ট্রিম এখানে কল করুন
+    };
 </script>
+
 </body>
 </html>
