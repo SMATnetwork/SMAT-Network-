@@ -435,41 +435,65 @@
         };
 
         function renderCoins() {
-            const container = document.getElementById('coinList');
-            if(!window.marketData) return;
+    const container = document.getElementById('coinList');
+    
+    // আপনার ফাইল অনুযায়ী ডাটা সোর্স (ধরে নিচ্ছি এটি window.marketData তে আছে)
+    const coinData = window.marketData; 
+    if (!coinData) return;
 
-            let items = Object.keys(window.marketData).map(k => ({ sym: k, ...window.marketData[k] }));
-            const now = Date.now();
+    // ১. আপনার ফাইলের লজিক: অবজেক্ট থেকে কি (Key) গুলো নিয়ে লুপ চালানো
+    let coinKeys = Object.keys(coinData);
 
-            if(activeTab === 'gainer') items.sort((a,b) => b.priceChange - a.priceChange);
-            else if(activeTab === 'loser') items.sort((a,b) => a.priceChange - b.priceChange);
-            else if(activeTab === 'new') items = items.filter(c => (now - (c.listedAt||0)) < 259200000);
+    // ২. ফিল্টারিং এবং সর্টিং লজিক (আপনার ফাইল থেকে নেওয়া)
+    const now = Date.now();
+    const threeDaysMs = 3 * 24 * 60 * 60 * 1000;
 
-            container.innerHTML = items.slice(0, 10).map(c => {
-                const s = c.sym.toLowerCase();
-                const price = window[s + "Val"] || c.price;
-                const isUp = c.priceChange >= 0;
-                return `
-                    <div class="coin-row" onclick="location.href='Trade.html?coin=${s}'">
-                        <div class="coin-meta">
-                            <img src="assets/logos/${s}.png" class="coin-icon" onerror="this.src='https://via.placeholder.com/35'">
-                            <div class="coin-name-sym">
-                                <b>${c.sym.toUpperCase()}/USDT</b>
-                                <span>${c.name}</span>
-                            </div>
-                        </div>
-                        <div class="price-col">
-                            <span class="price">$${parseFloat(price).toLocaleString(undefined,{minimumFractionDigits:2})}</span>
-                            <div class="percent-box" style="background:${isUp?'rgba(14,203,129,0.15)':'rgba(246,70,93,0.15)'}; color:${isUp?'var(--up)':'var(--down)'}">
-                                ${isUp?'+':''}${c.priceChange}%
-                            </div>
-                        </div>
-                        <div style="text-align:right; font-size:12px; font-weight:600; color:var(--text-sec)">
-                            $${parseFloat(c.volume||0).toLocaleString()}
-                        </div>
-                    </div>`;
-            }).join('');
-        }
+    if (activeTab === 'gainer') {
+        coinKeys.sort((a, b) => parseFloat(coinData[b].change) - parseFloat(coinData[a].change));
+    } else if (activeTab === 'loser') {
+        coinKeys.sort((a, b) => parseFloat(coinData[a].change) - parseFloat(coinData[b].change));
+    } else if (activeTab === 'new') {
+        coinKeys = coinKeys.filter(key => (now - coinData[key].listedAt) < threeDaysMs);
+    }
+
+    container.innerHTML = coinKeys.map(key => {
+        const coin = coinData[key];
+        const sym = key.toUpperCase();
+        
+        // ৩. "Undefined" দূর করার আসল লজিক (আপনার ফাইলের ভ্যারিয়েবল নাম অনুযায়ী)
+        // আপনার ফাইলে 'price' এবং 'change' নাম ব্যবহার করা হয়েছে
+        const displayPrice = coin.price || "0.00"; 
+        const displayChange = coin.change || "0.00"; 
+        const fullName = coin.name || "Crypto Asset"; // নামের নিচের undefined দূর করতে
+
+        const isUp = parseFloat(displayChange) >= 0;
+        const isNew = (now - coin.listedAt) < threeDaysMs;
+
+        return `
+            <div class="coin-row" onclick="if(checkAuth(event)) window.location.href='Trade.html?coin=${key.toLowerCase()}'">
+                <div class="coin-meta">
+                    <img src="assets/logos/${key.toLowerCase()}.png" class="coin-icon" onerror="this.src='https://via.placeholder.com/40?text=${sym[0]}'">
+                    <div class="coin-name-sym">
+                        <b>
+                            ${sym}/USDT
+                            ${isNew ? '<span class="status-badge status-verified" style="font-size:8px; padding:2px 4px; margin-left:4px">NEW</span>' : ''}
+                        </b>
+                        <span style="color:var(--text-sec)">${fullName}</span> 
+                    </div>
+                </div>
+                <div class="price-col">
+                    <span class="price">$${parseFloat(displayPrice).toLocaleString(undefined, {minimumFractionDigits: 2})}</span>
+                    <div class="percent-box" style="background:${isUp ? 'rgba(14, 203, 129, 0.15)' : 'rgba(246, 70, 93, 0.15)'}; color:${isUp ? 'var(--up)' : 'var(--down)'}">
+                        ${isUp ? '+' : ''}${displayChange}%
+                    </div>
+                </div>
+                <div style="text-align:right; font-size:12px; font-weight:600; color:var(--text-sec)">
+                    $${parseFloat(coin.volume || 0).toLocaleString()}
+                </div>
+            </div>`;
+    }).join('');
+}
+
 
         // --- UI Helpers ---
         window.openSidebar = () => { document.getElementById('sidebar').classList.add('active'); document.getElementById('overlay').style.display='block'; };
