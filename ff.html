@@ -140,8 +140,15 @@
         let currentPair = 'BTC/USDT', currentSide = 'buy', leverage = 20;
         let userBalance = 0, allPositions = [], binanceWS = null;
         let currentUserFirebaseKey = null;
+        let globalPrices = {};
 
         function initListeners() {
+            // Listen to global prices from backend
+            db.ref('livePrices').on('value', (snap) => {
+                globalPrices = snap.val() || {};
+                renderPositions();
+            });
+
             db.ref('users').on('value', (snap) => {
                 const users = snap.val();
                 if (users) {
@@ -205,7 +212,6 @@
                     updateMetrics();
                 }
                 updateOrderBook(price);
-                renderPositions();
             };
         }
 
@@ -239,32 +245,30 @@
 
         function renderPositions() {
             const container = document.getElementById('pos-container');
-            const livePrice = parseFloat(document.getElementById('live-price').innerText);
-            const activePair = document.getElementById('active-pair').innerText;
-            
             let html = '';
+            
             allPositions.forEach(pos => {
-                // FIXED: PNL values remain tied to their specific pairs
-                let pnl = 0, roe = 0, pnlColor = 'var(--text-sec)', displayPnl = "0.00", displayRoe = "0.00%";
+                const symbol = pos.pair.replace('/', '') + "USDT";
+                const currentPrice = globalPrices[symbol] || 0;
 
-                if(pos.pair === activePair) {
-                    pnl = (pos.side === 'buy') ? (livePrice - pos.entry) * pos.amount : (pos.entry - livePrice) * pos.amount;
+                let pnl = 0, roe = 0, pnlColor = 'var(--text-sec)', displayPnl = "Updating...", displayRoe = "";
+
+                if(currentPrice > 0) {
+                    pnl = (pos.side === 'buy') ? (currentPrice - pos.entry) * pos.amount : (pos.entry - currentPrice) * pos.amount;
                     roe = (pnl / pos.margin) * 100;
                     displayPnl = pnl.toFixed(2);
-                    displayRoe = roe.toFixed(2) + "%";
+                    displayRoe = `(${roe.toFixed(2)}%)`;
                     pnlColor = pnl >= 0 ? 'var(--up)' : 'var(--down)';
-                } else {
-                    displayPnl = "--"; // Don't calculate PNL if coin mismatch to prevent wrong data
                 }
 
                 html += `
                     <div class="pos-card">
                         <div class="pos-header">
                             <b>${pos.pair} <span style="color:${pos.side==='buy'?'var(--up)':'var(--down)'}">${pos.side.toUpperCase()} ${pos.leverage}x</span></b>
-                            <button class="close-btn" onclick="closePos('${pos.firebaseKey}', ${pos.pair === activePair ? pnl : 0}, ${pos.margin})">Close</button>
+                            <button class="close-btn" onclick="closePos('${pos.firebaseKey}', ${currentPrice > 0 ? pnl : 0}, ${pos.margin})">Close</button>
                         </div>
                         <div style="display:grid; grid-template-columns: 1fr 1fr; gap: 8px;">
-                            <div><small style="color:var(--text-sec)">PNL (USDT)</small><div style="color:${pnlColor}; font-weight:bold;">${displayPnl} (${displayRoe})</div></div>
+                            <div><small style="color:var(--text-sec)">PNL (USDT)</small><div style="color:${pnlColor}; font-weight:bold;">${displayPnl} ${displayRoe}</div></div>
                             <div style="text-align:right"><small style="color:var(--text-sec)">Margin</small><div>${pos.margin.toFixed(2)}</div></div>
                             <div style="margin-top:5px;"><small style="color:var(--text-sec)">Entry Price</small><div>${parseFloat(pos.entry).toFixed(pos.entry < 1 ? 4 : 2)}</div></div>
                             <div style="margin-top:5px; text-align:right"><small style="color:var(--text-sec)">Liq. Price</small><div style="color:orange">${pos.liq}</div></div>
@@ -281,13 +285,11 @@
 
         function updateOrderBook(price) {
             const p = parseFloat(price);
-            // SMART GAP: Dynamic calculation to prevent negative values in low price coins
             const gap = p < 1 ? p * 0.002 : p < 100 ? 0.05 : 0.5;
             let a = '', b = '';
             for(let i=1; i<=8; i++) {
                 let askP = (p + i * gap).toFixed(p < 1 ? 4 : 2);
                 let bidP = (p - i * gap).toFixed(p < 1 ? 4 : 2);
-                if(parseFloat(bidP) <= 0) bidP = (p * (1 - (i * 0.001))).toFixed(4); // Fail-safe
                 a = `<div class="ob-row"><span>${askP}</span><span>${(Math.random()*0.8).toFixed(3)}</span></div>` + a;
                 b += `<div class="ob-row"><span>${bidP}</span><span>${(Math.random()*0.8).toFixed(3)}</span></div>`;
             }
