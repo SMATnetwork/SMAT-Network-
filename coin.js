@@ -42,6 +42,16 @@ const GLOBAL_COINS = [
         contract: '0x217...eth', 
         vol: '12.1B' 
     },
+{ 
+        sym: 'xlm', 
+        name: 'Monoro', 
+        price: .150, 
+        decimal: 18, 
+        key: 'xlm_balance', 
+        networks: ['ERC20', 'BEP20'], 
+        contract: '0x217...eth', 
+        vol: '12.1B' 
+    },
     { 
         sym: 'bnb', 
         name: 'Binance Coin', 
