@@ -201,7 +201,7 @@
             binanceWS = new WebSocket(`wss://stream.binance.com:9443/ws/${symbol.toLowerCase()}@ticker`);
             binanceWS.onmessage = (event) => {
                 const data = JSON.parse(event.data);
-                const price = parseFloat(data.c).toFixed(2);
+                const price = parseFloat(data.c).toFixed(4);
                 const priceEl = document.getElementById('live-price');
                 const oldPrice = parseFloat(priceEl.innerText);
                 priceEl.innerText = price;
@@ -223,7 +223,7 @@
         function initListeners() {
             db.ref(`users/${smatID}/balance`).on('value', (snap) => {
                 userBalance = snap.val() || 0;
-                document.getElementById('display-bal').innerText = userBalance.toFixed(2) + " USDT";
+                document.getElementById('display-bal').innerText = userBalance.toFixed(8) + " USDT";
             });
             
             // Listen to all positions and sort by newest first
@@ -308,8 +308,8 @@
                             <button class="close-btn" onclick="closePos('${pos.firebaseKey}', ${pnl}, ${pos.margin})">Close</button>
                         </div>
                         <div style="display:grid; grid-template-columns: 1fr 1fr;">
-                            <div><small>PNL (USDT)</small><div style="color:${pnl>=0?'var(--up)':'var(--down)'}">${pnl.toFixed(2)} (${roe.toFixed(2)}%)</div></div>
-                            <div style="text-align:right"><small>Size / Margin</small><div>${pos.amount.toFixed(3)} / ${pos.margin.toFixed(2)}</div></div>
+                            <div><small>PNL (USDT)</small><div style="color:${pnl>=0?'var(--up)':'var(--down)'}">${pnl.toFixed(8)} (${roe.toFixed(2)}%)</div></div>
+                            <div style="text-align:right"><small>Size / Margin</small><div>${pos.amount.toFixed(8)} / ${pos.margin.toFixed(8)}</div></div>
                         </div>
                     </div>`;
             });
@@ -336,8 +336,8 @@
             const p = parseFloat(price);
             let a = '', b = '';
             for(let i=1; i<=8; i++) {
-                a = `<div class="ob-row"><span>${(p + i*0.4).toFixed(2)}</span><span>${(Math.random()*0.8).toFixed(3)}</span></div>` + a;
-                b += `<div class="ob-row"><span>${(p - i*0.4).toFixed(2)}</span><span>${(Math.random()*0.8).toFixed(3)}</span></div>`;
+                a = `<div class="ob-row"><span>${(p + i*0.4).toFixed(4)}</span><span>${(Math.random()*0.8).toFixed(4)}</span></div>` + a;
+                b += `<div class="ob-row"><span>${(p - i*0.4).toFixed(4)}</span><span>${(Math.random()*0.8).toFixed(4)}</span></div>`;
             }
             document.getElementById('ob-asks').innerHTML = a;
             document.getElementById('ob-bids').innerHTML = b;
