@@ -67,8 +67,11 @@
         <div id="coin-dropdown" class="coin-dropdown"></div>
 
         <div style="text-align: right;">
-            <div style="font-size: 8px; color: var(--text-sec); text-transform: uppercase;">Funding Countdown</div>
-            <div id="countdown" style="color:var(--primary); font-weight:bold; font-size: 13px;">00:00:00</div>
+            <div style="font-size: 8px; color: var(--text-sec); text-transform: uppercase;">24h Change / Funding</div>
+            <div style="display: flex; align-items: center; justify-content: flex-end; gap: 8px;">
+                <span id="price-change" style="font-weight:bold; font-size: 13px; color: var(--text-sec);">0.00%</span>
+                <div id="countdown" style="color:var(--primary); font-weight:bold; font-size: 13px;">00:00:00</div>
+            </div>
         </div>
     </header>
 
@@ -198,11 +201,20 @@
             binanceWS = new WebSocket(`wss://stream.binance.com:9443/ws/${symbol.toLowerCase()}@ticker`);
             binanceWS.onmessage = (event) => {
                 const data = JSON.parse(event.data);
+                
+                // ১. লাইভ প্রাইস আপডেট
                 const price = parseFloat(data.c).toFixed(4);
                 const priceEl = document.getElementById('live-price');
                 const oldPrice = parseFloat(priceEl.innerText);
                 priceEl.innerText = price;
                 priceEl.style.color = price >= oldPrice ? 'var(--up)' : 'var(--down)';
+
+                // ২. প্রাইস চেঞ্জ পার্সেন্টেজ আপডেট
+                const change = parseFloat(data.P).toFixed(2);
+                const changeEl = document.getElementById('price-change');
+                changeEl.innerText = (change >= 0 ? '+' : '') + change + '%';
+                changeEl.style.color = change >= 0 ? 'var(--up)' : 'var(--down)';
+
                 if(document.activeElement !== document.getElementById('trade-price')) {
                     document.getElementById('trade-price').value = price;
                     updateMetrics();
@@ -319,18 +331,15 @@
             db.ref(`users/${smatID}/active_positions/${key}`).remove();
         }
 
-        // সংশোধিত অর্ডার বুক লজিক (মাইনাস চিহ্ন রিমুভ এবং ৪ ডিজিট ফরম্যাট)
         function updateOrderBook(price) {
             const p = parseFloat(price);
             let a = '', b = '';
-            // আস্ক (উপরে - লাল)
             for(let i=1; i<=8; i++) {
-                let askPrice = Math.abs(p + (i * 0.0004)); // Math.abs নিশ্চিত করবে মাইনাস আসবে না
+                let askPrice = Math.abs(p + (i * 0.0004));
                 a = `<div class="ob-row"><span>${askPrice.toFixed(4)}</span><span>${(Math.random()*0.8).toFixed(4)}</span></div>` + a;
             }
-            // বিড (নিচে - সবুজ)
             for(let i=1; i<=8; i++) {
-                let bidPrice = Math.abs(p - (i * 0.0004)); // Math.abs নিশ্চিত করবে মাইনাস আসবে না
+                let bidPrice = Math.abs(p - (i * 0.0004));
                 b += `<div class="ob-row"><span>${bidPrice.toFixed(4)}</span><span>${(Math.random()*0.8).toFixed(4)}</span></div>`;
             }
             document.getElementById('ob-asks').innerHTML = a;
