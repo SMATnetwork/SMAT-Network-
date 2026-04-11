@@ -1,0 +1,343 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>SMAT CEX | Ultra Futures</title>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-database-compat.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --primary: #f3ba2f; --bg: #0b0e11; --card: #181a20;
+            --text-main: #eaecef; --text-sec: #848e9c; --up: #0ecb81;
+            --down: #f6465d; --border: #2b3139; --input-bg: #202630;
+        }
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Inter', sans-serif; }
+        body { background: var(--bg); color: var(--text-main); font-size: 11px; overflow-x: hidden; padding-bottom: 80px; }
+
+        .trade-header { display: flex; align-items: center; justify-content: space-between; padding: 10px 15px; border-bottom: 1px solid var(--border); background: var(--bg); position: sticky; top: 0; z-index: 1000; }
+        .coin-select-btn { display: flex; align-items: center; gap: 8px; background: var(--border); padding: 6px 15px; border-radius: 20px; cursor: pointer; }
+        .coin-logo { width: 22px; height: 22px; border-radius: 50%; background: #222; }
+
+        .coin-dropdown { position: absolute; top: 55px; left: 15px; background: var(--card); border: 1px solid var(--border); border-radius: 8px; width: 180px; display: none; z-index: 2000; box-shadow: 0 10px 30px rgba(0,0,0,0.5); max-height: 300px; overflow-y: auto; }
+        .coin-item { display: flex; align-items: center; gap: 10px; padding: 12px; border-bottom: 1px solid var(--border); cursor: pointer; }
+
+        .trading-grid { display: grid; grid-template-columns: 1.15fr 0.85fr; gap: 8px; padding: 8px; }
+        .side-tabs { display: grid; grid-template-columns: 1fr 1fr; gap: 4px; margin-bottom: 10px; }
+        .side-btn { padding: 12px; border: none; border-radius: 4px; font-weight: 800; cursor: pointer; background: var(--border); color: var(--text-sec); text-transform: uppercase; }
+        .side-btn.buy.active { background: var(--up); color: white; }
+        .side-btn.sell.active { background: var(--down); color: white; }
+
+        .input-group { background: var(--input-bg); border: 1px solid var(--border); border-radius: 4px; padding: 10px; display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
+        .input-group input { background: transparent; border: none; color: white; width: 60%; outline: none; font-size: 14px; text-align: right; font-weight: bold; }
+        input[type="range"] { width: 100%; accent-color: var(--primary); height: 5px; margin: 8px 0; }
+
+        .metrics-box { background: rgba(255,255,255,0.03); padding: 12px; border-radius: 6px; border: 1px solid var(--border); margin-top: 5px; }
+        .m-row { display: flex; justify-content: space-between; margin-bottom: 6px; color: var(--text-sec); font-size: 10px; }
+        .val-white { color: var(--text-main); font-weight: bold; }
+        .btn-action { width: 100%; padding: 16px; border-radius: 6px; border: none; font-weight: 800; font-size: 15px; cursor: pointer; margin-top: 10px; }
+
+        .order-book { border-left: 1px solid var(--border); padding-left: 10px; }
+        .ob-row { display: flex; justify-content: space-between; line-height: 1.6; font-family: 'Roboto Mono', monospace; font-size: 10px; }
+        .price-mid { font-size: 16px; font-weight: bold; text-align: center; padding: 12px 0; margin: 8px 0; background: rgba(255,255,255,0.02); border-radius: 4px; }
+
+        .pos-section { margin-top: 20px; padding: 0 10px; }
+        .pos-card { background: var(--card); border: 1px solid var(--border); border-radius: 8px; padding: 15px; margin-bottom: 12px; }
+        .pos-header { display: flex; justify-content: space-between; margin-bottom: 10px; border-bottom: 1px solid var(--border); padding-bottom: 8px; }
+        .close-btn { background: #2b3139; color: #fff; border: 1px solid #474d57; padding: 6px 12px; border-radius: 4px; font-size: 10px; cursor: pointer; font-weight: bold; }
+
+        .footer { position: fixed; bottom: 0; width: 100%; height: 65px; background: #111418; display: flex; justify-content: space-around; align-items: center; border-top: 1px solid var(--border); z-index: 1000; }
+        .f-nav { text-decoration: none; color: var(--text-sec); text-align: center; font-size: 10px; flex: 1; }
+        .f-nav i { display: block; font-size: 20px; margin-bottom: 4px; }
+        .f-nav.active { color: var(--primary); }
+    </style>
+</head>
+<body>
+
+    <header class="trade-header">
+        <div class="coin-select-btn" onclick="toggleDropdown()">
+            <img id="active-logo" src="assets/logos/btc.png" class="coin-logo">
+            <b id="active-pair">BTC/USDT</b>
+            <i class="fas fa-caret-down"></i>
+        </div>
+        
+        <div id="coin-dropdown" class="coin-dropdown"></div>
+
+        <div style="text-align: right;">
+            <div style="font-size: 8px; color: var(--text-sec); text-transform: uppercase;">Funding Countdown</div>
+            <div id="countdown" style="color:var(--primary); font-weight:bold; font-size: 13px;">00:00:00</div>
+        </div>
+    </header>
+
+    <div class="trading-grid">
+        <div class="trade-panel">
+            <div class="side-tabs">
+                <button class="side-btn buy active" onclick="setSide('buy')">Buy</button>
+                <button class="side-btn sell" onclick="setSide('sell')">Sell</button>
+            </div>
+            <div style="display:flex; justify-content:space-between; margin-bottom:8px;">
+                <span style="color:var(--text-sec)">Avbl Balance</span>
+                <span id="display-bal" style="font-weight:bold; color:var(--primary)">0.00 USDT</span>
+            </div>
+            <div style="margin-bottom:12px;">
+                <div style="display:flex; justify-content:space-between; margin-bottom:4px;">
+                    <span style="color:var(--text-sec)">Leverage</span>
+                    <b id="lev-label" style="color:var(--primary)">20x</b>
+                </div>
+                <input type="range" min="10" max="100" step="10" value="20" oninput="updateLev(this.value)">
+            </div>
+            <div class="input-group"><span>Price</span><input type="number" id="trade-price" value="0.00" oninput="updateMetrics()"></div>
+            <div class="input-group"><span>Amount</span><input type="number" id="trade-amt" placeholder="0.00" oninput="updateMetrics()"></div>
+            <div class="metrics-box">
+                <div class="m-row"><span>Margin (Cost)</span><span class="val-white" id="cost-disp">0.00 USDT</span></div>
+                <div class="m-row"><span>Entry Fee (0.1%)</span><span id="fee-disp" style="color:var(--primary)">0.00 USDT</span></div>
+                <div class="m-row"><span>Liq. Price (Est.)</span><span id="liq-disp" style="color:orange">--</span></div>
+            </div>
+            <button id="main-btn" class="btn-action" style="background:var(--up); color:white;" onclick="placeOrder()">Open Long</button>
+        </div>
+
+        <div class="order-book">
+            <div style="display:flex; justify-content:space-between; color:var(--text-sec); font-size:9px; margin-bottom:6px;"><span>Price</span><span>Qty</span></div>
+            <div id="ob-asks" style="color:var(--down)"></div>
+            <div class="price-mid" id="live-price">0.00</div>
+            <div id="ob-bids" style="color:var(--up)"></div>
+        </div>
+    </div>
+
+    <div class="pos-section">
+        <h3 style="margin-bottom:15px; font-size:14px; border-left:4px solid var(--primary); padding-left:10px;">My Trading History</h3>
+        <div id="pos-container"></div>
+    </div>
+
+    <footer class="footer">
+        <a href="Home.html" class="f-nav"><i class="fas fa-home"></i>Home</a>
+        <a href="Feature.html" class="f-nav active"><i class="fas fa-chart-line"></i>Trade</a>
+        <a href="Wallet.html" class="f-nav"><i class="fas fa-wallet"></i>Assets</a>
+    </footer>
+
+    <script>
+        const firebaseConfig = {
+            apiKey: "AIzaSyAMxtJedkehhxJRMPZLjhpKHqneHEWsGlE",
+            authDomain: "smat-exchange.firebaseapp.com",
+            databaseURL: "https://smat-exchange-default-rtdb.firebaseio.com",
+            projectId: "smat-exchange",
+            appId: "1:836334569396:web:679effe640b3453412d4e1"
+        };
+        firebase.initializeApp(firebaseConfig);
+        const db = firebase.database();
+
+        const smatID = localStorage.getItem('smatID');
+        if (!smatID) { window.location.href = "logIn.html"; }
+
+        let currentPair = 'BTC/USDT', currentSide = 'buy', leverage = 20;
+        let userBalance = 0, allPositions = [], binanceWS = null;
+        let lastFundingTimestamp = 0;
+        let currentUserFirebaseKey = null;
+
+        function listenToTimer() {
+            db.ref('fundingLogic/timeLeft').on('value', (snap) => {
+                const totalSeconds = snap.val();
+                if (totalSeconds !== null) {
+                    if (totalSeconds === 28800 && lastFundingTimestamp !== totalSeconds) { 
+                        applyFundingFee(); 
+                        lastFundingTimestamp = totalSeconds;
+                    }
+                    const h = Math.floor(totalSeconds / 3600);
+                    const m = Math.floor((totalSeconds % 3600) / 60);
+                    const s = totalSeconds % 60;
+                    document.getElementById('countdown').innerText = `${String(h).padStart(2,'0')}:${String(m).padStart(2,'0')}:${String(s).padStart(2,'0')}`;
+                }
+            });
+        }
+
+        function applyFundingFee() {
+            if (allPositions.length > 0 && currentUserFirebaseKey) {
+                let totalFee = 0;
+                allPositions.forEach(pos => {
+                    const positionValue = pos.entry * pos.amount;
+                    totalFee += positionValue * 0.001; 
+                });
+                if (totalFee > 0) {
+                    db.ref(`users/${currentUserFirebaseKey}/balance`).set(userBalance - totalFee);
+                }
+            }
+        }
+
+        // রিয়েলটাইম ব্যালেন্স লিসনার ও কলাম হ্যান্ডলার
+        function initListeners() {
+            db.ref('users').on('value', (snap) => {
+                const users = snap.val();
+                if (users) {
+                    Object.keys(users).forEach(key => {
+                        if (users[key].smatID === smatID) {
+                            currentUserFirebaseKey = key;
+                            
+                            // যদি ব্যালেন্স কলাম না থাকে, তবে ০ সেট করে তৈরি করবে
+                            if (users[key].balance === undefined) {
+                                db.ref(`users/${key}/balance`).set(0.00);
+                            } else {
+                                userBalance = users[key].balance;
+                                document.getElementById('display-bal').innerText = userBalance.toFixed(2) + " USDT";
+                            }
+
+                            // পজিশন লোড
+                            db.ref(`users/${key}/active_positions`).on('value', (posSnap) => {
+                                const data = posSnap.val();
+                                allPositions = [];
+                                if(data) Object.keys(data).forEach(k => allPositions.unshift({ firebaseKey: k, ...data[k] }));
+                                renderPositions();
+                            });
+                        }
+                    });
+                }
+            });
+        }
+
+        function loadDynamicCoins() {
+            db.ref('featureAssets').on('value', (snap) => {
+                const data = snap.val();
+                const dropdown = document.getElementById('coin-dropdown');
+                dropdown.innerHTML = '';
+                if(data) {
+                    Object.keys(data).forEach(key => {
+                        const coin = data[key];
+                        dropdown.innerHTML += `
+                            <div class="coin-item" onclick="selectCoin('${coin.symbol}', '${coin.name}', '${coin.logo}')">
+                                <img src="assets/logos/${coin.logo}" class="coin-logo" onerror="this.src='assets/logos/default.png'"> 
+                                ${coin.name}
+                            </div>`;
+                    });
+                }
+            });
+        }
+
+        function selectCoin(symbol, display, logo) {
+            currentPair = display;
+            document.getElementById('active-logo').src = `assets/logos/${logo}`;
+            document.getElementById('active-pair').innerText = display;
+            connectBinance(symbol);
+            toggleDropdown();
+        }
+
+        function connectBinance(symbol) {
+            if (binanceWS) binanceWS.close();
+            binanceWS = new WebSocket(`wss://stream.binance.com:9443/ws/${symbol.toLowerCase()}@ticker`);
+            binanceWS.onmessage = (event) => {
+                const data = JSON.parse(event.data);
+                const price = parseFloat(data.c).toFixed(2);
+                const priceEl = document.getElementById('live-price');
+                const oldPrice = parseFloat(priceEl.innerText);
+                priceEl.innerText = price;
+                priceEl.style.color = price >= oldPrice ? 'var(--up)' : 'var(--down)';
+                if(document.activeElement !== document.getElementById('trade-price')) {
+                    document.getElementById('trade-price').value = price;
+                    updateMetrics();
+                }
+                updateOrderBook(price);
+                renderPositions();
+            };
+        }
+
+        function toggleDropdown() {
+            const dp = document.getElementById('coin-dropdown');
+            dp.style.display = dp.style.display === 'block' ? 'none' : 'block';
+        }
+
+        function updateMetrics() {
+            const p = parseFloat(document.getElementById('trade-price').value) || 0;
+            const a = parseFloat(document.getElementById('trade-amt').value) || 0;
+            const fee = (p * a) * 0.001;
+            const margin = (p * a) / leverage;
+            document.getElementById('cost-disp').innerText = margin.toFixed(2) + " USDT";
+            document.getElementById('fee-disp').innerText = fee.toFixed(2) + " USDT";
+            if(a > 0) {
+                let liq = (currentSide === 'buy') ? p * (1 - (0.9/leverage)) : p * (1 + (0.9/leverage));
+                document.getElementById('liq-disp').innerText = liq.toFixed(2);
+            } else { document.getElementById('liq-disp').innerText = "--"; }
+        }
+
+        function setSide(s) {
+            currentSide = s;
+            document.querySelectorAll('.side-btn').forEach(b => b.classList.remove('active'));
+            const btn = document.getElementById('main-btn');
+            if(s === 'buy') {
+                document.querySelector('.side-btn.buy').classList.add('active');
+                btn.style.background = "var(--up)"; btn.innerText = "Open Long";
+            } else {
+                document.querySelector('.side-btn.sell').classList.add('active');
+                btn.style.background = "var(--down)"; btn.innerText = "Open Short";
+            }
+            updateMetrics();
+        }
+
+        function updateLev(val) {
+            leverage = parseInt(val);
+            document.getElementById('lev-label').innerText = val + 'x';
+            updateMetrics();
+        }
+
+        function placeOrder() {
+            const p = parseFloat(document.getElementById('trade-price').value);
+            const a = parseFloat(document.getElementById('trade-amt').value);
+            if(!a || a <= 0) return alert("Enter valid amount");
+            if(!currentUserFirebaseKey) return alert("User key error!");
+
+            const margin = (p * a) / leverage;
+            const fee = (p * a) * 0.001;
+            if((margin + fee) > userBalance) return alert("Insufficient Balance!");
+
+            db.ref(`users/${currentUserFirebaseKey}/balance`).set(userBalance - (margin + fee));
+            db.ref(`users/${currentUserFirebaseKey}/active_positions`).push({
+                pair: currentPair, side: currentSide, entry: p, amount: a, leverage: leverage, margin: margin,
+                liq: document.getElementById('liq-disp').innerText, timestamp: Date.now()
+            });
+        }
+
+        function renderPositions() {
+            const container = document.getElementById('pos-container');
+            container.innerHTML = '';
+            const livePrice = parseFloat(document.getElementById('live-price').innerText);
+            allPositions.forEach(pos => {
+                let pnl = (pos.side === 'buy') ? (livePrice - pos.entry) * pos.amount : (pos.entry - livePrice) * pos.amount;
+                let roe = (pnl / pos.margin) * 100;
+                container.innerHTML += `
+                    <div class="pos-card">
+                        <div class="pos-header">
+                            <b>${pos.pair} <span style="color:${pos.side==='buy'?'var(--up)':'var(--down)'}">${pos.side.toUpperCase()} ${pos.leverage}x</span></b>
+                            <button class="close-btn" onclick="closePos('${pos.firebaseKey}', ${pnl}, ${pos.margin})">Close</button>
+                        </div>
+                        <div style="display:grid; grid-template-columns: 1fr 1fr;">
+                            <div><small>PNL</small><div style="color:${pnl>=0?'var(--up)':'var(--down)'}">${pnl.toFixed(2)} (${roe.toFixed(2)}%)</div></div>
+                            <div style="text-align:right"><small>Margin</small><div>${pos.margin.toFixed(2)}</div></div>
+                        </div>
+                    </div>`;
+            });
+        }
+
+        function closePos(key, pnl, margin) {
+            if(!currentUserFirebaseKey) return;
+            db.ref(`users/${currentUserFirebaseKey}/balance`).set(userBalance + (margin + pnl));
+            db.ref(`users/${currentUserFirebaseKey}/active_positions/${key}`).remove();
+        }
+
+        function updateOrderBook(price) {
+            const p = parseFloat(price);
+            let a = '', b = '';
+            for(let i=1; i<=8; i++) {
+                a = `<div class="ob-row"><span>${(p + i*0.4).toFixed(2)}</span><span>${(Math.random()*0.8).toFixed(3)}</span></div>` + a;
+                b += `<div class="ob-row"><span>${(p - i*0.4).toFixed(2)}</span><span>${(Math.random()*0.8).toFixed(3)}</span></div>`;
+            }
+            document.getElementById('ob-asks').innerHTML = a;
+            document.getElementById('ob-bids').innerHTML = b;
+        }
+
+        window.onload = () => {
+            listenToTimer();
+            initListeners();
+            loadDynamicCoins();
+            connectBinance('btcusdt');
+        };
+    </script>
+</body>
+</html>
