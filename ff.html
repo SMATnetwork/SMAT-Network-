@@ -45,8 +45,9 @@
         .ob-row { display: flex; justify-content: space-between; line-height: 1.6; font-family: 'Roboto Mono', monospace; font-size: 10px; }
         .price-mid { font-size: 16px; font-weight: bold; text-align: center; padding: 12px 0; margin: 8px 0; background: rgba(255,255,255,0.02); border-radius: 4px; }
 
-        .pos-section { margin-top: 20px; padding: 0 10px; }
-        .pos-card { background: var(--card); border: 1px solid var(--border); border-radius: 8px; padding: 15px; margin-bottom: 12px; }
+        /* History Section Fix */
+        .pos-section { margin-top: 20px; padding: 0 10px; min-height: 400px; }
+        .pos-card { background: var(--card); border: 1px solid var(--border); border-radius: 8px; padding: 15px; margin-bottom: 12px; display: block; }
         .pos-header { display: flex; justify-content: space-between; margin-bottom: 10px; border-bottom: 1px solid var(--border); padding-bottom: 8px; }
         .close-btn { background: #2b3139; color: #fff; border: 1px solid #474d57; padding: 6px 12px; border-radius: 4px; font-size: 10px; cursor: pointer; font-weight: bold; }
         
@@ -230,11 +231,11 @@
 
         function connectBinance(symbol) {
             if (binanceWS) binanceWS.close();
+            // Fast Stream using ticker instead of kline
             binanceWS = new WebSocket(`wss://stream.binance.com:9443/ws/${symbol.toLowerCase()}@ticker`);
             binanceWS.onmessage = (event) => {
                 const data = JSON.parse(event.data);
                 
-                // % Change Logic
                 const change = parseFloat(data.P).toFixed(2);
                 const changeEl = document.getElementById('price-change-pc');
                 changeEl.innerText = (change >= 0 ? '+' : '') + change + '%';
@@ -243,6 +244,8 @@
                 const price = parseFloat(data.c).toFixed(2);
                 const priceEl = document.getElementById('live-price');
                 const oldPrice = parseFloat(priceEl.innerText);
+                
+                // Real-time Update
                 priceEl.innerText = price;
                 priceEl.style.color = price >= oldPrice ? 'var(--up)' : 'var(--down)';
                 
@@ -312,10 +315,8 @@
 
         function renderPositions() {
             const container = document.getElementById('pos-container');
-            container.innerHTML = '';
             const livePrice = parseFloat(document.getElementById('live-price').innerText);
             
-            // Limit and Show More Logic
             const visiblePositions = allPositions.slice(0, historyLimit);
             if(allPositions.length > historyLimit) {
                 document.getElementById('show-more-btn').style.display = 'block';
@@ -323,10 +324,11 @@
                 document.getElementById('show-more-btn').style.display = 'none';
             }
 
+            let html = '';
             visiblePositions.forEach(pos => {
                 let pnl = (pos.side === 'buy') ? (livePrice - pos.entry) * pos.amount : (pos.entry - livePrice) * pos.amount;
                 let roe = (pnl / pos.margin) * 100;
-                container.innerHTML += `
+                html += `
                     <div class="pos-card">
                         <div class="pos-header">
                             <b>${pos.pair} <span style="color:${pos.side==='buy'?'var(--up)':'var(--down)'}">${pos.side.toUpperCase()} ${pos.leverage}x</span></b>
@@ -339,6 +341,10 @@
                         </div>
                     </div>`;
             });
+            // Update only if data changed or content is empty
+            if(container.innerHTML !== html) {
+                container.innerHTML = html;
+            }
         }
 
         function increaseLimit() {
