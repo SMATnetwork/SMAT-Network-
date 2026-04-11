@@ -6,7 +6,6 @@
     <title>SMAT CEX | Ultra Futures</title>
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-database-compat.js"></script>
-    
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
         :root {
@@ -67,6 +66,7 @@
             <b id="active-pair">BTC/USDT</b>
             <i class="fas fa-caret-down"></i>
         </div>
+        
         <div id="coin-dropdown" class="coin-dropdown"></div>
 
         <div class="header-right">
@@ -136,10 +136,7 @@
             projectId: "smat-exchange",
             appId: "1:836334569396:web:679effe640b3453412d4e1"
         };
-        
-        if (!firebase.apps.length) {
-            firebase.initializeApp(firebaseConfig);
-        }
+        firebase.initializeApp(firebaseConfig);
         const db = firebase.database();
 
         const smatID = localStorage.getItem('smatID');
@@ -147,9 +144,10 @@
 
         let currentPair = 'BTC/USDT', currentSide = 'buy', leverage = 20;
         let userBalance = 0, allPositions = [], binanceWS = null;
-        let lastFundingTimestamp = 0, currentUserFirebaseKey = null, historyLimit = 20;
+        let lastFundingTimestamp = 0;
+        let currentUserFirebaseKey = null;
+        let historyLimit = 20;
 
-        // 1. Funding Timer Logic (0.1% Fee)
         function listenToTimer() {
             db.ref('fundingLogic/timeLeft').on('value', (snap) => {
                 const totalSeconds = snap.val();
@@ -158,7 +156,9 @@
                         applyFundingFee(); 
                         lastFundingTimestamp = totalSeconds;
                     }
-                    const h = Math.floor(totalSeconds / 3600), m = Math.floor((totalSeconds % 3600) / 60), s = totalSeconds % 60;
+                    const h = Math.floor(totalSeconds / 3600);
+                    const m = Math.floor((totalSeconds % 3600) / 60);
+                    const s = totalSeconds % 60;
                     document.getElementById('countdown').innerText = `${String(h).padStart(2,'0')}:${String(m).padStart(2,'0')}:${String(s).padStart(2,'0')}`;
                 }
             });
@@ -167,12 +167,16 @@
         function applyFundingFee() {
             if (allPositions.length > 0 && currentUserFirebaseKey) {
                 let totalFee = 0;
-                allPositions.forEach(pos => totalFee += (pos.entry * pos.amount) * 0.001);
-                if (totalFee > 0) db.ref(`users/${currentUserFirebaseKey}/balance`).set(userBalance - totalFee);
+                allPositions.forEach(pos => {
+                    const positionValue = pos.entry * pos.amount;
+                    totalFee += positionValue * 0.001; 
+                });
+                if (totalFee > 0) {
+                    db.ref(`users/${currentUserFirebaseKey}/balance`).set(userBalance - totalFee);
+                }
             }
         }
 
-        // 2. Initial Data Listeners
         function initListeners() {
             db.ref('users').on('value', (snap) => {
                 const users = snap.val();
@@ -180,9 +184,12 @@
                     Object.keys(users).forEach(key => {
                         if (users[key].smatID === smatID) {
                             currentUserFirebaseKey = key;
-                            userBalance = users[key].balance || 0;
-                            document.getElementById('display-bal').innerText = userBalance.toFixed(2) + " USDT";
-                            
+                            if (users[key].balance === undefined) {
+                                db.ref(`users/${key}/balance`).set(0.00);
+                            } else {
+                                userBalance = users[key].balance;
+                                document.getElementById('display-bal').innerText = userBalance.toFixed(2) + " USDT";
+                            }
                             db.ref(`users/${key}/active_positions`).on('value', (posSnap) => {
                                 const data = posSnap.val();
                                 allPositions = [];
@@ -195,17 +202,30 @@
             });
         }
 
-        // 3. Asset & Binance Logic
         function loadDynamicCoins() {
             db.ref('featureAssets').on('value', (snap) => {
-                const data = snap.val(), dropdown = document.getElementById('coin-dropdown');
+                const data = snap.val();
+                const dropdown = document.getElementById('coin-dropdown');
                 dropdown.innerHTML = '';
-                if(data) Object.keys(data).forEach(key => {
-                    const coin = data[key];
-                    dropdown.innerHTML += `<div class="coin-item" onclick="selectCoin('${coin.symbol}', '${coin.name}', '${coin.logo}')">
-                        <img src="assets/logos/${coin.logo}" class="coin-logo"> ${coin.name}</div>`;
-                });
+                if(data) {
+                    Object.keys(data).forEach(key => {
+                        const coin = data[key];
+                        dropdown.innerHTML += `
+                            <div class="coin-item" onclick="selectCoin('${coin.symbol}', '${coin.name}', '${coin.logo}')">
+                                <img src="assets/logos/${coin.logo}" class="coin-logo" onerror="this.src='assets/logos/default.png'"> 
+                                ${coin.name}
+                            </div>`;
+                    });
+                }
             });
+        }
+
+        function selectCoin(symbol, display, logo) {
+            currentPair = display;
+            document.getElementById('active-logo').src = `assets/logos/${logo}`;
+            document.getElementById('active-pair').innerText = display;
+            connectBinance(symbol);
+            toggleDropdown();
         }
 
         function connectBinance(symbol) {
@@ -213,12 +233,16 @@
             binanceWS = new WebSocket(`wss://stream.binance.com:9443/ws/${symbol.toLowerCase()}@ticker`);
             binanceWS.onmessage = (event) => {
                 const data = JSON.parse(event.data);
-                const price = parseFloat(data.c).toFixed(2), change = parseFloat(data.P).toFixed(2);
-                const changeEl = document.getElementById('price-change-pc'), priceEl = document.getElementById('live-price');
-                const oldPrice = parseFloat(priceEl.innerText);
-
+                
+                // % Change Logic
+                const change = parseFloat(data.P).toFixed(2);
+                const changeEl = document.getElementById('price-change-pc');
                 changeEl.innerText = (change >= 0 ? '+' : '') + change + '%';
                 changeEl.style.color = change >= 0 ? 'var(--up)' : 'var(--down)';
+
+                const price = parseFloat(data.c).toFixed(2);
+                const priceEl = document.getElementById('live-price');
+                const oldPrice = parseFloat(priceEl.innerText);
                 priceEl.innerText = price;
                 priceEl.style.color = price >= oldPrice ? 'var(--up)' : 'var(--down)';
                 
@@ -231,8 +255,25 @@
             };
         }
 
-        // 4. UI Actions
-        window.setSide = (s) => {
+        function toggleDropdown() {
+            const dp = document.getElementById('coin-dropdown');
+            dp.style.display = dp.style.display === 'block' ? 'none' : 'block';
+        }
+
+        function updateMetrics() {
+            const p = parseFloat(document.getElementById('trade-price').value) || 0;
+            const a = parseFloat(document.getElementById('trade-amt').value) || 0;
+            const fee = (p * a) * 0.001;
+            const margin = (p * a) / leverage;
+            document.getElementById('cost-disp').innerText = margin.toFixed(2) + " USDT";
+            document.getElementById('fee-disp').innerText = fee.toFixed(2) + " USDT";
+            if(a > 0) {
+                let liq = (currentSide === 'buy') ? p * (1 - (0.9/leverage)) : p * (1 + (0.9/leverage));
+                document.getElementById('liq-disp').innerText = liq.toFixed(2);
+            } else { document.getElementById('liq-disp').innerText = "--"; }
+        }
+
+        function setSide(s) {
             currentSide = s;
             document.querySelectorAll('.side-btn').forEach(b => b.classList.remove('active'));
             const btn = document.getElementById('main-btn');
@@ -244,31 +285,22 @@
                 btn.style.background = "var(--down)"; btn.innerText = "Open Short";
             }
             updateMetrics();
-        };
+        }
 
-        window.updateLev = (val) => {
+        function updateLev(val) {
             leverage = parseInt(val);
             document.getElementById('lev-label').innerText = val + 'x';
             updateMetrics();
-        };
+        }
 
-        window.updateMetrics = () => {
-            const p = parseFloat(document.getElementById('trade-price').value) || 0;
-            const a = parseFloat(document.getElementById('trade-amt').value) || 0;
-            const fee = (p * a) * 0.001, margin = (p * a) / leverage;
-            document.getElementById('cost-disp').innerText = margin.toFixed(2) + " USDT";
-            document.getElementById('fee-disp').innerText = fee.toFixed(2) + " USDT";
-            if(a > 0) {
-                let liq = (currentSide === 'buy') ? p * (1 - (0.9/leverage)) : p * (1 + (0.9/leverage));
-                document.getElementById('liq-disp').innerText = liq.toFixed(2);
-            } else document.getElementById('liq-disp').innerText = "--";
-        };
-
-        window.placeOrder = () => {
-            const p = parseFloat(document.getElementById('trade-price').value), a = parseFloat(document.getElementById('trade-amt').value);
-            const margin = (p * a) / leverage, fee = (p * a) * 0.001;
+        function placeOrder() {
+            const p = parseFloat(document.getElementById('trade-price').value);
+            const a = parseFloat(document.getElementById('trade-amt').value);
             if(!a || a <= 0) return alert("Enter valid amount");
-            if(!currentUserFirebaseKey) return alert("System Syncing... try again");
+            if(!currentUserFirebaseKey) return alert("User key error!");
+
+            const margin = (p * a) / leverage;
+            const fee = (p * a) * 0.001;
             if((margin + fee) > userBalance) return alert("Insufficient Balance!");
 
             db.ref(`users/${currentUserFirebaseKey}/balance`).set(userBalance - (margin + fee));
@@ -276,15 +308,22 @@
                 pair: currentPair, side: currentSide, entry: p, amount: a, leverage: leverage, margin: margin,
                 liq: document.getElementById('liq-disp').innerText, timestamp: Date.now()
             });
-        };
+        }
 
-        window.renderPositions = () => {
-            const container = document.getElementById('pos-container'), livePrice = parseFloat(document.getElementById('live-price').innerText);
+        function renderPositions() {
+            const container = document.getElementById('pos-container');
             container.innerHTML = '';
-            const visible = allPositions.slice(0, historyLimit);
-            document.getElementById('show-more-btn').style.display = allPositions.length > historyLimit ? 'block' : 'none';
+            const livePrice = parseFloat(document.getElementById('live-price').innerText);
+            
+            // Limit and Show More Logic
+            const visiblePositions = allPositions.slice(0, historyLimit);
+            if(allPositions.length > historyLimit) {
+                document.getElementById('show-more-btn').style.display = 'block';
+            } else {
+                document.getElementById('show-more-btn').style.display = 'none';
+            }
 
-            visible.forEach(pos => {
+            visiblePositions.forEach(pos => {
                 let pnl = (pos.side === 'buy') ? (livePrice - pos.entry) * pos.amount : (pos.entry - livePrice) * pos.amount;
                 let roe = (pnl / pos.margin) * 100;
                 container.innerHTML += `
@@ -293,34 +332,43 @@
                             <b>${pos.pair} <span style="color:${pos.side==='buy'?'var(--up)':'var(--down)'}">${pos.side.toUpperCase()} ${pos.leverage}x</span></b>
                             <button class="close-btn" onclick="closePos('${pos.firebaseKey}', ${pnl}, ${pos.margin})">Close</button>
                         </div>
-                        <div style="display:grid; grid-template-columns: 1fr 1fr; gap: 5px;">
-                            <div><small style="color:var(--text-sec)">PNL</small><div style="color:${pnl>=0?'var(--up)':'var(--down)'; font-weight:bold;">${pnl.toFixed(2)} (${roe.toFixed(2)}%)</div></div>
-                            <div style="text-align:right"><small style="color:var(--text-sec)">Margin</small><div>${pos.margin.toFixed(2)}</div></div>
-                            <div><small style="color:var(--text-sec)">Entry Price</small><div style="color:var(--text-main)">${parseFloat(pos.entry).toFixed(2)}</div></div>
+                        <div style="display:grid; grid-template-columns: 1fr 1fr;">
+                            <div><small>PNL</small><div style="color:${pnl>=0?'var(--up)':'var(--down)'}">${pnl.toFixed(2)} (${roe.toFixed(2)}%)</div></div>
+                            <div style="text-align:right"><small>Margin</small><div>${pos.margin.toFixed(2)}</div></div>
+                            <div style="margin-top:5px;"><small>Entry Price</small><div>${parseFloat(pos.entry).toFixed(2)}</div></div>
                         </div>
                     </div>`;
             });
-        };
+        }
 
-        window.closePos = (key, pnl, margin) => {
+        function increaseLimit() {
+            historyLimit += 10;
+            renderPositions();
+        }
+
+        function closePos(key, pnl, margin) {
+            if(!currentUserFirebaseKey) return;
             db.ref(`users/${currentUserFirebaseKey}/balance`).set(userBalance + (margin + pnl));
             db.ref(`users/${currentUserFirebaseKey}/active_positions/${key}`).remove();
-        };
-
-        window.increaseLimit = () => { historyLimit += 10; renderPositions(); };
-        window.toggleDropdown = () => { const dp = document.getElementById('coin-dropdown'); dp.style.display = dp.style.display === 'block' ? 'none' : 'block'; };
-        window.selectCoin = (s, d, l) => { currentPair = d; document.getElementById('active-logo').src = `assets/logos/${l}`; document.getElementById('active-pair').innerText = d; connectBinance(s); toggleDropdown(); };
+        }
 
         function updateOrderBook(price) {
-            const p = parseFloat(price); let a = '', b = '';
+            const p = parseFloat(price);
+            let a = '', b = '';
             for(let i=1; i<=8; i++) {
                 a = `<div class="ob-row"><span>${(p + i*0.4).toFixed(2)}</span><span>${(Math.random()*0.8).toFixed(3)}</span></div>` + a;
                 b += `<div class="ob-row"><span>${(p - i*0.4).toFixed(2)}</span><span>${(Math.random()*0.8).toFixed(3)}</span></div>`;
             }
-            document.getElementById('ob-asks').innerHTML = a; document.getElementById('ob-bids').innerHTML = b;
+            document.getElementById('ob-asks').innerHTML = a;
+            document.getElementById('ob-bids').innerHTML = b;
         }
 
-        window.onload = () => { listenToTimer(); initListeners(); loadDynamicCoins(); connectBinance('btcusdt'); };
+        window.onload = () => {
+            listenToTimer();
+            initListeners();
+            loadDynamicCoins();
+            connectBinance('btcusdt');
+        };
     </script>
 </body>
 </html>
