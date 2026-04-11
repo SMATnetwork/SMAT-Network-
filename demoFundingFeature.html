@@ -20,6 +20,9 @@
         .coin-select-btn { display: flex; align-items: center; gap: 8px; background: var(--border); padding: 6px 15px; border-radius: 20px; cursor: pointer; }
         .coin-logo { width: 22px; height: 22px; border-radius: 50%; background: #222; }
 
+        .header-right { display: flex; align-items: center; gap: 15px; text-align: right; }
+        .price-change { font-weight: bold; font-size: 12px; }
+
         .coin-dropdown { position: absolute; top: 55px; left: 15px; background: var(--card); border: 1px solid var(--border); border-radius: 8px; width: 180px; display: none; z-index: 2000; box-shadow: 0 10px 30px rgba(0,0,0,0.5); max-height: 300px; overflow-y: auto; }
         .coin-item { display: flex; align-items: center; gap: 10px; padding: 12px; border-bottom: 1px solid var(--border); cursor: pointer; }
 
@@ -46,6 +49,8 @@
         .pos-card { background: var(--card); border: 1px solid var(--border); border-radius: 8px; padding: 15px; margin-bottom: 12px; }
         .pos-header { display: flex; justify-content: space-between; margin-bottom: 10px; border-bottom: 1px solid var(--border); padding-bottom: 8px; }
         .close-btn { background: #2b3139; color: #fff; border: 1px solid #474d57; padding: 6px 12px; border-radius: 4px; font-size: 10px; cursor: pointer; font-weight: bold; }
+        
+        .show-more-btn { width: 100%; padding: 12px; background: var(--card); border: 1px solid var(--border); color: var(--primary); font-weight: bold; border-radius: 6px; cursor: pointer; margin-bottom: 20px; }
 
         .footer { position: fixed; bottom: 0; width: 100%; height: 65px; background: #111418; display: flex; justify-content: space-around; align-items: center; border-top: 1px solid var(--border); z-index: 1000; }
         .f-nav { text-decoration: none; color: var(--text-sec); text-align: center; font-size: 10px; flex: 1; }
@@ -64,9 +69,15 @@
         
         <div id="coin-dropdown" class="coin-dropdown"></div>
 
-        <div style="text-align: right;">
-            <div style="font-size: 8px; color: var(--text-sec); text-transform: uppercase;">Funding Countdown</div>
-            <div id="countdown" style="color:var(--primary); font-weight:bold; font-size: 13px;">00:00:00</div>
+        <div class="header-right">
+            <div>
+                <div id="price-change-pc" class="price-change">0.00%</div>
+                <div style="font-size: 7px; color: var(--text-sec);">24h Change</div>
+            </div>
+            <div>
+                <div id="countdown" style="color:var(--primary); font-weight:bold; font-size: 13px;">00:00:00</div>
+                <div style="font-size: 7px; color: var(--text-sec); text-transform: uppercase;">Funding</div>
+            </div>
         </div>
     </header>
 
@@ -108,6 +119,7 @@
     <div class="pos-section">
         <h3 style="margin-bottom:15px; font-size:14px; border-left:4px solid var(--primary); padding-left:10px;">My Trading History</h3>
         <div id="pos-container"></div>
+        <button id="show-more-btn" class="show-more-btn" onclick="increaseLimit()" style="display:none;">Show More (+10)</button>
     </div>
 
     <footer class="footer">
@@ -134,6 +146,7 @@
         let userBalance = 0, allPositions = [], binanceWS = null;
         let lastFundingTimestamp = 0;
         let currentUserFirebaseKey = null;
+        let historyLimit = 20;
 
         function listenToTimer() {
             db.ref('fundingLogic/timeLeft').on('value', (snap) => {
@@ -164,7 +177,6 @@
             }
         }
 
-        // রিয়েলটাইম ব্যালেন্স লিসনার ও কলাম হ্যান্ডলার
         function initListeners() {
             db.ref('users').on('value', (snap) => {
                 const users = snap.val();
@@ -172,16 +184,12 @@
                     Object.keys(users).forEach(key => {
                         if (users[key].smatID === smatID) {
                             currentUserFirebaseKey = key;
-                            
-                            // যদি ব্যালেন্স কলাম না থাকে, তবে ০ সেট করে তৈরি করবে
                             if (users[key].balance === undefined) {
                                 db.ref(`users/${key}/balance`).set(0.00);
                             } else {
                                 userBalance = users[key].balance;
                                 document.getElementById('display-bal').innerText = userBalance.toFixed(2) + " USDT";
                             }
-
-                            // পজিশন লোড
                             db.ref(`users/${key}/active_positions`).on('value', (posSnap) => {
                                 const data = posSnap.val();
                                 allPositions = [];
@@ -225,11 +233,19 @@
             binanceWS = new WebSocket(`wss://stream.binance.com:9443/ws/${symbol.toLowerCase()}@ticker`);
             binanceWS.onmessage = (event) => {
                 const data = JSON.parse(event.data);
+                
+                // % Change Logic
+                const change = parseFloat(data.P).toFixed(2);
+                const changeEl = document.getElementById('price-change-pc');
+                changeEl.innerText = (change >= 0 ? '+' : '') + change + '%';
+                changeEl.style.color = change >= 0 ? 'var(--up)' : 'var(--down)';
+
                 const price = parseFloat(data.c).toFixed(2);
                 const priceEl = document.getElementById('live-price');
                 const oldPrice = parseFloat(priceEl.innerText);
                 priceEl.innerText = price;
                 priceEl.style.color = price >= oldPrice ? 'var(--up)' : 'var(--down)';
+                
                 if(document.activeElement !== document.getElementById('trade-price')) {
                     document.getElementById('trade-price').value = price;
                     updateMetrics();
@@ -298,7 +314,16 @@
             const container = document.getElementById('pos-container');
             container.innerHTML = '';
             const livePrice = parseFloat(document.getElementById('live-price').innerText);
-            allPositions.forEach(pos => {
+            
+            // Limit and Show More Logic
+            const visiblePositions = allPositions.slice(0, historyLimit);
+            if(allPositions.length > historyLimit) {
+                document.getElementById('show-more-btn').style.display = 'block';
+            } else {
+                document.getElementById('show-more-btn').style.display = 'none';
+            }
+
+            visiblePositions.forEach(pos => {
                 let pnl = (pos.side === 'buy') ? (livePrice - pos.entry) * pos.amount : (pos.entry - livePrice) * pos.amount;
                 let roe = (pnl / pos.margin) * 100;
                 container.innerHTML += `
@@ -313,6 +338,11 @@
                         </div>
                     </div>`;
             });
+        }
+
+        function increaseLimit() {
+            historyLimit += 10;
+            renderPositions();
         }
 
         function closePos(key, pnl, margin) {
