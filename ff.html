@@ -4,10 +4,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>SMAT CEX | Ultra Futures</title>
-    
-    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
-    
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-database-compat.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
         :root {
@@ -36,7 +34,7 @@
 
         .input-group { background: var(--input-bg); border: 1px solid var(--border); border-radius: 4px; padding: 10px; display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
         .input-group input { background: transparent; border: none; color: white; width: 60%; outline: none; font-size: 14px; text-align: right; font-weight: bold; }
-        input[type="range"] { width: 100%; accent-color: var(--primary); height: 5px; margin: 8px 0; cursor: pointer; }
+        input[type="range"] { width: 100%; accent-color: var(--primary); height: 5px; margin: 8px 0; }
 
         .metrics-box { background: rgba(255,255,255,0.03); padding: 12px; border-radius: 6px; border: 1px solid var(--border); margin-top: 5px; }
         .m-row { display: flex; justify-content: space-between; margin-bottom: 6px; color: var(--text-sec); font-size: 10px; }
@@ -52,10 +50,6 @@
         .pos-header { display: flex; justify-content: space-between; margin-bottom: 10px; border-bottom: 1px solid var(--border); padding-bottom: 8px; }
         .close-btn { background: #2b3139; color: #fff; border: 1px solid #474d57; padding: 6px 12px; border-radius: 4px; font-size: 10px; cursor: pointer; font-weight: bold; }
         
-        .pos-details { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: 8px; }
-        .pos-details div { font-size: 9px; color: var(--text-sec); }
-        .pos-details b { display: block; color: var(--text-main); font-size: 11px; margin-top: 2px; }
-
         .show-more-btn { width: 100%; padding: 12px; background: var(--card); border: 1px solid var(--border); color: var(--primary); font-weight: bold; border-radius: 6px; cursor: pointer; margin-bottom: 20px; }
 
         .footer { position: fixed; bottom: 0; width: 100%; height: 65px; background: #111418; display: flex; justify-content: space-around; align-items: center; border-top: 1px solid var(--border); z-index: 1000; }
@@ -72,6 +66,7 @@
             <b id="active-pair">BTC/USDT</b>
             <i class="fas fa-caret-down"></i>
         </div>
+        
         <div id="coin-dropdown" class="coin-dropdown"></div>
 
         <div class="header-right">
@@ -89,8 +84,8 @@
     <div class="trading-grid">
         <div class="trade-panel">
             <div class="side-tabs">
-                <button id="buy-tab" class="side-btn buy active" onclick="setSide('buy')">Buy</button>
-                <button id="sell-tab" class="side-btn sell" onclick="setSide('sell')">Sell</button>
+                <button class="side-btn buy active" onclick="setSide('buy')">Buy</button>
+                <button class="side-btn sell" onclick="setSide('sell')">Sell</button>
             </div>
             <div style="display:flex; justify-content:space-between; margin-bottom:8px;">
                 <span style="color:var(--text-sec)">Avbl Balance</span>
@@ -101,7 +96,7 @@
                     <span style="color:var(--text-sec)">Leverage</span>
                     <b id="lev-label" style="color:var(--primary)">20x</b>
                 </div>
-                <input type="range" min="1" max="100" step="1" value="20" id="lev-range" oninput="updateLev(this.value)">
+                <input type="range" min="10" max="100" step="10" value="20" oninput="updateLev(this.value)">
             </div>
             <div class="input-group"><span>Price</span><input type="number" id="trade-price" value="0.00" oninput="updateMetrics()"></div>
             <div class="input-group"><span>Amount</span><input type="number" id="trade-amt" placeholder="0.00" oninput="updateMetrics()"></div>
@@ -134,7 +129,6 @@
     </footer>
 
     <script>
-        // --- Firebase Initialization ---
         const firebaseConfig = {
             apiKey: "AIzaSyAMxtJedkehhxJRMPZLjhpKHqneHEWsGlE",
             authDomain: "smat-exchange.firebaseapp.com",
@@ -142,22 +136,18 @@
             projectId: "smat-exchange",
             appId: "1:836334569396:web:679effe640b3453412d4e1"
         };
-        
-        if (!firebase.apps.length) {
-            firebase.initializeApp(firebaseConfig);
-        }
+        firebase.initializeApp(firebaseConfig);
         const db = firebase.database();
 
         const smatID = localStorage.getItem('smatID');
-        if (!smatID) {
-            window.location.href = "logIn.html";
-        }
+        if (!smatID) { window.location.href = "logIn.html"; }
 
         let currentPair = 'BTC/USDT', currentSide = 'buy', leverage = 20;
         let userBalance = 0, allPositions = [], binanceWS = null;
-        let lastFundingTimestamp = 0, currentUserFirebaseKey = null, historyLimit = 20;
+        let lastFundingTimestamp = 0;
+        let currentUserFirebaseKey = null;
+        let historyLimit = 20;
 
-        // 1. Funding Timer Logic
         function listenToTimer() {
             db.ref('fundingLogic/timeLeft').on('value', (snap) => {
                 const totalSeconds = snap.val();
@@ -166,7 +156,9 @@
                         applyFundingFee(); 
                         lastFundingTimestamp = totalSeconds;
                     }
-                    const h = Math.floor(totalSeconds / 3600), m = Math.floor((totalSeconds % 3600) / 60), s = totalSeconds % 60;
+                    const h = Math.floor(totalSeconds / 3600);
+                    const m = Math.floor((totalSeconds % 3600) / 60);
+                    const s = totalSeconds % 60;
                     document.getElementById('countdown').innerText = `${String(h).padStart(2,'0')}:${String(m).padStart(2,'0')}:${String(s).padStart(2,'0')}`;
                 }
             });
@@ -175,12 +167,16 @@
         function applyFundingFee() {
             if (allPositions.length > 0 && currentUserFirebaseKey) {
                 let totalFee = 0;
-                allPositions.forEach(pos => totalFee += (pos.entry * pos.amount) * 0.001);
-                if (totalFee > 0) db.ref(`users/${currentUserFirebaseKey}/balance`).set(userBalance - totalFee);
+                allPositions.forEach(pos => {
+                    const positionValue = pos.entry * pos.amount;
+                    totalFee += positionValue * 0.001; 
+                });
+                if (totalFee > 0) {
+                    db.ref(`users/${currentUserFirebaseKey}/balance`).set(userBalance - totalFee);
+                }
             }
         }
 
-        // 2. Data Listeners (Balance & Positions)
         function initListeners() {
             db.ref('users').on('value', (snap) => {
                 const users = snap.val();
@@ -188,9 +184,12 @@
                     Object.keys(users).forEach(key => {
                         if (users[key].smatID === smatID) {
                             currentUserFirebaseKey = key;
-                            userBalance = users[key].balance || 0;
-                            document.getElementById('display-bal').innerText = userBalance.toFixed(2) + " USDT";
-                            
+                            if (users[key].balance === undefined) {
+                                db.ref(`users/${key}/balance`).set(0.00);
+                            } else {
+                                userBalance = users[key].balance;
+                                document.getElementById('display-bal').innerText = userBalance.toFixed(2) + " USDT";
+                            }
                             db.ref(`users/${key}/active_positions`).on('value', (posSnap) => {
                                 const data = posSnap.val();
                                 allPositions = [];
@@ -203,21 +202,47 @@
             });
         }
 
-        // 3. Binance WebSocket & Price Updates
+        function loadDynamicCoins() {
+            db.ref('featureAssets').on('value', (snap) => {
+                const data = snap.val();
+                const dropdown = document.getElementById('coin-dropdown');
+                dropdown.innerHTML = '';
+                if(data) {
+                    Object.keys(data).forEach(key => {
+                        const coin = data[key];
+                        dropdown.innerHTML += `
+                            <div class="coin-item" onclick="selectCoin('${coin.symbol}', '${coin.name}', '${coin.logo}')">
+                                <img src="assets/logos/${coin.logo}" class="coin-logo" onerror="this.src='assets/logos/default.png'"> 
+                                ${coin.name}
+                            </div>`;
+                    });
+                }
+            });
+        }
+
+        function selectCoin(symbol, display, logo) {
+            currentPair = display;
+            document.getElementById('active-logo').src = `assets/logos/${logo}`;
+            document.getElementById('active-pair').innerText = display;
+            connectBinance(symbol);
+            toggleDropdown();
+        }
+
         function connectBinance(symbol) {
             if (binanceWS) binanceWS.close();
             binanceWS = new WebSocket(`wss://stream.binance.com:9443/ws/${symbol.toLowerCase()}@ticker`);
             binanceWS.onmessage = (event) => {
                 const data = JSON.parse(event.data);
-                const change = parseFloat(data.P).toFixed(2);
-                const price = parseFloat(data.c).toFixed(2);
                 
+                // % Change Logic
+                const change = parseFloat(data.P).toFixed(2);
                 const changeEl = document.getElementById('price-change-pc');
-                const priceEl = document.getElementById('live-price');
-                const oldPrice = parseFloat(priceEl.innerText) || 0;
-
                 changeEl.innerText = (change >= 0 ? '+' : '') + change + '%';
                 changeEl.style.color = change >= 0 ? 'var(--up)' : 'var(--down)';
+
+                const price = parseFloat(data.c).toFixed(2);
+                const priceEl = document.getElementById('live-price');
+                const oldPrice = parseFloat(priceEl.innerText);
                 priceEl.innerText = price;
                 priceEl.style.color = price >= oldPrice ? 'var(--up)' : 'var(--down)';
                 
@@ -230,65 +255,75 @@
             };
         }
 
-        // 4. Interface Functions
-        window.setSide = (s) => {
-            currentSide = s;
-            document.querySelectorAll('.side-btn').forEach(b => b.classList.remove('active'));
-            const btn = document.getElementById('main-btn');
-            if(s === 'buy') {
-                document.getElementById('buy-tab').classList.add('active');
-                btn.style.background = "var(--up)"; btn.innerText = "Open Long";
-            } else {
-                document.getElementById('sell-tab').classList.add('active');
-                btn.style.background = "var(--down)"; btn.innerText = "Open Short";
-            }
-            updateMetrics();
-        };
+        function toggleDropdown() {
+            const dp = document.getElementById('coin-dropdown');
+            dp.style.display = dp.style.display === 'block' ? 'none' : 'block';
+        }
 
-        window.updateLev = (val) => {
-            leverage = parseInt(val);
-            document.getElementById('lev-label').innerText = val + 'x';
-            updateMetrics();
-        };
-
-        window.updateMetrics = () => {
+        function updateMetrics() {
             const p = parseFloat(document.getElementById('trade-price').value) || 0;
             const a = parseFloat(document.getElementById('trade-amt').value) || 0;
-            const margin = (p * a) / leverage;
             const fee = (p * a) * 0.001;
+            const margin = (p * a) / leverage;
             document.getElementById('cost-disp').innerText = margin.toFixed(2) + " USDT";
             document.getElementById('fee-disp').innerText = fee.toFixed(2) + " USDT";
             if(a > 0) {
                 let liq = (currentSide === 'buy') ? p * (1 - (0.9/leverage)) : p * (1 + (0.9/leverage));
                 document.getElementById('liq-disp').innerText = liq.toFixed(2);
-            } else document.getElementById('liq-disp').innerText = "--";
-        };
+            } else { document.getElementById('liq-disp').innerText = "--"; }
+        }
 
-        window.placeOrder = () => {
+        function setSide(s) {
+            currentSide = s;
+            document.querySelectorAll('.side-btn').forEach(b => b.classList.remove('active'));
+            const btn = document.getElementById('main-btn');
+            if(s === 'buy') {
+                document.querySelector('.side-btn.buy').classList.add('active');
+                btn.style.background = "var(--up)"; btn.innerText = "Open Long";
+            } else {
+                document.querySelector('.side-btn.sell').classList.add('active');
+                btn.style.background = "var(--down)"; btn.innerText = "Open Short";
+            }
+            updateMetrics();
+        }
+
+        function updateLev(val) {
+            leverage = parseInt(val);
+            document.getElementById('lev-label').innerText = val + 'x';
+            updateMetrics();
+        }
+
+        function placeOrder() {
             const p = parseFloat(document.getElementById('trade-price').value);
             const a = parseFloat(document.getElementById('trade-amt').value);
+            if(!a || a <= 0) return alert("Enter valid amount");
+            if(!currentUserFirebaseKey) return alert("User key error!");
+
             const margin = (p * a) / leverage;
             const fee = (p * a) * 0.001;
-            if(!a || a <= 0) return alert("Enter valid amount");
-            if(!currentUserFirebaseKey) return alert("User key not found!");
-            if((margin + fee) > userBalance) return alert("Insufficient Balance");
+            if((margin + fee) > userBalance) return alert("Insufficient Balance!");
 
             db.ref(`users/${currentUserFirebaseKey}/balance`).set(userBalance - (margin + fee));
             db.ref(`users/${currentUserFirebaseKey}/active_positions`).push({
                 pair: currentPair, side: currentSide, entry: p, amount: a, leverage: leverage, margin: margin,
                 liq: document.getElementById('liq-disp').innerText, timestamp: Date.now()
             });
-        };
+        }
 
-        window.renderPositions = () => {
+        function renderPositions() {
             const container = document.getElementById('pos-container');
             container.innerHTML = '';
-            const livePrice = parseFloat(document.getElementById('live-price').innerText) || 0;
-            const visible = allPositions.slice(0, historyLimit);
+            const livePrice = parseFloat(document.getElementById('live-price').innerText);
             
-            document.getElementById('show-more-btn').style.display = allPositions.length > historyLimit ? 'block' : 'none';
+            // Limit and Show More Logic
+            const visiblePositions = allPositions.slice(0, historyLimit);
+            if(allPositions.length > historyLimit) {
+                document.getElementById('show-more-btn').style.display = 'block';
+            } else {
+                document.getElementById('show-more-btn').style.display = 'none';
+            }
 
-            visible.forEach(pos => {
+            visiblePositions.forEach(pos => {
                 let pnl = (pos.side === 'buy') ? (livePrice - pos.entry) * pos.amount : (pos.entry - livePrice) * pos.amount;
                 let roe = (pnl / pos.margin) * 100;
                 container.innerHTML += `
@@ -298,24 +333,23 @@
                             <button class="close-btn" onclick="closePos('${pos.firebaseKey}', ${pnl}, ${pos.margin})">Close</button>
                         </div>
                         <div style="display:grid; grid-template-columns: 1fr 1fr;">
-                            <div><small style="color:var(--text-sec)">PNL</small><div style="color:${pnl>=0?'var(--up)':'var(--down)'; font-weight:bold; font-size:13px;">${pnl.toFixed(2)} (${roe.toFixed(2)}%)</div></div>
-                            <div style="text-align:right"><small style="color:var(--text-sec)">Margin</small><div style="font-weight:bold;">${pos.margin.toFixed(2)}</div></div>
-                        </div>
-                        <div class="pos-details">
-                            <div><small>Entry Price</small><b>${parseFloat(pos.entry).toFixed(2)}</b></div>
-                            <div><small>Liq. Price</small><b style="color:orange">${pos.liq}</b></div>
+                            <div><small>PNL</small><div style="color:${pnl>=0?'var(--up)':'var(--down)'}">${pnl.toFixed(2)} (${roe.toFixed(2)}%)</div></div>
+                            <div style="text-align:right"><small>Margin</small><div>${pos.margin.toFixed(2)}</div></div>
                         </div>
                     </div>`;
             });
-        };
+        }
 
-        window.closePos = (key, pnl, margin) => {
+        function increaseLimit() {
+            historyLimit += 10;
+            renderPositions();
+        }
+
+        function closePos(key, pnl, margin) {
+            if(!currentUserFirebaseKey) return;
             db.ref(`users/${currentUserFirebaseKey}/balance`).set(userBalance + (margin + pnl));
             db.ref(`users/${currentUserFirebaseKey}/active_positions/${key}`).remove();
-        };
-
-        window.increaseLimit = () => { historyLimit += 10; renderPositions(); };
-        window.toggleDropdown = () => { const dp = document.getElementById('coin-dropdown'); dp.style.display = dp.style.display === 'block' ? 'none' : 'block'; };
+        }
 
         function updateOrderBook(price) {
             const p = parseFloat(price);
@@ -328,29 +362,11 @@
             document.getElementById('ob-bids').innerHTML = b;
         }
 
-        // Initialize App
         window.onload = () => {
             listenToTimer();
             initListeners();
-            // Load Assets
-            db.ref('featureAssets').on('value', (snap) => {
-                const data = snap.val(), dropdown = document.getElementById('coin-dropdown');
-                dropdown.innerHTML = '';
-                if(data) Object.keys(data).forEach(key => {
-                    const coin = data[key];
-                    dropdown.innerHTML += `<div class="coin-item" onclick="selectCoin('${coin.symbol}', '${coin.name}', '${coin.logo}')">
-                        <img src="assets/logos/${coin.logo}" class="coin-logo"> ${coin.name}</div>`;
-                });
-            });
+            loadDynamicCoins();
             connectBinance('btcusdt');
-        };
-
-        window.selectCoin = (symbol, display, logo) => {
-            currentPair = display;
-            document.getElementById('active-logo').src = `assets/logos/${logo}`;
-            document.getElementById('active-pair').innerText = display;
-            connectBinance(symbol);
-            toggleDropdown();
         };
     </script>
 </body>
