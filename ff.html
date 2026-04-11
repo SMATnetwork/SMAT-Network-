@@ -96,7 +96,7 @@
                     <span style="color:var(--text-sec)">Leverage</span>
                     <b id="lev-label" style="color:var(--primary)">20x</b>
                 </div>
-                <input type="range" min="10" max="100" step="10" value="20" oninput="updateLev(this.value)">
+                <input type="range" min="1" max="100" step="1" value="20" oninput="updateLev(this.value)">
             </div>
             <div class="input-group"><span>Price</span><input type="number" id="trade-price" value="0.00" oninput="updateMetrics()"></div>
             <div class="input-group"><span>Amount</span><input type="number" id="trade-amt" placeholder="0.00" oninput="updateMetrics()"></div>
@@ -326,15 +326,17 @@
             visiblePositions.forEach(pos => {
                 let pnl = (pos.side === 'buy') ? (livePrice - pos.entry) * pos.amount : (pos.entry - livePrice) * pos.amount;
                 let roe = (pnl / pos.margin) * 100;
+                // Entry Price added in card as per requirement
                 container.innerHTML += `
                     <div class="pos-card">
                         <div class="pos-header">
                             <b>${pos.pair} <span style="color:${pos.side==='buy'?'var(--up)':'var(--down)'}">${pos.side.toUpperCase()} ${pos.leverage}x</span></b>
                             <button class="close-btn" onclick="closePos('${pos.firebaseKey}', ${pnl}, ${pos.margin})">Close</button>
                         </div>
-                        <div style="display:grid; grid-template-columns: 1fr 1fr;">
-                            <div><small>PNL</small><div style="color:${pnl>=0?'var(--up)':'var(--down)'}">${pnl.toFixed(2)} (${roe.toFixed(2)}%)</div></div>
-                            <div style="text-align:right"><small>Margin</small><div>${pos.margin.toFixed(2)}</div></div>
+                        <div style="display:grid; grid-template-columns: 1fr 1fr; gap: 5px;">
+                            <div><small style="color:var(--text-sec)">PNL</small><div style="color:${pnl>=0?'var(--up)':'var(--down)'; font-weight:bold;">${pnl.toFixed(2)} (${roe.toFixed(2)}%)</div></div>
+                            <div style="text-align:right"><small style="color:var(--text-sec)">Margin</small><div>${pos.margin.toFixed(2)}</div></div>
+                            <div><small style="color:var(--text-sec)">Entry Price</small><div style="color:var(--text-main)">${parseFloat(pos.entry).toFixed(2)}</div></div>
                         </div>
                     </div>`;
             });
