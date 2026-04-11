@@ -133,27 +133,21 @@
     };
     firebase.initializeApp(firebaseConfig);
     const db = firebase.database();
-
     const smatID = localStorage.getItem('smatID');
-    let userBalance = 0, allPositions = [], binanceWS = null;
-    let currentUserFirebaseKey = null, globalPrices = {};
+    let userBalance = 0, allPositions = [], binanceWS = null, globalPrices = {};
 
     function initListeners() {
-        // ডাটাবেস থেকে লাইভ প্রাইস শোনা (PNL আপডেটের জন্য)
         db.ref('livePrices').on('value', (snap) => {
             globalPrices = snap.val() || {};
             renderPositions(); 
         });
-
         db.ref('users').on('value', (snap) => {
             const users = snap.val();
             if (users) {
                 Object.keys(users).forEach(key => {
                     if (users[key].smatID === smatID) {
-                        currentUserFirebaseKey = key;
                         userBalance = users[key].balance || 0;
                         document.getElementById('display-bal').innerText = userBalance.toFixed(2) + " USDT";
-                        
                         db.ref(`users/${key}/active_positions`).on('value', (posSnap) => {
                             allPositions = [];
                             const data = posSnap.val();
@@ -170,17 +164,16 @@
         const container = document.getElementById('pos-container');
         if(!container) return;
         let html = '';
-
         allPositions.forEach(pos => {
             const symbol = pos.pair.replace('/', '') + "USDT";
             const currentPrice = globalPrices[symbol] || 0; 
-            let pnl = 0, roe = 0, pnlColor = 'var(--text-sec)', displayPnl = "Updating...", displayRoe = "";
+            let pnl = 0, roe = 0, pnlColor = 'var(--text-sec)', dPnl = "Updating...", dRoe = "";
 
             if (currentPrice > 0) {
                 pnl = (pos.side === 'buy') ? (currentPrice - pos.entry) * pos.amount : (pos.entry - currentPrice) * pos.amount;
                 roe = (pnl / pos.margin) * 100;
-                displayPnl = pnl.toFixed(2);
-                displayRoe = `(${roe.toFixed(2)}%)`;
+                dPnl = pnl.toFixed(2);
+                dRoe = `(${roe.toFixed(2)}%)`;
                 pnlColor = pnl >= 0 ? 'var(--up)' : 'var(--down)';
             }
 
@@ -188,17 +181,17 @@
                 <div class="pos-card">
                     <div class="pos-header">
                         <b>${pos.pair} <span style="color:${pos.side==='buy'?'var(--up)':'var(--down)'}">${pos.side.toUpperCase()} ${pos.leverage}x</span></b>
-                        <button class="close-btn" onclick="closePos('${pos.firebaseKey}', ${currentPrice > 0 ? pnl : 0}, ${pos.margin})">Close</button>
+                        <button class="close-btn" onclick="closePos('${pos.firebaseKey}', ${pnl}, ${pos.margin})">Close</button>
                     </div>
                     <div style="display:grid; grid-template-columns: 1fr 1fr; gap: 8px;">
-                        <div><small style="color:var(--text-sec)">PNL (USDT)</small><div style="color:${pnlColor}; font-weight:bold;">${displayPnl} ${displayRoe}</div></div>
-                        <div style="text-align:right"><small style="color:var(--text-sec)">Margin</small><div>${pos.margin.toFixed(2)}</div></div>
-                        <div style="margin-top:5px;"><small style="color:var(--text-sec)">Entry Price</small><div>${parseFloat(pos.entry).toFixed(2)}</div></div>
-                        <div style="margin-top:5px; text-align:right"><small style="color:var(--text-sec)">Liq. Price</small><div style="color:orange">${pos.liq}</div></div>
+                        <div><small>PNL (USDT)</small><div style="color:${pnlColor}; font-weight:bold;">${dPnl} ${dRoe}</div></div>
+                        <div style="text-align:right"><small>Margin</small><div>${pos.margin.toFixed(2)}</div></div>
+                        <div style="margin-top:5px;"><small>Entry</small><div>${parseFloat(pos.entry).toFixed(2)}</div></div>
+                        <div style="margin-top:5px; text-align:right"><small>Liq. Price</small><div style="color:orange">${pos.liq}</div></div>
                     </div>
                 </div>`;
         });
-        container.innerHTML = html || '<div style="text-align:center; padding:20px; color:var(--text-sec)">No active positions</div>';
+        container.innerHTML = html || '<div style="text-align:center; padding:20px;">No active positions</div>';
     }
 
     function connectBinance(symbol) {
@@ -208,9 +201,6 @@
             const data = JSON.parse(event.data);
             const price = parseFloat(data.c).toFixed(2);
             document.getElementById('live-price').innerText = price;
-            if(document.activeElement !== document.getElementById('trade-price')) {
-                document.getElementById('trade-price').value = price;
-            }
             generateOrderBook(parseFloat(price));
         };
     }
@@ -221,11 +211,8 @@
         if(!askContainer || !bidContainer) return;
         let asksHtml = '', bidsHtml = '';
         for(let i=0; i<6; i++) {
-            const askP = (basePrice + (Math.random() * 1.5)).toFixed(2);
-            const bidP = (basePrice - (Math.random() * 1.5)).toFixed(2);
-            const amt = (Math.random() * 0.5).toFixed(3);
-            asksHtml = `<div class="ob-row ask-row"><span>${askP}</span><span>${amt}</span></div>` + asksHtml;
-            bidsHtml += `<div class="ob-row bid-row"><span>${bidP}</span><span>${amt}</span></div>`;
+            asksHtml = `<div class="ob-row ask-row"><span>${(basePrice + Math.random()).toFixed(2)}</span><span>${Math.random().toFixed(3)}</span></div>` + asksHtml;
+            bidsHtml += `<div class="ob-row bid-row"><span>${(basePrice - Math.random()).toFixed(2)}</span><span>${Math.random().toFixed(3)}</span></div>`;
         }
         askContainer.innerHTML = asksHtml;
         bidContainer.innerHTML = bidsHtml;
@@ -233,6 +220,7 @@
 
     window.onload = () => { initListeners(); connectBinance('btcusdt'); };
 </script>
+
 
 
 </body>
