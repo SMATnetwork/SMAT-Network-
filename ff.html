@@ -170,39 +170,40 @@
     }
 
     function renderPositions() {
-        const container = document.getElementById('pos-container');
-        let html = '';
+    const container = document.getElementById('pos-container');
+    let html = '';
 
-        allPositions.forEach(pos => {
-            const symbol = pos.pair.replace('/', '') + "USDT";
-            const currentPrice = globalPrices[symbol] || 0; 
+    allPositions.forEach(pos => {
+        const symbol = pos.pair.replace('/', '') + "USDT";
+        const currentPrice = globalPrices[symbol] || 0; 
 
-            let pnl = 0, roe = 0, pnlColor = 'var(--text-sec)', displayPnl = "Updating...", displayRoe = "";
+        let pnl = 0, roe = 0, pnlColor = 'var(--text-sec)', displayPnl = "Updating...", displayRoe = "";
 
-            if (currentPrice > 0) {
-                pnl = (pos.side === 'buy') ? (currentPrice - pos.entry) * pos.amount : (pos.entry - currentPrice) * pos.amount;
-                roe = (pnl / pos.margin) * 100;
-                displayPnl = pnl.toFixed(2);
-                displayRoe = `(${roe.toFixed(2)}%)`;
-                pnlColor = pnl >= 0 ? 'var(--up)' : 'var(--down)';
-            }
+        if (currentPrice > 0) {
+            pnl = (pos.side === 'buy') ? (currentPrice - pos.entry) * pos.amount : (pos.entry - currentPrice) * pos.amount;
+            roe = (pnl / pos.margin) * 100;
+            displayPnl = pnl.toFixed(2);
+            displayRoe = `(${roe.toFixed(2)}%)`;
+            pnlColor = pnl >= 0 ? 'var(--up)' : 'var(--down)';
+        }
 
-            html += `
-                <div class="pos-card">
-                    <div class="pos-header">
-                        <b>\${pos.pair} <span style="color:\${pos.side==='buy'?'var(--up)':'var(--down)'}">\${pos.side.toUpperCase()} \${pos.leverage}x</span></b>
-                        <button class="close-btn" onclick="closePos('\${pos.firebaseKey}', \${currentPrice > 0 ? pnl : 0}, \${pos.margin})">Close</button>
-                    </div>
-                    <div style="display:grid; grid-template-columns: 1fr 1fr; gap: 8px;">
-                        <div><small style="color:var(--text-sec)">PNL (USDT)</small><div style="color:\${pnlColor}; font-weight:bold;">\${displayPnl} \${displayRoe}</div></div>
-                        <div style="text-align:right"><small style="color:var(--text-sec)">Margin</small><div>\${pos.margin.toFixed(2)}</div></div>
-                        <div style="margin-top:5px;"><small style="color:var(--text-sec)">Entry Price</small><div>\${parseFloat(pos.entry).toFixed(pos.entry < 1 ? 4 : 2)}</div></div>
-                        <div style="margin-top:5px; text-align:right"><small style="color:var(--text-sec)">Liq. Price</small><div style="color:orange">\${pos.liq}</div></div>
-                    </div>
-                </div>`;
-        });
-        container.innerHTML = html || '<div style="text-align:center; padding:20px; color:var(--text-sec)">No active positions</div>';
-    }
+        // নিচের এই অংশটিতে লক্ষ্য করুন, আমরা কোটেশন বদলে Backtick ( ` ) ব্যবহার করেছি
+        html += `
+            <div class="pos-card">
+                <div class="pos-header">
+                    <b>${pos.pair} <span style="color:${pos.side==='buy'?'var(--up)':'var(--down)'}">${pos.side.toUpperCase()} ${pos.leverage}x</span></b>
+                    <button class="close-btn" onclick="closePos('${pos.firebaseKey}', ${currentPrice > 0 ? pnl : 0}, ${pos.margin})">Close</button>
+                </div>
+                <div style="display:grid; grid-template-columns: 1fr 1fr; gap: 8px;">
+                    <div><small style="color:var(--text-sec)">PNL (USDT)</small><div style="color:${pnlColor}; font-weight:bold;">${displayPnl} ${displayRoe}</div></div>
+                    <div style="text-align:right"><small style="color:var(--text-sec)">Margin</small><div>${pos.margin.toFixed(2)}</div></div>
+                    <div style="margin-top:5px;"><small style="color:var(--text-sec)">Entry Price</small><div>${parseFloat(pos.entry).toFixed(pos.entry < 1 ? 4 : 2)}</div></div>
+                    <div style="margin-top:5px; text-align:right"><small style="color:var(--text-sec)">Liq. Price</small><div style="color:orange">${pos.liq}</div></div>
+                </div>
+            </div>`;
+    });
+    container.innerHTML = html || '<div style="text-align:center; padding:20px; color:var(--text-sec)">No active positions</div>';
+}
 
     function loadDynamicCoins() {
         db.ref('featureAssets').on('value', (snap) => {
