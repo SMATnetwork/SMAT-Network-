@@ -138,6 +138,7 @@
         .status-verified { background: rgba(14, 203, 129, 0.15); color: var(--up); }
         .status-pending { background: rgba(243, 186, 47, 0.15); color: var(--primary); }
         .status-rejected { background: rgba(246, 70, 93, 0.15); color: var(--down); }
+        .status-unverified { background: #474d57; color: #fff; }
     </style>
 </head>
 <body>
@@ -158,7 +159,7 @@
             <div class="kyc-status-btn" id="kycSidebarBtn" onclick="openKYC()">
                 <i class="fa-solid fa-id-card"></i>
                 <div id="kycStatusText" style="font-weight:bold">Identity Verification</div>
-                <div id="kycBadge" class="status-badge" style="margin-top:5px; display:inline-block">Unverified</div>
+                <div id="kycBadge" class="status-badge status-unverified" style="margin-top:5px; display:inline-block">Unverified</div>
             </div>
 
             <div class="side-menu">
@@ -241,15 +242,17 @@
         <div class="asset-pnl" id="pnlVal">+$0.00 Today's PNL</div>
     </div>
 
-    <marquee style="margin: 10px 20px; background: rgba(243,186,47,0.05); padding: 5px; border-radius: 5px; font-size: 11px; color: var(--text-sec);">
-        System Notice: SMAT Mainnet integration ongoing. Ensure KYC is verified for internal transfers. Trading pairs: BTC/USDT, ETH/USDT, SMAT/USDT live.
-    </marquee>
+    <div class="notice-bar" style="margin: 10px 20px; background: rgba(243,186,47,0.05); padding: 8px; border-radius: 8px; border: 1px solid rgba(243,186,47,0.1); overflow: hidden;">
+        <marquee scrollamount="5" style="font-size: 11px; color: var(--text-sec);">
+            System Notice: SMAT Mainnet integration ongoing. Ensure KYC is verified for internal transfers. Trading pairs: BTC/USDT, ETH/USDT, SMAT/USDT live. | Stay alert of phishing links.
+        </marquee>
+    </div>
 
     <div class="market-header">REAL MARKET HISTORY</div>
     <div class="market-tabs">
         <div class="tab active" onclick="switchTab(this, 'hot')">HOT</div>
-        <div class="tab" onclick="switchTab(this, 'gainer')">GANINER</div>
-        <div class="tab" onclick="switchTab(this, 'loser')">LOSSER</div>
+        <div class="tab" onclick="switchTab(this, 'gainer')">GAINER</div>
+        <div class="tab" onclick="switchTab(this, 'loser')">LOSER</div>
         <div class="tab" onclick="switchTab(this, 'new')">NEW</div>
     </div>
 
@@ -293,6 +296,7 @@
         let balanceHidden = false;
         let realBalance = 0;
         let activeTab = 'hot';
+        window.marketData = null;
 
         onAuthStateChanged(auth, (user) => {
             if (user) {
@@ -326,7 +330,7 @@
             document.getElementById('totalVal').innerText = balanceHidden ? '******' : realBalance.toFixed(2);
         }
 
-        // --- KYC Logic (With Image Upload) ---
+        // --- KYC Logic (File-2 logic with File-1 Design) ---
         async function uploadToImgBB(file) {
             const formData = new FormData();
             formData.append("image", file);
@@ -348,7 +352,7 @@
             if(!name || !nid || !f || !b || !s) return alert("All fields required!");
 
             const btn = document.getElementById('submitBtn');
-            btn.disabled = true; btn.innerText = "Uploading...";
+            btn.disabled = true; btn.innerText = "Uploading photos...";
 
             try {
                 const urlF = await uploadToImgBB(f);
@@ -360,7 +364,7 @@
                     nidFront: urlF, nidBack: urlB, userSelfie: urlS,
                     kycSubmittedAt: Date.now()
                 });
-                alert("KYC Submitted!");
+                alert("KYC Submitted Successfully!");
             } catch (e) { alert("Error: " + e.message); }
             finally { btn.disabled = false; btn.innerText = "Submit Details"; }
         };
@@ -384,9 +388,10 @@
             } else form.style.display = 'block';
         }
 
-        // --- Referral Logic ---
+        // --- Referral Logic (File-2 logic with File-1 Design) ---
         function setupReferral(sid) {
-            const link = window.location.origin + "/logIn.html?ref=" + sid;
+            const baseUrl = window.location.origin + window.location.pathname.replace('home.html', 'logIn.html');
+            const link = baseUrl + "?ref=" + sid;
             document.getElementById('referralLink').value = link;
 
             onValue(query(ref(db, 'users'), orderByChild('referredBy'), equalTo(sid)), (snap) => {
@@ -394,33 +399,38 @@
                 let v = 0, r = 0;
                 let listHtml = '';
                 if(data) {
-                    const users = Object.values(data).sort((a,b) => (b.createdAt||0) - (a.createdAt||0));
-                    users.forEach(u => {
+                    const allUsers = Object.values(data);
+                    allUsers.forEach(u => {
                         if(u.kycStatus === 'verified') v++;
                         else if(u.kycStatus === 'rejected') r++;
                     });
-                    users.slice(0, 5).forEach(u => {
-                        listHtml += `<div style="display:flex; justify-content:space-between; margin-bottom:5px">
-                            <span>${u.email.split('@')[0]}...</span>
-                            <span class="status-badge status-${u.kycStatus||'unverified'}">${u.kycStatus||'unverified'}</span>
+                    
+                    const latest5 = allUsers.sort((a,b) => (b.createdAt||0) - (a.createdAt||0)).slice(0, 5);
+                    latest5.forEach(u => {
+                        listHtml += `<div style="display:flex; justify-content:space-between; margin-bottom:8px">
+                            <span style="font-size:12px">${u.email.split('@')[0]}...</span>
+                            <span class="status-badge status-${u.kycStatus||'unverified'}" style="font-size:9px">${u.kycStatus||'unverified'}</span>
                         </div>`;
                     });
                 }
                 document.getElementById('ref_verified').innerText = v;
                 document.getElementById('ref_rejected').innerText = r;
-                document.getElementById('refList').innerHTML = listHtml || 'No activity yet.';
+                document.getElementById('refList').innerHTML = listHtml || '<p style="text-align:center">No activity yet.</p>';
             });
         }
 
-        // --- Real Market Logic (Direct Link) ---
+        // --- Real Market Logic (File-2 logic for Global Var & Storage) ---
         onValue(ref(db, 'market'), (snap) => {
             const data = snap.val();
             if(data) {
-                Object.keys(data).forEach(sym => {
-                    const s = sym.toLowerCase();
-                    window[s + "Val"] = data[sym].price;
-                    localStorage.setItem(s + "_latest_price", data[sym].price);
-                    localStorage.setItem(s + "_volume", data[sym].volume || 0);
+                Object.keys(data).forEach(coinSym => {
+                    const sym = coinSym.toLowerCase();
+                    const priceValue = data[coinSym].price;
+                    const volumeValue = data[coinSym].volume || "0.00";
+                    
+                    window[sym + "Val"] = priceValue;
+                    localStorage.setItem(sym + "_latest_price", priceValue);
+                    localStorage.setItem(sym + "_volume", volumeValue);
                 });
                 window.marketData = data;
                 renderCoins();
@@ -434,82 +444,73 @@
             renderCoins();
         };
 
-        function renderCoins(filter = 'hot') {
-    const container = document.getElementById('coinList'); // আপনার UI অনুযায়ী ID 'coinList' বা 'coinContainer' নিশ্চিত করুন
-    if (!container) return;
-    
-    // আপনার ফাইল অনুযায়ী ডাটা সোর্স
-    const liveData = getMarketData(); 
-    if (!liveData || liveData.length === 0) {
-        container.innerHTML = `<p style="text-align:center; color:var(--text-sec); margin-top:20px;">No coins found.</p>`;
-        return;
-    }
+        // --- renderCoins (Merging File-2 math and File-1 HTML) ---
+        function renderCoins() {
+            const container = document.getElementById('coinList');
+            if (!container || !window.marketData) return;
+            
+            const now = Date.now();
+            const threeDaysMs = 3 * 24 * 60 * 60 * 1000;
+            
+            // Convert marketData object to array
+            let coins = Object.keys(window.marketData).map(k => ({ sym: k, ...window.marketData[k] }));
 
-    let filtered = [];
+            // Sorting & Filtering Logic from File-2
+            if (activeTab === 'hot') {
+                coins = coins.slice(0, 10);
+            } else if (activeTab === 'gainer') {
+                coins.sort((a, b) => {
+                    let valA = window[a.sym.toLowerCase() + "Val"] || a.price;
+                    let valB = window[b.sym.toLowerCase() + "Val"] || b.price;
+                    return (valB - b.price) - (valA - a.price);
+                });
+                coins = coins.slice(0, 8);
+            } else if (activeTab === 'loser') {
+                coins.sort((a, b) => {
+                    let valA = window[a.sym.toLowerCase() + "Val"] || a.price;
+                    let valB = window[b.sym.toLowerCase() + "Val"] || b.price;
+                    return (valA - a.price) - (valB - b.price);
+                });
+                coins = coins.slice(0, 8);
+            } else if (activeTab === 'new') {
+                coins = coins.filter(c => (now - (c.listedAt || 0)) < threeDaysMs);
+            }
 
-    // ১. আপনার ফাইলের হুবহু সর্টিং লজিক
-    if (filter === 'hot') {
-        filtered = [...liveData].sort((a, b) => {
-            let volA = parseFloat(window[a.sym.toLowerCase() + "Vol"]) || 0;
-            let volB = parseFloat(window[b.sym.toLowerCase() + "Vol"]) || 0;
-            return volB - volA;
-        }).slice(0, 10);
-    } else if (filter === 'gainer') {
-        filtered = [...liveData].sort((a, b) => {
-            let priceA = window[a.sym.toLowerCase() + "Val"] || a.price;
-            let priceB = window[b.sym.toLowerCase() + "Val"] || b.price;
-            return (priceB - b.price) - (priceA - a.price);
-        });
-    } else if (filter === 'loser') {
-        filtered = [...liveData].sort((a, b) => {
-            let priceA = window[a.sym.toLowerCase() + "Val"] || a.price;
-            let priceB = window[b.sym.toLowerCase() + "Val"] || b.price;
-            return (priceA - a.price) - (priceB - b.price);
-        });
-    } else if (filter === 'new') {
-        filtered = [...liveData].slice(-5).reverse();
-    }
+            container.innerHTML = coins.map(coin => {
+                const s = coin.sym.toLowerCase();
+                const currentPriceRaw = window[s + "Val"] || parseFloat(localStorage.getItem(s + "_latest_price")) || coin.price || 0;
+                
+                const diff = currentPriceRaw - (coin.price || currentPriceRaw);
+                const isUp = diff >= 0;
+                const changePercent = coin.price > 0 ? ((diff / coin.price) * 100).toFixed(2) : "0.00";
+                const isNew = (now - (coin.listedAt || 0)) < threeDaysMs;
 
-    let htmlContent = '';
-    
-    // ২. আপনার ফাইলের ডিসপ্লে লজিক
-    filtered.forEach(coin => {
-        // currentPrice এবং change ক্যালকুলেশন (আপনার ফাইল থেকে নেওয়া)
-        const currentPrice = window[coin.sym.toLowerCase() + "Val"] || coin.price || 0;
-        const startPrice = coin.price || currentPrice;
-        
-        // পারসেন্টেজ ক্যালকুলেশন লজিক
-        const change = startPrice !== 0 ? ((currentPrice - startPrice) / startPrice * 100).toFixed(2) : "0.00";
-        const isUp = parseFloat(change) >= 0;
-        const logoSrc = `assets/logos/${coin.sym.toLowerCase()}.png`;
-
-        htmlContent += `
-            <div class="coin-row" onclick="if(checkAuth(event)) window.location.href='Trade.html?coin=${coin.sym}'">
-                <div style="display:flex; align-items:center; gap:12px;">
-                    <img src="${logoSrc}" class="coin-icon" onerror="this.src='https://via.placeholder.com/40?text=${coin.sym[0].toUpperCase()}'">
-                    <div>
-                        <div style="font-weight:bold; color:white;">${coin.sym.toUpperCase()}/USDT</div>
-                        <div style="font-size:12px; color:var(--text-sec)">${coin.name || 'Crypto Asset'}</div>
+                return `
+                <div class="coin-row" onclick="if(checkAuth(event)) window.location.href='Trade.html?coin=${s}'">
+                    <div class="coin-meta">
+                        <img src="assets/logos/${s}.png" class="coin-icon" onerror="this.src='https://via.placeholder.com/40?text=${coin.sym[0].toUpperCase()}'">
+                        <div class="coin-name-sym">
+                            <b>
+                                ${coin.sym.toUpperCase()}/USDT
+                                ${isNew ? '<span class="status-badge status-verified" style="font-size:8px; padding:2px 4px; margin-left:4px">NEW</span>' : ''}
+                            </b>
+                            <span>${coin.name || 'Crypto Asset'}</span> 
+                        </div>
                     </div>
-                </div>
-                <div style="text-align:right">
-                    <div style="font-weight:bold; font-size:16px; color:white;">
-                        $${parseFloat(currentPrice).toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 4})}
+                    <div class="price-col">
+                        <span class="price">$${parseFloat(currentPriceRaw).toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 4})}</span>
+                        <div class="percent-box" style="background:${isUp ? 'rgba(14, 203, 129, 0.15)' : 'rgba(246, 70, 93, 0.15)'}; color:${isUp ? 'var(--up)' : 'var(--down)'}">
+                            ${isUp ? '+' : ''}${changePercent}%
+                        </div>
                     </div>
-                    <div class="percent-box" style="background:${isUp ? 'rgba(14, 203, 129, 0.15)' : 'rgba(246, 70, 93, 0.15)'}; color:${isUp ? 'var(--up)' : 'var(--down)'}; padding: 2px 6px; border-radius: 4px; display: inline-block; font-size: 12px;">
-                        ${isUp ? '+' : ''}${change}%
+                    <div style="text-align:right; font-size:12px; font-weight:600; color:var(--text-sec)">
+                        $${parseFloat(coin.volume || 0).toLocaleString()}
                     </div>
-                </div>
-            </div>
-        `;
-    });
+                </div>`;
+            }).join('');
+        }
 
-    container.innerHTML = htmlContent;
-    if (typeof updatePortfolio === 'function') updatePortfolio(); 
-}
-
-
-        // --- UI Helpers ---
+        // --- UI & Nav Helpers ---
         window.openSidebar = () => { document.getElementById('sidebar').classList.add('active'); document.getElementById('overlay').style.display='block'; };
         window.closeSidebar = () => { document.getElementById('sidebar').classList.remove('active'); document.getElementById('overlay').style.display='none'; };
         window.openKYC = () => { closeSidebar(); document.getElementById('kycPopup').style.display='flex'; };
@@ -518,13 +519,16 @@
         window.closeRefPopup = () => document.getElementById('refPopup').style.display='none';
         window.copyRef = () => { 
             const inp = document.getElementById('referralLink'); inp.select(); 
-            navigator.clipboard.writeText(inp.value); alert("Copied!"); 
+            navigator.clipboard.writeText(inp.value); alert("Referral Link Copied!"); 
         };
         window.checkAuth = (e) => {
-            if(localStorage.getItem('isLoggedIn') !== 'true') { e.preventDefault(); alert("Login Required!"); openSidebar(); return false; }
+            if(localStorage.getItem('isLoggedIn') !== 'true') { e.preventDefault(); alert("Access Denied! Please Login first."); openSidebar(); return false; }
             return true;
         };
         window.logout = () => { signOut(auth).then(() => { localStorage.clear(); location.reload(); }); };
+        
+        // Initial Render
+        setInterval(() => { if(window.marketData) renderCoins(); }, 1000);
     </script>
 </body>
 </html>
