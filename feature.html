@@ -43,9 +43,12 @@
         .price-mid { font-size: 16px; font-weight: bold; text-align: center; padding: 12px 0; margin: 8px 0; background: rgba(255,255,255,0.02); border-radius: 4px; }
 
         .pos-section { margin-top: 20px; padding: 0 10px; }
-        .pos-card { background: var(--card); border: 1px solid var(--border); border-radius: 8px; padding: 15px; margin-bottom: 12px; }
+        .pos-card { background: var(--card); border: 1px solid var(--border); border-radius: 8px; padding: 15px; margin-bottom: 12px; position: relative; overflow: hidden; }
         .pos-header { display: flex; justify-content: space-between; margin-bottom: 10px; border-bottom: 1px solid var(--border); padding-bottom: 8px; }
         .close-btn { background: #2b3139; color: #fff; border: 1px solid #474d57; padding: 6px 12px; border-radius: 4px; font-size: 10px; cursor: pointer; font-weight: bold; }
+
+        /* Pagination Style */
+        .show-more-btn { width: 100%; background: var(--card); border: 1px solid var(--border); color: var(--primary); padding: 12px; border-radius: 6px; margin: 15px 0; cursor: pointer; font-weight: bold; display: none; }
 
         .footer { position: fixed; bottom: 0; width: 100%; height: 65px; background: #111418; display: flex; justify-content: space-around; align-items: center; border-top: 1px solid var(--border); z-index: 1000; }
         .f-nav { text-decoration: none; color: var(--text-sec); text-align: center; font-size: 10px; flex: 1; }
@@ -108,6 +111,7 @@
     <div class="pos-section">
         <h3 style="margin-bottom:15px; font-size:14px; border-left:4px solid var(--primary); padding-left:10px;">My Trading History</h3>
         <div id="pos-container"></div>
+        <button id="show-more-pos" class="show-more-btn" onclick="showMorePositions()">Show More History</button>
     </div>
 
     <footer class="footer">
@@ -133,8 +137,10 @@
         let currentPair = 'BTC/USDT', currentSide = 'buy', leverage = 20;
         let userBalance = 0, allPositions = [], binanceWS = null;
         let lastFundingTimestamp = 0;
+        
+        // Pagination logic
+        let visibleCount = 20;
 
-        // টাইমার এবং অটো ফান্ডিং ফি লজিক
         function listenToTimer() {
             db.ref('fundingLogic/timeLeft').on('value', (snap) => {
                 const totalSeconds = snap.val();
@@ -151,7 +157,6 @@
             });
         }
 
-        // ফান্ডিং ফি কাটা (০.১%)
         function applyFundingFee() {
             if (allPositions.length > 0) {
                 let totalFee = 0;
@@ -161,7 +166,6 @@
                 });
                 if (totalFee > 0) {
                     db.ref(`users/${smatID}/balance`).set(userBalance - totalFee);
-                    console.log(`Funding fee deducted: ${totalFee} USDT`);
                 }
             }
         }
@@ -221,10 +225,18 @@
                 userBalance = snap.val() || 0;
                 document.getElementById('display-bal').innerText = userBalance.toFixed(2) + " USDT";
             });
+            
+            // Listen to all positions and sort by newest first
             db.ref(`users/${smatID}/active_positions`).on('value', (snap) => {
                 const data = snap.val();
                 allPositions = [];
-                if(data) Object.keys(data).forEach(key => allPositions.unshift({ firebaseKey: key, ...data[key] }));
+                if(data) {
+                    Object.keys(data).forEach(key => {
+                        allPositions.push({ firebaseKey: key, ...data[key] });
+                    });
+                    // Newest first
+                    allPositions.sort((a, b) => b.timestamp - a.timestamp);
+                }
                 renderPositions();
             });
         }
@@ -269,6 +281,7 @@
             const margin = (p * a) / leverage;
             const fee = (p * a) * 0.001;
             if((margin + fee) > userBalance) return alert("Insufficient Balance!");
+            
             db.ref(`users/${smatID}/balance`).set(userBalance - (margin + fee));
             db.ref(`users/${smatID}/active_positions`).push({
                 pair: currentPair, side: currentSide, entry: p, amount: a, leverage: leverage, margin: margin,
@@ -278,9 +291,14 @@
 
         function renderPositions() {
             const container = document.getElementById('pos-container');
+            const showMoreBtn = document.getElementById('show-more-pos');
             container.innerHTML = '';
             const livePrice = parseFloat(document.getElementById('live-price').innerText);
-            allPositions.forEach(pos => {
+            
+            // Limit visible items
+            const visibleItems = allPositions.slice(0, visibleCount);
+            
+            visibleItems.forEach(pos => {
                 let pnl = (pos.side === 'buy') ? (livePrice - pos.entry) * pos.amount : (pos.entry - livePrice) * pos.amount;
                 let roe = (pnl / pos.margin) * 100;
                 container.innerHTML += `
@@ -290,11 +308,23 @@
                             <button class="close-btn" onclick="closePos('${pos.firebaseKey}', ${pnl}, ${pos.margin})">Close</button>
                         </div>
                         <div style="display:grid; grid-template-columns: 1fr 1fr;">
-                            <div><small>PNL</small><div style="color:${pnl>=0?'var(--up)':'var(--down)'}">${pnl.toFixed(2)} (${roe.toFixed(2)}%)</div></div>
-                            <div style="text-align:right"><small>Margin</small><div>${pos.margin.toFixed(2)}</div></div>
+                            <div><small>PNL (USDT)</small><div style="color:${pnl>=0?'var(--up)':'var(--down)'}">${pnl.toFixed(2)} (${roe.toFixed(2)}%)</div></div>
+                            <div style="text-align:right"><small>Size / Margin</small><div>${pos.amount.toFixed(3)} / ${pos.margin.toFixed(2)}</div></div>
                         </div>
                     </div>`;
             });
+
+            // Show More Button logic
+            if (allPositions.length > visibleCount) {
+                showMoreBtn.style.display = 'block';
+            } else {
+                showMoreBtn.style.display = 'none';
+            }
+        }
+
+        function showMorePositions() {
+            visibleCount += 10;
+            renderPositions();
         }
 
         function closePos(key, pnl, margin) {
@@ -302,7 +332,6 @@
             db.ref(`users/${smatID}/active_positions/${key}`).remove();
         }
 
-        // ৮টি করে অর্ডার দেখানোর লজিক
         function updateOrderBook(price) {
             const p = parseFloat(price);
             let a = '', b = '';
