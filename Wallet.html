@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>SMAT | Dynamic Wallet</title>
+    <title>SMAT | Wallet</title>
     <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-auth-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-database-compat.js"></script>
@@ -16,87 +16,89 @@
         :root {
             --bg: #0b0e11; --card: #1e2329; --primary: #f0b90b;
             --up: #0ecb81; --down: #f6465d; --text-sec: #848e9c;
-            --border: rgba(255, 255, 255, 0.05);
+            --border: rgba(255, 255, 255, 0.08);
             --font-bold: 'Montserrat', sans-serif;
         }
         
         * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Inter', sans-serif; -webkit-tap-highlight-color: transparent; }
         body { background: var(--bg); color: white; padding-bottom: 90px; overflow-x: hidden; }
 
-        /* Responsive Container */
-        .container { width: 100%; max-width: 600px; margin: 0 auto; }
-
-        /* Wallet Header - Dynamic Gradient */
+        /* Wallet Header */
         .wallet-header {
-            padding: clamp(20px, 8vw, 40px) 20px;
-            background: radial-gradient(circle at top right, rgba(240, 185, 11, 0.15), transparent),
-                        linear-gradient(180deg, rgba(30, 35, 41, 0.5) 0%, var(--bg) 100%);
+            padding: 30px 20px;
+            background: linear-gradient(180deg, rgba(240, 185, 11, 0.15) 0%, var(--bg) 100%);
             text-align: center;
             border-bottom: 1px solid var(--border);
         }
-        .total-label { font-size: 12px; color: var(--text-sec); text-transform: uppercase; letter-spacing: 1.5px; margin-bottom: 10px; font-weight: 700; }
-        .total-balance { font-family: var(--font-bold); font-size: clamp(28px, 10vw, 42px); font-weight: 900; color: #fff; margin-bottom: 8px; }
-        .estimated-val { font-size: 14px; color: var(--up); font-weight: 600; opacity: 0.9; }
+        .total-label { font-size: 12px; color: var(--text-sec); text-transform: uppercase; letter-spacing: 1.5px; margin-bottom: 8px; font-weight: 700; }
+        .total-balance { font-family: var(--font-bold); font-size: 32px; font-weight: 900; color: #fff; margin-bottom: 5px; }
+        .estimated-val { font-size: 14px; color: var(--up); font-weight: 600; }
 
-        /* Action Buttons - Fully Responsive Grid */
+        /* Action Grid */
         .action-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; padding: 20px; }
         .action-btn { 
-            background: var(--card); border: 1px solid var(--border); padding: 15px 10px; 
-            border-radius: 16px; text-align: center; cursor: pointer; transition: all 0.2s ease;
+            background: var(--card); border: 1px solid var(--border); padding: 15px; 
+            border-radius: 16px; text-align: center; cursor: pointer;
         }
         .action-btn i { font-size: 22px; color: var(--primary); margin-bottom: 8px; display: block; }
-        .action-btn span { font-size: 11px; font-weight: 700; color: #fff; text-transform: uppercase; }
-        .action-btn:active { transform: scale(0.92); background: rgba(255,255,255,0.05); }
+        .action-btn span { font-size: 11px; font-weight: 700; color: #fff; }
 
         /* Asset Section */
-        .asset-section-header { 
-            display: flex; justify-content: space-between; align-items: center; 
-            padding: 15px 20px; margin-top: 10px;
-        }
-        .asset-title { font-family: var(--font-bold); font-size: 20px; font-weight: 900; letter-spacing: -0.5px; }
-        .hide-zero { font-size: 12px; color: var(--text-sec); display: flex; align-items: center; gap: 5px; }
-
+        .asset-title { padding: 15px 20px; font-family: var(--font-bold); font-size: 20px; font-weight: 900; }
         .asset-list { padding: 0 15px; }
-        
-        /* Dynamic Asset Card */
         .asset-card {
             background: var(--card); border-radius: 20px; padding: 16px; margin-bottom: 12px;
             display: grid; grid-template-columns: auto 1fr auto; align-items: center; gap: 15px;
-            border: 1px solid var(--border); transition: 0.3s;
+            border: 1px solid var(--border);
         }
-        .a-logo { 
-            width: 44px; height: 44px; border-radius: 50%; background: #2b3139; 
-            display: flex; align-items: center; justify-content: center; overflow: hidden;
-        }
+        .a-logo { width: 44px; height: 44px; border-radius: 50%; background: #2b3139; overflow: hidden; }
         .a-logo img { width: 100%; height: 100%; object-fit: cover; }
-        
-        .a-info h4 { font-family: var(--font-bold); font-size: 16px; font-weight: 900; color: #fff; }
-        .a-info p { font-size: 12px; color: var(--text-sec); margin-top: 2px; font-weight: 600; }
-        
+        .a-info h4 { font-family: var(--font-bold); font-size: 16px; font-weight: 900; }
+        .a-info p { font-size: 12px; color: var(--text-sec); }
         .a-amounts { text-align: right; }
-        .a-bal { font-family: var(--font-bold); font-size: 15px; font-weight: 900; color: #fff; }
-        .a-usd { font-size: 12px; color: var(--text-sec); margin-top: 3px; font-weight: 600; }
+        .a-bal { font-family: var(--font-bold); font-size: 15px; font-weight: 900; }
+        .a-usd { font-size: 12px; color: var(--text-sec); }
 
-        /* Footer - Same as Home */
-        .footer { position: fixed; bottom: 0; width: 100%; height: 75px; background: #181a20; display: flex; justify-content: space-around; align-items: center; border-top: 1px solid #2b3139; z-index: 1000; }
-        .f-nav { text-decoration: none; color: #848e9c; text-align: center; font-size: 10px; flex: 1; display: flex; flex-direction: column; align-items: center; gap: 4px; }
-        .f-nav i { font-size: 22px; }
-        .f-nav.active { color: #f0b90b; }
-        .u-curve { position: relative; top: -22px; width: 75px; height: 75px; display: flex; justify-content: center; align-items: center; }
-        .spin-circle { position: absolute; width: 70px; height: 70px; border: 2.5px dashed #f0b90b; border-radius: 50%; animation: spin 5s linear infinite; }
-        .crash-link { width: 58px; height: 58px; background: #f0b90b; border-radius: 50%; color: black; font-family: var(--font-bold); font-weight: 900; font-size: 11px; display: flex; align-items: center; justify-content: center; text-decoration: none; z-index: 5; }
-        @keyframes spin { 100% { transform: rotate(360deg); } }
+        /* --- HOME PAGE EXACT FOOTER & FAB STYLE --- */
+        .footer { position: fixed; bottom: 0; width: 100%; height: 75px; background: #181a20; display: flex; justify-content: space-around; align-items: center; border-top: 1px solid var(--border); z-index: 3000; }
+        .f-nav { text-decoration: none; color: var(--text-sec); text-align: center; font-size: 10px; flex: 1; display: flex; flex-direction: column; align-items: center; }
+        .f-nav i { font-size: 22px; margin-bottom: 5px; }
+        .f-nav.active { color: var(--primary); }
 
-        /* Media Queries for Tablet/Larger Screens */
-        @media (min-width: 600px) {
-            .asset-card:hover { transform: translateY(-3px); border-color: var(--primary); }
-            .container { border-left: 1px solid var(--border); border-right: 1px solid var(--border); min-height: 100vh; }
+        .fab-wrapper { position: relative; width: 75px; display: flex; justify-content: center; }
+        .fab-options { position: absolute; bottom: 40px; display: flex; justify-content: center; align-items: center; pointer-events: none; width: 300px; height: 200px; }
+        
+        .popup-btn {
+            position: absolute; background: var(--card); border: 2.5px solid var(--primary);
+            color: white; padding: 8px 18px; border-radius: 50px;
+            text-decoration: none; font-weight: 800; font-size: 12px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.6);
+            transition: all 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            opacity: 0; transform: scale(0.3) translateY(120px);
+            pointer-events: auto; white-space: nowrap; z-index: 2900;
         }
+
+        .fab-options.show .btn-left { opacity: 1; transform: translate(-95px, -45px) scale(1); }
+        .fab-options.show .btn-center { opacity: 1; transform: translate(0, -115px) scale(1); }
+        .fab-options.show .btn-right { opacity: 1; transform: translate(95px, -45px) scale(1); }
+
+        .main-fab {
+            width: 65px; height: 65px; background: var(--primary);
+            border: none; border-radius: 50%; cursor: pointer;
+            box-shadow: 0 0 20px rgba(243, 186, 47, 0.4);
+            display: flex; justify-content: center; align-items: center;
+            z-index: 3100; margin-top: -35px; outline: none; transition: 0.3s;
+        }
+
+        @keyframes continuous-spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+        .main-fab.active { animation: continuous-spin 2s linear infinite; background: var(--down); box-shadow: 0 0 35px rgba(246, 70, 93, 0.5); }
+        .main-fab i { font-size: 24px; color: #000; -webkit-text-stroke: 2px; }
+        .main-fab.active i { color: #fff; transform: rotate(45deg); }
+
     </style>
 </head>
 <body>
 
-<div class="container">
     <div class="wallet-header">
         <div class="total-label">Total Portfolio Value</div>
         <div class="total-balance">$ <span id="totalBalance">0.00</span></div>
@@ -109,28 +111,30 @@
         <div class="action-btn"><i class="fas fa-history"></i><span>History</span></div>
     </div>
 
-    <div class="asset-section-header">
-        <h3 class="asset-title">Assets</h3>
-        <div class="hide-zero"><i class="far fa-check-circle"></i> Auto-Sync Active</div>
-    </div>
+    <h3 class="asset-title">Assets</h3>
+    <div class="asset-list" id="assetList"></div>
 
-    <div class="asset-list" id="assetList">
+    <footer class="footer">
+        <a href="home.html" class="f-nav"><i class="fas fa-home"></i>Home</a>
+        <a href="Trade.html" class="f-nav"><i class="fas fa-chart-line"></i>Trade</a>
+        
+        <div class="fab-wrapper">
+            <div class="fab-options" id="fabOptions">
+                <a href="Crash.html" class="popup-btn btn-left">Crash</a>
+                <a href="Prediction.html" class="popup-btn btn-center">Prediction</a>
+                <a href="Feature.html" class="popup-btn btn-right">Future</a>
+            </div>
+            <button class="main-fab" id="mainFab" onclick="toggleGamingMenu()">
+                 <i class="fa-solid fa-plus" id="icon"></i>
+            </button>
         </div>
-</div>
 
-<footer class="footer">
-    <a href="home.html" class="f-nav"><i class="fas fa-home"></i>Home</a>
-    <a href="Market.html" class="f-nav"><i class="fas fa-chart-pie"></i>Market</a>
-    <div class="u-curve">
-        <div class="spin-circle"></div>
-        <a href="Crash.html" class="crash-link">CRASH</a>
-    </div>
-    <a href="Trade.html" class="f-nav"><i class="fas fa-chart-line"></i>Trade</a>
-    <a href="Wallet.html" class="f-nav active"><i class="fas fa-wallet"></i>Wallet</a>
-</footer>
+        <a href="Explorer.html" class="f-nav"><i class="fas fa-compass"></i>Explore</a>
+        <a href="Wallet.html" class="f-nav active"><i class="fas fa-wallet"></i>Wallet</a>
+    </footer>
 
 <script>
-// Firebase Config
+// Firebase & Wallet Logic
 const firebaseConfig = {
     apiKey: "AIzaSyAMxtJedkehhxJRMPZLjhpKHqneHEWsGlE",
     authDomain: "smat-exchange.firebaseapp.com",
@@ -146,77 +150,66 @@ const auth = firebase.auth();
 let livePrices = {};
 let userData = {};
 
-function startSync() {
+// FAB Menu Logic from Home Page
+function toggleGamingMenu() {
+    const options = document.getElementById('fabOptions');
+    const mainBtn = document.getElementById('mainFab');
+    options.classList.toggle('show');
+    mainBtn.classList.toggle('active');
+    if (navigator.vibrate) navigator.vibrate(50);
+}
+
+// Close menu on outside click
+window.addEventListener('click', (e) => {
+    if (!e.target.closest('.fab-wrapper')) {
+        document.getElementById('fabOptions').classList.remove('show');
+        document.getElementById('mainFab').classList.remove('active');
+    }
+});
+
+function initWallet() {
     auth.onAuthStateChanged(user => {
         if (user) {
-            // ১. মার্কেট ডাটা সিঙ্ক (মার্কেট থেকে লাইভ প্রাইস নেবে)
-            db.ref('market').on('value', snap => {
-                livePrices = snap.val() || {};
-                renderWallet();
-            });
-
-            // ২. ইউজার ডাটা সিঙ্ক (ব্যালেন্সের জন্য)
-            db.ref('users/' + user.uid).on('value', snap => {
-                userData = snap.val() || {};
-                renderWallet();
-            });
-        } else {
-            window.location.href = "login.html";
-        }
+            db.ref('market').on('value', snap => { livePrices = snap.val() || {}; renderAssets(); });
+            db.ref('users/' + user.uid).on('value', snap => { userData = snap.val() || {}; renderAssets(); });
+        } else { window.location.href = "login.html"; }
     });
 }
 
-function renderWallet() {
-    const listContainer = document.getElementById('assetList');
+function renderAssets() {
+    const list = document.getElementById('assetList');
     let totalUSD = 0;
-    let btcPrice = 65000; // Default if not found
+    let btcPrice = 65000;
 
-    // GLOBAL_COINS হলো coin.js থেকে আসা মেইন অ্যারে
     const html = GLOBAL_COINS.map(coin => {
-        const sym = coin.sym.toLowerCase();
-        
-        // ১. ডায়নামিক প্রাইস লজিক (মার্কেট ডাটাবেস না থাকলে coin.js এর ডিফল্ট প্রাইস)
-        const price = (livePrices[sym] && livePrices[sym].price) ? livePrices[sym].price : coin.price;
-        if(sym === 'btc') btcPrice = price;
+        const s = coin.sym.toLowerCase();
+        const price = (livePrices[s] && livePrices[s].price) ? livePrices[s].price : coin.price;
+        if(s === 'btc') btcPrice = price;
 
-        // ২. ডায়নামিক ব্যালেন্স লজিক (USDT এর জন্য 'balance' ফিল্ড, বাকিদের জন্য coin সিম্বল ফিল্ড)
-        let balance = 0;
-        if(sym === 'usdt') {
-            balance = userData.balance || 0;
-        } else {
-            // যদি ফিউচারে অন্য কয়েনের ব্যালেন্স আলাদা ফিল্ডে রাখেন (যেমন: btc_balance)
-            balance = userData[sym + '_balance'] || 0; 
-        }
-
+        let balance = (s === 'usdt') ? (userData.balance || 0) : (userData[s + '_balance'] || 0);
         const usdVal = balance * price;
         totalUSD += usdVal;
 
-        // শুধুমাত্র সেইসব কয়েন দেখাবে যেগুলোর coin.js এ এন্ট্রি আছে
         return `
             <div class="asset-card">
-                <div class="a-logo">
-                    <img src="assets/logos/${sym}.png" onerror="this.src='assets/logos/generic.png'">
-                </div>
+                <div class="a-logo"><img src="assets/logos/${s}.png" onerror="this.src='assets/logos/generic.png'"></div>
                 <div class="a-info">
                     <h4>${coin.sym.toUpperCase()}</h4>
-                    <p>$${price.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 6})}</p>
+                    <p>$${price.toLocaleString(undefined, {minimumFractionDigits: 2})}</p>
                 </div>
                 <div class="a-amounts">
-                    <div class="a-bal">${balance.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 8})}</div>
+                    <div class="a-bal">${balance.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 6})}</div>
                     <div class="a-usd">≈ $${usdVal.toLocaleString(undefined, {minimumFractionDigits: 2})}</div>
                 </div>
-            </div>
-        `;
+            </div>`;
     }).join('');
 
-    listContainer.innerHTML = html;
-
-    // টোটাল ব্যালেন্স আপডেট (Comma Formatting + Montserrat 900)
+    list.innerHTML = html;
     document.getElementById('totalBalance').innerText = totalUSD.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2});
     document.getElementById('estBtc').innerText = (totalUSD / btcPrice).toFixed(6);
 }
 
-window.onload = startSync;
+window.onload = initWallet;
 </script>
 </body>
 </html>
