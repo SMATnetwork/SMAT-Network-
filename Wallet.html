@@ -315,6 +315,27 @@ function openHistory() {
             if (item.method.toLowerCase().includes('deposit')) { typeIcon = 'fa-plus-circle'; typeColor = 'var(--up)'; }
             else if (item.method.toLowerCase().includes('withdraw')) { typeIcon = 'fa-arrow-up-right-from-square'; typeColor = 'var(--down)'; }
 
+            // --- TRX HASH LOGIC START ---
+            let hashHtml = '';
+            if (item.hash && item.hash !== '...' && item.hash !== 'Null') {
+                // এখানে bscscan এর বদলে আপনার নিজস্ব এক্সপ্লোরার লিংকও দিতে পারেন
+                hashHtml = `
+                    <div style="margin-top:8px;">
+                        <p style="font-size:9px; color:var(--text-sec)">Transaction Hash</p>
+                        <div style="display:flex; justify-content:space-between; align-items:center;">
+                            <a href="https://bscscan.com/tx/${item.hash}" target="_blank" style="color:var(--primary); text-decoration:none; font-family:monospace; font-size:10px;">
+                                ${item.hash.substring(0, 12)}...${item.hash.substring(item.hash.length - 4)} 
+                                <i class="fas fa-external-link-alt" style="font-size:8px; margin-left:4px;"></i>
+                            </a>
+                            <i class="fas fa-copy" onclick="copyValueText('${item.hash}')" style="color:var(--primary); cursor:pointer; font-size:10px;"></i>
+                        </div>
+                    </div>
+                `;
+            } else if (item.status === 'pending') {
+                hashHtml = `<p style="font-size:9px; color:var(--text-sec); margin-top:8px;">Hash: <span style="color:var(--primary)">Processing...</span></p>`;
+            }
+            // --- TRX HASH LOGIC END ---
+
             html += `
                 <div class="hist-card" style="border-left-color: ${typeColor};">
                     <div style="display:flex; justify-content:space-between; align-items:flex-start;">
@@ -329,11 +350,13 @@ function openHistory() {
                     <div style="display:grid; grid-template-columns: 1fr 1fr; gap:8px; margin-top:10px; padding-top:8px; border-top:1px solid rgba(255,255,255,0.03);">
                         <div><p style="font-size:9px; color:var(--text-sec)">Amount</p><b>${formatNum(item.amount, 4)} ${item.coin}</b></div>
                         <div style="text-align:right"><p style="font-size:9px; color:var(--text-sec)">Network</p><b>${item.network}</b></div>
-                        <div style="grid-column: span 2;"><p style="font-size:9px; color:var(--text-sec)">Address/Target</p>
+                        <div style="grid-column: span 2;">
+                            <p style="font-size:9px; color:var(--text-sec)">Address/Target</p>
                             <div style="display:flex; justify-content:space-between; font-size:10px;">
                                 <span style="font-family:monospace;">${item.address}</span>
                                 <i class="fas fa-copy" onclick="copyValueText('${item.address}')" style="color:var(--primary); cursor:pointer;"></i>
                             </div>
+                            ${hashHtml} 
                         </div>
                     </div>
                 </div>`;
@@ -341,6 +364,7 @@ function openHistory() {
         cont.innerHTML = html;
     });
 }
+
 
 // --- PROCESSORS ---
 async function processWithdraw() {
