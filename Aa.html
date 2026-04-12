@@ -572,9 +572,12 @@
             else if (filter === 'loser') filtered = dataWithStats.filter(c => c.changePercent < 0).sort((a, b) => a.changePercent - b.changePercent).slice(0, 5);
             else if (filter === 'new') filtered = dataWithStats.filter(c => (now - (c.listedAt || 0)) < threeDaysMs).sort((a, b) => (b.listedAt || 0) - (a.listedAt || 0)).slice(0, 5);
 
+              // Step 3: Display results
             container.innerHTML = filtered.map(coin => {
                 const s = coin.sym.toLowerCase();
                 const isUp = coin.changePercent >= 0;
+                const now = Date.now();
+
                 return `
                 <div class="coin-row" onclick="location.href='Trade.html?coin=${s}'">
                     <div style="display:flex; align-items:center; gap:12px">
@@ -594,6 +597,7 @@
                 </div>`;
             }).join('');
         }
+        // --- NEW TAB LOGIC END ---
 
         setInterval(() => renderCoins(window.currentActiveTab), 1500);
     </script>
