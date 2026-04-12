@@ -8,85 +8,88 @@
     <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-database-compat.js"></script>
     <script src="coin.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@900&family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
     
     <style>
         :root {
             --bg: #0b0e11; --card: #1e2329; --primary: #f0b90b;
             --up: #0ecb81; --down: #f6465d; --text-sec: #848e9c;
-            --border: #2b3139;
+            --border: rgba(255, 255, 255, 0.05);
+            --font-bold: 'Montserrat', sans-serif;
         }
         * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Inter', sans-serif; -webkit-tap-highlight-color: transparent; }
         body { background: var(--bg); color: white; padding-bottom: 85px; overflow-x: hidden; }
 
         /* Header & Search */
         .header { padding: 15px; border-bottom: 1px solid var(--border); position: sticky; top: 0; background: var(--bg); z-index: 100; }
-        .search-box { background: var(--card); border-radius: 8px; padding: 10px 15px; display: flex; align-items: center; gap: 10px; margin-top: 12px; border: 1px solid transparent; }
-        .search-box:focus-within { border-color: var(--primary); }
+        .search-box { 
+            background: var(--card); border-radius: 12px; padding: 12px 15px; 
+            display: flex; align-items: center; gap: 10px; margin-top: 5px; 
+            border: 1px solid var(--border); transition: 0.3s;
+        }
+        .search-box:focus-within { border-color: var(--primary); box-shadow: 0 0 10px rgba(240, 185, 11, 0.1); }
         .search-box input { background: none; border: none; color: white; width: 100%; outline: none; font-size: 15px; }
 
-        /* Market Tabs with Icons */
-        .market-tabs { display: flex; gap: 15px; padding: 10px 15px; border-bottom: 1px solid var(--border); overflow-x: auto; scrollbar-width: none; }
+        /* Market Tabs */
+        .market-tabs { display: flex; gap: 10px; padding: 15px; overflow-x: auto; scrollbar-width: none; }
         .market-tabs::-webkit-scrollbar { display: none; }
         
         .m-tab { 
-            display: flex; align-items: center; gap: 8px; padding: 10px 15px; 
-            color: var(--text-sec); font-size: 14px; cursor: pointer; white-space: nowrap; 
-            position: relative; transition: 0.3s; font-weight: 500;
+            display: flex; align-items: center; gap: 8px; padding: 8px 16px; 
+            background: var(--card); border-radius: 50px; color: var(--text-sec); 
+            font-size: 13px; cursor: pointer; white-space: nowrap; 
+            transition: 0.3s; font-weight: 700; border: 1px solid transparent;
         }
-        .m-tab.active { color: var(--primary); font-weight: 700; }
-        .m-tab.active::after { content: ''; position: absolute; bottom: 0; left: 0; width: 100%; height: 2px; background: var(--primary); }
-        
-        .m-tab-icon { width: 18px; height: 18px; border-radius: 50%; object-fit: cover; }
+        .m-tab.active { background: rgba(240, 185, 11, 0.1); color: var(--primary); border-color: var(--primary); }
+        .m-tab-icon { width: 16px; height: 16px; border-radius: 50%; }
 
         /* Market List Section */
-        .market-list { padding-top: 5px; }
         .market-header { 
-            display: grid; grid-template-columns: 1.6fr 1fr 1fr; 
-            padding: 10px 15px; color: var(--text-sec); font-size: 11px; 
-            text-transform: uppercase; letter-spacing: 0.5px;
+            display: grid; grid-template-columns: 1.5fr 1.1fr 0.9fr; 
+            padding: 10px 20px; color: var(--text-sec); font-size: 11px; 
+            font-weight: 600; text-transform: uppercase;
         }
         
         .coin-row { 
-            display: grid; grid-template-columns: 1.6fr 1.1fr 0.9fr; 
-            padding: 14px 15px; align-items: center; border-bottom: 1px solid #1e2329; 
-            cursor: pointer; transition: background 0.2s; gap: 8px;
+            display: grid; grid-template-columns: 1.5fr 1.1fr 0.9fr; 
+            padding: 16px 20px; align-items: center; border-bottom: 1px solid var(--border); 
+            cursor: pointer; transition: 0.2s;
         }
         .coin-row:active { background: #1e2329; }
         
         .c-info { display: flex; align-items: center; gap: 12px; }
-        .c-logo { width: 32px; height: 32px; border-radius: 50%; background: var(--border); overflow: hidden; display: flex; align-items: center; justify-content: center; }
-        .c-logo img { width: 100%; height: 100%; object-fit: cover; }
+        .c-logo { width: 36px; height: 36px; border-radius: 50%; background: #2b3139; display: flex; align-items: center; justify-content: center; position: relative; }
+        .c-logo img { width: 100%; height: 100%; object-fit: cover; border-radius: 50%; }
         
         .c-name-box { display: flex; flex-direction: column; }
-        .c-name { font-weight: 700; font-size: 15px; color: #ffffff; }
+        .c-name { font-family: var(--font-bold); font-weight: 900; font-size: 16px; color: #ffffff; letter-spacing: -0.5px; }
         .c-vol { font-size: 11px; color: var(--text-sec); margin-top: 2px; }
 
-        .c-price { font-weight: 600; font-size: 15px; text-align: left; }
-        .c-change { 
-            justify-self: end; padding: 7px 0; border-radius: 4px; 
-            font-weight: bold; width: 75px; text-align: center; font-size: 13px;
-        }
+        .c-price { font-family: var(--font-bold); font-weight: 900; font-size: 15px; text-align: left; }
         
-        .up-bg { background: rgba(14, 203, 129, 0.15); color: var(--up); }
-        .down-bg { background: rgba(246, 70, 93, 0.15); color: var(--down); }
+        /* Advanced % Change Box */
+        .c-change { 
+            justify-self: end; padding: 8px 0; border-radius: 8px; 
+            font-family: var(--font-bold); font-weight: 900; width: 78px; 
+            text-align: center; font-size: 12px; transition: 0.3s;
+        }
+        .up-bg { background: var(--up); color: #000; box-shadow: 0 4px 12px rgba(14, 203, 129, 0.2); }
+        .down-bg { background: var(--down); color: #fff; box-shadow: 0 4px 12px rgba(246, 70, 93, 0.2); }
 
-        /* Footer */
+        /* Footer remains same as requested */
         .footer { position: fixed; bottom: 0; width: 100%; height: 75px; background: #181a20; display: flex; justify-content: space-around; align-items: center; border-top: 1px solid #2b3139; z-index: 1000; }
         .f-nav { text-decoration: none; color: var(--text-sec); text-align: center; font-size: 10px; flex: 1; display: flex; flex-direction: column; align-items: center; gap: 4px; }
         .f-nav i { font-size: 22px; }
         .f-nav.active { color: var(--primary); }
-        
         .u-curve { position: relative; top: -22px; width: 75px; height: 75px; display: flex; justify-content: center; align-items: center; }
         .spin-circle { position: absolute; width: 70px; height: 70px; border: 2.5px dashed var(--primary); border-radius: 50%; animation: spin 5s linear infinite; }
-        .crash-link { width: 58px; height: 58px; background: var(--primary); border-radius: 50%; color: black; font-weight: 900; font-size: 11px; display: flex; align-items: center; justify-content: center; text-decoration: none; z-index: 5; box-shadow: 0 0 15px rgba(243, 186, 47, 0.4); }
-        
+        .crash-link { width: 58px; height: 58px; background: var(--primary); border-radius: 50%; color: black; font-family: var(--font-bold); font-weight: 900; font-size: 11px; display: flex; align-items: center; justify-content: center; text-decoration: none; z-index: 5; }
         @keyframes spin { 100% { transform: rotate(360deg); } }
     </style>
 </head>
 <body>
 
     <header class="header">
-        
         <div class="search-box">
             <i class="fas fa-search" style="color:var(--text-sec)"></i>
             <input type="text" id="marketSearch" placeholder="Search pairs..." oninput="renderMarkets()">
@@ -97,9 +100,9 @@
 
     <div class="market-list">
         <div class="market-header">
-            <span>Name / Vol</span>
-            <span>Last Price</span>
-            <span style="text-align: right;">24h Change</span>
+            <span>Pair / Vol</span>
+            <span>Price</span>
+            <span style="text-align: right;">Change</span>
         </div>
         <div id="coinListContainer"></div>
     </div>
@@ -116,7 +119,6 @@
     </footer>
 
 <script>
-// --- Firebase Configuration ---
 const firebaseConfig = {
     apiKey: "AIzaSyAMxtJedkehhxJRMPZLjhpKHqneHEWsGlE",
     authDomain: "smat-exchange.firebaseapp.com",
@@ -131,29 +133,24 @@ const db = firebase.database();
 let activeMarket = 'USDT';
 let coinData = {}; 
 
-// --- ১. ইনিশিয়ালাইজেশন ---
 function init() {
     renderTabs();
-    
-    // coin.js থেকে সব কয়েনের জন্য ফায়ারবেস লিসেনার সেট করা
     GLOBAL_COINS.forEach(coin => {
         const sym = coin.sym.toLowerCase();
         db.ref('market/' + sym).on('value', (snapshot) => {
             const data = snapshot.val();
             if (data) {
                 coinData[sym] = data;
-                renderMarkets(); // ডাটা আপডেট হলে অটো রেন্ডার
-                if(sym === 'smat') renderTabs(); // SMAT প্রাইস চেঞ্জ হলে ট্যাব আপডেট হতে পারে
+                renderMarkets();
+                if(sym === 'smat') renderTabs();
             }
         });
     });
 }
 
-// --- ২. মার্কেট ট্যাব রেন্ডারিং (অটো লোগোসহ) ---
 function renderTabs() {
     const markets = ['USDT', 'USDC', 'SMAT'];
     const container = document.getElementById('marketTabs');
-    
     container.innerHTML = markets.map(m => `
         <div class="m-tab ${activeMarket === m ? 'active' : ''}" onclick="setMarket('${m}')">
             <img src="assets/logos/${m.toLowerCase()}.png" class="m-tab-icon" onerror="this.src='assets/logos/generic.png'">
@@ -168,15 +165,11 @@ function setMarket(m) {
     renderMarkets();
 }
 
-// --- ৩. কয়েন লিস্ট রেন্ডারিং ---
 function renderMarkets() {
     const query = document.getElementById('marketSearch').value.toUpperCase();
     const container = document.getElementById('coinListContainer');
-    
-    // SMAT ভ্যালু ক্যালকুলেশন (SMAT মার্কেট পেয়ারের জন্য)
     const smatVal = (coinData['smat'] && coinData['smat'].price) ? coinData['smat'].price : 1;
     
-    // ফিল্টারিং: সার্চ এবং বর্তমান মার্কেট বাদে
     let filtered = GLOBAL_COINS.filter(c => 
         c.sym.toUpperCase().includes(query) && 
         c.sym.toUpperCase() !== activeMarket
@@ -184,14 +177,22 @@ function renderMarkets() {
 
     container.innerHTML = filtered.map(c => {
         const symLower = c.sym.toLowerCase();
-        const data = coinData[symLower] || { price: c.price, volume: 0, change: 0 };
+        const data = coinData[symLower] || { price: c.price, volume: 0 };
         
-        let displayPrice = data.price;
-        if(activeMarket === 'SMAT') displayPrice = data.price / smatVal;
+        // বর্তমান প্রাইস (ডাটাবেস থেকে)
+        const currentPrice = data.price;
+        // বেস প্রাইস (coin.js থেকে)
+        const basePrice = c.price;
+
+        // % Change Calculation
+        const changePercent = basePrice > 0 ? ((currentPrice - basePrice) / basePrice * 100) : 0;
         
-        const change = data.change || 0;
-        const changeClass = change >= 0 ? 'up-bg' : 'down-bg';
-        const changeSign = change >= 0 ? '+' : '';
+        let displayPrice = currentPrice;
+        if(activeMarket === 'SMAT') displayPrice = currentPrice / smatVal;
+        
+        const isUp = changePercent >= 0;
+        const changeClass = isUp ? 'up-bg' : 'down-bg';
+        const changeSign = isUp ? '+' : '';
 
         return `
             <div class="coin-row" onclick="location.href='Trade.html?coin=${c.sym.toUpperCase()}'">
@@ -200,17 +201,17 @@ function renderMarkets() {
                         <img src="assets/logos/${symLower}.png" onerror="this.src='assets/logos/generic.png'">
                     </div>
                     <div class="c-name-box">
-                        <div class="c-name">${c.sym.toUpperCase()}<span style="font-size:11px; color:var(--text-sec); font-weight:normal;">/${activeMarket}</span></div>
-                        <div class="c-vol">Vol: ${parseFloat(data.volume).toLocaleString()}</div>
+                        <div class="c-name">${c.sym.toUpperCase()}<span style="font-family:Inter; font-size:10px; color:var(--text-sec); font-weight:600;">/${activeMarket}</span></div>
+                        <div class="c-vol">Vol: ${parseFloat(data.volume || 0).toLocaleString(undefined, {minimumFractionDigits: 2})}</div>
                     </div>
                 </div>
                 
-                <div class="c-price" style="color: ${change >= 0 ? 'var(--up)' : 'var(--down)'}">
-                    ${displayPrice.toFixed(displayPrice < 1 ? 6 : 2)}
+                <div class="c-price" style="color: ${isUp ? 'var(--up)' : 'var(--down)'}">
+                    ${displayPrice.toLocaleString(undefined, {minimumFractionDigits: displayPrice < 1 ? 6 : 2, maximumFractionDigits: displayPrice < 1 ? 6 : 2})}
                 </div>
 
                 <div class="c-change ${changeClass}">
-                    ${changeSign}${change}%
+                    ${changeSign}${changePercent.toFixed(2)}%
                 </div>
             </div>
         `;
