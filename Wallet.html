@@ -22,12 +22,12 @@
         * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Inter', sans-serif; -webkit-tap-highlight-color: transparent; }
         body { background: var(--bg); color: white; padding-bottom: 90px; overflow-x: hidden; }
 
-        /* Header & Actions */
+        /* Wallet Header & Balance */
         .wallet-header { padding: 40px 20px 20px; text-align: center; background: linear-gradient(180deg, rgba(240, 185, 11, 0.1) 0%, var(--bg) 100%); }
         .total-balance { font-family: var(--font-bold); font-size: 38px; font-weight: 900; }
         .quick-actions { display: grid; grid-template-columns: repeat(3, 1fr); gap: 15px; padding: 0 20px 25px; }
         .q-btn { background: var(--card); border: 1px solid var(--border); border-radius: 16px; padding: 15px; text-align: center; cursor: pointer; }
-        
+
         /* Asset Cards */
         .asset-list { padding: 0 15px; }
         .asset-card {
@@ -48,17 +48,25 @@
         .search-box { padding: 15px 20px; background: #181a20; border-bottom: 1px solid var(--border); }
         .search-input { width: 100%; background: var(--card); border: 1px solid var(--border); padding: 12px 15px; border-radius: 10px; color: white; outline: none; }
 
-        /* Form Controls */
+        /* Controls */
         .qr-box { background: white; width: 170px; height: 170px; margin: 15px auto; padding: 8px; border-radius: 12px; position: relative; display: flex; align-items: center; justify-content: center; }
         .qr-logo { position: absolute; width: 35px; height: 35px; background: white; border-radius: 50%; padding: 2px; z-index: 5; }
         .btn-main { width: 100%; background: var(--primary); color: #000; border: none; padding: 15px; border-radius: 12px; font-weight: 900; margin-top: 15px; }
-        .opt-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 20px; }
-        .opt-btn { background: var(--card); border: 1px solid var(--border); padding: 12px; border-radius: 12px; text-align: center; font-size: 13px; font-weight: 800; cursor: pointer; }
+        .opt-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px; margin-bottom: 20px; }
+        .opt-btn { background: var(--card); border: 1px solid var(--border); padding: 12px 5px; border-radius: 12px; text-align: center; font-size: 11px; font-weight: 800; cursor: pointer; }
         .opt-btn.active { border-color: var(--primary); color: var(--primary); }
 
         /* History */
         .history-popup { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: var(--bg); z-index: 6000; display: none; flex-direction: column; }
         .hist-card { background: var(--card); padding: 15px; border-radius: 15px; margin-bottom: 12px; border-left: 4px solid var(--primary); }
+        .status-spin { animation: spin 2s linear infinite; }
+        @keyframes spin { 100% { transform: rotate(360deg); } }
+
+        /* Footer */
+        .footer { position: fixed; bottom: 0; width: 100%; height: 75px; background: #181a20; display: flex; justify-content: space-around; align-items: center; border-top: 1px solid var(--border); z-index: 4000; }
+        .f-nav { text-decoration: none; color: var(--text-sec); text-align: center; font-size: 10px; flex: 1; display: flex; flex-direction: column; align-items: center; gap: 4px; }
+        .f-nav.active { color: var(--primary); }
+        .main-fab { width: 60px; height: 60px; background: var(--primary); border-radius: 50%; margin-top: -30px; display: flex; justify-content: center; align-items: center; box-shadow: 0 0 15px rgba(240, 185, 11, 0.4); }
     </style>
 </head>
 <body>
@@ -82,12 +90,12 @@
                 <i class="fas fa-arrow-left" onclick="closeSelector()"></i>
                 <h3 id="selectorTitle">Select Asset</h3>
             </div>
-            <input type="text" class="search-input" id="coinSearch" placeholder="Search coin name or symbol..." oninput="filterCoins()">
+            <input type="text" class="search-input" id="coinSearch" placeholder="Search coin..." oninput="filterCoins()">
         </div>
         <div id="selectorList" style="flex:1; overflow-y:auto; padding:15px"></div>
     </div>
 
-    <div class="overlay" id="actionOverlay">
+    <div class="overlay" id="actionOverlay" onclick="closePopupOverlay(event)">
         <div class="popup">
             <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px">
                 <div style="display:flex; align-items:center; gap:10px">
@@ -98,15 +106,13 @@
             </div>
 
             <div id="actionSwitchers" class="opt-grid">
+                <div class="opt-btn" id="btnDep" onclick="switchMode('deposit')">DEPOSIT</div>
                 <div class="opt-btn" id="btnWith" onclick="switchMode('withdraw')">WITHDRAW</div>
                 <div class="opt-btn" id="btnTrans" onclick="switchMode('transfer')">TRANSFER</div>
             </div>
 
             <div id="uiDeposit" class="mode-ui">
-                <div class="qr-box">
-                    <img id="qrCoinLogo" class="qr-logo">
-                    <div id="qrcode"></div>
-                </div>
+                <div class="qr-box"><img id="qrCoinLogo" class="qr-logo"><div id="qrcode"></div></div>
                 <div style="background:#0b0e11; padding:12px; border-radius:10px; display:flex; justify-content:space-between; align-items:center">
                     <span id="depAddr" style="font-size:10px; color:var(--text-sec)">0x...</span>
                     <i class="fas fa-copy" onclick="copyValue('depAddr')" style="color:var(--primary)"></i>
@@ -116,20 +122,16 @@
 
             <div id="uiWithdraw" class="mode-ui" style="display:none">
                 <p style="font-size:11px; color:var(--text-sec)">Available: <b id="availWith" style="color:var(--up)">0.00</b></p>
-                <select id="withNet" style="width:100%; background:#0b0e11; border:1px solid var(--border); color:white; padding:12px; border-radius:10px; margin:10px 0">
-                    <option>BEP20</option><option>ERC20</option>
-                </select>
-                <input type="text" id="withAddr" placeholder="Address" style="width:100%; background:#0b0e11; border:1px solid var(--border); color:white; padding:12px; border-radius:10px; margin-bottom:10px">
+                <select id="withNet" style="width:100%; background:#0b0e11; border:1px solid var(--border); color:white; padding:12px; border-radius:10px; margin:10px 0"><option>BEP20</option><option>ERC20</option></select>
+                <input type="text" id="withAddr" placeholder="Recipient Address" style="width:100%; background:#0b0e11; border:1px solid var(--border); color:white; padding:12px; border-radius:10px; margin-bottom:10px">
                 <input type="number" id="withAmt" placeholder="Amount" style="width:100%; background:#0b0e11; border:1px solid var(--border); color:white; padding:12px; border-radius:10px">
-                <button class="btn-main" onclick="processWithdraw()">SUBMIT WITHDRAW</button>
+                <button class="btn-main" onclick="processWithdraw()">WITHDRAW NOW</button>
             </div>
 
             <div id="uiTransfer" class="mode-ui" style="display:none">
                 <p style="font-size:11px; color:var(--text-sec)">Transferable: <b id="availTrans" style="color:var(--primary)">0.00</b></p>
-                <select id="transType" style="width:100%; background:#0b0e11; border:1px solid var(--border); color:white; padding:12px; border-radius:10px; margin:10px 0">
-                    <option value="gmail">Email</option><option value="smatid">SMAT ID</option>
-                </select>
-                <input type="text" id="transTarget" placeholder="Recipient" style="width:100%; background:#0b0e11; border:1px solid var(--border); color:white; padding:12px; border-radius:10px; margin-bottom:10px">
+                <select id="transType" style="width:100%; background:#0b0e11; border:1px solid var(--border); color:white; padding:12px; border-radius:10px; margin:10px 0"><option value="gmail">Email</option><option value="smatid">SMAT ID</option></select>
+                <input type="text" id="transTarget" placeholder="Recipient Details" style="width:100%; background:#0b0e11; border:1px solid var(--border); color:white; padding:12px; border-radius:10px; margin-bottom:10px">
                 <input type="number" id="transAmt" placeholder="Amount" style="width:100%; background:#0b0e11; border:1px solid var(--border); color:white; padding:12px; border-radius:10px">
                 <button class="btn-main" onclick="processTransfer()">TRANSFER NOW</button>
             </div>
@@ -137,24 +139,31 @@
     </div>
 
     <div class="history-popup" id="historyPopup">
-        <div style="padding:20px; display:flex; align-items:center; gap:15px; border-bottom:1px solid var(--border)">
-            <i class="fas fa-arrow-left" onclick="closeHistory()"></i>
-            <h3>History</h3>
-        </div>
+        <div style="padding:20px; display:flex; align-items:center; gap:15px; border-bottom:1px solid var(--border)"><i class="fas fa-arrow-left" onclick="closeHistory()"></i><h3>Transaction History</h3></div>
         <div id="histContent" style="padding:15px; overflow-y:auto"></div>
     </div>
 
+    <footer class="footer">
+        <a href="home.html" class="f-nav"><i class="fas fa-home"></i>Home</a>
+        <a href="Trade.html" class="f-nav"><i class="fas fa-chart-line"></i>Trade</a>
+        <div class="main-fab"><i class="fas fa-plus" style="color:black"></i></div>
+        <a href="Explorer.html" class="f-nav"><i class="fas fa-compass"></i>Explore</a>
+        <a href="Wallet.html" class="f-nav active"><i class="fas fa-wallet"></i>Wallet</a>
+    </footer>
+
 <script>
-// Firebase & Auth
+// Number Formatting Function (৩ সংখ্যা পর কমা)
+function formatNum(num, fixed = 2) {
+    return parseFloat(num).toLocaleString(undefined, { minimumFractionDigits: fixed, maximumFractionDigits: fixed });
+}
+
+// Firebase Config
 const firebaseConfig = { apiKey: "AIzaSyAMxtJedkehhxJRMPZLjhpKHqneHEWsGlE", authDomain: "smat-exchange.firebaseapp.com", projectId: "smat-exchange", databaseURL: "https://smat-exchange-default-rtdb.firebaseio.com", storageBucket: "smat-exchange.appspot.com", messagingSenderId: "836334569396", appId: "1:836334569396:web:679effe640b3453412d4e1" };
 firebase.initializeApp(firebaseConfig);
 const db = firebase.database();
 const auth = firebase.auth();
 
-let userData = {};
-let livePrices = {};
-let currentMode = ''; 
-let activeCoin = null;
+let userData = {}, livePrices = {}, currentSelectorMode = ''; 
 
 function init() {
     auth.onAuthStateChanged(user => {
@@ -174,21 +183,21 @@ function updateUI() {
     }).sort((a,b) => b.val - a.val);
 
     document.getElementById('assetList').innerHTML = sorted.map(c => `
-        <div class="asset-card" onclick="openActionPopup('${c.sym.toLowerCase()}', 'withdraw')">
+        <div class="asset-card" onclick="openActionPopup('${c.sym.toLowerCase()}', 'all')">
             <div class="a-logo"><img src="assets/logos/${c.sym.toLowerCase()}.png"></div>
-            <div style="flex:1"><h4>${c.sym.toUpperCase()}</h4><p style="font-size:11px; color:var(--text-sec)">$${c.price}</p></div>
-            <div style="text-align:right"><b>${c.bal.toFixed(4)}</b><br><span style="font-size:11px; color:var(--text-sec)">$${c.val.toFixed(2)}</span></div>
+            <div style="flex:1"><h4>${c.sym.toUpperCase()}</h4><p style="font-size:11px; color:var(--text-sec)">$${formatNum(c.price)}</p></div>
+            <div style="text-align:right"><b>${formatNum(c.bal, 4)}</b><br><span style="font-size:11px; color:var(--text-sec)">$${formatNum(c.val)}</span></div>
         </div>
     `).join('');
     
     let total = sorted.reduce((a, b) => a + b.val, 0);
-    document.getElementById('totalBalance').innerText = total.toFixed(2);
+    document.getElementById('totalBalance').innerText = formatNum(total);
 }
 
-// Selector Logic
+// Selector
 function openCoinSelector(mode) {
-    currentMode = mode;
-    document.getElementById('selectorTitle').innerText = mode === 'deposit' ? 'Deposit Assets' : 'Withdraw/Transfer';
+    currentSelectorMode = mode;
+    document.getElementById('selectorTitle').innerText = mode === 'deposit' ? 'Deposit' : 'Withdraw';
     document.getElementById('coinSelector').style.display = 'flex';
     filterCoins();
 }
@@ -203,41 +212,56 @@ function filterCoins() {
     .filter(c => c.name.toLowerCase().includes(query) || c.sym.toLowerCase().includes(query));
 
     document.getElementById('selectorList').innerHTML = list.map(c => `
-        <div class="asset-card" onclick="openActionPopup('${c.sym.toLowerCase()}', '${currentMode}')">
+        <div class="asset-card" onclick="openActionPopup('${c.sym.toLowerCase()}', '${currentSelectorMode}')">
             <div class="a-logo"><img src="assets/logos/${c.sym.toLowerCase()}.png"></div>
             <div style="flex:1"><h4>${c.sym.toUpperCase()}</h4><p style="font-size:11px; color:var(--text-sec)">${c.name}</p></div>
-            <div style="text-align:right"><b style="color:var(--primary)">${c.bal.toFixed(4)}</b></div>
+            <div style="text-align:right"><b style="color:var(--primary)">${formatNum(c.bal, 4)}</b></div>
         </div>
     `).join('');
 }
 
+// Action Popup Logic
 function openActionPopup(sym, mode) {
-    activeCoin = GLOBAL_COINS.find(c => c.sym.toLowerCase() === sym);
-    const s = activeCoin.sym.toLowerCase();
+    const coin = GLOBAL_COINS.find(c => c.sym.toLowerCase() === sym);
+    const s = coin.sym.toLowerCase();
     const bal = (s === 'usdt') ? (userData.balance || 0) : (userData[s + '_balance'] || 0);
-    const price = livePrices[s]?.price || activeCoin.price;
+    const price = livePrices[s]?.price || coin.price;
 
     document.getElementById('popCoinLogo').src = `assets/logos/${s}.png`;
     document.getElementById('qrCoinLogo').src = `assets/logos/${s}.png`;
     document.getElementById('popCoinName').innerText = sym.toUpperCase();
     document.getElementById('depAddr').innerText = userData.depositAddress || "0xLoading...";
-    document.getElementById('availWith').innerText = (bal - (0.25/price)).toFixed(6) + " " + sym.toUpperCase();
-    document.getElementById('availTrans').innerText = bal.toFixed(6) + " " + sym.toUpperCase();
+    document.getElementById('availWith').innerText = formatNum(bal - (0.25/price), 6);
+    document.getElementById('availTrans').innerText = formatNum(bal, 6);
 
     const qr = qrcode(0, 'M');
     qr.addData(userData.depositAddress || "0xLoading...");
     qr.make();
     document.getElementById('qrcode').innerHTML = qr.createImgTag(4);
 
-    closeSelector();
+    document.getElementById('coinSelector').style.display = 'none';
     document.getElementById('actionOverlay').style.display = 'flex';
     
+    // logic based on mode
+    const grid = document.getElementById('actionSwitchers');
+    const bDep = document.getElementById('btnDep');
+    
     if(mode === 'deposit') {
-        document.getElementById('actionSwitchers').style.display = 'none';
+        grid.style.display = 'grid'; bDep.style.display = 'block'; 
+        document.getElementById('btnWith').style.display = 'none';
+        document.getElementById('btnTrans').style.display = 'none';
         switchMode('deposit');
-    } else {
-        document.getElementById('actionSwitchers').style.display = 'grid';
+    } else if(mode === 'withdraw') {
+        grid.style.display = 'grid'; bDep.style.display = 'none';
+        document.getElementById('btnWith').style.display = 'block';
+        document.getElementById('btnTrans').style.display = 'block';
         switchMode('withdraw');
+    } else {
+        // Mode 'all' (Single coin click)
+        grid.style.display = 'grid'; bDep.style.display = 'block';
+        document.getElementById('btnWith').style.display = 'block';
+        document.getElementById('btnTrans').style.display = 'block';
+        switchMode('deposit');
     }
 }
 
@@ -245,39 +269,37 @@ function switchMode(m) {
     document.querySelectorAll('.mode-ui').forEach(u => u.style.display = 'none');
     document.querySelectorAll('.opt-btn').forEach(b => b.classList.remove('active'));
     document.getElementById('ui' + m.charAt(0).toUpperCase() + m.slice(1)).style.display = 'block';
-    if(m !== 'deposit') document.getElementById('btn' + m.charAt(0).toUpperCase() + m.slice(1).substring(0,4)).classList.add('active');
+    document.getElementById('btn' + m.charAt(0).toUpperCase() + m.slice(1).substring(0,3)).classList.add('active');
 }
 
-// Transaction Processors
+// Processing
 async function processWithdraw() {
     const amt = parseFloat(document.getElementById('withAmt').value);
     const addr = document.getElementById('withAddr').value;
-    const s = activeCoin.sym.toLowerCase();
+    const s = document.getElementById('popCoinName').innerText.toLowerCase();
     const bal = (s === 'usdt') ? (userData.balance || 0) : (userData[s + '_balance'] || 0);
-    const price = livePrices[s]?.price || activeCoin.price;
+    const price = livePrices[s]?.price || 1;
     const fee = 0.25 / price;
 
-    if(!addr || isNaN(amt) || amt <= 0 || (amt + fee) > bal) return alert("Check Balance & Details!");
+    if(!addr || isNaN(amt) || amt <= 0 || (amt + fee) > bal) return alert("Balance Insufficient!");
 
     const txId = db.ref('transactions').push().key;
-    const data = { method: 'Withdraw', coin: s.toUpperCase(), amount: amt, network: document.getElementById('withNet').value, address: addr, status: 'pending', timestamp: Date.now(), hash: 'Processing' };
-    
+    const data = { method: 'Withdraw', coin: s.toUpperCase(), amount: amt, network: document.getElementById('withNet').value, address: addr, status: 'pending', timestamp: Date.now(), hash: '...' };
     await db.ref('users/' + auth.currentUser.uid).update({ [(s==='usdt'?'balance':s+'_balance')]: bal - (amt + fee) });
     await db.ref('users/' + auth.currentUser.uid + '/history/' + txId).set(data);
-    alert("Withdrawal Pending!"); hidePopup();
+    alert("Withdrawal Submitted!"); hidePopup();
 }
 
 async function processTransfer() {
     const amt = parseFloat(document.getElementById('transAmt').value);
     const target = document.getElementById('transTarget').value;
-    const s = activeCoin.sym.toLowerCase();
+    const s = document.getElementById('popCoinName').innerText.toLowerCase();
     const bal = (s === 'usdt') ? (userData.balance || 0) : (userData[s + '_balance'] || 0);
 
-    if(!target || isNaN(amt) || amt <= 0 || amt > bal) return alert("Error in data!");
+    if(!target || isNaN(amt) || amt <= 0 || amt > bal) return alert("Check Data!");
 
     const txId = db.ref('transactions').push().key;
     const data = { method: 'Internal Transfer', coin: s.toUpperCase(), amount: amt, network: 'Internal', address: target, status: 'success', timestamp: Date.now(), hash: 'Null' };
-
     await db.ref('users/' + auth.currentUser.uid).update({ [(s==='usdt'?'balance':s+'_balance')]: bal - amt });
     await db.ref('users/' + auth.currentUser.uid + '/history/' + txId).set(data);
     alert("Transferred!"); hidePopup();
@@ -286,18 +308,13 @@ async function processTransfer() {
 function openHistory() {
     document.getElementById('historyPopup').style.display = 'flex';
     db.ref('users/' + auth.currentUser.uid + '/history').on('value', snap => {
-        const hData = snap.val();
-        if(!hData) return document.getElementById('histContent').innerHTML = "No History";
-        document.getElementById('histContent').innerHTML = Object.values(hData).sort((a,b)=>b.timestamp-a.timestamp).map(h => `
+        const h = snap.val();
+        document.getElementById('histContent').innerHTML = h ? Object.values(h).sort((a,b)=>b.timestamp-a.timestamp).map(x => `
             <div class="hist-card">
-                <div style="display:flex; justify-content:space-between">
-                    <span style="font-size:11px; font-weight:bold">${h.method}</span>
-                    <span style="color:${h.status==='success'?'var(--up)':'var(--primary)'}">${h.status.toUpperCase()}</span>
-                </div>
-                <p style="font-size:12px; margin:5px 0"><b>${h.amount} ${h.coin}</b> via ${h.network}</p>
-                <p style="font-size:10px; color:var(--text-sec)">Addr: ${h.address.substring(0,12)}...</p>
-            </div>
-        `).join('');
+                <div style="display:flex; justify-content:space-between"><b>${x.method}</b> <span style="color:${x.status==='success'?'var(--up)':'var(--primary)'}">${x.status.toUpperCase()}</span></div>
+                <p style="font-size:12px; margin:5px 0">${formatNum(x.amount, 4)} ${x.coin} (${x.network})</p>
+                <p style="font-size:10px; color:var(--text-sec)">Addr: ${x.address.substring(0,15)}...</p>
+            </div>`).join('') : "No History Found";
     });
 }
 
@@ -305,6 +322,7 @@ function closeSelector() { document.getElementById('coinSelector').style.display
 function hidePopup() { document.getElementById('actionOverlay').style.display = 'none'; }
 function closeHistory() { document.getElementById('historyPopup').style.display = 'none'; }
 function copyValue(id) { navigator.clipboard.writeText(document.getElementById(id).innerText); alert("Copied!"); }
+function closePopupOverlay(e) { if(e.target.id === 'actionOverlay') hidePopup(); }
 
 window.onload = init;
 </script>
