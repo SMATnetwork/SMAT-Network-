@@ -37,7 +37,7 @@
         .header-right { display: flex; gap: 18px; position: relative; align-items: center; }
         .header-right i { font-size: 20px; color: var(--text-sec); cursor: pointer; }
 
-        /* --- Sidebar & Popups --- */
+        /* --- Sidebar --- */
         .sidebar {
             position: fixed; top: 0; left: -100%; width: 85%; max-width: 320px; height: 100%;
             background: #181a20; z-index: 4000; transition: 0.4s cubic-bezier(0.4, 0, 0.2, 1); padding: 25px;
@@ -60,6 +60,23 @@
         }
         .kyc-status-btn i { font-size: 25px; color: var(--primary); margin-bottom: 5px; }
 
+        .side-menu { margin-top: 20px; }
+        .menu-item {
+            display: flex; align-items: center; gap: 15px; padding: 12px 0;
+            text-decoration: none; color: var(--text-main); border-bottom: 1px solid var(--border);
+        }
+        .menu-item i { font-size: 18px; color: var(--primary); width: 25px; }
+        .menu-text b { display: block; font-size: 14px; }
+        .menu-text span { font-size: 10px; color: var(--text-sec); }
+
+        /* --- Portfolio Card --- */
+        .asset-card {
+            margin: 10px 20px; background: linear-gradient(135deg, #1e2329 0%, #0b0e11 100%);
+            padding: 20px; border-radius: 20px; border: 1px solid var(--border);
+        }
+        .asset-balance { font-family: var(--font-bold); font-size: 28px; margin: 10px 0; letter-spacing: 1px; }
+
+        /* --- Popups --- */
         .popup-overlay {
             position: fixed; top: 0; left: 0; width: 100%; height: 100%;
             background: rgba(0,0,0,0.95); z-index: 5000; display: none;
@@ -70,7 +87,13 @@
             border-radius: 24px; max-height: 90vh; overflow-y: auto; border: 1px solid var(--border);
         }
 
-        /* --- Referral Style --- */
+        /* --- Referral & KYC Badge --- */
+        .status-badge { padding: 4px 8px; border-radius: 4px; font-size: 9px; font-weight: bold; text-transform: uppercase; }
+        .status-verified { background: rgba(14, 203, 129, 0.15); color: var(--up); }
+        .status-pending { background: rgba(243, 186, 47, 0.15); color: var(--primary); }
+        .status-rejected { background: rgba(246, 70, 93, 0.15); color: var(--down); }
+        .status-unverified { background: #474d57; color: #fff; }
+
         .ref-stat-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin: 15px 0; }
         .ref-stat-card { background: #2b3139; padding: 12px; border-radius: 12px; text-align: center; }
         .ref-stat-card span { font-size: 10px; color: var(--text-sec); display: block; }
@@ -79,39 +102,23 @@
         .ref-link-box input { flex: 1; background: transparent; border: none; color: var(--text-sec); font-size: 11px; }
         .ref-link-box button { background: var(--primary); border: none; padding: 5px 10px; border-radius: 5px; font-weight: bold; font-size: 11px; cursor: pointer; }
 
-        /* --- Asset Card --- */
-        .asset-card {
-            margin: 10px 20px; background: linear-gradient(135deg, #1e2329 0%, #0b0e11 100%);
-            padding: 20px; border-radius: 20px; border: 1px solid var(--border);
-        }
-        .asset-balance { font-family: var(--font-bold); font-size: 28px; margin: 10px 0; letter-spacing: 1px; }
-
-        /* --- Notice Bar --- */
-        .notice-bar {
-            margin: 10px 20px; background: rgba(243,186,47,0.05); padding: 8px; border-radius: 8px; border: 1px solid rgba(243,186,47,0.1); overflow: hidden;
-        }
-
-        /* --- Market Tabs & List --- */
-        .market-tabs { display: flex; padding: 0 20px; gap: 20px; margin: 15px 0; border-bottom: 1px solid var(--border); }
-        .tab { font-size: 14px; font-weight: 700; color: var(--text-sec); cursor: pointer; padding-bottom: 10px; position: relative; }
+        /* --- Market --- */
+        .market-tabs { display: flex; padding: 0 20px; gap: 20px; margin: 15px 0; }
+        .tab { font-size: 14px; font-weight: 700; color: var(--text-sec); cursor: pointer; position: relative; }
         .tab.active { color: var(--primary); }
-        .tab.active::after { content: ''; position: absolute; bottom: 0; left: 0; width: 100%; height: 3px; background: var(--primary); border-radius: 10px; }
+        .tab.active::after { content: ''; position: absolute; bottom: -5px; left: 0; width: 100%; height: 2px; background: var(--primary); }
 
-        .coin-row { display: flex; justify-content: space-between; align-items: center; padding: 15px 20px; border-bottom: 1px solid rgba(255,255,255,0.03); cursor: pointer; }
-        .coin-icon { width: 40px; height: 40px; border-radius: 50%; object-fit: cover; }
-        .percent-box { display: inline-block; padding: 4px 10px; border-radius: 6px; font-size: 11px; font-weight: bold; margin-top: 4px; min-width: 65px; text-align: center; }
-
-        .status-badge { padding: 4px 8px; border-radius: 4px; font-size: 9px; font-weight: bold; text-transform: uppercase; }
-        .status-verified { background: rgba(14, 203, 129, 0.15); color: var(--up); }
-        .status-pending { background: rgba(243, 186, 47, 0.15); color: var(--primary); }
-        .status-rejected { background: rgba(246, 70, 93, 0.15); color: var(--down); }
-        .status-unverified { background: #474d57; color: #fff; }
+        .list-header { display: grid; grid-template-columns: 1.5fr 1.2fr 1fr; padding: 10px 20px; font-size: 11px; color: var(--text-sec); }
+        .coin-row { display: grid; grid-template-columns: 1.5fr 1.2fr 1fr; padding: 15px 20px; align-items: center; border-bottom: 1px solid rgba(255,255,255,0.03); cursor: pointer; }
+        .coin-icon { width: 35px; height: 35px; border-radius: 50%; object-fit: cover; }
+        .percent-box { display: inline-block; padding: 4px 8px; border-radius: 6px; font-size: 11px; font-weight: bold; margin-top: 3px; }
 
         /* --- Footer --- */
         .footer { position: fixed; bottom: 0; width: 100%; height: 75px; background: #181a20; display: flex; justify-content: space-around; align-items: center; border-top: 1px solid var(--border); z-index: 3000; }
-        .f-nav { text-decoration: none; color: var(--text-sec); text-align: center; font-size: 10px; display: flex; flex-direction: column; align-items: center; flex: 1; }
+        .f-nav { text-decoration: none; color: var(--text-sec); text-align: center; font-size: 10px; flex: 1; display: flex; flex-direction: column; align-items: center; }
+        .f-nav i { font-size: 22px; margin-bottom: 5px; }
         .f-nav.active { color: var(--primary); }
-        .crash-link { width: 60px; height: 60px; background: var(--primary); border-radius: 50%; color: black; font-weight: 900; display: flex; align-items: center; justify-content: center; margin-top: -35px; box-shadow: 0 5px 20px rgba(243,186,47,0.4); text-decoration: none; font-size: 11px; z-index: 5; position: relative; }
+        .crash-link { width: 60px; height: 60px; background: var(--primary); border-radius: 50%; color: black; font-weight: 900; display: flex; align-items: center; justify-content: center; margin-top: -35px; box-shadow: 0 5px 20px rgba(243,186,47,0.4); text-decoration: none; font-size: 11px; position: relative; z-index: 5; }
         .spin-circle { position: absolute; width: 70px; height: 70px; border: 2px dashed var(--primary); border-radius: 50%; animation: spin 5s linear infinite; top: -40px; }
         @keyframes spin { 100% { transform: rotate(360deg); } }
     </style>
@@ -140,6 +147,7 @@
             <a href="javascript:void(0)" onclick="openRefPopup()" class="menu-item"><i class="fa-solid fa-user-plus"></i><div class="menu-text"><b>Invited Friends</b><span>Referral Earnings</span></div></a>
             <a href="mining.html" class="menu-item"><i class="fa-solid fa-microchip"></i><div class="menu-text"><b>Mining</b><span>Active Session</span></div></a>
             <a href="fox.html" class="menu-item"><i class="fa-solid fa-comments"></i><div class="menu-text"><b>SMAT Chat</b><span>Community Group</span></div></a>
+            <a href="explore.html" class="menu-item"><i class="fa-solid fa-database"></i><div class="menu-text"><b>Blockchain</b><span>Public Ledger</span></div></a>
         </div>
         <div style="margin-top: 40px; text-align: center;"><i class="fa-solid fa-sign-out-alt" style="color:var(--down); font-size:30px; cursor:pointer" onclick="logout()"></i></div>
     </div>
@@ -159,7 +167,7 @@
                 <input type="text" id="referralLink" readonly value="Loading link...">
                 <button onclick="copyRef()">Copy</button>
             </div>
-            <div id="refList" style="margin-top:15px;"></div>
+            <div id="refList" style="margin-top:15px; font-size:11px"></div>
         </div>
     </div>
 
@@ -169,15 +177,14 @@
             <div id="kycForm" style="display:none">
                 <input type="text" id="realName" placeholder="Full Real Name" style="width:100%; padding:12px; background:#2b3139; border:1px solid var(--border); color:white; border-radius:10px; margin-bottom:10px">
                 <input type="text" id="nidNum" placeholder="NID Number" style="width:100%; padding:12px; background:#2b3139; border:1px solid var(--border); color:white; border-radius:10px; margin-bottom:10px">
-                <p style="font-size:11px; color:var(--text-sec)">NID Front, Back & Selfie Files...</p>
                 <input type="file" id="nidF" style="margin-bottom:10px"><input type="file" id="nidB" style="margin-bottom:10px"><input type="file" id="nidS" style="margin-bottom:10px">
                 <button onclick="handleKYC()" id="submitBtn" style="width:100%; padding:15px; background:var(--primary); border:none; border-radius:12px; font-weight:bold; cursor:pointer">Submit Details</button>
             </div>
-            <div id="kycPendingNotice" style="display:none; text-align:center; padding:20px">
+            <div id="kycPendingNotice" style="display:none; text-align:center">
                 <i class="fa-solid fa-circle-notch fa-spin" style="font-size:30px; color:var(--primary)"></i>
-                <p style="color:var(--primary); font-weight:bold">Processing Application...</p>
+                <p>Processing Application...</p>
             </div>
-            <div id="kycVerifiedInfo" style="display:none; padding:15px; background:rgba(14, 203, 129, 0.1); border-radius:12px;">
+            <div id="kycVerifiedInfo" style="display:none; padding:15px; background:rgba(14,203,129,0.1); border-radius:12px">
                 <div id="v_name" style="font-weight:bold; color:var(--up)"></div>
                 <div id="v_nid" style="font-size:12px"></div>
             </div>
@@ -191,15 +198,9 @@
     </div>
 
     <div class="asset-card">
-        <div style="font-size: 13px; color: var(--text-sec);">Portfolio Assets <i class="fa-solid fa-eye" style="font-size:11px"></i></div>
+        <div style="font-size: 13px; color: var(--text-sec);">Portfolio Assets <i class="fa-solid fa-eye" id="eyeIcon" onclick="toggleBalance()"></i></div>
         <div class="asset-balance">$ <span id="totalVal">0.00</span></div>
         <div style="font-size:13px; font-weight:600; color:var(--up)" id="pnlVal">+$0.00 Today's PNL</div>
-    </div>
-
-    <div class="notice-bar">
-        <marquee scrollamount="5" style="font-size: 11px; color: var(--text-sec);">
-            System Notice: SMAT Mainnet integration ongoing. Ensure KYC is verified for internal transfers. Trading pairs: BTC/USDT, ETH/USDT live.
-        </marquee>
     </div>
 
     <div class="market-tabs">
@@ -209,15 +210,13 @@
         <div class="tab" onclick="switchTab(this, 'new')">NEW</div>
     </div>
 
+    <div class="list-header"><span>Name / Symbol</span><span style="text-align:center">Price / 24H</span><span style="text-align:right">Volume</span></div>
     <div id="coinList"></div>
 
     <footer class="footer">
         <a href="home.html" class="f-nav active"><i class="fas fa-home"></i>Home</a>
         <a href="Trade.html" class="f-nav"><i class="fas fa-chart-line"></i>Trade</a>
-        <div style="position:relative; width:75px; display:flex; justify-content:center">
-            <div class="spin-circle"></div>
-            <a href="Crash.html" class="crash-link">CRASH</a>
-        </div>
+        <div style="position:relative; width:75px; display:flex; justify-content:center"><div class="spin-circle"></div><a href="Crash.html" class="crash-link">CRASH</a></div>
         <a href="Explorer.html" class="f-nav"><i class="fas fa-compass"></i>Explore</a>
         <a href="Wallet.html" class="f-nav"><i class="fas fa-wallet"></i>Wallet</a>
     </footer>
@@ -257,7 +256,7 @@
             } else { location.href = 'logIn.html'; }
         });
 
-        // মার্কেট ডেটা লজিক (১০০% আপনার আগের ফাইল থেকে)
+        // মার্কেট লজিক (১০০% আপনার ফাইল থেকে)
         onValue(ref(db, 'market'), (snapshot) => {
             const data = snapshot.val();
             if (data) {
@@ -265,12 +264,12 @@
                     const sym = coinSym.toLowerCase();
                     window[sym + "Val"] = data[coinSym].price;
                     localStorage.setItem(sym + "_latest_price", data[coinSym].price);
+                    localStorage.setItem(sym + "_volume", data[coinSym].volume || "0.00");
                 });
                 renderCoins(window.currentActiveTab || 'hot');
             }
         });
 
-        // KYC UI Logic
         function updateKYCUI(data) {
             const status = data.kycStatus || 'unverified';
             document.getElementById('kycBadge').innerText = status;
@@ -284,7 +283,6 @@
             }
         }
 
-        // Referral Logic
         function setupReferral(sid) {
             const baseUrl = window.location.origin + window.location.pathname.replace('home.html', 'logIn.html');
             document.getElementById('referralLink').value = `${baseUrl}?ref=${sid}`;
@@ -295,14 +293,12 @@
                     const users = Object.values(data);
                     users.forEach(u => { if(u.kycStatus === 'verified') v++; else if(u.kycStatus === 'rejected') r++; });
                     users.sort((a,b) => (b.createdAt||0)-(a.createdAt||0)).slice(0,5).forEach(u => {
-                        list += `<div style="display:flex; justify-content:space-between; margin-bottom:8px; font-size:12px">
-                            <span>${u.email.split('@')[0]}...</span><span class="status-badge status-${u.kycStatus||'unverified'}">${u.kycStatus||'unverified'}</span>
-                        </div>`;
+                        list += `<div style="display:flex; justify-content:space-between; margin-bottom:5px"><span>${u.email.split('@')[0]}...</span><span class="status-badge status-${u.kycStatus||'unverified'}">${u.kycStatus||'unverified'}</span></div>`;
                     });
                 }
                 document.getElementById('ref_verified').innerText = v;
                 document.getElementById('ref_rejected').innerText = r;
-                document.getElementById('refList').innerHTML = list || '<p style="text-align:center; font-size:11px">No activity</p>';
+                document.getElementById('refList').innerHTML = list || 'No activity';
             });
         }
 
@@ -345,19 +341,22 @@
                 const diff = currentPrice - coin.price;
                 const isUp = diff >= 0;
                 const changePercent = coin.price > 0 ? ((diff / coin.price) * 100).toFixed(2) : "0.00";
+                const volume = localStorage.getItem(s + "_volume") || "0.00";
+
                 return `
                 <div class="coin-row" onclick="location.href='Trade.html?coin=${s}'">
                     <div style="display:flex; align-items:center; gap:12px">
                         <img src="assets/logos/${s}.png" class="coin-icon" onerror="this.src='https://via.placeholder.com/40?text=${coin.sym[0]}'">
                         <div>
-                            <div style="font-weight:bold">${coin.sym.toUpperCase()}/USDT ${(now - (coin.listedAt || 0)) < threeDaysMs ? '<span class="new-badge">NEW</span>' : ''}</div>
-                            <div style="font-size:12px; color:var(--text-sec)">${coin.name}</div>
+                            <div style="font-weight:bold">${coin.sym.toUpperCase()}/USDT ${(now - (coin.listedAt || 0)) < threeDaysMs ? '<span style="font-size:8px; background:var(--primary); color:black; padding:2px 4px; border-radius:4px">NEW</span>' : ''}</div>
+                            <div style="font-size:11px; color:var(--text-sec)">${coin.name}</div>
                         </div>
                     </div>
-                    <div style="text-align:right">
-                        <div style="font-weight:bold; font-size:16px">$${currentPrice.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 4})}</div>
+                    <div style="text-align:center">
+                        <div style="font-weight:bold; font-size:15px">$${currentPrice.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 4})}</div>
                         <div class="percent-box" style="background:${isUp ? 'rgba(14, 203, 129, 0.15)' : 'rgba(246, 70, 93, 0.15)'}; color:${isUp ? 'var(--up)' : 'var(--down)'}">${isUp ? '+' : ''}${changePercent}%</div>
                     </div>
+                    <div style="text-align:right; font-size:12px; color:var(--text-sec)">$${parseFloat(volume).toLocaleString()}</div>
                 </div>`;
             }).join('');
         }
