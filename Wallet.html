@@ -114,21 +114,24 @@ const db = firebase.database();
 const auth = firebase.auth();
 
 let coinPrices = {};
-let userBalances = {};
+let mainBalance = 0; // Home পেজের মতো মেইন ব্যালেন্স
 
 function initWallet() {
     auth.onAuthStateChanged(user => {
         if (user) {
-            // ১. কয়েন প্রাইস লিসেনার
+            // ১. লাইভ মার্কেট প্রাইস লিসেনার
             db.ref('market').on('value', snap => {
                 coinPrices = snap.val() || {};
                 updateUI();
             });
 
-            // ২. ইউজার ব্যালেন্স লিসেনার
-            db.ref('users/' + user.uid + '/balances').on('value', snap => {
-                userBalances = snap.val() || {};
-                updateUI();
+            // ২. মেইন ব্যালেন্স লিসেনার (যেটি Home পেজে ব্যবহার করা হয়েছে)
+            db.ref('users/' + user.uid).on('value', snap => {
+                const userData = snap.val();
+                if (userData) {
+                    mainBalance = userData.balance || 0; // সরাসরি 'balance' পাথ থেকে কল
+                    updateUI();
+                }
             });
         } else {
             window.location.href = "login.html";
@@ -138,17 +141,21 @@ function initWallet() {
 
 function updateUI() {
     const listContainer = document.getElementById('assetList');
-    let totalPortfolioUSD = 0;
     let html = '';
 
+    // যেহেতু আপনার সিস্টেমে বর্তমানে USDT-ই মূল ব্যালেন্স হিসেবে 'balance' ফিল্ডে থাকে
+    // তাই আমরা USDT-এর জায়গায় মেইন ব্যালেন্সটি দেখাবো।
+    
     GLOBAL_COINS.forEach(coin => {
         const sym = coin.sym.toLowerCase();
-        const balance = userBalances[sym] || 0;
         const price = (coinPrices[sym] && coinPrices[sym].price) ? coinPrices[sym].price : coin.price;
-        const usdValue = balance * price;
-        totalPortfolioUSD += usdValue;
+        
+        // USDT এর জন্য মেইন ব্যালেন্স ব্যবহার হবে, অন্যগুলোর জন্য ০ (যদি না আলাদা balances পাথ থাকে)
+        let balance = (sym === 'usdt') ? mainBalance : 0; 
+        let usdValue = balance * price;
 
-        if (balance > 0 || sym === 'usdt') { // ব্যালেন্স থাকলে অথবা অন্তত USDT দেখাবে
+        // শুধুমাত্র USDT অথবা ব্যালেন্স আছে এমন কয়েন দেখাবে
+        if (balance > 0 || sym === 'usdt') {
             html += `
                 <div class="asset-card">
                     <div class="a-logo">
@@ -169,16 +176,17 @@ function updateUI() {
 
     listContainer.innerHTML = html;
     
-    // Total Balance Formatting
-    document.getElementById('totalBalance').innerText = totalPortfolioUSD.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2});
+    // মেইন ব্যালেন্স ডিসপ্লে (বড় করে)
+    document.getElementById('totalBalance').innerText = mainBalance.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2});
     
-    // Estimated BTC (Assuming BTC price is available)
+    // BTC এস্টিমেটেড ভ্যালু
     const btcPrice = (coinPrices['btc'] && coinPrices['btc'].price) ? coinPrices['btc'].price : 65000;
-    const estBtc = totalPortfolioUSD / btcPrice;
+    const estBtc = mainBalance / btcPrice;
     document.getElementById('estBtc').innerText = estBtc.toFixed(6);
 }
 
 window.onload = initWallet;
 </script>
+
 </body>
 </html>
