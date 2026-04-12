@@ -9,7 +9,6 @@
     <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-database-compat.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/qrcode-generator@1.4.4/qrcode.min.js"></script>
     <script src="coin.js"></script>
-    
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@900&family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
     
@@ -20,77 +19,46 @@
             --border: rgba(255, 255, 255, 0.08);
             --font-bold: 'Montserrat', sans-serif;
         }
-
         * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Inter', sans-serif; -webkit-tap-highlight-color: transparent; }
         body { background: var(--bg); color: white; padding-bottom: 90px; overflow-x: hidden; }
 
-        /* Wallet Header & Quick Actions */
-        .wallet-header { 
-            padding: 40px 20px 20px; text-align: center; 
-            background: linear-gradient(180deg, rgba(240, 185, 11, 0.1) 0%, var(--bg) 100%); 
-        }
-        .total-balance { font-family: var(--font-bold); font-size: 38px; font-weight: 900; margin-top: 5px; }
-        
+        /* Header & Actions */
+        .wallet-header { padding: 40px 20px 20px; text-align: center; background: linear-gradient(180deg, rgba(240, 185, 11, 0.1) 0%, var(--bg) 100%); }
+        .total-balance { font-family: var(--font-bold); font-size: 38px; font-weight: 900; }
         .quick-actions { display: grid; grid-template-columns: repeat(3, 1fr); gap: 15px; padding: 0 20px 25px; }
-        .q-btn { 
-            background: var(--card); border: 1px solid var(--border); border-radius: 16px; 
-            padding: 15px; text-align: center; cursor: pointer; transition: 0.2s;
-        }
-        .q-btn:active { transform: scale(0.95); }
-        .q-btn i { font-size: 20px; color: var(--primary); display: block; margin-bottom: 8px; }
-        .q-btn span { font-size: 11px; font-weight: 700; color: #fff; text-transform: uppercase; }
-
-        /* Asset List */
+        .q-btn { background: var(--card); border: 1px solid var(--border); border-radius: 16px; padding: 15px; text-align: center; cursor: pointer; }
+        
+        /* Asset Cards */
         .asset-list { padding: 0 15px; }
         .asset-card {
-            background: var(--card); border-radius: 20px; padding: 16px; margin-bottom: 12px;
-            display: grid; grid-template-columns: auto 1fr auto; align-items: center; gap: 15px;
-            border: 1px solid var(--border); cursor: pointer;
+            background: var(--card); border-radius: 18px; padding: 15px; margin-bottom: 10px;
+            display: grid; grid-template-columns: auto 1fr auto; align-items: center; gap: 12px;
+            border: 1px solid var(--border);
         }
-        .a-logo { width: 45px; height: 45px; border-radius: 50%; background: #0b0e11; overflow: hidden; }
+        .a-logo { width: 40px; height: 40px; border-radius: 50%; overflow: hidden; background: #000; }
         .a-logo img { width: 100%; height: 100%; object-fit: cover; }
-        .a-info h4 { font-family: var(--font-bold); font-size: 16px; }
-        .a-info p { font-size: 12px; color: var(--text-sec); }
-        .a-amounts { text-align: right; }
-        .a-bal { font-family: var(--font-bold); font-size: 15px; }
-        .a-usd { font-size: 12px; color: var(--text-sec); }
 
-        /* Popups Style */
+        /* Popups */
         .overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.9); z-index: 5000; display: none; align-items: flex-end; }
-        .popup { 
-            background: #181a20; width: 100%; border-radius: 25px 25px 0 0; padding: 25px; 
-            max-height: 90vh; overflow-y: auto; border-top: 2px solid var(--primary);
-            animation: slideUp 0.3s ease-out;
-        }
+        .popup { background: #181a20; width: 100%; border-radius: 25px 25px 0 0; padding: 25px; max-height: 90vh; overflow-y: auto; border-top: 2px solid var(--primary); animation: slideUp 0.3s; }
         @keyframes slideUp { from { transform: translateY(100%); } to { transform: translateY(0); } }
 
-        .opt-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; margin-bottom: 25px; }
-        .opt-btn { background: var(--card); border: 1px solid var(--border); padding: 12px; border-radius: 12px; text-align: center; font-size: 12px; font-weight: 800; cursor: pointer; }
+        /* Coin Selector Popup */
+        .selector-popup { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: var(--bg); z-index: 7000; display: none; flex-direction: column; }
+        .search-box { padding: 15px 20px; background: #181a20; border-bottom: 1px solid var(--border); }
+        .search-input { width: 100%; background: var(--card); border: 1px solid var(--border); padding: 12px 15px; border-radius: 10px; color: white; outline: none; }
+
+        /* Form Controls */
+        .qr-box { background: white; width: 170px; height: 170px; margin: 15px auto; padding: 8px; border-radius: 12px; position: relative; display: flex; align-items: center; justify-content: center; }
+        .qr-logo { position: absolute; width: 35px; height: 35px; background: white; border-radius: 50%; padding: 2px; z-index: 5; }
+        .btn-main { width: 100%; background: var(--primary); color: #000; border: none; padding: 15px; border-radius: 12px; font-weight: 900; margin-top: 15px; }
+        .opt-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 20px; }
+        .opt-btn { background: var(--card); border: 1px solid var(--border); padding: 12px; border-radius: 12px; text-align: center; font-size: 13px; font-weight: 800; cursor: pointer; }
         .opt-btn.active { border-color: var(--primary); color: var(--primary); }
 
-        /* QR & Form */
-        .qr-box { background: white; width: 180px; height: 180px; margin: 15px auto; padding: 10px; border-radius: 15px; position: relative; display: flex; align-items: center; justify-content: center; }
-        .qr-logo { position: absolute; width: 40px; height: 40px; background: white; border-radius: 50%; padding: 3px; z-index: 10; }
-        .address-box { background: #0b0e11; padding: 15px; border-radius: 12px; border: 1px dashed var(--text-sec); display: flex; align-items: center; justify-content: space-between; margin-top: 15px; }
-        .form-group { margin-bottom: 15px; }
-        .form-input { width: 100%; background: #0b0e11; border: 1px solid var(--border); padding: 14px; border-radius: 12px; color: white; margin-top: 5px; }
-        .btn-main { width: 100%; background: var(--primary); color: #000; border: none; padding: 16px; border-radius: 12px; font-weight: 900; font-size: 15px; margin-top: 10px; }
-
-        /* History Popup */
+        /* History */
         .history-popup { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: var(--bg); z-index: 6000; display: none; flex-direction: column; }
         .hist-card { background: var(--card); padding: 15px; border-radius: 15px; margin-bottom: 12px; border-left: 4px solid var(--primary); }
-        .status-spin { animation: spin 2s linear infinite; }
-        @keyframes spin { 100% { transform: rotate(360deg); } }
-
-        /* Footer Style */
-        .footer { position: fixed; bottom: 0; width: 100%; height: 75px; background: #181a20; display: flex; justify-content: space-around; align-items: center; border-top: 1px solid var(--border); z-index: 4000; }
-        .f-nav { text-decoration: none; color: var(--text-sec); text-align: center; font-size: 10px; flex: 1; display: flex; flex-direction: column; align-items: center; gap: 4px; }
-        .f-nav.active { color: var(--primary); }
-        .fab-wrapper { position: relative; width: 75px; display: flex; justify-content: center; }
-        .main-fab { width: 65px; height: 65px; background: var(--primary); border: none; border-radius: 50%; margin-top: -35px; display: flex; justify-content: center; align-items: center; box-shadow: 0 0 20px rgba(243, 186, 47, 0.4); }
-        .fab-options { position: absolute; bottom: 40px; display: none; justify-content: center; align-items: center; width: 300px; }
-        .fab-options.show { display: flex; }
-        .popup-btn { position: absolute; background: var(--card); border: 2.5px solid var(--primary); color: white; padding: 8px 18px; border-radius: 50px; font-size: 12px; font-weight: 800; transition: 0.3s; }
     </style>
 </head>
 <body>
@@ -98,30 +66,38 @@
     <div class="wallet-header">
         <p style="font-size: 11px; color: var(--text-sec); font-weight: bold;">TOTAL ASSETS VALUE</p>
         <div class="total-balance">$ <span id="totalBalance">0.00</span></div>
-        <p style="color: var(--up); font-size: 13px; margin-top: 5px;">≈ <span id="totalBtc">0.000000</span> BTC</p>
     </div>
 
     <div class="quick-actions">
-        <div class="q-btn" onclick="openCoinAction('usdt', 'deposit')"><i class="fas fa-plus-circle"></i><span>Deposit</span></div>
-        <div class="q-btn" onclick="openCoinAction('usdt', 'withdraw')"><i class="fas fa-arrow-up"></i><span>Withdraw</span></div>
-        <div class="q-btn" onclick="openHistory()"><i class="fas fa-history"></i><span>History</span></div>
+        <div class="q-btn" onclick="openCoinSelector('deposit')"><i class="fas fa-plus-circle" style="color:var(--primary)"></i><br><span style="font-size:11px">Deposit</span></div>
+        <div class="q-btn" onclick="openCoinSelector('withdraw')"><i class="fas fa-arrow-up" style="color:var(--primary)"></i><br><span style="font-size:11px">Withdraw</span></div>
+        <div class="q-btn" onclick="openHistory()"><i class="fas fa-history" style="color:var(--primary)"></i><br><span style="font-size:11px">History</span></div>
     </div>
 
-    <h3 style="padding: 10px 20px; font-family: var(--font-bold); font-size: 18px;">Assets Balance</h3>
     <div class="asset-list" id="assetList"></div>
 
-    <div class="overlay" id="actionOverlay" onclick="closePopup(event)">
+    <div class="selector-popup" id="coinSelector">
+        <div class="search-box">
+            <div style="display:flex; align-items:center; gap:15px; margin-bottom:15px">
+                <i class="fas fa-arrow-left" onclick="closeSelector()"></i>
+                <h3 id="selectorTitle">Select Asset</h3>
+            </div>
+            <input type="text" class="search-input" id="coinSearch" placeholder="Search coin name or symbol..." oninput="filterCoins()">
+        </div>
+        <div id="selectorList" style="flex:1; overflow-y:auto; padding:15px"></div>
+    </div>
+
+    <div class="overlay" id="actionOverlay">
         <div class="popup">
             <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px">
-                <div style="display:flex; align-items:center; gap:12px">
-                    <img id="popCoinLogo" style="width:35px; border-radius:50%">
+                <div style="display:flex; align-items:center; gap:10px">
+                    <img id="popCoinLogo" style="width:30px; border-radius:50%">
                     <h3 id="popCoinName" style="font-family:var(--font-bold)">COIN</h3>
                 </div>
-                <i class="fas fa-times" onclick="hidePopup()" style="font-size:20px"></i>
+                <i class="fas fa-times" onclick="hidePopup()"></i>
             </div>
 
-            <div class="opt-grid">
-                <div class="opt-btn" id="btnDep" onclick="switchMode('deposit')">DEPOSIT</div>
+            <div id="actionSwitchers" class="opt-grid">
                 <div class="opt-btn" id="btnWith" onclick="switchMode('withdraw')">WITHDRAW</div>
                 <div class="opt-btn" id="btnTrans" onclick="switchMode('transfer')">TRANSFER</div>
             </div>
@@ -131,113 +107,111 @@
                     <img id="qrCoinLogo" class="qr-logo">
                     <div id="qrcode"></div>
                 </div>
-                <div class="address-box">
-                    <span id="depAddr" style="font-size:11px">Loading...</span>
+                <div style="background:#0b0e11; padding:12px; border-radius:10px; display:flex; justify-content:space-between; align-items:center">
+                    <span id="depAddr" style="font-size:10px; color:var(--text-sec)">0x...</span>
                     <i class="fas fa-copy" onclick="copyValue('depAddr')" style="color:var(--primary)"></i>
                 </div>
-                <p style="font-size:10px; color:var(--down); text-align:center; margin-top:15px">Warning: Only BEP20 & ERC20 networks are supported.</p>
+                <p style="font-size:10px; color:var(--down); text-align:center; margin-top:15px">Warning: Only BEP20/ERC20 networks supported.</p>
             </div>
 
             <div id="uiWithdraw" class="mode-ui" style="display:none">
-                <div style="background:rgba(255,255,255,0.05); padding:15px; border-radius:15px; margin-bottom:15px">
-                    <p style="font-size:11px; color:var(--text-sec)">Available Withdrawal Balance</p>
-                    <h4 id="withAvail" style="color:var(--up); font-family:var(--font-bold)">0.00</h4>
-                    <p style="font-size:10px; color:var(--text-sec)">Fee: $0.25 Fixed</p>
-                </div>
-                <div class="form-group"><label style="font-size:11px">Network</label><select id="withNet" class="form-input"><option>BEP20 (Recommended)</option><option>ERC20</option></select></div>
-                <div class="form-group"><label style="font-size:11px">Destination Address</label><input type="text" id="withAddr" class="form-input" placeholder="Paste address here"></div>
-                <div class="form-group"><label style="font-size:11px">Amount</label><input type="number" id="withAmount" class="form-input" placeholder="0.00"></div>
-                <button class="btn-main" onclick="handleWithdraw()">WITHDRAW NOW</button>
+                <p style="font-size:11px; color:var(--text-sec)">Available: <b id="availWith" style="color:var(--up)">0.00</b></p>
+                <select id="withNet" style="width:100%; background:#0b0e11; border:1px solid var(--border); color:white; padding:12px; border-radius:10px; margin:10px 0">
+                    <option>BEP20</option><option>ERC20</option>
+                </select>
+                <input type="text" id="withAddr" placeholder="Address" style="width:100%; background:#0b0e11; border:1px solid var(--border); color:white; padding:12px; border-radius:10px; margin-bottom:10px">
+                <input type="number" id="withAmt" placeholder="Amount" style="width:100%; background:#0b0e11; border:1px solid var(--border); color:white; padding:12px; border-radius:10px">
+                <button class="btn-main" onclick="processWithdraw()">SUBMIT WITHDRAW</button>
             </div>
 
             <div id="uiTransfer" class="mode-ui" style="display:none">
-                <div style="background:rgba(240,185,11,0.1); padding:15px; border-radius:15px; margin-bottom:15px">
-                    <p style="font-size:11px; color:var(--text-sec)">Transferable Balance</p>
-                    <h4 id="transAvail" style="color:var(--primary); font-family:var(--font-bold)">0.00</h4>
-                </div>
-                <div class="form-group"><label style="font-size:11px">Recipient Method</label><select id="transType" class="form-input"><option value="gmail">Recipient Email</option><option value="smatid">SMAT ID</option></select></div>
-                <div class="form-group"><label style="font-size:11px">Recipient Detail</label><input type="text" id="transTarget" class="form-input" placeholder="Email or SMAT ID"></div>
-                <div class="form-group"><label style="font-size:11px">Amount</label><input type="number" id="transAmount" class="form-input" placeholder="0.00"></div>
-                <button class="btn-main" onclick="handleTransfer()">SEND INSTANTLY</button>
+                <p style="font-size:11px; color:var(--text-sec)">Transferable: <b id="availTrans" style="color:var(--primary)">0.00</b></p>
+                <select id="transType" style="width:100%; background:#0b0e11; border:1px solid var(--border); color:white; padding:12px; border-radius:10px; margin:10px 0">
+                    <option value="gmail">Email</option><option value="smatid">SMAT ID</option>
+                </select>
+                <input type="text" id="transTarget" placeholder="Recipient" style="width:100%; background:#0b0e11; border:1px solid var(--border); color:white; padding:12px; border-radius:10px; margin-bottom:10px">
+                <input type="number" id="transAmt" placeholder="Amount" style="width:100%; background:#0b0e11; border:1px solid var(--border); color:white; padding:12px; border-radius:10px">
+                <button class="btn-main" onclick="processTransfer()">TRANSFER NOW</button>
             </div>
         </div>
     </div>
 
     <div class="history-popup" id="historyPopup">
         <div style="padding:20px; display:flex; align-items:center; gap:15px; border-bottom:1px solid var(--border)">
-            <i class="fas fa-arrow-left" onclick="closeHistory()" style="font-size:20px"></i>
-            <h3 style="font-family:var(--font-bold)">Transaction History</h3>
+            <i class="fas fa-arrow-left" onclick="closeHistory()"></i>
+            <h3>History</h3>
         </div>
         <div id="histContent" style="padding:15px; overflow-y:auto"></div>
     </div>
 
-    <footer class="footer">
-        <a href="home.html" class="f-nav"><i class="fas fa-home"></i>Home</a>
-        <a href="Trade.html" class="f-nav"><i class="fas fa-chart-line"></i>Trade</a>
-        <div class="fab-wrapper">
-            <div class="fab-options" id="fabMenu">
-                <a href="Crash.html" class="popup-btn" style="transform:translate(-80px,-40px)">Crash</a>
-                <a href="Prediction.html" class="popup-btn" style="transform:translate(0,-100px)">Prediction</a>
-                <a href="Feature.html" class="popup-btn" style="transform:translate(80px,-40px)">Future</a>
-            </div>
-            <button class="main-fab" onclick="document.getElementById('fabMenu').classList.toggle('show')"><i class="fas fa-plus"></i></button>
-        </div>
-        <a href="Explorer.html" class="f-nav"><i class="fas fa-compass"></i>Explore</a>
-        <a href="Wallet.html" class="f-nav active"><i class="fas fa-wallet"></i>Wallet</a>
-    </footer>
-
 <script>
-const firebaseConfig = {
-    apiKey: "AIzaSyAMxtJedkehhxJRMPZLjhpKHqneHEWsGlE",
-    authDomain: "smat-exchange.firebaseapp.com",
-    projectId: "smat-exchange",
-    storageBucket: "smat-exchange.firebasestorage.app",
-    messagingSenderId: "836334569396",
-    appId: "1:836334569396:web:679effe640b3453412d4e1"
-};
+// Firebase & Auth
+const firebaseConfig = { apiKey: "AIzaSyAMxtJedkehhxJRMPZLjhpKHqneHEWsGlE", authDomain: "smat-exchange.firebaseapp.com", projectId: "smat-exchange", databaseURL: "https://smat-exchange-default-rtdb.firebaseio.com", storageBucket: "smat-exchange.appspot.com", messagingSenderId: "836334569396", appId: "1:836334569396:web:679effe640b3453412d4e1" };
 firebase.initializeApp(firebaseConfig);
 const db = firebase.database();
 const auth = firebase.auth();
 
 let userData = {};
 let livePrices = {};
+let currentMode = ''; 
 let activeCoin = null;
 
 function init() {
     auth.onAuthStateChanged(user => {
         if (user) {
-            db.ref('market').on('value', s => { livePrices = s.val() || {}; updateAssets(); });
-            db.ref('users/' + user.uid).on('value', s => { userData = s.val() || {}; updateAssets(); });
+            db.ref('market').on('value', s => { livePrices = s.val() || {}; updateUI(); });
+            db.ref('users/' + user.uid).on('value', s => { userData = s.val() || {}; updateUI(); });
         } else { location.href = "login.html"; }
     });
 }
 
-function updateAssets() {
-    const list = document.getElementById('assetList');
-    let totalUSD = 0;
-
+function updateUI() {
     const sorted = GLOBAL_COINS.map(c => {
         const s = c.sym.toLowerCase();
         const price = livePrices[s]?.price || c.price;
         const bal = (s === 'usdt') ? (userData.balance || 0) : (userData[s + '_balance'] || 0);
         return { ...c, price, bal, val: bal * price };
-    }).sort((a, b) => b.val - a.val);
+    }).sort((a,b) => b.val - a.val);
 
-    list.innerHTML = sorted.map(c => {
-        totalUSD += c.val;
-        return `
-        <div class="asset-card" onclick="openCoinAction('${c.sym.toLowerCase()}')">
+    document.getElementById('assetList').innerHTML = sorted.map(c => `
+        <div class="asset-card" onclick="openActionPopup('${c.sym.toLowerCase()}', 'withdraw')">
             <div class="a-logo"><img src="assets/logos/${c.sym.toLowerCase()}.png"></div>
-            <div class="a-info"><h4>${c.sym.toUpperCase()}</h4><p>$${c.price.toLocaleString()}</p></div>
-            <div class="a-amounts"><div class="a-bal">${c.bal.toLocaleString()}</div><div class="a-usd">≈ $${c.val.toLocaleString()}</div></div>
-        </div>`;
-    }).join('');
-
-    document.getElementById('totalBalance').innerText = totalUSD.toFixed(2);
-    document.getElementById('totalBtc').innerText = (totalUSD / (livePrices['btc']?.price || 65000)).toFixed(6);
+            <div style="flex:1"><h4>${c.sym.toUpperCase()}</h4><p style="font-size:11px; color:var(--text-sec)">$${c.price}</p></div>
+            <div style="text-align:right"><b>${c.bal.toFixed(4)}</b><br><span style="font-size:11px; color:var(--text-sec)">$${c.val.toFixed(2)}</span></div>
+        </div>
+    `).join('');
+    
+    let total = sorted.reduce((a, b) => a + b.val, 0);
+    document.getElementById('totalBalance').innerText = total.toFixed(2);
 }
 
-function openCoinAction(sym, mode = 'deposit') {
+// Selector Logic
+function openCoinSelector(mode) {
+    currentMode = mode;
+    document.getElementById('selectorTitle').innerText = mode === 'deposit' ? 'Deposit Assets' : 'Withdraw/Transfer';
+    document.getElementById('coinSelector').style.display = 'flex';
+    filterCoins();
+}
+
+function filterCoins() {
+    const query = document.getElementById('coinSearch').value.toLowerCase();
+    const list = GLOBAL_COINS.map(c => {
+        const s = c.sym.toLowerCase();
+        const bal = (s === 'usdt') ? (userData.balance || 0) : (userData[s + '_balance'] || 0);
+        return { ...c, bal };
+    }).sort((a,b) => b.bal - a.bal)
+    .filter(c => c.name.toLowerCase().includes(query) || c.sym.toLowerCase().includes(query));
+
+    document.getElementById('selectorList').innerHTML = list.map(c => `
+        <div class="asset-card" onclick="openActionPopup('${c.sym.toLowerCase()}', '${currentMode}')">
+            <div class="a-logo"><img src="assets/logos/${c.sym.toLowerCase()}.png"></div>
+            <div style="flex:1"><h4>${c.sym.toUpperCase()}</h4><p style="font-size:11px; color:var(--text-sec)">${c.name}</p></div>
+            <div style="text-align:right"><b style="color:var(--primary)">${c.bal.toFixed(4)}</b></div>
+        </div>
+    `).join('');
+}
+
+function openActionPopup(sym, mode) {
     activeCoin = GLOBAL_COINS.find(c => c.sym.toLowerCase() === sym);
     const s = activeCoin.sym.toLowerCase();
     const bal = (s === 'usdt') ? (userData.balance || 0) : (userData[s + '_balance'] || 0);
@@ -246,88 +220,91 @@ function openCoinAction(sym, mode = 'deposit') {
     document.getElementById('popCoinLogo').src = `assets/logos/${s}.png`;
     document.getElementById('qrCoinLogo').src = `assets/logos/${s}.png`;
     document.getElementById('popCoinName').innerText = sym.toUpperCase();
-    document.getElementById('depAddr').innerText = userData.depositAddress || "0x7a2...F91";
-    document.getElementById('withAvail').innerText = (bal - (0.25/price)).toFixed(6) + " " + sym.toUpperCase();
-    document.getElementById('transAvail').innerText = bal.toFixed(6) + " " + sym.toUpperCase();
+    document.getElementById('depAddr').innerText = userData.depositAddress || "0xLoading...";
+    document.getElementById('availWith').innerText = (bal - (0.25/price)).toFixed(6) + " " + sym.toUpperCase();
+    document.getElementById('availTrans').innerText = bal.toFixed(6) + " " + sym.toUpperCase();
 
     const qr = qrcode(0, 'M');
-    qr.addData(userData.depositAddress || "0x7a2...F91");
+    qr.addData(userData.depositAddress || "0xLoading...");
     qr.make();
     document.getElementById('qrcode').innerHTML = qr.createImgTag(4);
 
+    closeSelector();
     document.getElementById('actionOverlay').style.display = 'flex';
-    switchMode(mode);
+    
+    if(mode === 'deposit') {
+        document.getElementById('actionSwitchers').style.display = 'none';
+        switchMode('deposit');
+    } else {
+        document.getElementById('actionSwitchers').style.display = 'grid';
+        switchMode('withdraw');
+    }
 }
 
 function switchMode(m) {
     document.querySelectorAll('.mode-ui').forEach(u => u.style.display = 'none');
     document.querySelectorAll('.opt-btn').forEach(b => b.classList.remove('active'));
     document.getElementById('ui' + m.charAt(0).toUpperCase() + m.slice(1)).style.display = 'block';
-    document.getElementById('btn' + m.charAt(0).toUpperCase() + m.slice(1).substring(0,3)).classList.add('active');
+    if(m !== 'deposit') document.getElementById('btn' + m.charAt(0).toUpperCase() + m.slice(1).substring(0,4)).classList.add('active');
 }
 
-async function handleWithdraw() {
-    const amt = parseFloat(document.getElementById('withAmount').value);
+// Transaction Processors
+async function processWithdraw() {
+    const amt = parseFloat(document.getElementById('withAmt').value);
     const addr = document.getElementById('withAddr').value;
     const s = activeCoin.sym.toLowerCase();
+    const bal = (s === 'usdt') ? (userData.balance || 0) : (userData[s + '_balance'] || 0);
     const price = livePrices[s]?.price || activeCoin.price;
     const fee = 0.25 / price;
-    const bal = (s === 'usdt') ? (userData.balance || 0) : (userData[s + '_balance'] || 0);
 
-    if(!addr || isNaN(amt) || amt <= 0 || (amt + fee) > bal) return alert("Invalid Input or Balance!");
+    if(!addr || isNaN(amt) || amt <= 0 || (amt + fee) > bal) return alert("Check Balance & Details!");
 
     const txId = db.ref('transactions').push().key;
-    const data = { method: 'Withdraw', coin: s.toUpperCase(), amount: amt, network: document.getElementById('withNet').value, address: addr, status: 'pending', timestamp: Date.now(), hash: '...' };
+    const data = { method: 'Withdraw', coin: s.toUpperCase(), amount: amt, network: document.getElementById('withNet').value, address: addr, status: 'pending', timestamp: Date.now(), hash: 'Processing' };
     
-    const newBal = bal - (amt + fee);
-    const path = (s === 'usdt') ? { balance: newBal } : { [s + '_balance']: newBal };
-    
-    await db.ref('users/' + auth.currentUser.uid).update(path);
+    await db.ref('users/' + auth.currentUser.uid).update({ [(s==='usdt'?'balance':s+'_balance')]: bal - (amt + fee) });
     await db.ref('users/' + auth.currentUser.uid + '/history/' + txId).set(data);
-    alert("Submitted!"); hidePopup();
+    alert("Withdrawal Pending!"); hidePopup();
 }
 
-async function handleTransfer() {
-    const amt = parseFloat(document.getElementById('transAmount').value);
+async function processTransfer() {
+    const amt = parseFloat(document.getElementById('transAmt').value);
     const target = document.getElementById('transTarget').value;
     const s = activeCoin.sym.toLowerCase();
     const bal = (s === 'usdt') ? (userData.balance || 0) : (userData[s + '_balance'] || 0);
 
-    if(!target || isNaN(amt) || amt <= 0 || amt > bal) return alert("Error!");
+    if(!target || isNaN(amt) || amt <= 0 || amt > bal) return alert("Error in data!");
 
     const txId = db.ref('transactions').push().key;
-    const data = { method: 'Internal', coin: s.toUpperCase(), amount: amt, network: 'Internal', address: target, status: 'success', timestamp: Date.now(), hash: 'Null' };
+    const data = { method: 'Internal Transfer', coin: s.toUpperCase(), amount: amt, network: 'Internal', address: target, status: 'success', timestamp: Date.now(), hash: 'Null' };
 
     await db.ref('users/' + auth.currentUser.uid).update({ [(s==='usdt'?'balance':s+'_balance')]: bal - amt });
     await db.ref('users/' + auth.currentUser.uid + '/history/' + txId).set(data);
-    alert("Sent!"); hidePopup();
+    alert("Transferred!"); hidePopup();
 }
 
 function openHistory() {
     document.getElementById('historyPopup').style.display = 'flex';
-    const cont = document.getElementById('histContent');
     db.ref('users/' + auth.currentUser.uid + '/history').on('value', snap => {
-        const data = snap.val();
-        if(!data) return cont.innerHTML = "No Data";
-        cont.innerHTML = Object.values(data).sort((a,b)=>b.timestamp-a.timestamp).map(h => `
+        const hData = snap.val();
+        if(!hData) return document.getElementById('histContent').innerHTML = "No History";
+        document.getElementById('histContent').innerHTML = Object.values(hData).sort((a,b)=>b.timestamp-a.timestamp).map(h => `
             <div class="hist-card">
-                <div style="display:flex; justify-content:space-between; margin-bottom:8px">
-                    <span style="font-size:10px; font-weight:bold; color:var(--primary)">${h.method}</span>
-                    <span style="font-size:10px; color:${h.status==='success'?'var(--up)':'var(--primary)'}">${h.status==='pending'?'<i class="fas fa-spinner status-spin"></i>':''} ${h.status.toUpperCase()}</span>
+                <div style="display:flex; justify-content:space-between">
+                    <span style="font-size:11px; font-weight:bold">${h.method}</span>
+                    <span style="color:${h.status==='success'?'var(--up)':'var(--primary)'}">${h.status.toUpperCase()}</span>
                 </div>
-                <div style="display:grid; grid-template-columns:1fr 1fr; font-size:11px">
-                    <div>Amt: <b>${h.amount} ${h.coin}</b><br>Net: <b>${h.network}</b></div>
-                    <div style="text-align:right">Hash: <b style="color:var(--primary)">${h.hash.substring(0,8)}</b><br>Addr: <b>${h.address.substring(0,6)}...</b></div>
-                </div>
+                <p style="font-size:12px; margin:5px 0"><b>${h.amount} ${h.coin}</b> via ${h.network}</p>
+                <p style="font-size:10px; color:var(--text-sec)">Addr: ${h.address.substring(0,12)}...</p>
             </div>
         `).join('');
     });
 }
 
+function closeSelector() { document.getElementById('coinSelector').style.display = 'none'; }
 function hidePopup() { document.getElementById('actionOverlay').style.display = 'none'; }
 function closeHistory() { document.getElementById('historyPopup').style.display = 'none'; }
 function copyValue(id) { navigator.clipboard.writeText(document.getElementById(id).innerText); alert("Copied!"); }
-function closePopup(e) { if(e.target.id === 'actionOverlay') hidePopup(); }
 
 window.onload = init;
 </script>
