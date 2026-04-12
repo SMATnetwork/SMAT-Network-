@@ -431,7 +431,6 @@
         }
 
         window.setupReferral = (sid) => {
-            // Updated to point directly to logIn.html as requested
             const baseUrl = window.location.origin + window.location.pathname.replace('home.html', 'logIn.html');
             document.getElementById('referralLink').value = `${baseUrl}?ref=${sid}`;
             onValue(query(ref(db, 'users'), orderByChild('referredBy'), equalTo(sid)), (snap) => {
@@ -481,26 +480,58 @@
             renderCoins(cat);
         }
 
+        // --- NEW TAB LOGIC START (FIXED) ---
         function renderCoins(filter = 'hot') {
             const container = document.getElementById('coinList');
             if (!container) return;
-            const liveData = (typeof GLOBAL_COINS !== 'undefined') ? GLOBAL_COINS : [];
+            
+            // Getting live data from coin.js (GLOBAL_COINS)
+            const liveData = (typeof GLOBAL_COINS !== 'undefined') ? [...GLOBAL_COINS] : [];
             const now = Date.now();
             const threeDaysMs = 3 * 24 * 60 * 60 * 1000;
 
-            let filtered = liveData;
-            if (filter === 'hot') filtered = [...liveData].slice(0, 10);
-            else if (filter === 'gainer') filtered = [...liveData].sort((a,b) => (window[b.sym.toLowerCase() + "Val"] || b.price) - (window[a.sym.toLowerCase() + "Val"] || a.price)).slice(0, 8);
-            else if (filter === 'loser') filtered = [...liveData].sort((a,b) => (window[a.sym.toLowerCase() + "Val"] || a.price) - (window[b.sym.toLowerCase() + "Val"] || b.price)).slice(0, 8);
-            else if (filter === 'new') filtered = liveData.filter(c => (now - (c.listedAt || 0)) < threeDaysMs);
-
-            container.innerHTML = filtered.map(coin => {
+            // Step 1: Attach latest stats to each coin for sorting
+            const dataWithStats = liveData.map(coin => {
                 const s = coin.sym.toLowerCase();
                 const currentPrice = window[s + "Val"] || parseFloat(localStorage.getItem(s + "_latest_price")) || coin.price;
+                const vol = parseFloat(localStorage.getItem(s + "_volume") || 0);
                 const diff = currentPrice - coin.price;
-                const isUp = diff >= 0;
-                const changePercent = coin.price > 0 ? ((diff / coin.price) * 100).toFixed(2) : "0.00";
-                const volume = localStorage.getItem(s + "_volume") || "0.00";
+                const changePercent = coin.price > 0 ? (diff / coin.price) * 100 : 0;
+                
+                return { ...coin, currentPrice, vol, changePercent };
+            });
+
+            let filtered = [];
+
+            // Step 2: Sorting Logic based on tabs
+            if (filter === 'hot') {
+                // HOT: Highest Volume first, top 5
+                filtered = dataWithStats.sort((a, b) => b.vol - a.vol).slice(0, 5);
+            } 
+            else if (filter === 'gainer') {
+                // GAINER: Highest Positive % first, top 5
+                filtered = dataWithStats.filter(c => c.changePercent > 0)
+                                        .sort((a, b) => b.changePercent - a.changePercent)
+                                        .slice(0, 5);
+            } 
+            else if (filter === 'loser') {
+                // LOSER: Lowest Negative % first, top 5
+                filtered = dataWithStats.filter(c => c.changePercent < 0)
+                                        .sort((a, b) => a.changePercent - b.changePercent)
+                                        .slice(0, 5);
+            } 
+            else if (filter === 'new') {
+                // NEW: Added within 3 days, top 5
+                filtered = dataWithStats.filter(c => (now - (c.listedAt || 0)) < threeDaysMs)
+                                        .sort((a, b) => (b.listedAt || 0) - (a.listedAt || 0))
+                                        .slice(0, 5);
+            }
+
+            // Step 3: Display results
+            container.innerHTML = filtered.map(coin => {
+                const s = coin.sym.toLowerCase();
+                const isUp = coin.changePercent >= 0;
+                const now = Date.now();
 
                 return `
                 <div class="coin-row" onclick="location.href='Trade.html?coin=${s}'">
@@ -512,15 +543,17 @@
                         </div>
                     </div>
                     <div style="text-align:center">
-                        <div style="font-weight:bold; font-size:15px">$${currentPrice.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 4})}</div>
-                        <div class="percent-box" style="background:${isUp ? 'rgba(14, 203, 129, 0.15)' : 'rgba(246, 70, 93, 0.15)'}; color:${isUp ? 'var(--up)' : 'var(--down)'}">${isUp ? '+' : ''}${changePercent}%</div>
+                        <div style="font-weight:bold; font-size:15px">$${coin.currentPrice.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 4})}</div>
+                        <div class="percent-box" style="background:${isUp ? 'rgba(14, 203, 129, 0.15)' : 'rgba(246, 70, 93, 0.15)'}; color:${isUp ? 'var(--up)' : 'var(--down)'}">${isUp ? '+' : ''}${coin.changePercent.toFixed(2)}%</div>
                     </div>
                     <div style="text-align:right; font-size:13px; font-weight:700; color:var(--text-main)">
-                        $${parseFloat(volume).toLocaleString()}
+                        $${coin.vol.toLocaleString()}
                     </div>
                 </div>`;
             }).join('');
         }
+        // --- NEW TAB LOGIC END ---
+
         setInterval(() => renderCoins(window.currentActiveTab), 1500);
     </script>
 </body>
