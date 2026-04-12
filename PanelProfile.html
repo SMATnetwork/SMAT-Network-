@@ -46,17 +46,33 @@
             background: var(--card); padding: 40px; border-radius: 24px; 
             border: 1px solid var(--border); width: 90%; max-width: 400px; 
             text-align: center; box-shadow: 0 20px 50px rgba(0,0,0,0.5);
+            font-family: var(--font-main);
         }
-        .login-card h2 { font-family: var(--font-bold); font-weight: 900; margin-bottom: 25px; }
+        
+        /* Montserrat Font for Admin Panel Title */
+        .login-card h2 { 
+            font-family: var(--font-bold); font-weight: 900; margin-top: 0; margin-bottom: 25px;
+            color: white; text-transform: uppercase; letter-spacing: 1px;
+        }
+        .login-card h2 span { color: var(--primary); }
+
         .login-card input { 
             width: 100%; padding: 15px; margin: 10px 0; background: #0b0e11; 
             border: 1px solid var(--border); color: white; border-radius: 12px; 
-            font-size: 14px;
+            font-size: 14px; font-family: var(--font-main);
         }
+        .login-card input:focus { border-color: var(--primary); }
         .btn-login { 
             width: 100%; background: var(--primary); color: black; border: none; 
             padding: 15px; border-radius: 12px; font-weight: 800; cursor: pointer; 
-            margin-top: 15px; font-family: var(--font-bold);
+            margin-top: 15px; transition: 0.3s; font-family: var(--font-bold);
+        }
+        .btn-login:hover { transform: translateY(-2px); box-shadow: 0 5px 15px rgba(243, 186, 47, 0.3); }
+
+        /* Icon styling */
+        .call-center-icon {
+            width: 60px; height: 60px; margin: 0 auto 20px;
+            fill: var(--primary); /* SVG fill color matches your theme */
         }
 
         /* --- Header Panel --- */
@@ -72,78 +88,81 @@
             font-family: var(--font-bold); margin: 0; font-size: 22px; 
             color: var(--primary); font-weight: 900; letter-spacing: 1px; 
         }
-
-        /* Glowing Power Off Button */
         .btn-logout { 
-            background: transparent; border: none;
-            color: var(--down); cursor: pointer; padding: 10px;
-            display: flex; align-items: center; justify-content: center;
+            background: rgba(246, 70, 93, 0.1); border: 1px solid rgba(246, 70, 93, 0.2);
+            color: var(--down); padding: 10px; border-radius: 12px; cursor: pointer; transition: 0.3s;
         }
-        .btn-logout i { 
-            font-size: 24px; 
-            animation: glow-red 1.5s infinite ease-in-out;
-        }
-
-        @keyframes glow-red {
-            0% { text-shadow: 0 0 5px var(--down); transform: scale(1); }
-            50% { text-shadow: 0 0 20px var(--down), 0 0 30px var(--down); transform: scale(1.1); }
-            100% { text-shadow: 0 0 5px var(--down); transform: scale(1); }
-        }
+        .btn-logout:hover { background: var(--down); color: white; }
 
         /* --- Dashboard UI --- */
         .admin-container { max-width: 1200px; margin: auto; display: none; padding: 30px 20px; }
         
+        /* Stats Grid */
         .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 20px; margin-bottom: 30px; }
         .stat-card { 
             background: linear-gradient(135deg, #1e2329 0%, #161a1e 100%);
             padding: 25px; border-radius: 20px; text-align: left; 
             border: 1px solid var(--border); cursor: pointer; transition: 0.3s;
+            position: relative; overflow: hidden;
         }
+        .stat-card:hover { border-color: var(--primary); transform: translateY(-5px); }
         .stat-card.active { border: 2px solid var(--primary); background: rgba(243, 186, 47, 0.03); }
         .stat-card h5 { margin: 0; font-size: 13px; color: var(--text-sec); font-weight: 600; text-transform: uppercase; }
         .stat-card h2 { margin: 10px 0 0 0; font-size: 32px; font-family: var(--font-bold); font-weight: 900; }
 
+        /* Search Box */
         .search-box { 
             background: var(--card); border: 1px solid var(--border); border-radius: 16px; 
             padding: 15px 25px; display: flex; align-items: center; margin-bottom: 30px; gap: 15px; 
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
         }
-        .search-box input { flex: 1; background: transparent; border: none; color: white; font-size: 16px; }
+        .search-box input { flex: 1; background: transparent; border: none; color: white; font-size: 16px; font-family: var(--font-main); }
         .search-box i { color: var(--primary); font-size: 18px; }
 
+        /* User Cards */
         .user-card { 
             background: var(--card); border: 1px solid var(--border); border-radius: 20px; 
             padding: 25px; margin-bottom: 20px; display: flex; flex-wrap: wrap; 
             justify-content: space-between; gap: 25px; align-items: flex-start;
+            transition: 0.3s;
         }
+        .user-card:hover { border-color: rgba(243, 186, 47, 0.3); box-shadow: 0 10px 30px rgba(0,0,0,0.2); }
+        
         .info-group { flex: 1; min-width: 250px; }
         .info-group h4 { 
             margin: 0 0 15px 0; color: var(--primary); font-family: var(--font-bold);
             font-size: 16px; display: flex; align-items: center; gap: 10px;
         }
         .info-group p { margin: 8px 0; font-size: 14px; color: var(--text-sec); }
+        .info-group b { color: var(--text); font-weight: 600; }
         
         .doc-btns { display: flex; gap: 10px; margin-top: 15px; }
         .btn-view { 
             background: #2b3139; color: var(--text); border: 1px solid var(--border); 
-            padding: 8px 16px; border-radius: 8px; font-size: 12px; cursor: pointer; font-weight: 600;
+            padding: 8px 16px; border-radius: 8px; font-size: 12px; cursor: pointer; 
+            font-weight: 600; transition: 0.3s;
         }
+        .btn-view:hover { background: var(--primary); color: black; border-color: var(--primary); }
 
         .action-btns { display: flex; flex-direction: column; gap: 12px; min-width: 150px; }
-        .btn-verify { background: var(--up); color: black; padding: 12px; border-radius: 10px; font-weight: 800; border:none; cursor:pointer; }
-        .btn-reject { background: rgba(246, 70, 93, 0.1); color: var(--down); padding: 12px; border-radius: 10px; font-weight: 800; border: 1px solid var(--down); cursor:pointer; }
+        .btn-verify { background: var(--up); color: black; padding: 12px; border-radius: 10px; font-weight: 800; border:none; cursor:pointer; font-family: var(--font-bold); }
+        .btn-reject { background: rgba(246, 70, 93, 0.1); color: var(--down); padding: 12px; border-radius: 10px; font-weight: 800; border: 1px solid var(--down); cursor:pointer; font-family: var(--font-bold); }
         .btn-edit { background: transparent; color: var(--text-sec); border: 1px dashed var(--text-sec); margin-top: 10px; border-radius: 8px; padding: 8px; cursor:pointer; font-size: 12px; }
+        .btn-edit:hover { border-color: var(--primary); color: var(--primary); }
 
         /* Modal */
         .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.98); z-index: 6000; align-items: center; justify-content: center; flex-direction: column; padding: 20px; }
-        .modal-img { max-width: 100%; max-height: 80vh; border-radius: 16px; border: 2px solid var(--primary); }
+        .modal-img { max-width: 100%; max-height: 80vh; border-radius: 16px; border: 2px solid var(--primary); box-shadow: 0 0 50px rgba(243,186,47,0.2); }
         .close-modal { position: absolute; top: 20px; right: 30px; color: white; font-size: 35px; cursor: pointer; }
-        #imgLabel { font-family: var(--font-bold); color: var(--primary); margin-top: 20px; font-size: 20px; font-weight: 900; text-transform: uppercase; }
+        #imgLabel { font-family: var(--font-bold); color: var(--primary); margin-top: 20px; font-size: 20px; font-weight: 900; text-transform: uppercase; letter-spacing: 2px; }
 
         .status-badge { padding: 4px 10px; border-radius: 6px; font-size: 11px; font-weight: 800; text-transform: uppercase; }
 
         @media (max-width: 768px) {
             .stats-grid { grid-template-columns: 1fr; }
+            .header-panel { padding: 15px 20px; }
             .user-card { flex-direction: column; }
+            .action-btns { width: 100%; }
         }
     </style>
 </head>
@@ -151,10 +170,11 @@
 
 <div id="adminLogin">
     <div class="login-card">
-        <div style="width: 60px; height: 60px; background: var(--primary); border-radius: 50%; margin: 0 auto 20px; display: flex; align-items: center; justify-content: center;">
-            <i class="fa-solid fa-shield-halved" style="font-size: 30px; color: black;"></i>
-        </div>
-        <h2 style="color: white;">ADMIN <span style="color:var(--primary)">PANEL</span></h2>
+        <svg class="call-center-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+            <path d="M256 0c141.4 0 256 114.6 256 256c0 10.3-4.1 20.2-11.3 27.4c-7.2 7.2-17.1 11.3-27.4 11.3H448c-17.7 0-32-14.3-32-32V224c0-10.3-4.1-20.2-11.3-27.4c-7.2-7.2-17.1-11.3-27.4-11.3H134.6c-10.3 0-20.2 4.1-27.4 11.3c-7.2 7.2-11.3 17.1-11.3 27.4V264c0 17.7-14.3 32-32 32H32c-10.3 0-20.2-4.1-27.4-11.3C-2.6 277.5-6.7 267.6-6.7 257.3C-6.7 115.9 108 1.3 249.4 1.3C251.6 1.3 253.8 1.3 256.0 1.3L256 0zm208 416c0 17.7-14.3 32-32 32s-32-14.3-32-32V384c0-17.7 14.3-32 32-32s32 14.3 32 32v32zm-288 0c0 17.7-14.3 32-32 32s-32-14.3-32-32V384c0-17.7 14.3-32 32-32s32 14.3 32 32v32zm144-80h48v32h-48v-32zm-64 0h48v32h-48v-32zm192-32c0 26.5-21.5 48-48 48H32c-26.5 0-48-21.5-48-48v-64c0-26.5 21.5-48 48-48h320c26.5 0 48 21.5 48 48v64zM240 288c0 8.8-7.2 16-16 16s-16-7.2-16-16v-48c0-8.8 7.2-16 16-16s16 7.2 16 16v48zm128 0c0 8.8-7.2 16-16 16s-16-7.2-16-16v-48c0-8.8 7.2-16 16-16s16 7.2 16 16v48zm-64 128h48v32h-48v-32z"/>
+        </svg>
+
+        <h2>ADMIN <span>PANEL</span></h2>
         <input type="email" id="adminEmail" placeholder="Admin Email">
         <input type="password" id="adminPassword" placeholder="Password">
         <button class="btn-login" onclick="loginAdmin()">ACCESS DASHBOARD</button>
@@ -163,8 +183,8 @@
 </div>
 
 <div class="header-panel" id="headerUI" style="display:none">
-    <h2>SMAT <span style="color:white">DASHBOARD</span></h2>
-    <div>
+    <h2> Users <span style="color:white">DASHBOARD</span></h2>
+    <div style="display: flex; align-items: center;">
         <button class="btn-logout" onclick="logoutAdmin()"><i class="fa-solid fa-power-off"></i></button>
     </div>
 </div>
@@ -183,21 +203,26 @@
             <h5>Verified Assets</h5>
             <h2 id="passedCount" style="color:var(--up)">0</h2>
         </div>
-    </div>
+        </div>
 
     <div class="search-box">
         <i class="fas fa-search"></i>
         <input type="text" id="adminSearch" placeholder="Search by SMAT ID, Email or NID..." onkeyup="loadUsers()">
     </div>
 
-    <div id="userList"></div>
+    <div id="userList">
+        <div style="text-align:center; padding: 50px; color:var(--text-sec)">
+            <i class="fa-solid fa-circle-notch fa-spin" style="font-size: 30px; color: var(--primary);"></i>
+            <p style="margin-top: 15px;">Synchronizing with SMAT Blockchain...</p>
+        </div>
+    </div>
 </div>
 
 <div id="imgModal" class="modal">
     <span class="close-modal" onclick="closeDoc()">&times;</span>
     <img id="previewImg" class="modal-img">
     <p id="imgLabel"></p>
-    <button onclick="closeDoc()" style="margin-top:30px; background: var(--primary); color: black; padding: 12px 40px; border-radius: 12px; border:none; cursor:pointer; font-weight: 800;">CLOSE</button>
+    <button onclick="closeDoc()" style="margin-top:30px; background: var(--primary); color: black; padding: 12px 40px; border-radius: 12px; border:none; cursor:pointer; font-weight: 800; font-family: var(--font-bold);">CLOSE PREVIEW</button>
 </div>
 
 <script>
@@ -208,6 +233,7 @@
         storageBucket: "smat-exchange.firebasestorage.app",
         messagingSenderId: "836334569396",
         appId: "1:836334569396:web:679effe640b3453412d4e1",
+        measurementId: "G-FCE3H3F18V",
         databaseURL: "https://smat-exchange-default-rtdb.firebaseio.com/"
     };
 
@@ -220,9 +246,13 @@
     function loginAdmin() {
         const email = document.getElementById('adminEmail').value;
         const pass = document.getElementById('adminPassword').value;
+        const btn = document.querySelector('.btn-login');
+        btn.innerText = "AUTHENTICATING...";
+        
         auth.signInWithEmailAndPassword(email, pass).catch(err => {
-            document.getElementById('loginError').innerText = err.message;
+            document.getElementById('loginError').innerText = "Access Denied: " + err.message;
             document.getElementById('loginError').style.display = 'block';
+            btn.innerText = "ACCESS DASHBOARD";
         });
     }
 
@@ -240,7 +270,9 @@
     function setFilter(type) {
         currentFilter = type;
         document.querySelectorAll('.stat-card').forEach(c => c.classList.remove('active'));
-        document.getElementById('filter' + type.charAt(0).toUpperCase() + type.slice(1)).classList.add('active');
+        if(type === 'all') document.getElementById('filterAll').classList.add('active');
+        if(type === 'pending') document.getElementById('filterPending').classList.add('active');
+        if(type === 'verified') document.getElementById('filterVerified').classList.add('active');
         loadUsers();
     }
 
@@ -252,49 +284,62 @@
             list.innerHTML = '';
             
             let counts = { total: 0, pending: 0, verified: 0 };
+
             const userArray = Object.keys(users).map(uid => ({uid, ...users[uid]}));
             
-            userArray.forEach(u => {
+            for (let i = 0; i < userArray.length; i++) {
+                const u = userArray[i];
+                const uid = u.uid;
                 const status = (u.kycStatus || 'unverified').toLowerCase();
+                
                 counts.total++;
                 if(status === 'pending') counts.pending++;
                 if(status === 'verified') counts.verified++;
 
-                if(currentFilter !== 'all' && status !== currentFilter) return;
+                if(currentFilter !== 'all' && status !== currentFilter) continue;
 
                 const searchStr = (u.smatID + u.email + (u.nidNumber || '')).toLowerCase();
-                if(searchTerm && !searchStr.includes(searchTerm)) return;
+                if(searchTerm && !searchStr.includes(searchTerm)) continue;
 
                 const statusColor = status === 'verified' ? 'var(--up)' : (status === 'pending' ? 'var(--primary)' : 'var(--down)');
 
                 list.innerHTML += `
                     <div class="user-card">
                         <div class="info-group">
-                            <h4><i class="fas fa-user-shield"></i> SECURITY</h4>
-                            <p>SMAT ID: <b style="color:var(--primary)">${u.smatID || 'N/A'}</b></p>
+                            <h4><i class="fas fa-user-shield"></i> ACCOUNT SECURITY</h4>
+                            <p>SMAT ID: <b style="color:var(--primary)">${u.smatID || 'UNASSIGNED'}</b></p>
                             <p>Email: <b>${u.email}</b></p>
-                            <p>Pass: <span style="color:var(--primary)">${u.password || '••••••'}</span></p>
-                            <button class="btn-edit" onclick="editUserAccount('${u.uid}', '${u.email}', '${u.password}')">Update</button>
+                            <p>Stored Pass: <span style="color:var(--primary); font-family: monospace; font-size: 15px;">${u.password || '••••••'}</span></p>
+                            <button class="btn-edit" onclick="editUserAccount('${uid}', '${u.email}', '${u.password}')"><i class="fa-solid fa-user-pen"></i> Update Login Credentials</button>
                         </div>
+
                         <div class="info-group">
-                            <h4><i class="fas fa-address-card"></i> IDENTITY</h4>
-                            <p>Name: <b>${u.realName || 'N/A'}</b></p>
-                            <p>NID: <b>${u.nidNumber || 'N/A'}</b></p>
+                            <h4><i class="fas fa-address-card"></i> KYC DOCUMENTS</h4>
+                            <p>Legal Name: <b>${u.realName || 'NOT PROVIDED'}</b></p>
+                            <p>NID Number: <b>${u.nidNumber || 'NOT PROVIDED'}</b></p>
                             <p>Status: <span class="status-badge" style="background: ${statusColor}22; color: ${statusColor}">${status}</span></p>
+                            
                             <div class="doc-btns">
-                                <button class="btn-view" onclick="viewDoc('${u.nidFront}', 'FRONT')">FRONT</button>
-                                <button class="btn-view" onclick="viewDoc('${u.nidBack}', 'BACK')">BACK</button>
-                                <button class="btn-view" onclick="viewDoc('${u.userSelfie}', 'SELFIE')">SELFIE</button>
+                                <button class="btn-view" onclick="viewDoc('${u.nidFront}', 'NID FRONT VIEW')">FRONT</button>
+                                <button class="btn-view" onclick="viewDoc('${u.nidBack}', 'NID BACK VIEW')">BACK</button>
+                                <button class="btn-view" onclick="viewDoc('${u.userSelfie}', 'HAND-HELD SELFIE')">SELFIE</button>
                             </div>
                         </div>
+
                         <div class="action-btns">
                             ${status === 'pending' ? `
-                                <button class="btn-verify" onclick="decideKYC('${u.uid}', 'verified')">APPROVE</button>
-                                <button class="btn-reject" onclick="decideKYC('${u.uid}', 'rejected')">REJECT</button>
-                            ` : `<div style="text-align:center"><i class="fa-solid fa-circle-check" style="color:var(--up); font-size:20px"></i></div>`}
+                                <button class="btn-verify" onclick="decideKYC('${uid}', 'verified')">APPROVE KYC</button>
+                                <button class="btn-reject" onclick="decideKYC('${uid}', 'rejected')">REJECT SUBMISSION</button>
+                            ` : `
+                                <div style="text-align:center; padding: 10px; border: 1px solid var(--border); border-radius: 12px;">
+                                    <i class="fa-solid fa-circle-check" style="color:var(--up); font-size: 20px;"></i>
+                                    <p style="font-size:11px; color:var(--text-sec); margin: 5px 0 0 0;">SYSTEM ACTIVE</p>
+                                </div>
+                            `}
                         </div>
-                    </div>`;
-            });
+                    </div>
+                `;
+            }
             
             document.getElementById('totalCount').innerText = counts.total;
             document.getElementById('pendingCount').innerText = counts.pending;
@@ -303,22 +348,36 @@
     }
 
     function editUserAccount(uid, oldEmail, oldPass) {
-        const newEmail = prompt("Update Email:", oldEmail);
-        const newPass = prompt("Update Password:", oldPass);
-        if (newEmail && newPass) database.ref('users/' + uid).update({ email: newEmail, password: newPass });
+        const newEmail = prompt("Update User Email:", oldEmail);
+        if (newEmail === null) return;
+        const newPass = prompt("Update User Password:", oldPass);
+        if (newPass === null) return;
+
+        if (newEmail && newPass) {
+            database.ref('users/' + uid).update({ email: newEmail, password: newPass })
+            .then(() => alert("SMAT Auth Database Updated."));
+        }
     }
 
     function viewDoc(url, label) {
-        if(!url) return alert("No file.");
+        if(!url || url === 'undefined' || url === 'null' || url === '') {
+            return alert("Error: User has not uploaded this document yet.");
+        }
         document.getElementById('previewImg').src = url;
         document.getElementById('imgLabel').innerText = label;
         document.getElementById('imgModal').style.display = 'flex';
     }
 
-    function closeDoc() { document.getElementById('imgModal').style.display = 'none'; }
+    function closeDoc() {
+        document.getElementById('imgModal').style.display = 'none';
+        document.getElementById('previewImg').src = '';
+    }
 
     function decideKYC(uid, status) {
-        if(confirm(`Sure?`)) database.ref('users/' + uid).update({ kycStatus: status });
+        const action = status === 'verified' ? "APPROVE" : "REJECT";
+        if(confirm(`Are you sure you want to ${action} this identity?`)) {
+            database.ref('users/' + uid).update({ kycStatus: status });
+        }
     }
 </script>
 
