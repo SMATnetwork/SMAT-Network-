@@ -37,7 +37,6 @@
         .header-right { display: flex; gap: 18px; position: relative; align-items: center; }
         .header-right i { font-size: 20px; color: var(--text-sec); cursor: pointer; }
         
-        /* Notice Badge Style */
         .notif-wrapper { position: relative; }
         .notif-badge {
             position: absolute; top: -5px; right: -5px; width: 8px; height: 8px;
@@ -95,6 +94,26 @@
             border-radius: 24px; max-height: 90vh; overflow-y: auto; border: 1px solid var(--border);
         }
 
+        /* --- KYC Specific Styles --- */
+        .kyc-input {
+            width: 100%; background: #0b0e11; border: 1px solid var(--border);
+            padding: 12px; border-radius: 10px; color: white; font-size: 14px; margin-top: 5px;
+        }
+        .file-upload-box {
+            border: 2px dashed var(--border); padding: 15px; border-radius: 12px;
+            text-align: center; cursor: pointer; background: rgba(255,255,255,0.02); margin-top: 10px;
+        }
+        .file-upload-box i { font-size: 20px; color: var(--primary); }
+        .file-upload-box span { font-size: 11px; color: var(--text-sec); display: block; }
+        .preview-img { width: 100%; height: 90px; object-fit: cover; border-radius: 8px; display: none; margin-top: 8px; }
+        
+        /* Spinning Loader */
+        .spin-kyc {
+            width: 40px; height: 40px; border: 4px solid rgba(243, 186, 47, 0.2);
+            border-top: 4px solid var(--primary); border-radius: 50%;
+            animation: spin 1s linear infinite; margin: 20px auto;
+        }
+
         /* --- Status Badges --- */
         .status-badge { padding: 4px 8px; border-radius: 4px; font-size: 9px; font-weight: bold; text-transform: uppercase; }
         .status-verified { background: rgba(14, 203, 129, 0.15); color: var(--up); }
@@ -102,7 +121,7 @@
         .status-rejected { background: rgba(246, 70, 93, 0.15); color: var(--down); }
         .status-unverified { background: #474d57; color: #fff; }
 
-        /* --- Market History Header --- */
+        /* --- Market --- */
         .real-market-header {
             width: 100%; text-align: center; font-family: var(--font-bold);
             font-size: 18px; padding: 15px 0; border-bottom: 1px solid var(--border);
@@ -119,7 +138,6 @@
         .coin-icon { width: 35px; height: 35px; border-radius: 50%; object-fit: cover; }
         .percent-box { display: inline-block; padding: 4px 8px; border-radius: 6px; font-size: 11px; font-weight: bold; margin-top: 3px; }
 
-        /* --- Footer --- */
         .footer { position: fixed; bottom: 0; width: 100%; height: 75px; background: #181a20; display: flex; justify-content: space-around; align-items: center; border-top: 1px solid var(--border); z-index: 3000; }
         .f-nav { text-decoration: none; color: var(--text-sec); text-align: center; font-size: 10px; flex: 1; display: flex; flex-direction: column; align-items: center; }
         .f-nav i { font-size: 22px; margin-bottom: 5px; }
@@ -143,10 +161,10 @@
             <div class="side-val" id="displaySmatID" style="color:var(--primary)">Assigning...</div>
         </div>
 
-        <div class="kyc-status-btn" onclick="openKYC()">
+        <div class="kyc-status-btn" id="kycSidebarBtn" onclick="handleKYCOpen()">
             <i class="fa-solid fa-id-card"></i>
-            <div style="font-weight:bold">Identity Verification</div>
-            <div id="kycBadge" class="status-badge status-unverified" style="margin-top:5px; display:inline-block">Unverified</div>
+            <div style="font-weight:bold" id="kycBtnText">Identity Verification</div>
+            <div id="kycBadge" class="status-badge status-unverified" style="margin-top:5px; display:inline-block">Click Here</div>
         </div>
 
         <div class="side-menu">
@@ -156,6 +174,57 @@
             <a href="explore.html" class="menu-item"><i class="fa-solid fa-database"></i><div class="menu-text"><b>Blockchain</b><span>Public Ledger</span></div></a>
         </div>
         <div style="margin-top: 40px; text-align: center;"><i class="fa-solid fa-sign-out-alt" style="color:var(--down); font-size:30px; cursor:pointer" onclick="logout()"></i></div>
+    </div>
+
+    <div class="popup-overlay" id="kycPopup">
+        <div class="popup-content">
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px">
+                <h3 style="margin:0; font-family:var(--font-bold)">KYC Verification</h3>
+                <i class="fa-solid fa-xmark" id="closeKycIcon" onclick="closeKycPopup()" style="cursor:pointer; font-size:20px"></i>
+            </div>
+
+            <div id="kycForm">
+                <div style="margin-bottom:15px">
+                    <label style="font-size:12px; color:var(--text-sec)">Real Name (Full Name)</label>
+                    <input type="text" id="kycRealName" class="kyc-input" placeholder="Enter as per NID">
+                </div>
+                <div style="margin-bottom:15px">
+                    <label style="font-size:12px; color:var(--text-sec)">NID Number</label>
+                    <input type="number" id="kycNidNumber" class="kyc-input" placeholder="Enter NID Number">
+                </div>
+
+                <div style="display:grid; grid-template-columns: 1fr 1fr; gap:10px">
+                    <div class="file-upload-box" onclick="document.getElementById('fileFront').click()">
+                        <i class="fa-solid fa-id-card"></i><span>NID Front</span>
+                        <input type="file" id="fileFront" hidden onchange="previewKyc(this, 'pFront')">
+                        <img id="pFront" class="preview-img">
+                    </div>
+                    <div class="file-upload-box" onclick="document.getElementById('fileBack').click()">
+                        <i class="fa-solid fa-id-card-clip"></i><span>NID Back</span>
+                        <input type="file" id="fileBack" hidden onchange="previewKyc(this, 'pBack')">
+                        <img id="pBack" class="preview-img">
+                    </div>
+                </div>
+
+                <div class="file-upload-box" onclick="document.getElementById('fileHold').click()">
+                    <i class="fa-solid fa-user-check"></i><span>Hold NID with Picture</span>
+                    <input type="file" id="fileHold" hidden onchange="previewKyc(this, 'pHold')">
+                    <img id="pHold" class="preview-img">
+                </div>
+
+                <div style="background:rgba(246, 70, 93, 0.1); padding:10px; border-radius:8px; border:1px solid var(--down); margin-top:15px">
+                    <p style="font-size:10px; color:var(--text-main); margin:0"><b>Warning:</b> Ensure photos are clear. False data will lead to permanent ban.</p>
+                </div>
+
+                <button onclick="submitKYC()" id="submitKycBtn" style="width:100%; background:var(--primary); border:none; padding:15px; border-radius:12px; font-weight:bold; margin-top:20px; color:black">Submit Verification</button>
+            </div>
+
+            <div id="kycWaiting" style="display:none; text-align:center; padding:30px 0;">
+                <div class="spin-kyc"></div>
+                <h4 style="color:var(--primary)">Verification in Progress</h4>
+                <p style="font-size:12px; color:var(--text-sec)">Admin is reviewing your documents. This usually takes 24 hours. Please wait.</p>
+            </div>
+        </div>
     </div>
 
     <div class="popup-overlay" id="refPopup">
@@ -245,16 +314,13 @@
 
         let realBalanceValue = 0;
         let isBalanceHidden = localStorage.getItem('hideBalance') === 'true';
+        let currentKycStatus = 'unverified';
 
         onAuthStateChanged(auth, (user) => {
             if (user) {
                 localStorage.setItem('isLoggedIn', 'true');
                 document.getElementById('userEmail').innerText = user.email;
-                
-                // Check Notice Badge Logic
-                if (localStorage.getItem('noticeSeen') !== 'true') {
-                    document.getElementById('noticeBadge').style.display = 'block';
-                }
+                if (localStorage.getItem('noticeSeen') !== 'true') document.getElementById('noticeBadge').style.display = 'block';
 
                 onValue(ref(db, 'users/' + user.uid), (snap) => {
                     const d = snap.val();
@@ -263,12 +329,80 @@
                         document.getElementById('displaySmatID').innerText = sid;
                         realBalanceValue = d.balance || 0;
                         updateBalanceUI();
-                        updateKYCUI(d);
+                        
+                        // KYC Logic Update
+                        currentKycStatus = d.kycStatus || 'unverified';
+                        updateKYCUI(currentKycStatus);
                         setupReferral(sid);
                     }
                 });
             } else { location.href = 'logIn.html'; }
         });
+
+        function updateKYCUI(status) {
+            const badge = document.getElementById('kycBadge');
+            const form = document.getElementById('kycForm');
+            const wait = document.getElementById('kycWaiting');
+            const closeIcon = document.getElementById('closeKycIcon');
+
+            if(status === 'verified') {
+                badge.innerText = "Verified";
+                badge.className = "status-badge status-verified";
+                document.getElementById('kycBtnText').style.color = "var(--up)";
+            } else if(status === 'pending') {
+                badge.innerText = "Pending";
+                badge.className = "status-badge status-pending";
+                form.style.display = 'none';
+                wait.style.display = 'block';
+                closeIcon.style.display = 'none'; // Pending অবস্থায় বন্ধ করা যাবে না
+            } else if(status === 'rejected') {
+                badge.innerText = "Rejected (Click Here)";
+                badge.className = "status-badge status-rejected";
+                form.style.display = 'block';
+                wait.style.display = 'none';
+                closeIcon.style.display = 'block';
+            } else {
+                badge.innerText = "Click Here";
+                badge.className = "status-badge status-unverified";
+                form.style.display = 'block';
+                wait.style.display = 'none';
+            }
+        }
+
+        window.handleKYCOpen = () => {
+            if(currentKycStatus === 'verified') return;
+            document.getElementById('kycPopup').style.display = 'flex';
+        };
+
+        window.submitKYC = async () => {
+            const name = document.getElementById('kycRealName').value;
+            const nid = document.getElementById('kycNidNumber').value;
+            if(!name || !nid) { alert("Fill all details!"); return; }
+            
+            const user = auth.currentUser;
+            if(user) {
+                // ইমেজ আপলোড API লজিক (আপনার আগের কোড অনুযায়ী এখানে বসবে)
+                // উদাহরণস্বরূপ সরাসরি ডাটাবেস আপডেট:
+                await update(ref(db, 'users/' + user.uid), {
+                    kycStatus: 'pending',
+                    kycData: { name, nid, time: Date.now() }
+                });
+                alert("KYC Submitted Successfully!");
+            }
+        };
+
+        window.previewKyc = (input, imgId) => {
+            const file = input.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = (e) => {
+                    const img = document.getElementById(imgId);
+                    img.src = e.target.result;
+                    img.style.display = 'block';
+                };
+                reader.readAsDataURL(file);
+            }
+        };
 
         window.toggleBalance = () => {
             isBalanceHidden = !isBalanceHidden;
@@ -294,7 +428,6 @@
             alert("New Updates: SMAT/USDT Pair is now active for trading!");
         };
 
-        // মার্কেট লজিক
         onValue(ref(db, 'market'), (snapshot) => {
             const data = snapshot.val();
             if (data) {
@@ -327,12 +460,6 @@
             });
         }
 
-        function updateKYCUI(d) {
-            const st = d.kycStatus || 'unverified';
-            document.getElementById('kycBadge').innerText = st;
-            document.getElementById('kycBadge').className = `status-badge status-${st}`;
-        }
-
         window.logout = () => signOut(auth).then(() => { localStorage.clear(); location.reload(); });
     </script>
 
@@ -342,6 +469,7 @@
         function closeSidebar() { document.getElementById('sidebar').classList.remove('active'); document.getElementById('overlay').style.display='none'; }
         function openRefPopup() { closeSidebar(); document.getElementById('refPopup').style.display='flex'; }
         function closeRefPopup() { document.getElementById('refPopup').style.display='none'; }
+        function closeKycPopup() { if(currentKycStatus !== 'pending') document.getElementById('kycPopup').style.display='none'; }
         function copyRef() { const inp = document.getElementById('referralLink'); inp.select(); navigator.clipboard.writeText(inp.value); alert("Referral Link Copied!"); }
 
         function switchTab(el, cat) {
