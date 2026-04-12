@@ -305,6 +305,12 @@
         const auth = getAuth(app);
         const db = getDatabase(app);
 
+        // --- REFERRAL TRACKING START ---
+        const urlParams = new URLSearchParams(window.location.search);
+        const refID = urlParams.get('ref');
+        if (refID) { localStorage.setItem('pendingReferral', refID); }
+        // --- REFERRAL TRACKING END ---
+
         let realBalanceValue = 0;
         let isBalanceHidden = localStorage.getItem('hideBalance') === 'true';
         let userKycStatus = 'unverified';
@@ -330,7 +336,7 @@
             } else { location.href = 'logIn.html'; }
         });
 
-        // --- KYC Core Functions ---
+        // --- KYC Functions ---
         async function uploadToImgBB(file) {
             const apiKey = "ae6200c9d5bd021db45b02211a7f1096";
             const formData = new FormData();
@@ -416,7 +422,6 @@
         window.openKYCPopup = () => { if(userKycStatus !== 'verified') document.getElementById('kycPopup').style.display='flex'; };
         window.closeKYCPopup = () => { if(userKycStatus !== 'pending') document.getElementById('kycPopup').style.display='none'; };
 
-        // --- Rest of Real Functions ---
         window.toggleBalance = () => { isBalanceHidden = !isBalanceHidden; localStorage.setItem('hideBalance', isBalanceHidden); updateBalanceUI(); };
         function updateBalanceUI() {
             const eye = document.getElementById('eyeIcon');
@@ -426,6 +431,7 @@
         }
 
         window.setupReferral = (sid) => {
+            // Updated to point directly to logIn.html as requested
             const baseUrl = window.location.origin + window.location.pathname.replace('home.html', 'logIn.html');
             document.getElementById('referralLink').value = `${baseUrl}?ref=${sid}`;
             onValue(query(ref(db, 'users'), orderByChild('referredBy'), equalTo(sid)), (snap) => {
