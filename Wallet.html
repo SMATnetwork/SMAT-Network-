@@ -3,12 +3,12 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>SMAT | Wallet</title>
+    <title>SMAT | Pro Wallet</title>
     <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-auth-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-database-compat.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/qrcode-generator@1.4.4/qrcode.min.js"></script>
     <script src="coin.js"></script>
-    
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@900&family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
     
@@ -19,122 +19,188 @@
             --border: rgba(255, 255, 255, 0.08);
             --font-bold: 'Montserrat', sans-serif;
         }
-        
         * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Inter', sans-serif; -webkit-tap-highlight-color: transparent; }
-        body { background: var(--bg); color: white; padding-bottom: 90px; overflow-x: hidden; }
+        body { background: var(--bg); color: white; padding-bottom: 100px; overflow-x: hidden; }
 
-        /* Wallet Header */
-        .wallet-header {
-            padding: 30px 20px;
-            background: linear-gradient(180deg, rgba(240, 185, 11, 0.15) 0%, var(--bg) 100%);
-            text-align: center;
-            border-bottom: 1px solid var(--border);
-        }
-        .total-label { font-size: 12px; color: var(--text-sec); text-transform: uppercase; letter-spacing: 1.5px; margin-bottom: 8px; font-weight: 700; }
-        .total-balance { font-family: var(--font-bold); font-size: 32px; font-weight: 900; color: #fff; margin-bottom: 5px; }
-        .estimated-val { font-size: 14px; color: var(--up); font-weight: 600; }
+        /* Header & Balance */
+        .wallet-header { padding: 40px 20px; text-align: center; background: linear-gradient(180deg, rgba(240, 185, 11, 0.1) 0%, var(--bg) 100%); }
+        .total-balance { font-family: var(--font-bold); font-size: clamp(32px, 8vw, 42px); font-weight: 900; margin-top: 5px; }
 
-        /* Action Grid */
-        .action-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; padding: 20px; }
-        .action-btn { 
-            background: var(--card); border: 1px solid var(--border); padding: 15px; 
-            border-radius: 16px; text-align: center; cursor: pointer;
-        }
-        .action-btn i { font-size: 22px; color: var(--primary); margin-bottom: 8px; display: block; }
-        .action-btn span { font-size: 11px; font-weight: 700; color: #fff; }
-
-        /* Asset Section */
-        .asset-title { padding: 15px 20px; font-family: var(--font-bold); font-size: 20px; font-weight: 900; }
+        /* Asset List */
         .asset-list { padding: 0 15px; }
         .asset-card {
-            background: var(--card); border-radius: 20px; padding: 16px; margin-bottom: 12px;
+            background: var(--card); border-radius: 18px; padding: 16px; margin-bottom: 12px;
             display: grid; grid-template-columns: auto 1fr auto; align-items: center; gap: 15px;
-            border: 1px solid var(--border);
+            border: 1px solid var(--border); transition: 0.2s; cursor: pointer;
         }
-        .a-logo { width: 44px; height: 44px; border-radius: 50%; background: #2b3139; overflow: hidden; }
+        .asset-card:active { transform: scale(0.98); background: #2b3139; }
+        .a-logo { width: 45px; height: 45px; border-radius: 50%; background: #0b0e11; display: flex; align-items: center; justify-content: center; overflow: hidden; }
         .a-logo img { width: 100%; height: 100%; object-fit: cover; }
-        .a-info h4 { font-family: var(--font-bold); font-size: 16px; font-weight: 900; }
+        .a-info h4 { font-family: var(--font-bold); font-size: 16px; }
         .a-info p { font-size: 12px; color: var(--text-sec); }
         .a-amounts { text-align: right; }
-        .a-bal { font-family: var(--font-bold); font-size: 15px; font-weight: 900; }
+        .a-bal { font-family: var(--font-bold); font-size: 15px; }
         .a-usd { font-size: 12px; color: var(--text-sec); }
 
-        /* --- HOME PAGE EXACT FOOTER & FAB STYLE --- */
-        .footer { position: fixed; bottom: 0; width: 100%; height: 75px; background: #181a20; display: flex; justify-content: space-around; align-items: center; border-top: 1px solid var(--border); z-index: 3000; }
-        .f-nav { text-decoration: none; color: var(--text-sec); text-align: center; font-size: 10px; flex: 1; display: flex; flex-direction: column; align-items: center; }
-        .f-nav i { font-size: 22px; margin-bottom: 5px; }
-        .f-nav.active { color: var(--primary); }
+        /* Modern Popups */
+        .overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.85); z-index: 5000; display: none; align-items: flex-end; }
+        .popup { background: #181a20; width: 100%; border-radius: 25px 25px 0 0; padding: 25px; animation: slideUp 0.3s ease-out; max-height: 90vh; overflow-y: auto; border-top: 2px solid var(--primary); }
+        @keyframes slideUp { from { transform: translateY(100%); } to { transform: translateY(0); } }
 
-        .fab-wrapper { position: relative; width: 75px; display: flex; justify-content: center; }
-        .fab-options { position: absolute; bottom: 40px; display: flex; justify-content: center; align-items: center; pointer-events: none; width: 300px; height: 200px; }
+        .popup-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
+        .opt-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; margin-bottom: 20px; }
+        .opt-btn { background: var(--card); border: 1px solid var(--border); padding: 12px; border-radius: 12px; text-align: center; font-size: 12px; font-weight: bold; cursor: pointer; }
+        .opt-btn.active { border-color: var(--primary); color: var(--primary); }
+
+        /* QR & Forms */
+        .qr-box { background: white; width: 180px; height: 180px; margin: 20px auto; padding: 10px; border-radius: 15px; position: relative; display: flex; align-items: center; justify-content: center; }
+        .qr-logo { position: absolute; width: 40px; height: 40px; background: white; border-radius: 50%; padding: 3px; }
+        .qr-logo img { width: 100%; height: 100%; border-radius: 50%; }
         
-        .popup-btn {
-            position: absolute; background: var(--card); border: 2.5px solid var(--primary);
-            color: white; padding: 8px 18px; border-radius: 50px;
-            text-decoration: none; font-weight: 800; font-size: 12px;
-            box-shadow: 0 10px 25px rgba(0,0,0,0.6);
-            transition: all 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-            opacity: 0; transform: scale(0.3) translateY(120px);
-            pointer-events: auto; white-space: nowrap; z-index: 2900;
-        }
+        .address-box { background: #0b0e11; padding: 15px; border-radius: 12px; border: 1px dashed var(--text-sec); display: flex; align-items: center; justify-content: space-between; margin: 10px 0; }
+        .address-box span { font-size: 11px; color: var(--text-sec); word-break: break-all; }
+        
+        .form-group { margin-bottom: 15px; }
+        .form-group label { font-size: 11px; color: var(--text-sec); display: block; margin-bottom: 5px; }
+        .form-input { width: 100%; background: #0b0e11; border: 1px solid var(--border); padding: 12px; border-radius: 10px; color: white; font-weight: 600; }
+        
+        .btn-main { width: 100%; background: var(--primary); color: black; border: none; padding: 15px; border-radius: 12px; font-weight: 900; font-family: var(--font-bold); margin-top: 10px; cursor: pointer; }
 
+        /* History Table */
+        .history-section { padding: 20px 15px; }
+        .history-card { background: var(--card); border-radius: 15px; padding: 15px; margin-bottom: 10px; border-left: 4px solid var(--primary); }
+        .hist-top { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; }
+        .method-tag { font-size: 10px; font-weight: 900; text-transform: uppercase; padding: 2px 8px; border-radius: 4px; background: rgba(255,255,255,0.1); }
+        .hist-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; font-size: 11px; }
+        .hist-label { color: var(--text-sec); display: block; margin-bottom: 2px; }
+        .copy-mini { color: var(--primary); cursor: pointer; margin-left: 5px; }
+        .status-spin { animation: spin 2s linear infinite; }
+        @keyframes spin { 100% { transform: rotate(360deg); } }
+
+        /* Footer from Home */
+        .footer { position: fixed; bottom: 0; width: 100%; height: 75px; background: #181a20; display: flex; justify-content: space-around; align-items: center; border-top: 1px solid var(--border); z-index: 4000; }
+        .f-nav { text-decoration: none; color: var(--text-sec); text-align: center; font-size: 10px; flex: 1; display: flex; flex-direction: column; align-items: center; gap: 4px; }
+        .f-nav i { font-size: 22px; }
+        .f-nav.active { color: var(--primary); }
+        .fab-wrapper { position: relative; width: 75px; display: flex; justify-content: center; }
+        .main-fab { width: 65px; height: 65px; background: var(--primary); border: none; border-radius: 50%; z-index: 3100; margin-top: -35px; display: flex; justify-content: center; align-items: center; box-shadow: 0 0 20px rgba(243, 186, 47, 0.4); }
+        .main-fab i { font-size: 24px; color: black; }
+        .fab-options { position: absolute; bottom: 40px; display: flex; justify-content: center; align-items: center; pointer-events: none; width: 300px; height: 200px; }
+        .popup-btn { position: absolute; background: var(--card); border: 2.5px solid var(--primary); color: white; padding: 8px 18px; border-radius: 50px; text-decoration: none; font-weight: 800; font-size: 12px; transition: 0.5s; opacity: 0; transform: scale(0.3) translateY(120px); pointer-events: auto; }
         .fab-options.show .btn-left { opacity: 1; transform: translate(-95px, -45px) scale(1); }
         .fab-options.show .btn-center { opacity: 1; transform: translate(0, -115px) scale(1); }
         .fab-options.show .btn-right { opacity: 1; transform: translate(95px, -45px) scale(1); }
-
-        .main-fab {
-            width: 65px; height: 65px; background: var(--primary);
-            border: none; border-radius: 50%; cursor: pointer;
-            box-shadow: 0 0 20px rgba(243, 186, 47, 0.4);
-            display: flex; justify-content: center; align-items: center;
-            z-index: 3100; margin-top: -35px; outline: none; transition: 0.3s;
-        }
-
-        @keyframes continuous-spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
-        .main-fab.active { animation: continuous-spin 2s linear infinite; background: var(--down); box-shadow: 0 0 35px rgba(246, 70, 93, 0.5); }
-        .main-fab i { font-size: 24px; color: #000; -webkit-text-stroke: 2px; }
-        .main-fab.active i { color: #fff; transform: rotate(45deg); }
-
     </style>
 </head>
 <body>
 
     <div class="wallet-header">
-        <div class="total-label">Total Portfolio Value</div>
+        <p style="font-size: 12px; color: var(--text-sec); font-weight: bold;">TOTAL PORTFOLIO VALUE</p>
         <div class="total-balance">$ <span id="totalBalance">0.00</span></div>
-        <div class="estimated-val">≈ <span id="estBtc">0.000000</span> BTC</div>
+        <p style="color: var(--up); font-size: 13px; margin-top: 5px;">≈ <span id="totalBtc">0.000000</span> BTC</p>
     </div>
 
-    <div class="action-grid">
-        <div class="action-btn"><i class="fas fa-plus-circle"></i><span>Deposit</span></div>
-        <div class="action-btn"><i class="fas fa-external-link-alt"></i><span>Withdraw</span></div>
-        <div class="action-btn"><i class="fas fa-history"></i><span>History</span></div>
-    </div>
-
-    <h3 class="asset-title">Assets</h3>
     <div class="asset-list" id="assetList"></div>
+
+    <h3 style="padding: 25px 20px 10px; font-family: var(--font-bold);">Transaction History</h3>
+    <div class="history-section" id="historyList"></div>
+
+    <div class="overlay" id="walletOverlay" onclick="closePopup(event)">
+        <div class="popup" id="walletPopup">
+            <div class="popup-header">
+                <div style="display:flex; align-items:center; gap:10px">
+                    <img id="popCoinLogo" style="width:30px; border-radius:50%">
+                    <h3 id="popCoinName" style="font-family:var(--font-bold)">COIN</h3>
+                </div>
+                <i class="fas fa-times" onclick="document.getElementById('walletOverlay').style.display='none'" style="cursor:pointer"></i>
+            </div>
+
+            <div class="opt-grid">
+                <div class="opt-btn" id="btnDep" onclick="switchMode('deposit')">DEPOSIT</div>
+                <div class="opt-btn" id="btnWith" onclick="switchMode('withdraw')">WITHDRAW</div>
+                <div class="opt-btn" id="btnTrans" onclick="switchMode('transfer')">TRANSFER</div>
+            </div>
+
+            <div id="uiDeposit" class="mode-ui">
+                <div class="qr-box" id="qrContainer">
+                    <div class="qr-logo"><img id="qrCoinLogo"></div>
+                    <div id="qrcode"></div>
+                </div>
+                <div class="address-box">
+                    <span id="depAddr">Loading...</span>
+                    <i class="fas fa-copy copy-mini" onclick="copyText('depAddr')"></i>
+                </div>
+                <p style="font-size: 10px; color: var(--down); text-align: center; margin-top: 10px; line-height: 1.4;">
+                    <b>WARNING:</b> Only send <b>BEP20</b> or <b>ERC20</b> assets to this address. Sending other assets will result in permanent loss.
+                </p>
+            </div>
+
+            <div id="uiWithdraw" class="mode-ui" style="display:none">
+                <div style="background:rgba(255,255,255,0.05); padding:15px; border-radius:12px; margin-bottom:15px">
+                    <p style="font-size:11px; color:var(--text-sec)">Available for Withdrawal</p>
+                    <h4 id="withAvail" style="color:var(--up); font-family:var(--font-bold)">0.00</h4>
+                    <p style="font-size:10px; color:var(--text-sec)">Fee: $0.25 (Flat)</p>
+                </div>
+                <div class="form-group">
+                    <label>Select Network</label>
+                    <select id="withNet" class="form-input">
+                        <option value="BEP20">Binance Smart Chain (BEP20)</option>
+                        <option value="ERC20">Ethereum (ERC20)</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Withdrawal Address</label>
+                    <input type="text" id="withAddr" class="form-input" placeholder="Enter Destination Address">
+                </div>
+                <div class="form-group">
+                    <label>Amount</label>
+                    <input type="number" id="withAmount" class="form-input" placeholder="0.00">
+                </div>
+                <button class="btn-main" onclick="processWithdraw()">SUBMIT WITHDRAWAL</button>
+            </div>
+
+            <div id="uiTransfer" class="mode-ui" style="display:none">
+                <div style="background:rgba(240,185,11,0.1); padding:15px; border-radius:12px; margin-bottom:15px">
+                    <p style="font-size:11px; color:var(--text-sec)">Transferable Balance</p>
+                    <h4 id="transAvail" style="color:var(--primary); font-family:var(--font-bold)">0.00</h4>
+                </div>
+                <div class="form-group">
+                    <label>Transfer Method</label>
+                    <select id="transMethod" class="form-input">
+                        <option value="smatid">SMAT ID</option>
+                        <option value="gmail">Email Address</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Recipient Detail</label>
+                    <input type="text" id="transTarget" class="form-input" placeholder="Enter ID or Email">
+                </div>
+                <div class="form-group">
+                    <label>Amount</label>
+                    <input type="number" id="transAmount" class="form-input" placeholder="0.00">
+                </div>
+                <button class="btn-main" onclick="processTransfer()">INSTANT TRANSFER</button>
+            </div>
+        </div>
+    </div>
 
     <footer class="footer">
         <a href="home.html" class="f-nav"><i class="fas fa-home"></i>Home</a>
         <a href="Trade.html" class="f-nav"><i class="fas fa-chart-line"></i>Trade</a>
-        
         <div class="fab-wrapper">
             <div class="fab-options" id="fabOptions">
                 <a href="Crash.html" class="popup-btn btn-left">Crash</a>
                 <a href="Prediction.html" class="popup-btn btn-center">Prediction</a>
                 <a href="Feature.html" class="popup-btn btn-right">Future</a>
             </div>
-            <button class="main-fab" id="mainFab" onclick="toggleGamingMenu()">
-                 <i class="fa-solid fa-plus" id="icon"></i>
-            </button>
+            <button class="main-fab" onclick="toggleGamingMenu()"><i class="fas fa-plus"></i></button>
         </div>
-
         <a href="Explorer.html" class="f-nav"><i class="fas fa-compass"></i>Explore</a>
         <a href="Wallet.html" class="f-nav active"><i class="fas fa-wallet"></i>Wallet</a>
     </footer>
 
 <script>
-// Firebase & Wallet Logic
+// Firebase Initialization
 const firebaseConfig = {
     apiKey: "AIzaSyAMxtJedkehhxJRMPZLjhpKHqneHEWsGlE",
     authDomain: "smat-exchange.firebaseapp.com",
@@ -147,66 +213,233 @@ firebase.initializeApp(firebaseConfig);
 const db = firebase.database();
 const auth = firebase.auth();
 
-let livePrices = {};
 let userData = {};
+let livePrices = {};
+let activeCoin = null;
 
-// FAB Menu Logic from Home Page
+// FAB Logic
 function toggleGamingMenu() {
-    const options = document.getElementById('fabOptions');
-    const mainBtn = document.getElementById('mainFab');
-    options.classList.toggle('show');
-    mainBtn.classList.toggle('active');
+    document.getElementById('fabOptions').classList.toggle('show');
     if (navigator.vibrate) navigator.vibrate(50);
 }
-
-// Close menu on outside click
-window.addEventListener('click', (e) => {
-    if (!e.target.closest('.fab-wrapper')) {
-        document.getElementById('fabOptions').classList.remove('show');
-        document.getElementById('mainFab').classList.remove('active');
-    }
-});
 
 function initWallet() {
     auth.onAuthStateChanged(user => {
         if (user) {
-            db.ref('market').on('value', snap => { livePrices = snap.val() || {}; renderAssets(); });
-            db.ref('users/' + user.uid).on('value', snap => { userData = snap.val() || {}; renderAssets(); });
-        } else { window.location.href = "login.html"; }
+            db.ref('market').on('value', s => { livePrices = s.val() || {}; updateUI(); });
+            db.ref('users/' + user.uid).on('value', s => { userData = s.val() || {}; updateUI(); renderHistory(); });
+        } else { location.href = "login.html"; }
     });
 }
 
-function renderAssets() {
+function updateUI() {
     const list = document.getElementById('assetList');
-    let totalUSD = 0;
-    let btcPrice = 65000;
+    let totalPortfolioUSD = 0;
 
-    const html = GLOBAL_COINS.map(coin => {
+    // কয়েন সর্টিং লজিক (USD ভ্যালু অনুযায়ী)
+    const sortedCoins = GLOBAL_COINS.map(coin => {
         const s = coin.sym.toLowerCase();
         const price = (livePrices[s] && livePrices[s].price) ? livePrices[s].price : coin.price;
-        if(s === 'btc') btcPrice = price;
+        const balance = (s === 'usdt') ? (userData.balance || 0) : (userData[s + '_balance'] || 0);
+        return { ...coin, price, balance, usdValue: balance * price };
+    }).sort((a, b) => b.usdValue - a.usdValue);
 
-        let balance = (s === 'usdt') ? (userData.balance || 0) : (userData[s + '_balance'] || 0);
-        const usdVal = balance * price;
-        totalUSD += usdVal;
-
-        return `
-            <div class="asset-card">
-                <div class="a-logo"><img src="assets/logos/${s}.png" onerror="this.src='assets/logos/generic.png'"></div>
+    let html = '';
+    sortedCoins.forEach(coin => {
+        totalPortfolioUSD += coin.usdValue;
+        html += `
+            <div class="asset-card" onclick="openCoinAction('${coin.sym.toLowerCase()}')">
+                <div class="a-logo"><img src="assets/logos/${coin.sym.toLowerCase()}.png" onerror="this.src='assets/logos/generic.png'"></div>
                 <div class="a-info">
                     <h4>${coin.sym.toUpperCase()}</h4>
-                    <p>$${price.toLocaleString(undefined, {minimumFractionDigits: 2})}</p>
+                    <p>$${coin.price.toLocaleString(undefined, {minimumFractionDigits: 2})}</p>
                 </div>
                 <div class="a-amounts">
-                    <div class="a-bal">${balance.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 6})}</div>
-                    <div class="a-usd">≈ $${usdVal.toLocaleString(undefined, {minimumFractionDigits: 2})}</div>
+                    <div class="a-bal">${coin.balance.toLocaleString(undefined, {maximumFractionDigits: 6})}</div>
+                    <div class="a-usd">≈ $${coin.usdValue.toLocaleString(undefined, {minimumFractionDigits: 2})}</div>
                 </div>
             </div>`;
-    }).join('');
+    });
 
     list.innerHTML = html;
-    document.getElementById('totalBalance').innerText = totalUSD.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2});
-    document.getElementById('estBtc').innerText = (totalUSD / btcPrice).toFixed(6);
+    document.getElementById('totalBalance').innerText = totalPortfolioUSD.toLocaleString(undefined, {minimumFractionDigits: 2});
+    document.getElementById('totalBtc').innerText = (totalPortfolioUSD / (livePrices['btc']?.price || 65000)).toFixed(6);
+}
+
+// Popup & Action Logic
+function openCoinAction(sym) {
+    activeCoin = GLOBAL_COINS.find(c => c.sym.toLowerCase() === sym);
+    const s = activeCoin.sym.toLowerCase();
+    const balance = (s === 'usdt') ? (userData.balance || 0) : (userData[s + '_balance'] || 0);
+    const price = (livePrices[s] && livePrices[s].price) ? livePrices[s].price : activeCoin.price;
+
+    document.getElementById('popCoinLogo').src = `assets/logos/${s}.png`;
+    document.getElementById('qrCoinLogo').src = `assets/logos/${s}.png`;
+    document.getElementById('popCoinName').innerText = activeCoin.sym.toUpperCase();
+    document.getElementById('depAddr').innerText = userData.depositAddress || "0x782...B839";
+    
+    // Withdraw calculations
+    const feeInCoin = 0.25 / price;
+    const availWith = Math.max(0, balance - feeInCoin);
+    document.getElementById('withAvail').innerText = `${availWith.toFixed(6)} ${activeCoin.sym.toUpperCase()}`;
+    document.getElementById('transAvail').innerText = `${balance.toFixed(6)} ${activeCoin.sym.toUpperCase()}`;
+
+    // Generate QR
+    const qr = qrcode(0, 'M');
+    qr.addData(userData.depositAddress || "0x782...B839");
+    qr.make();
+    document.getElementById('qrcode').innerHTML = qr.createImgTag(4);
+
+    switchMode('deposit');
+    document.getElementById('walletOverlay').style.display = 'flex';
+}
+
+function switchMode(mode) {
+    document.querySelectorAll('.mode-ui').forEach(u => u.style.display = 'none');
+    document.querySelectorAll('.opt-btn').forEach(b => b.classList.remove('active'));
+    
+    if(mode === 'deposit') { document.getElementById('uiDeposit').style.display='block'; document.getElementById('btnDep').classList.add('active'); }
+    if(mode === 'withdraw') { document.getElementById('uiWithdraw').style.display='block'; document.getElementById('btnWith').classList.add('active'); }
+    if(mode === 'transfer') { document.getElementById('uiTransfer').style.display='block'; document.getElementById('btnTrans').classList.add('active'); }
+}
+
+// Process Withdrawal
+async function processWithdraw() {
+    const amount = parseFloat(document.getElementById('withAmount').value);
+    const addr = document.getElementById('withAddr').value;
+    const net = document.getElementById('withNet').value;
+    const s = activeCoin.sym.toLowerCase();
+    const price = (livePrices[s] && livePrices[s].price) ? livePrices[s].price : activeCoin.price;
+    const fee = 0.25 / price;
+    const balance = (s === 'usdt') ? (userData.balance || 0) : (userData[s + '_balance'] || 0);
+
+    if(!addr || addr.length < 10) return alert("Invalid Address!");
+    if(isNaN(amount) || amount <= 0) return alert("Invalid Amount!");
+    if(amount + fee > balance) return alert("Insufficient Balance including $0.25 Fee!");
+
+    const confirm = window.confirm(`Withdraw ${amount} ${s.toUpperCase()}?\nFee: $0.25\nTotal Deduct: ${(amount+fee).toFixed(6)}`);
+    if(!confirm) return;
+
+    const newBal = balance - (amount + fee);
+    const updatePath = (s === 'usdt') ? { balance: newBal } : { [s + '_balance']: newBal };
+
+    const txId = db.ref('transactions').push().key;
+    const txData = {
+        uid: auth.currentUser.uid,
+        method: 'Withdraw',
+        coin: s.toUpperCase(),
+        amount: amount,
+        fee: fee,
+        network: net,
+        address: addr,
+        status: 'pending',
+        timestamp: Date.now(),
+        hash: 'Processing...'
+    };
+
+    await db.ref('users/' + auth.currentUser.uid).update(updatePath);
+    await db.ref('transactions/' + txId).set(txData);
+    await db.ref('users/' + auth.currentUser.uid + '/history/' + txId).set(txData);
+
+    alert("Withdrawal Submitted! Check history.");
+    document.getElementById('walletOverlay').style.display = 'none';
+}
+
+// Process Transfer
+async function processTransfer() {
+    const amount = parseFloat(document.getElementById('transAmount').value);
+    const target = document.getElementById('transTarget').value;
+    const method = document.getElementById('transMethod').value;
+    const s = activeCoin.sym.toLowerCase();
+    const balance = (s === 'usdt') ? (userData.balance || 0) : (userData[s + '_balance'] || 0);
+
+    if(isNaN(amount) || amount <= 0 || amount > balance) return alert("Invalid Balance!");
+    if(!target) return alert("Enter Recipient Detail!");
+
+    const newBal = balance - amount;
+    const updatePath = (s === 'usdt') ? { balance: newBal } : { [s + '_balance']: newBal };
+
+    const txId = db.ref('transactions').push().key;
+    const txData = {
+        method: 'Internal Transfer',
+        coin: s.toUpperCase(),
+        amount: amount,
+        address: target + ` (${method.toUpperCase()})`,
+        network: 'Internal',
+        status: 'success',
+        timestamp: Date.now(),
+        hash: 'Null'
+    };
+
+    await db.ref('users/' + auth.currentUser.uid).update(updatePath);
+    await db.ref('users/' + auth.currentUser.uid + '/history/' + txId).set(txData);
+
+    alert("Transfer Successful!");
+    document.getElementById('walletOverlay').style.display = 'none';
+}
+
+// History Rendering
+function renderHistory() {
+    const histRef = db.ref('users/' + auth.currentUser.uid + '/history');
+    histRef.on('value', snap => {
+        const data = snap.val();
+        if(!data) return;
+        
+        let html = '';
+        const items = Object.values(data).sort((a,b) => b.timestamp - a.timestamp);
+        
+        items.forEach(h => {
+            const isPending = h.status === 'pending';
+            const statusColor = h.status === 'success' ? 'var(--up)' : (h.status === 'pending' ? 'var(--primary)' : 'var(--down)');
+            const addrShort = h.address.substring(0,6) + '...' + h.address.substring(h.address.length - 4);
+
+            html += `
+                <div class="history-card" style="border-left-color: ${statusColor}">
+                    <div class="hist-top">
+                        <span class="method-tag">${h.method}</span>
+                        <span style="color:${statusColor}; font-size:10px; font-weight:bold">
+                            ${isPending ? '<i class="fas fa-spinner status-spin"></i>' : ''} ${h.status.toUpperCase()}
+                        </span>
+                    </div>
+                    <div class="hist-grid">
+                        <div>
+                            <span class="hist-label">COIN / AMOUNT</span>
+                            <b>${h.coin} / ${h.amount}</b>
+                        </div>
+                        <div style="text-align:right">
+                            <span class="hist-label">NETWORK</span>
+                            <b>${h.network}</b>
+                        </div>
+                        <div>
+                            <span class="hist-label">ADDRESS</span>
+                            <b>${addrShort}</b> <i class="fas fa-copy copy-mini" onclick="copyValue('${h.address}')"></i>
+                        </div>
+                        <div style="text-align:right">
+                            <span class="hist-label">TRX HASH</span>
+                            <a href="${h.hash !== 'Null' ? 'https://bscscan.com/tx/'+h.hash : '#'}" style="color:var(--primary); text-decoration:none">
+                                ${h.hash.substring(0,8)}...
+                            </a>
+                        </div>
+                    </div>
+                </div>`;
+        });
+        document.getElementById('historyList').innerHTML = html;
+    });
+}
+
+function copyText(id) {
+    const txt = document.getElementById(id).innerText;
+    navigator.clipboard.writeText(txt);
+    alert("Address Copied!");
+}
+
+function copyValue(val) {
+    navigator.clipboard.writeText(val);
+    alert("Full Address Copied!");
+}
+
+function closePopup(e) {
+    if(e.target.id === 'walletOverlay') e.target.style.display = 'none';
 }
 
 window.onload = initWallet;
