@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>SMAT | Home</title>
+    <script src="coin.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@700;800;900&family=Inter:wght@400;600&display=swap" rel="stylesheet">
     
@@ -32,15 +33,9 @@
             padding: 15px 20px; display: flex; align-items: center; justify-content: space-between;
             position: sticky; top: 0; background: var(--bg); z-index: 100;
         }
-        .header-left i { font-size: 24px; color: var(--text-main); cursor: pointer; }
         .header-title { font-family: var(--font-bold); font-size: 20px; font-weight: 900; }
-        .header-right { display: flex; gap: 18px; position: relative; align-items: center; }
+        .header-right { display: flex; gap: 18px; align-items: center; }
         .header-right i { font-size: 20px; color: var(--text-sec); cursor: pointer; }
-        .notif-badge {
-            position: absolute; top: -5px; right: -5px;
-            background: var(--down); color: white; font-size: 9px;
-            padding: 2px 5px; border-radius: 50%; display: none;
-        }
 
         /* --- Sidebar --- */
         .sidebar {
@@ -78,59 +73,28 @@
         .asset-card {
             margin: 10px 20px; background: linear-gradient(135deg, #1e2329 0%, #0b0e11 100%);
             padding: 20px; border-radius: 20px; border: 1px solid var(--border);
-            position: relative;
         }
-        .asset-label { font-size: 13px; color: var(--text-sec); display: flex; justify-content: space-between; align-items: center; }
-        .asset-balance { font-family: var(--font-bold); font-size: 28px; margin: 10px 0; letter-spacing: 1px; }
-        .asset-pnl { font-size: 13px; font-weight: 600; color: var(--up); }
-
-        /* --- Popup Common Style --- */
-        .popup-overlay {
-            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(0,0,0,0.95); z-index: 5000; display: none;
-            justify-content: center; align-items: center; padding: 20px;
-        }
-        .popup-content {
-            background: #181a20; width: 100%; max-width: 400px; padding: 25px;
-            border-radius: 24px; max-height: 90vh; overflow-y: auto; border: 1px solid var(--border);
-        }
-
-        /* --- Referral Popup Style --- */
-        .ref-stat-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin: 15px 0; }
-        .ref-stat-card { background: #2b3139; padding: 12px; border-radius: 12px; text-align: center; }
-        .ref-stat-card span { font-size: 10px; color: var(--text-sec); display: block; }
-        .ref-stat-card b { font-size: 16px; color: var(--primary); }
-        .ref-link-box { display: flex; background: #0b0e11; padding: 10px; border-radius: 10px; border: 1px dashed var(--primary); margin-top: 10px; }
-        .ref-link-box input { flex: 1; background: transparent; border: none; color: var(--text-sec); font-size: 11px; }
-        .ref-link-box button { background: var(--primary); border: none; padding: 5px 10px; border-radius: 5px; font-weight: bold; font-size: 11px; cursor: pointer; }
-
-        /* --- KYC Form --- */
-        .kyc-form input { width: 100%; padding: 12px; background: #2b3139; border: 1px solid var(--border); border-radius: 10px; color: white; margin-bottom: 12px; font-size: 13px; }
-        .kyc-form p { font-size: 11px; color: var(--text-sec); margin: 5px 0; }
+        .asset-balance { font-family: var(--font-bold); font-size: 28px; margin: 10px 0; letter-spacing: 1px; color: var(--primary); }
 
         /* --- Market List --- */
         .market-header { width: 100%; padding: 15px 20px; font-family: var(--font-bold); font-size: 16px; border-bottom: 1px solid var(--border); }
-        .market-tabs { display: flex; padding: 0 20px; gap: 20px; margin: 15px 0; }
-        .tab { font-size: 14px; font-weight: 700; color: var(--text-sec); cursor: pointer; position: relative; }
+        .market-tabs { display: flex; padding: 0 20px; gap: 20px; margin: 15px 0; border-bottom: 1px solid var(--border); }
+        .tab { font-size: 14px; font-weight: 700; color: var(--text-sec); cursor: pointer; padding-bottom: 10px; position: relative; }
         .tab.active { color: var(--primary); }
-        .tab.active::after { content: ''; position: absolute; bottom: -5px; left: 0; width: 100%; height: 2px; background: var(--primary); }
+        .tab.active::after { content: ''; position: absolute; bottom: 0; left: 0; width: 100%; height: 3px; background: var(--primary); border-radius: 10px; }
 
-        .list-header { display: grid; grid-template-columns: 1.5fr 1.2fr 1fr; padding: 10px 20px; font-size: 11px; color: var(--text-sec); }
-        .coin-row { display: grid; grid-template-columns: 1.5fr 1.2fr 1fr; padding: 15px 20px; align-items: center; border-bottom: 1px solid rgba(255,255,255,0.03); cursor: pointer; }
+        .coin-row { display: flex; justify-content: space-between; align-items: center; padding: 15px 20px; border-bottom: 1px solid rgba(255,255,255,0.03); cursor: pointer; }
         .coin-meta { display: flex; align-items: center; gap: 12px; }
-        .coin-icon { width: 35px; height: 35px; border-radius: 50%; object-fit: cover; }
-        .coin-name-sym b { display: block; font-size: 14px; }
-        .coin-name-sym span { font-size: 11px; color: var(--text-sec); }
-        .price-col { font-weight: bold; text-align: center; }
-        .price-col .price { display: block; font-size: 15px; }
-        .percent-box { display: inline-block; padding: 4px 8px; border-radius: 6px; font-size: 11px; font-weight: bold; margin-top: 3px; }
+        .coin-icon { width: 40px; height: 40px; border-radius: 50%; object-fit: cover; }
+        .price-col { text-align: right; }
+        .percent-box { display: inline-block; padding: 4px 10px; border-radius: 6px; font-size: 11px; font-weight: bold; margin-top: 4px; min-width: 65px; text-align: center; }
 
         /* --- Footer --- */
         .footer { position: fixed; bottom: 0; width: 100%; height: 75px; background: #181a20; display: flex; justify-content: space-around; align-items: center; border-top: 1px solid var(--border); z-index: 3000; }
         .f-nav { text-decoration: none; color: var(--text-sec); text-align: center; font-size: 10px; display: flex; flex-direction: column; align-items: center; flex: 1; }
         .f-nav i { font-size: 22px; margin-bottom: 5px; }
         .f-nav.active { color: var(--primary); }
-        .crash-link { width: 60px; height: 60px; background: var(--primary); border-radius: 50%; color: black; font-weight: 900; display: flex; align-items: center; justify-content: center; margin-top: -35px; box-shadow: 0 5px 20px rgba(243,186,47,0.4); text-decoration: none; font-size: 11px; position: relative; z-index: 5; }
+        .crash-link { width: 60px; height: 60px; background: var(--primary); border-radius: 50%; color: black; font-weight: 900; display: flex; align-items: center; justify-content: center; margin-top: -35px; box-shadow: 0 5px 20px rgba(243,186,47,0.4); text-decoration: none; font-size: 11px; z-index: 5; position: relative; }
         .spin-circle { position: absolute; width: 70px; height: 70px; border: 2px dashed var(--primary); border-radius: 50%; animation: spin 5s linear infinite; top: -40px; }
         @keyframes spin { 100% { transform: rotate(360deg); } }
 
@@ -139,6 +103,7 @@
         .status-pending { background: rgba(243, 186, 47, 0.15); color: var(--primary); }
         .status-rejected { background: rgba(246, 70, 93, 0.15); color: var(--down); }
         .status-unverified { background: #474d57; color: #fff; }
+        .new-badge { font-size: 8px; background: var(--primary); color: black; padding: 2px 4px; border-radius: 4px; margin-left: 4px; font-weight: bold; }
     </style>
 </head>
 <body>
@@ -156,73 +121,19 @@
                 <div class="side-val" id="displaySmatID" style="color:var(--primary)">Assigning...</div>
             </div>
 
-            <div class="kyc-status-btn" id="kycSidebarBtn" onclick="openKYC()">
+            <div class="kyc-status-btn">
                 <i class="fa-solid fa-id-card"></i>
                 <div id="kycStatusText" style="font-weight:bold">Identity Verification</div>
                 <div id="kycBadge" class="status-badge status-unverified" style="margin-top:5px; display:inline-block">Unverified</div>
             </div>
 
             <div class="side-menu">
-                <a href="javascript:void(0)" onclick="openRefPopup()" class="menu-item"><i class="fa-solid fa-user-plus"></i><div class="menu-text"><b>Invited Friends</b><span>Referral Earnings</span></div></a>
-                <a href="mining.html" class="menu-item" onclick="return checkAuth(event)"><i class="fa-solid fa-microchip"></i><div class="menu-text"><b>Mining</b><span>Active Session</span></div></a>
-                <a href="fox.html" class="menu-item" onclick="return checkAuth(event)"><i class="fa-solid fa-comments"></i><div class="menu-text"><b>SMAT Chat</b><span>Community Group</span></div></a>
-                <a href="paper.html" class="menu-item"><i class="fa-solid fa-file-contract"></i><div class="menu-text"><b>Whitepaper</b><span>Technical Docs</span></div></a>
-                <a href="explore.html" class="menu-item"><i class="fa-solid fa-database"></i><div class="menu-text"><b>Blockchain</b><span>Public Ledger</span></div></a>
+                <a href="mining.html" class="menu-item"><i class="fa-solid fa-microchip"></i><div class="menu-text"><b>Mining</b><span>Active Session</span></div></a>
+                <a href="fox.html" class="menu-item"><i class="fa-solid fa-comments"></i><div class="menu-text"><b>SMAT Chat</b><span>Community Group</span></div></a>
+                <a href="Wallet.html" class="menu-item"><i class="fa-solid fa-wallet"></i><div class="menu-text"><b>Wallet</b><span>Balance & Transfer</span></div></a>
             </div>
 
             <div style="margin-top: 40px; text-align: center;"><i class="fa-solid fa-sign-out-alt" style="color:var(--down); font-size:30px; cursor:pointer" onclick="logout()"></i></div>
-        </div>
-    </div>
-
-    <div class="popup-overlay" id="refPopup">
-        <div class="popup-content">
-            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:15px">
-                <h3 style="margin:0">Invite Friends</h3>
-                <i class="fa-solid fa-xmark" onclick="closeRefPopup()" style="cursor:pointer; font-size:20px"></i>
-            </div>
-            <div class="ref-stat-grid">
-                <div class="ref-stat-card"><span>Verified Ref</span><b id="ref_verified">0</b></div>
-                <div class="ref-stat-card"><span>Rejected Ref</span><b id="ref_rejected">0</b></div>
-            </div>
-            <div class="side-label">Your Referral Link</div>
-            <div class="ref-link-box">
-                <input type="text" id="referralLink" readonly value="Loading link...">
-                <button onclick="copyRef()">Copy</button>
-            </div>
-            <div style="margin-top:20px; border-top:1px solid var(--border); padding-top:15px">
-                <span style="font-size:12px; font-weight:bold">Recent Activity (Last 5)</span>
-                <div id="refList" style="margin-top:10px; font-size:11px; color:var(--text-sec)">No activity yet.</div>
-            </div>
-        </div>
-    </div>
-
-    <div class="popup-overlay" id="kycPopup">
-        <div class="popup-content">
-            <div style="display:flex; justify-content:space-between; margin-bottom:20px"><h3>Identity KYC</h3><i class="fa-solid fa-xmark" onclick="closeKYC()" style="cursor:pointer"></i></div>
-            
-            <div id="kycForm" class="kyc-form">
-                <input type="text" id="realName" placeholder="Full Real Name">
-                <input type="text" id="nidNum" placeholder="NID Number">
-                <p>Upload NID Front Side</p>
-                <input type="file" id="nidF" accept="image/*">
-                <p>Upload NID Back Side</p>
-                <input type="file" id="nidB" accept="image/*">
-                <p>Upload Selfie with NID</p>
-                <input type="file" id="nidS" accept="image/*">
-                <button id="submitBtn" onclick="handleKYC()" style="width:100%; padding:15px; background:var(--primary); border:none; border-radius:12px; font-weight:bold; margin-top:10px; cursor:pointer">Submit Details</button>
-            </div>
-
-            <div id="kycPendingNotice" style="display:none; text-align:center; padding:20px">
-                <i class="fa-solid fa-circle-notch fa-spin" style="font-size:40px; color:var(--primary)"></i>
-                <p style="color:var(--primary); font-weight:bold; margin-top:15px">Processing Application...</p>
-                <p style="font-size:11px; color:var(--text-sec)">Estimated review time: 72 hours.</p>
-            </div>
-
-            <div id="kycVerifiedInfo" style="display:none; padding:15px; background:rgba(14, 203, 129, 0.1); border-radius:12px; border:1px solid rgba(14, 203, 129, 0.2)">
-                <div style="font-size:12px; color:var(--text-sec)">Verified Holder:</div>
-                <div id="v_name" style="font-weight:bold; font-size:18px; color:var(--up)"></div>
-                <div id="v_nid" style="font-size:12px; margin-top:5px"></div>
-            </div>
         </div>
     </div>
 
@@ -230,55 +141,42 @@
         <i class="fa-solid fa-circle-user" onclick="openSidebar()" style="font-size:28px; color:var(--primary); cursor:pointer"></i>
         <div class="header-title">SMAT <span style="color:var(--primary)">EXCHANGE</span></div>
         <div class="header-right">
-            <a href="fox.html" onclick="return checkAuth(event)"><i class="fa-solid fa-comments"></i></a>
-            <i class="fa-solid fa-bell" onclick="alert('No new notifications')"></i>
-            <div class="notif-badge" id="nBadge">!</div>
+            <a href="fox.html" style="text-decoration:none; color:inherit;"><i class="fa-solid fa-comments"></i></a>
+            <i class="fa-solid fa-bell"></i>
         </div>
     </div>
 
     <div class="asset-card">
-        <div class="asset-label">Portfolio Assets <i class="fa-solid fa-eye" id="eyeIcon" onclick="toggleBalance()" style="cursor:pointer"></i></div>
+        <div style="font-size: 13px; color: var(--text-sec);">Total Assets <i class="fa-solid fa-eye" style="font-size:11px"></i></div>
         <div class="asset-balance">$ <span id="totalVal">0.00</span></div>
-        <div class="asset-pnl" id="pnlVal">+$0.00 Today's PNL</div>
-    </div>
-
-    <div class="notice-bar" style="margin: 10px 20px; background: rgba(243,186,47,0.05); padding: 8px; border-radius: 8px; border: 1px solid rgba(243,186,47,0.1); overflow: hidden;">
-        <marquee scrollamount="5" style="font-size: 11px; color: var(--text-sec);">
-            System Notice: SMAT Mainnet integration ongoing. Ensure KYC is verified for internal transfers. Trading pairs: BTC/USDT, ETH/USDT, SMAT/USDT live. | Stay alert of phishing links.
-        </marquee>
+        <div style="font-size:13px; font-weight:600; color:var(--up)" id="pnlVal">+$0.00 Today's PNL</div>
     </div>
 
     <div class="market-header">REAL MARKET HISTORY</div>
     <div class="market-tabs">
-        <div class="tab active" onclick="switchTab(this, 'hot')">HOT</div>
-        <div class="tab" onclick="switchTab(this, 'gainer')">GAINER</div>
-        <div class="tab" onclick="switchTab(this, 'loser')">LOSER</div>
-        <div class="tab" onclick="switchTab(this, 'new')">NEW</div>
-    </div>
-
-    <div class="list-header">
-        <span>Name / Symbol</span>
-        <span style="text-align:center">Price / 24H</span>
-        <span style="text-align:right">Volume</span>
+        <div class="tab active" id="tab-hot" onclick="switchTab(this, 'hot')">HOT</div>
+        <div class="tab" id="tab-gainer" onclick="switchTab(this, 'gainer')">GAINER</div>
+        <div class="tab" id="tab-loser" onclick="switchTab(this, 'loser')">LOSER</div>
+        <div class="tab" id="tab-new" onclick="switchTab(this, 'new')">NEW</div>
     </div>
 
     <div id="coinList"></div>
 
     <footer class="footer">
         <a href="home.html" class="f-nav active"><i class="fas fa-home"></i>Home</a>
-        <a href="Trade.html" class="f-nav" onclick="return checkAuth(event)"><i class="fas fa-chart-line"></i>Trade</a>
+        <a href="Trade.html" class="f-nav"><i class="fas fa-chart-line"></i>Trade</a>
         <div style="position:relative; width:75px; display:flex; justify-content:center">
             <div class="spin-circle"></div>
-            <a href="Crash.html" class="crash-link" onclick="return checkAuth(event)">CRASH</a>
+            <a href="Crash.html" class="crash-link">CRASH</a>
         </div>
-        <a href="Explorer.html" class="f-nav" onclick="return checkAuth(event)"><i class="fas fa-compass"></i>Explore</a>
-        <a href="Wallet.html" class="f-nav" onclick="return checkAuth(event)"><i class="fas fa-wallet"></i>Wallet</a>
+        <a href="Explorer.html" class="f-nav"><i class="fas fa-compass"></i>Explore</a>
+        <a href="Wallet.html" class="f-nav"><i class="fas fa-wallet"></i>Wallet</a>
     </footer>
 
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
         import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
-        import { getDatabase, ref, onValue, update, query, orderByChild, equalTo } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
+        import { getDatabase, ref, onValue } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
 
         const firebaseConfig = {
             apiKey: "AIzaSyAMxtJedkehhxJRMPZLjhpKHqneHEWsGlE",
@@ -293,25 +191,18 @@
         const auth = getAuth(app);
         const db = getDatabase(app);
 
-        let balanceHidden = false;
-        let realBalance = 0;
-        let activeTab = 'hot';
-        window.marketData = null;
-
         onAuthStateChanged(auth, (user) => {
             if (user) {
                 localStorage.setItem('isLoggedIn', 'true');
                 document.getElementById('userEmail').innerText = user.email;
-                
                 onValue(ref(db, 'users/' + user.uid), (snap) => {
                     const d = snap.val();
                     if(d) {
-                        const sid = d.smatID || "Assigning...";
-                        document.getElementById('displaySmatID').innerText = sid;
-                        realBalance = d.balance || 0;
-                        updateBalanceUI();
-                        updateKYCUI(d);
-                        setupReferral(sid);
+                        document.getElementById('displaySmatID').innerText = d.smatID || "Assigning...";
+                        document.getElementById('totalVal').innerText = (d.balance || 0).toFixed(2);
+                        const kyc = d.kycStatus || 'unverified';
+                        document.getElementById('kycBadge').innerText = kyc;
+                        document.getElementById('kycBadge').className = `status-badge status-${kyc}`;
                     }
                 });
             } else {
@@ -320,215 +211,82 @@
             }
         });
 
-        // --- Balance Logic ---
-        window.toggleBalance = () => {
-            balanceHidden = !balanceHidden;
-            document.getElementById('eyeIcon').className = balanceHidden ? 'fa-solid fa-eye-slash' : 'fa-solid fa-eye';
-            updateBalanceUI();
-        };
-        function updateBalanceUI() {
-            document.getElementById('totalVal').innerText = balanceHidden ? '******' : realBalance.toFixed(2);
-        }
-
-        // --- KYC Logic (File-2 logic with File-1 Design) ---
-        async function uploadToImgBB(file) {
-            const formData = new FormData();
-            formData.append("image", file);
-            const res = await fetch("https://api.imgbb.com/1/upload?key=ae6200c9d5bd021db45b02211a7f1096", {
-                method: "POST", body: formData
-            });
-            const json = await res.json();
-            if(json.success) return json.data.url;
-            throw new Error("Upload Fail");
-        }
-
-        window.handleKYC = async () => {
-            const name = document.getElementById('realName').value;
-            const nid = document.getElementById('nidNum').value;
-            const f = document.getElementById('nidF').files[0];
-            const b = document.getElementById('nidB').files[0];
-            const s = document.getElementById('nidS').files[0];
-
-            if(!name || !nid || !f || !b || !s) return alert("All fields required!");
-
-            const btn = document.getElementById('submitBtn');
-            btn.disabled = true; btn.innerText = "Uploading photos...";
-
-            try {
-                const urlF = await uploadToImgBB(f);
-                const urlB = await uploadToImgBB(b);
-                const urlS = await uploadToImgBB(s);
-                
-                await update(ref(db, 'users/' + auth.currentUser.uid), {
-                    kycStatus: 'pending', realName: name, nidNumber: nid,
-                    nidFront: urlF, nidBack: urlB, userSelfie: urlS,
-                    kycSubmittedAt: Date.now()
-                });
-                alert("KYC Submitted Successfully!");
-            } catch (e) { alert("Error: " + e.message); }
-            finally { btn.disabled = false; btn.innerText = "Submit Details"; }
-        };
-
-        function updateKYCUI(data) {
-            const status = data.kycStatus || 'unverified';
-            const badge = document.getElementById('kycBadge');
-            const form = document.getElementById('kycForm');
-            const notice = document.getElementById('kycPendingNotice');
-            const info = document.getElementById('kycVerifiedInfo');
-
-            badge.innerText = status;
-            badge.className = `status-badge status-${status}`;
-            form.style.display = 'none'; notice.style.display = 'none'; info.style.display = 'none';
-
-            if(status === 'pending') notice.style.display = 'block';
-            else if(status === 'verified') {
-                info.style.display = 'block';
-                document.getElementById('v_name').innerText = data.realName;
-                document.getElementById('v_nid').innerText = "NID: " + data.nidNumber;
-            } else form.style.display = 'block';
-        }
-
-        // --- Referral Logic (File-2 logic with File-1 Design) ---
-        function setupReferral(sid) {
-            const baseUrl = window.location.origin + window.location.pathname.replace('home.html', 'logIn.html');
-            const link = baseUrl + "?ref=" + sid;
-            document.getElementById('referralLink').value = link;
-
-            onValue(query(ref(db, 'users'), orderByChild('referredBy'), equalTo(sid)), (snap) => {
-                const data = snap.val();
-                let v = 0, r = 0;
-                let listHtml = '';
-                if(data) {
-                    const allUsers = Object.values(data);
-                    allUsers.forEach(u => {
-                        if(u.kycStatus === 'verified') v++;
-                        else if(u.kycStatus === 'rejected') r++;
-                    });
-                    
-                    const latest5 = allUsers.sort((a,b) => (b.createdAt||0) - (a.createdAt||0)).slice(0, 5);
-                    latest5.forEach(u => {
-                        listHtml += `<div style="display:flex; justify-content:space-between; margin-bottom:8px">
-                            <span style="font-size:12px">${u.email.split('@')[0]}...</span>
-                            <span class="status-badge status-${u.kycStatus||'unverified'}" style="font-size:9px">${u.kycStatus||'unverified'}</span>
-                        </div>`;
-                    });
-                }
-                document.getElementById('ref_verified').innerText = v;
-                document.getElementById('ref_rejected').innerText = r;
-                document.getElementById('refList').innerHTML = listHtml || '<p style="text-align:center">No activity yet.</p>';
-            });
-        }
-
-        // --- Real Market Logic (File-2 logic for Global Var & Storage) ---
-        onValue(ref(db, 'market'), (snap) => {
-            const data = snap.val();
-            if(data) {
+        // --- রিয়েল-টাইম মার্কেট লজিক (আপনার আগের ফাইলের লজিক) ---
+        onValue(ref(db, 'market'), (snapshot) => {
+            const data = snapshot.val();
+            if (data) {
                 Object.keys(data).forEach(coinSym => {
                     const sym = coinSym.toLowerCase();
-                    const priceValue = data[coinSym].price;
-                    const volumeValue = data[coinSym].volume || "0.00";
-                    
-                    window[sym + "Val"] = priceValue;
-                    localStorage.setItem(sym + "_latest_price", priceValue);
-                    localStorage.setItem(sym + "_volume", volumeValue);
+                    window[sym + "Val"] = data[coinSym].price;
+                    localStorage.setItem(sym + "_latest_price", data[coinSym].price);
                 });
-                window.marketData = data;
-                renderCoins();
+                renderCoins(currentTab);
             }
         });
 
-        window.switchTab = (el, cat) => {
+        window.logout = () => signOut(auth).then(() => { localStorage.clear(); location.reload(); });
+    </script>
+
+    <script>
+        let currentTab = 'hot';
+
+        function openSidebar() { document.getElementById('sidebar').classList.add('active'); document.getElementById('overlay').style.display='block'; }
+        function closeSidebar() { document.getElementById('sidebar').classList.remove('active'); document.getElementById('overlay').style.display='none'; }
+
+        function switchTab(el, cat) {
+            currentTab = cat;
             document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
             el.classList.add('active');
-            activeTab = cat;
-            renderCoins();
-        };
+            renderCoins(cat);
+        }
 
-        // --- renderCoins (Merging File-2 math and File-1 HTML) ---
-        function renderCoins() {
+        function renderCoins(filter = 'hot') {
             const container = document.getElementById('coinList');
-            if (!container || !window.marketData) return;
-            
+            if (!container) return;
+
+            // coin.js থেকে আসা GLOBAL_COINS ব্যবহার করা হয়েছে
+            const liveData = (typeof GLOBAL_COINS !== 'undefined') ? GLOBAL_COINS : [];
             const now = Date.now();
             const threeDaysMs = 3 * 24 * 60 * 60 * 1000;
-            
-            // Convert marketData object to array
-            let coins = Object.keys(window.marketData).map(k => ({ sym: k, ...window.marketData[k] }));
 
-            // Sorting & Filtering Logic from File-2
-            if (activeTab === 'hot') {
-                coins = coins.slice(0, 10);
-            } else if (activeTab === 'gainer') {
-                coins.sort((a, b) => {
-                    let valA = window[a.sym.toLowerCase() + "Val"] || a.price;
-                    let valB = window[b.sym.toLowerCase() + "Val"] || b.price;
-                    return (valB - b.price) - (valA - a.price);
-                });
-                coins = coins.slice(0, 8);
-            } else if (activeTab === 'loser') {
-                coins.sort((a, b) => {
-                    let valA = window[a.sym.toLowerCase() + "Val"] || a.price;
-                    let valB = window[b.sym.toLowerCase() + "Val"] || b.price;
-                    return (valA - a.price) - (valB - b.price);
-                });
-                coins = coins.slice(0, 8);
-            } else if (activeTab === 'new') {
-                coins = coins.filter(c => (now - (c.listedAt || 0)) < threeDaysMs);
-            }
+            let filtered = liveData;
+            if (filter === 'hot') filtered = [...liveData].slice(0, 10);
+            else if (filter === 'gainer') filtered = [...liveData].sort((a,b) => (window[b.sym.toLowerCase() + "Val"] || b.price) - (window[a.sym.toLowerCase() + "Val"] || a.price)).slice(0, 8);
+            else if (filter === 'loser') filtered = [...liveData].sort((a,b) => (window[a.sym.toLowerCase() + "Val"] || a.price) - (window[b.sym.toLowerCase() + "Val"] || b.price)).slice(0, 8);
+            else if (filter === 'new') filtered = liveData.filter(c => (now - (c.listedAt || 0)) < threeDaysMs);
 
-            container.innerHTML = coins.map(coin => {
-                const s = coin.sym.toLowerCase();
-                const currentPriceRaw = window[s + "Val"] || parseFloat(localStorage.getItem(s + "_latest_price")) || coin.price || 0;
-                
-                const diff = currentPriceRaw - (coin.price || currentPriceRaw);
+            container.innerHTML = filtered.map(coin => {
+                const sym = coin.sym.toLowerCase();
+                // window[sym + "Val"] এর মাধ্যমে রিয়েল-টাইম প্রাইস ধরা হচ্ছে (যা undefined এরর বন্ধ করবে)
+                const currentPrice = window[sym + "Val"] || parseFloat(localStorage.getItem(sym + "_latest_price")) || coin.price;
+                const diff = currentPrice - coin.price;
                 const isUp = diff >= 0;
                 const changePercent = coin.price > 0 ? ((diff / coin.price) * 100).toFixed(2) : "0.00";
                 const isNew = (now - (coin.listedAt || 0)) < threeDaysMs;
 
                 return `
-                <div class="coin-row" onclick="if(checkAuth(event)) window.location.href='Trade.html?coin=${s}'">
+                <div class="coin-row" onclick="window.location.href='Trade.html?coin=${sym}'">
                     <div class="coin-meta">
-                        <img src="assets/logos/${s}.png" class="coin-icon" onerror="this.src='https://via.placeholder.com/40?text=${coin.sym[0].toUpperCase()}'">
-                        <div class="coin-name-sym">
-                            <b>
-                                ${coin.sym.toUpperCase()}/USDT
-                                ${isNew ? '<span class="status-badge status-verified" style="font-size:8px; padding:2px 4px; margin-left:4px">NEW</span>' : ''}
-                            </b>
-                            <span>${coin.name || 'Crypto Asset'}</span> 
+                        <img src="assets/logos/${sym}.png" class="coin-icon" onerror="this.src='https://via.placeholder.com/40?text=${coin.sym[0].toUpperCase()}'">
+                        <div>
+                            <div style="font-weight:bold">${coin.sym.toUpperCase()}/USDT ${isNew ? '<span class="new-badge">NEW</span>' : ''}</div>
+                            <div style="font-size:12px; color:var(--text-sec)">${coin.name}</div>
                         </div>
                     </div>
                     <div class="price-col">
-                        <span class="price">$${parseFloat(currentPriceRaw).toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 4})}</span>
+                        <div style="font-weight:bold; font-size:16px">$${currentPrice.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 4})}</div>
                         <div class="percent-box" style="background:${isUp ? 'rgba(14, 203, 129, 0.15)' : 'rgba(246, 70, 93, 0.15)'}; color:${isUp ? 'var(--up)' : 'var(--down)'}">
                             ${isUp ? '+' : ''}${changePercent}%
                         </div>
-                    </div>
-                    <div style="text-align:right; font-size:12px; font-weight:600; color:var(--text-sec)">
-                        $${parseFloat(coin.volume || 0).toLocaleString()}
                     </div>
                 </div>`;
             }).join('');
         }
 
-        // --- UI & Nav Helpers ---
-        window.openSidebar = () => { document.getElementById('sidebar').classList.add('active'); document.getElementById('overlay').style.display='block'; };
-        window.closeSidebar = () => { document.getElementById('sidebar').classList.remove('active'); document.getElementById('overlay').style.display='none'; };
-        window.openKYC = () => { closeSidebar(); document.getElementById('kycPopup').style.display='flex'; };
-        window.closeKYC = () => document.getElementById('kycPopup').style.display='none';
-        window.openRefPopup = () => { closeSidebar(); document.getElementById('refPopup').style.display='flex'; };
-        window.closeRefPopup = () => document.getElementById('refPopup').style.display='none';
-        window.copyRef = () => { 
-            const inp = document.getElementById('referralLink'); inp.select(); 
-            navigator.clipboard.writeText(inp.value); alert("Referral Link Copied!"); 
+        window.onload = () => {
+            renderCoins('hot');
+            setInterval(() => renderCoins(currentTab), 1500);
         };
-        window.checkAuth = (e) => {
-            if(localStorage.getItem('isLoggedIn') !== 'true') { e.preventDefault(); alert("Access Denied! Please Login first."); openSidebar(); return false; }
-            return true;
-        };
-        window.logout = () => { signOut(auth).then(() => { localStorage.clear(); location.reload(); }); };
-        
-        // Initial Render
-        setInterval(() => { if(window.marketData) renderCoins(); }, 1000);
     </script>
 </body>
 </html>
