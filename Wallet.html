@@ -3,396 +3,182 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>SMAT CEX | Secure Wallet</title>
-    <script src="coin.js"></script> 
+    <title>SMAT | Wallet</title>
+    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-database-compat.js"></script>
+    <script src="coin.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@900&family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+    
     <style>
         :root {
-            --primary: #f3ba2f; --bg: #0b0e11; --card: #181a20;
-            --text-main: #eaecef; --text-sec: #848e9c; --up: #0ecb81;
-            --down: #f6465d; --border: #2b3139; --input-bg: #202630;
+            --bg: #0b0e11; --card: #1e2329; --primary: #f0b90b;
+            --up: #0ecb81; --down: #f6465d; --text-sec: #848e9c;
+            --border: rgba(255, 255, 255, 0.05);
+            --font-bold: 'Montserrat', sans-serif;
         }
-        * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; margin: 0; padding: 0; font-family: 'Inter', sans-serif; }
-        body { background: var(--bg); color: var(--text-main); padding-bottom: 90px; overflow-x: hidden; }
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Inter', sans-serif; }
+        body { background: var(--bg); color: white; padding-bottom: 90px; }
 
-        .wallet-header { padding: 30px 20px; background: linear-gradient(180deg, #1e2329 0%, var(--bg) 100%); border-bottom: 1px solid var(--border); position: relative; }
-        .history-btn { position: absolute; top: 30px; right: 20px; font-size: 22px; color: var(--text-sec); cursor: pointer; transition: 0.3s; }
-        .history-btn:hover { color: var(--primary); }
+        /* Wallet Header */
+        .wallet-header {
+            padding: 30px 20px;
+            background: linear-gradient(180deg, rgba(240, 185, 11, 0.15) 0%, var(--bg) 100%);
+            text-align: center;
+            border-bottom: 1px solid var(--border);
+        }
+        .total-label { font-size: 12px; color: var(--text-sec); text-transform: uppercase; letter-spacing: 1px; margin-bottom: 8px; font-weight: 700; }
+        .total-balance { font-family: var(--font-bold); font-size: 32px; font-weight: 900; color: #fff; margin-bottom: 5px; }
+        .estimated-val { font-size: 14px; color: var(--up); font-weight: 600; }
+
+        /* Action Buttons */
+        .action-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 12px; padding: 20px; }
+        .action-btn { 
+            background: var(--card); border: 1px solid var(--border); padding: 12px; 
+            border-radius: 12px; text-align: center; cursor: pointer; transition: 0.3s;
+        }
+        .action-btn i { font-size: 20px; color: var(--primary); margin-bottom: 6px; display: block; }
+        .action-btn span { font-size: 12px; font-weight: 700; color: #fff; }
+        .action-btn:active { transform: scale(0.95); background: #2b3139; }
+
+        /* Asset Section */
+        .asset-title { padding: 10px 20px; font-family: var(--font-bold); font-size: 18px; font-weight: 900; letter-spacing: -0.5px; }
         
-        .balance-title { color: var(--text-sec); font-size: 13px; display: flex; align-items: center; gap: 8px; }
-        .eye-trigger { cursor: pointer; color: var(--primary); padding: 5px; }
-        .total-val { font-size: 34px; font-weight: 800; margin: 12px 0; color: var(--text-main); letter-spacing: -1px; }
+        .asset-list { padding: 0 15px; }
+        .asset-card {
+            background: var(--card); border-radius: 16px; padding: 16px; margin-bottom: 12px;
+            display: grid; grid-template-columns: auto 1fr auto; align-items: center; gap: 15px;
+            border: 1px solid var(--border);
+        }
+        .a-logo { width: 40px; height: 40px; border-radius: 50%; background: #2b3139; padding: 2px; }
+        .a-logo img { width: 100%; height: 100%; border-radius: 50%; object-fit: cover; }
         
-        .wallet-tabs { display: flex; gap: 20px; margin-top: 25px; }
-        .tab { padding-bottom: 12px; color: var(--text-sec); cursor: pointer; font-size: 15px; font-weight: 600; position: relative; }
-        .tab.active { color: var(--primary); }
-        .tab.active::after { content: ''; position: absolute; bottom: 0; left: 0; width: 100%; height: 3px; background: var(--primary); border-radius: 10px; }
-
-        .action-bar { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; padding: 15px; background: var(--bg); }
-        .act-btn { background: var(--card); padding: 15px; border-radius: 12px; text-align: center; font-size: 14px; font-weight: 700; cursor: pointer; border: 1px solid var(--border); transition: 0.2s; }
-        .act-btn.highlight { background: var(--primary); color: #000; border: none; }
-
-        .asset-item { display: flex; justify-content: space-between; align-items: center; padding: 18px 20px; border-bottom: 1px solid #1e2329; background: var(--bg); cursor: pointer; }
-        .coin-box { display: flex; align-items: center; gap: 14px; }
-        .coin-icon { width: 40px; height: 40px; border-radius: 50%; background: var(--card); display: flex; align-items: center; justify-content: center; font-weight: 800; border: 1px solid var(--border); overflow: hidden; }
-        .coin-icon img { width: 100%; height: 100%; object-fit: cover; }
-        .coin-sym { font-weight: 700; font-size: 16px; text-transform: uppercase; }
-
-        .overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.85); z-index: 2000; display: none; backdrop-filter: blur(5px); }
-        .sheet { position: fixed; bottom: 0; width: 100%; background: var(--card); border-radius: 28px 28px 0 0; padding: 30px 25px; transform: translateY(100%); transition: 0.4s cubic-bezier(0, 0, 0.2, 1); z-index: 2100; max-height: 90vh; overflow-y: auto; border-top: 1px solid #333; }
-        .sheet.open { transform: translateY(0); }
-
-        .cex-input-box { position: relative; margin: 8px 0 15px 0; }
-        .cex-input { background: var(--input-bg); border: 1px solid var(--border); border-radius: 12px; padding: 16px; width: 100%; color: white; outline: none; font-size: 15px; display: block; }
-        .max-btn { position: absolute; right: 15px; top: 50%; transform: translateY(-50%); color: var(--primary); font-weight: 700; cursor: pointer; font-size: 12px; z-index: 5; }
-
-        .btn-full { width: 100%; padding: 18px; background: var(--primary); border: none; border-radius: 14px; font-weight: 800; font-size: 16px; cursor: pointer; color: #000; margin-top: 10px; }
+        .a-info h4 { font-family: var(--font-bold); font-size: 16px; font-weight: 900; margin-bottom: 2px; }
+        .a-info p { font-size: 11px; color: var(--text-sec); font-weight: 600; }
         
-        .net-selector { display: flex; gap: 10px; margin: 10px 0 20px; overflow-x: auto; padding-bottom: 5px; }
-        .net-tag { padding: 10px 18px; border: 1px solid var(--border); border-radius: 10px; font-size: 13px; color: var(--text-sec); white-space: nowrap; cursor: pointer; }
-        .net-tag.active { border-color: var(--primary); color: var(--primary); background: rgba(243,186,47,0.1); }
+        .a-amounts { text-align: right; }
+        .a-bal { font-family: var(--font-bold); font-size: 15px; font-weight: 900; margin-bottom: 2px; }
+        .a-usd { font-size: 12px; color: var(--text-sec); font-weight: 600; }
 
-        .hist-item { padding: 15px 0; border-bottom: 1px solid var(--border); display: grid; grid-template-columns: 1.2fr 1.5fr 0.8fr; font-size: 11px; align-items: center; gap: 10px; }
-        .footer { position: fixed; bottom: 0; width: 100%; height: 75px; background: #111418; display: flex; justify-content: space-around; align-items: center; border-top: 1px solid var(--border); z-index: 1000; }
-        .f-nav { text-decoration: none; color: var(--text-sec); text-align: center; font-size: 10px; flex: 1; }
-        .f-nav i { display: block; font-size: 22px; margin-bottom: 5px; }
+        /* Footer - Unified Design */
+        .footer { position: fixed; bottom: 0; width: 100%; height: 75px; background: #181a20; display: flex; justify-content: space-around; align-items: center; border-top: 1px solid var(--border); z-index: 1000; }
+        .f-nav { text-decoration: none; color: var(--text-sec); text-align: center; font-size: 10px; flex: 1; display: flex; flex-direction: column; align-items: center; gap: 4px; }
         .f-nav.active { color: var(--primary); }
-
-        #qrcode { background: white; padding: 10px; border-radius: 10px; margin: 15px auto; width: 160px; height: 160px; }
-        .full-addr { word-break: break-all; font-size: 11px; line-height: 1.4; color: var(--text-main); }
+        .u-curve { position: relative; top: -22px; width: 75px; height: 75px; display: flex; justify-content: center; align-items: center; }
+        .spin-circle { position: absolute; width: 70px; height: 70px; border: 2.5px dashed var(--primary); border-radius: 50%; animation: spin 5s linear infinite; }
+        .crash-link { width: 58px; height: 58px; background: var(--primary); border-radius: 50%; color: black; font-family: var(--font-bold); font-weight: 900; font-size: 11px; display: flex; align-items: center; justify-content: center; text-decoration: none; z-index: 5; }
+        @keyframes spin { 100% { transform: rotate(360deg); } }
     </style>
 </head>
 <body>
 
     <div class="wallet-header">
-        <i class="fas fa-history history-btn" onclick="openHistory()"></i>
-        <div class="balance-title">
-            Estimated Balance 
-            <i id="eye-icon" class="fas fa-eye eye-trigger" onclick="toggleBalance()"></i>
-        </div>
-        <div class="total-val" id="display-total">$<span id="total_val">0.00</span></div>
-        <div class="wallet-tabs">
-            <div class="tab active">Spot</div>
-            <div class="tab">Funding</div>
-            <div class="tab">Earn</div>
-            <div class="tab">Futures</div>
-        </div>
+        <div class="total-label">Total Portfolio Value</div>
+        <div class="total-balance">$ <span id="totalBalance">0.00</span></div>
+        <div class="estimated-val">≈ <span id="estBtc">0.000000</span> BTC</div>
     </div>
 
-    <div class="action-bar">
-        <div class="act-btn highlight" onclick="openAction('Deposit')">Deposit</div>
-        <div class="act-btn" onclick="openAction('Withdraw')">Withdraw</div>
-        <div class="act-btn" onclick="openTransfer()">Transfer</div>
+    <div class="action-grid">
+        <div class="action-btn"><i class="fas fa-arrow-down"></i><span>Deposit</span></div>
+        <div class="action-btn"><i class="fas fa-paper-plane"></i><span>Withdraw</span></div>
+        <div class="action-btn"><i class="fas fa-exchange-alt"></i><span>Transfer</span></div>
     </div>
 
-    <div style="padding: 20px 20px 10px; font-size: 18px; font-weight: 800;">Assets</div>
-    <div id="asset_list"></div>
-
-    <div id="overlay" class="overlay" onclick="closeSheet()"></div>
-    <div id="sheet" class="sheet"><div id="sheet_content"></div></div>
+    <h3 class="asset-title">My Assets</h3>
+    <div class="asset-list" id="assetList">
+        </div>
 
     <footer class="footer">
-        <a href="Home.html" class="f-nav"><i class="fas fa-home"></i>Home</a>
+        <a href="home.html" class="f-nav"><i class="fas fa-home"></i>Home</a>
+        <a href="Market.html" class="f-nav"><i class="fas fa-chart-pie"></i>Market</a>
+        <div class="u-curve">
+            <div class="spin-circle"></div>
+            <a href="Crash.html" class="crash-link">CRASH</a>
+        </div>
         <a href="Trade.html" class="f-nav"><i class="fas fa-chart-line"></i>Trade</a>
-        <a href="Explorer.html" class="f-nav"><i class="fas fa-compass"></i>Explore</a>
         <a href="Wallet.html" class="f-nav active"><i class="fas fa-wallet"></i>Wallet</a>
     </footer>
 
-    <script>
-        // coin.js থেকে ডাটা রিট্রিভ
-        let coins = (typeof GLOBAL_COINS !== 'undefined') ? GLOBAL_COINS : [];
-        let isBalanceHidden = localStorage.getItem('hideBalance') === 'true';
-        let transactions = JSON.parse(localStorage.getItem('wallet_history')) || [];
-        const WITHDRAW_FEE_USD = 0.25;
+<script>
+const firebaseConfig = {
+    apiKey: "AIzaSyAMxtJedkehhxJRMPZLjhpKHqneHEWsGlE",
+    authDomain: "smat-exchange.firebaseapp.com",
+    projectId: "smat-exchange",
+    storageBucket: "smat-exchange.firebasestorage.app",
+    messagingSenderId: "836334569396",
+    appId: "1:836334569396:web:679effe640b3453412d4e1"
+};
+firebase.initializeApp(firebaseConfig);
+const db = firebase.database();
+const auth = firebase.auth();
 
-        // আপনার সার্ভার অ্যাড্রেস কনফিগারেশন
-        const CONFIG = {
-            MY_SMAT_ID: localStorage.getItem('smatID') || "SMAT882910",
-            NETWORKS: { 
-                "BEP20": "0x742d35Cc6634C0532925a3b844Bc454e4438f44e", 
-                "TRC20": "TX9rX9v7P2n8zWbLqA1mX9v7P2n8zWbLqA", 
-                "ERC20": "0x742d35Cc6634C0532925a3b844Bc454e4438f44e",
-                "SMAT Chain": "smat_chain_internal_address_0x1"
-            }
-        };
+let coinPrices = {};
+let userBalances = {};
 
-        function checkAuth() {
-            if(localStorage.getItem('isLoggedIn') !== 'true') {
-                window.location.href = 'logIn.html';
-                return false;
-            }
-            return true;
-        }
-
-        function init() {
-            if(isBalanceHidden) document.getElementById('eye-icon').className = 'fas fa-eye-slash eye-trigger';
-            renderAssets();
-        }
-
-        // coin.js ইঞ্জিন রেডি হলে অটো আপডেট হবে
-        window.addEventListener('smat_engine_ready', () => {
-            coins = GLOBAL_COINS;
-            renderAssets();
-        });
-
-        function toggleBalance() {
-            if(!checkAuth()) return;
-            isBalanceHidden = !isBalanceHidden;
-            localStorage.setItem('hideBalance', isBalanceHidden);
-            document.getElementById('eye-icon').className = isBalanceHidden ? 'fas fa-eye-slash eye-trigger' : 'fas fa-eye eye-trigger';
-            renderAssets();
-        }
-
-        function formatNum(num, dec = 4) {
-            return parseFloat(num).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: dec });
-        }
-
-        function renderAssets() {
-            const container = document.getElementById('asset_list');
-            const isLoggedIn = localStorage.getItem('isLoggedIn') === 'true';
-            
-            let totalUSD = 0, html = '';
-            coins.forEach(coin => {
-                const lowSym = coin.sym.toLowerCase();
-                // coin.js এর উইন্ডো ভেরিয়েবল থেকে ব্যালেন্স এবং দাম নেওয়া
-                let bal = window[lowSym + "Balance"] || 0;
-                let price = window[lowSym + "Val"] || coin.price;
-                
-                const usdVal = bal * price;
-                totalUSD += usdVal;
-
-                html += `
-                    <div class="asset-item" onclick="proceedToForm('${coin.sym}', 'Withdraw')">
-                        <div class="coin-box">
-                            <div class="coin-icon">
-                                <img src="assets/logos/${lowSym}.png" onerror="this.src='https://ui-avatars.com/api/?name=${coin.sym}'">
-                            </div>
-                            <div>
-                                <div class="coin-sym">${coin.sym}</div>
-                                <div style="font-size:11px; color:var(--text-sec)">${coin.name}</div>
-                            </div>
-                        </div>
-                        <div style="text-align:right">
-                            <div style="font-weight:700;">${(isBalanceHidden || !isLoggedIn) ? '****' : formatNum(bal, coin.decimal || 4)}</div>
-                            <div style="font-size:11px; color:var(--text-sec)">≈ ${(isBalanceHidden || !isLoggedIn) ? '****' : '$' + formatNum(usdVal, 2)}</div>
-                        </div>
-                    </div>`;
+function initWallet() {
+    auth.onAuthStateChanged(user => {
+        if (user) {
+            // ১. কয়েন প্রাইস লিসেনার
+            db.ref('market').on('value', snap => {
+                coinPrices = snap.val() || {};
+                updateUI();
             });
-            container.innerHTML = html;
-            document.getElementById('total_val').innerText = (isBalanceHidden || !isLoggedIn) ? '****' : formatNum(totalUSD, 2);
-        }
 
-        function openAction(type) {
-            if(!checkAuth()) return;
-            let html = `<h3 style="margin-bottom:20px; text-transform: uppercase;">Select Asset to ${type}</h3>`;
-            coins.forEach(c => {
-                html += `
-                    <div class="asset-item" style="border:1px solid var(--border); border-radius:15px; margin-bottom:12px" onclick="proceedToForm('${c.sym}', '${type}')">
-                        <div class="coin-box">
-                            <div class="coin-icon" style="width:32px; height:32px;">
-                                <img src="assets/logos/${c.sym.toLowerCase()}.png">
-                            </div>
-                            <b class="coin-sym">${c.sym}</b>
-                        </div>
-                        <i class="fas fa-chevron-right"></i>
-                    </div>`;
+            // ২. ইউজার ব্যালেন্স লিসেনার
+            db.ref('users/' + user.uid + '/balances').on('value', snap => {
+                userBalances = snap.val() || {};
+                updateUI();
             });
-            renderSheet(html);
+        } else {
+            window.location.href = "login.html";
         }
+    });
+}
 
-        function proceedToForm(sym, type) {
-            if(!checkAuth()) return;
-            const coin = coins.find(c => c.sym.toLowerCase() === sym.toLowerCase());
-            if(type === 'Deposit') { showDepositForm(coin); } else { showWithdrawForm(coin); }
-        }
+function updateUI() {
+    const listContainer = document.getElementById('assetList');
+    let totalPortfolioUSD = 0;
+    let html = '';
 
-        function showDepositForm(coin) {
-            // coin.js থেকে নেটওয়ার্ক লোড
-            const nets = coin.networks || ['BEP20'];
-            let netHtml = nets.map((n, i) => `
-                <div class="net-tag ${i === 0 ? 'active' : ''}" onclick="updateDepositAddr(this, '${n}')">${n}</div>
-            `).join('');
+    GLOBAL_COINS.forEach(coin => {
+        const sym = coin.sym.toLowerCase();
+        const balance = userBalances[sym] || 0;
+        const price = (coinPrices[sym] && coinPrices[sym].price) ? coinPrices[sym].price : coin.price;
+        const usdValue = balance * price;
+        totalPortfolioUSD += usdValue;
 
-            let html = `
-                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px"><h3>Deposit ${coin.sym.toUpperCase()}</h3><i class="fas fa-times" onclick="closeSheet()"></i></div>
-                <p style="font-size:13px; color:var(--text-sec)">Select Network</p>
-                <div class="net-selector">${netHtml}</div>
-                <div id="qrcode"></div>
-                <p style="font-size:12px; color:var(--text-sec); text-align:center">Wallet Address</p>
-                <div class="cex-input" style="display:flex; flex-direction:column; gap:10px;">
-                    <span id="addrText" class="full-addr">${CONFIG.NETWORKS[nets[0]] || "Address Not Found"}</span>
-                    <button style="background:transparent; border:none; color:var(--primary); font-weight:bold; cursor:pointer;" onclick="copyText('addrText')"><i class="fas fa-copy"></i> Copy Address</button>
+        if (balance > 0 || sym === 'usdt') { // ব্যালেন্স থাকলে অথবা অন্তত USDT দেখাবে
+            html += `
+                <div class="asset-card">
+                    <div class="a-logo">
+                        <img src="assets/logos/${sym}.png" onerror="this.src='assets/logos/generic.png'">
+                    </div>
+                    <div class="a-info">
+                        <h4>${coin.sym.toUpperCase()}</h4>
+                        <p>$${price.toLocaleString(undefined, {minimumFractionDigits: 2})}</p>
+                    </div>
+                    <div class="a-amounts">
+                        <div class="a-bal">${balance.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 8})}</div>
+                        <div class="a-usd">≈ $${usdValue.toLocaleString(undefined, {minimumFractionDigits: 2})}</div>
+                    </div>
                 </div>
-                <button class="btn-full" onclick="closeSheet()">Back to Wallet</button>`;
-            renderSheet(html);
-            setTimeout(() => generateQR(CONFIG.NETWORKS[nets[0]] || "N/A"), 50);
+            `;
         }
+    });
 
-        function updateDepositAddr(el, chain) {
-            document.querySelectorAll('.net-tag').forEach(t => t.classList.remove('active'));
-            el.classList.add('active');
-            const addr = CONFIG.NETWORKS[chain] || "Contact Support for Address";
-            document.getElementById('addrText').innerText = addr;
-            generateQR(addr);
-        }
+    listContainer.innerHTML = html;
+    
+    // Total Balance Formatting
+    document.getElementById('totalBalance').innerText = totalPortfolioUSD.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2});
+    
+    // Estimated BTC (Assuming BTC price is available)
+    const btcPrice = (coinPrices['btc'] && coinPrices['btc'].price) ? coinPrices['btc'].price : 65000;
+    const estBtc = totalPortfolioUSD / btcPrice;
+    document.getElementById('estBtc').innerText = estBtc.toFixed(6);
+}
 
-        function showWithdrawForm(coin) {
-            const lowSym = coin.sym.toLowerCase();
-            const bal = window[lowSym + "Balance"] || 0;
-            const price = window[lowSym + "Val"] || coin.price;
-            const feeInCoin = WITHDRAW_FEE_USD / price;
-            const available = Math.max(0, bal - feeInCoin);
-
-            const nets = coin.networks || ['BEP20'];
-            let netHtml = nets.map((n, i) => `
-                <div class="net-tag ${i === 0 ? 'active' : ''}" onclick="toggleActive(this)">${n}</div>
-            `).join('');
-
-            let html = `
-                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px"><h3>Withdraw ${coin.sym.toUpperCase()}</h3><i class="fas fa-times" onclick="closeSheet()"></i></div>
-                <p style="font-size:12px; color:var(--text-sec)">Select Network</p>
-                <div class="net-selector">${netHtml}</div>
-                <input type="text" id="withAddr" class="cex-input" placeholder="Enter Full Recipient Address">
-                <div style="display:flex; justify-content:space-between; margin-top:10px;"><small>Amount (Fee: ${formatNum(feeInCoin, 4)} ${coin.sym.toUpperCase()})</small><small>Available: ${formatNum(available, 4)}</small></div>
-                <div class="cex-input-box">
-                    <input type="number" id="withAmt" class="cex-input" placeholder="Minimum 10">
-                    <span class="max-btn" onclick="document.getElementById('withAmt').value = ${available.toFixed(coin.decimal || 4)}">MAX</span>
-                </div>
-                <button class="btn-full" onclick="handleWithdrawSubmit('${coin.sym}', ${feeInCoin})">Confirm Withdrawal</button>`;
-            renderSheet(html);
-        }
-
-        function handleWithdrawSubmit(sym, fee) {
-            if(!checkAuth()) return;
-            const amt = parseFloat(document.getElementById('withAmt').value);
-            const addr = document.getElementById('withAddr').value;
-            const chain = document.querySelector('.net-tag.active').innerText;
-            const lowSym = sym.toLowerCase();
-            const bal = window[lowSym + "Balance"] || 0;
-
-            const totalToDeduct = amt + fee;
-
-            if(!addr || addr.length < 10) return alert("Please enter a valid recipient address.");
-            if(isNaN(amt) || amt < 1) return alert("Invalid withdrawal amount.");
-            if(totalToDeduct > bal) return alert("Insufficient balance to cover Amount + Fee.");
-
-            // ব্যালেন্স আপডেট (window এবং localStorage উভয় জায়গায়)
-            window[lowSym + "Balance"] = bal - totalToDeduct;
-            localStorage.setItem(lowSym + '_balance', (bal - totalToDeduct).toFixed(6));
-            
-            saveTx({ type: 'Withdraw', sym: sym.toUpperCase(), amt: amt, chain: chain, addr: addr, status: 'pending' });
-            
-            alert("Withdrawal request sent. Total " + formatNum(totalToDeduct, 4) + " " + sym + " deducted.");
-            renderAssets();
-            closeSheet();
-        }
-
-        function openTransfer() {
-            if(!checkAuth()) return;
-            let html = `
-                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px"><h3>P2P Transfer</h3><i class="fas fa-times" onclick="closeSheet()"></i></div>
-                <p style="font-size:12px; color:var(--text-sec)">Recipient SMAT ID</p>
-                <input type="text" id="p2pid" class="cex-input" placeholder="Enter SMAT ID (e.g. SMAT1001)">
-                <p style="font-size:12px; color:var(--text-sec); margin-top:10px;">Select Asset</p>
-                <select id="tCoin" class="cex-input">
-                    ${coins.map(c => `<option value="${c.sym}">${c.sym.toUpperCase()}</option>`).join('')}
-                </select>
-                <input type="number" id="tAmt" class="cex-input" style="margin-top:15px" placeholder="Amount">
-                <button class="btn-full" onclick="handleP2P()">Send Instantly</button>`;
-            renderSheet(html);
-        }
-
-        function handleP2P() {
-            if(!checkAuth()) return;
-            const id = document.getElementById('p2pid').value;
-            const sym = document.getElementById('tCoin').value;
-            const amt = parseFloat(document.getElementById('tAmt').value);
-            const lowSym = sym.toLowerCase();
-            const bal = window[lowSym + "Balance"] || 0;
-
-            if(!id.startsWith('SMAT')) return alert("Invalid SMAT ID.");
-            if(isNaN(amt) || amt > bal || amt <= 0) return alert("Invalid amount or insufficient balance.");
-
-            window[lowSym + "Balance"] = bal - amt;
-            localStorage.setItem(lowSym + '_balance', (bal - amt).toFixed(6));
-            
-            saveTx({ type: 'Transfer', sym: sym.toUpperCase(), amt: amt, chain: 'Internal', addr: id, status: 'success' });
-            alert("Transfer Successful!");
-            renderAssets();
-            closeSheet();
-        }
-
-        function saveTx(tx) {
-            tx.id = Date.now();
-            transactions.unshift(tx);
-            localStorage.setItem('wallet_history', JSON.stringify(transactions));
-        }
-
-        function openHistory() {
-            if(!checkAuth()) return;
-            let html = `
-            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px">
-                <h3>History</h3>
-                <i class="fas fa-times" onclick="closeSheet()"></i>
-            </div>
-            <div style="display:grid; grid-template-columns: 1.2fr 1.5fr 0.8fr; font-size:10px; color:var(--text-sec); padding-bottom:10px; border-bottom:1px solid var(--border); font-weight:bold; text-transform:uppercase;">
-                <div>Type/Net</div>
-                <div>Amt/Address</div>
-                <div style="text-align:right">Status</div>
-            </div>`;
-            
-            if(transactions.length === 0) {
-                html += `<p style="text-align:center; padding:30px; color:var(--text-sec);">No transactions found</p>`;
-            } else {
-                transactions.slice(0, 15).forEach(tx => {
-                    let statusColor = tx.status === 'success' ? 'var(--up)' : (tx.status === 'pending' ? 'var(--primary)' : 'var(--down)');
-                    html += `
-                    <div class="hist-item">
-                        <div>
-                            <b style="color:white; text-transform:uppercase">${tx.type} ${tx.sym}</b><br>
-                            <span style="color:var(--text-sec); font-size:9px">${tx.chain || 'Internal'}</span>
-                        </div>
-                        <div>
-                            <b>${formatNum(tx.amt, 4)}</b><br>
-                            <span class="full-addr" style="font-size:9px; color:var(--text-sec)">${tx.addr}</span>
-                        </div>
-                        <div style="text-align:right; color:${statusColor}; font-weight:700; text-transform:capitalize;">${tx.status}</div>
-                    </div>`;
-                });
-            }
-            renderSheet(html);
-        }
-
-        function generateQR(text) {
-            const qrBox = document.getElementById('qrcode');
-            if(!qrBox) return;
-            qrBox.innerHTML = "";
-            new QRCode(qrBox, { text: text, width: 140, height: 140 });
-        }
-
-        function toggleActive(el) {
-            document.querySelectorAll('.net-tag').forEach(t => t.classList.remove('active'));
-            el.classList.add('active');
-        }
-
-        function copyText(id) {
-            const text = document.getElementById(id).innerText;
-            navigator.clipboard.writeText(text).then(() => alert("Copied to clipboard!"));
-        }
-
-        function renderSheet(html) {
-            document.getElementById('sheet_content').innerHTML = html;
-            document.getElementById('overlay').style.display = 'block';
-            setTimeout(() => document.getElementById('sheet').classList.add('open'), 10);
-        }
-
-        function closeSheet() {
-            document.getElementById('sheet').classList.remove('open');
-            setTimeout(() => document.getElementById('overlay').style.display = 'none', 300);
-        }
-
-        window.onload = init;
-    </script>
+window.onload = initWallet;
+</script>
 </body>
 </html>
