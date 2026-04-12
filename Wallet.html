@@ -148,20 +148,23 @@
     </div>
 
     <footer class="footer">
-        <a href="home.html" class="f-nav"><i class="fas fa-home"></i>Home</a>
+        <a href="home.html" class="f-nav active"><i class="fas fa-home"></i>Home</a>
         <a href="Trade.html" class="f-nav"><i class="fas fa-chart-line"></i>Trade</a>
         
-        <div class="main-fab-container">
-            <div class="fab-menu" id="fabMenu">
-                <a href="Prediction.html" class="fab-item" style="animation-delay: 0.2s;"><i class="fas fa-bolt"></i><span class="fab-label">Prediction</span></a>
-                <a href="Feature.html" class="fab-item" style="animation-delay: 0.1s;"><i class="fas fa-star"></i><span class="fab-label">Feature</span></a>
-                <a href="Crash.html" class="fab-item"><i class="fas fa-rocket"></i><span class="fab-label">Crash</span></a>
+        <div class="fab-wrapper">
+            <div class="fab-options" id="fabOptions">
+                <a href="Crash.html" class="popup-btn btn-left">Crash</a>
+                <a href="Prediction.html" class="popup-btn btn-center">Prediction</a>
+                <a href="Feature.html" class="popup-btn btn-right">Future</a>
             </div>
-            <div class="main-fab" id="mainFab" onclick="toggleFab()"><i class="fas fa-plus" style="color:black"></i></div>
+            <button class="main-fab" id="mainFab" onclick="toggleGamingMenu()">
+                 <i class="fa-solid fa-plus" id="icon" style="font-size: 24px; -webkit-text-stroke: 2px; stroke-width: 2px;"></i>
+
+            </button>
         </div>
 
         <a href="Explorer.html" class="f-nav"><i class="fas fa-compass"></i>Explore</a>
-        <a href="Wallet.html" class="f-nav active"><i class="fas fa-wallet"></i>Wallet</a>
+        <a href="Wallet.html" class="f-nav"><i class="fas fa-wallet"></i>Wallet</a>
     </footer>
 
 <script>
