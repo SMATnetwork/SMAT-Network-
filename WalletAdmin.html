@@ -2,14 +2,16 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>SMAT | Wallet Management</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>SMAT | Wallet Panel</title>
     <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-auth-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-database-compat.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@900&display=swap" rel="stylesheet">
+    
     <link rel="icon" type="image/svg+xml" href="data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNTEyIiBoZWlnaHQ9IjUxMiIgdmlld0JveD0iMCAwIDUxMiA1MTIiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+CiAgPGNpcmNsZSBjeD0iMjU2IiBjeT0iMjU2IiByPSIyNDAiIGZpbGw9IiNmM2JhMmYiLz4KICA8Y2lyY2xlIGN4PSIyNTYiIGN5PSIyNTYiIHI9IjIxNSIgc3Ryb2tlPSJ3aGl0ZSIgc3Ryb2tlLXdpZHRoPSI4IiBmaWxsPSJ0cmFuc3BhcmVudCIvPgogIDxwYXRoIGQ9Ik0xNTAgMTcwIEMxNTAgMTQ1IDE3MCAxMzUgMjAwIDEzNSBMMzQwIDEzNSBDMzU1IDEzNSAzNjUgMTQ1IDM2NSAxNjAgQzM2NSAxNzUgMzU1IDE4NSAzNDAgMTg1IEwyMDUgMTg1IEMxOTAgMTg1IDE4NSAxOTAgMTg1IDIwNSBDMTg1IDIyMCAxOTAgMjI1IDIwNSAyMjUgTDM0MCAyMjUgQzM3MCAyMjUgMzkwIDI0NSAzOTAgMjc1IEwzOTAgMzI1IEMzOTAgMzU1IDM3MCAzNzUgMzQwIDM3NSBMMTcwIDM3NSBDMTU1IDM3NSAxNDUgMzY1IDE0NSAzNTAgQzE0NSAzMzUgMTU1IDMyNSAxNzAgMzI1IEwzMzUgMzI1IEMzNTAgMzI1IDM1NSAzMjAgMzU1IDMwNSBDMzU1IDI5MCAzNTAgMjg1IDMzNSAyODUgTDIwMCAyODUgQzE3MCAyODUgMTUwIDI2NSAxNTAgMjM1IFoiIGZpbGw9IndoaXRlIi8+Cjwvc3ZnPg==">
+
     <style>
         :root {
             --bg: #0b0e11; --card: #1e2329; --primary: #f0b90b;
@@ -17,81 +19,99 @@
             --font: 'Montserrat', sans-serif;
         }
 
-        * { box-sizing: border-box; margin: 0; padding: 0; font-family: var(--font); }
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: var(--font); outline: none; }
         body { background: var(--bg); color: white; overflow-x: hidden; min-height: 100vh; }
 
-        /* --- LOGIN SCREEN --- */
-        #loginScreen { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: var(--bg); display: flex; justify-content: center; align-items: center; z-index: 9999; }
-        .login-card { background: var(--card); border-radius: 30px; padding: 50px 40px; width: 90%; max-width: 420px; border: 1px solid var(--border); text-align: center; box-shadow: 0 15px 40px rgba(0,0,0,0.5); }
-        .logo-gfx { width: 70px; height: 70px; margin: 0 auto 25px; }
-        .logo-top { width: 100%; height: 45px; background: var(--primary); border-radius: 35px 35px 0 0; }
-        .logo-bot { display: flex; justify-content: center; gap: 10px; margin-top: 5px; }
-        .logo-eye { width: 15px; height: 15px; background: var(--primary); border-radius: 50%; }
-        .login-title { font-size: 28px; color: white; text-transform: uppercase; margin-bottom: 40px; }
-        .login-title span { color: var(--primary); }
-        .input-box { width: 100%; background: #111418; border: 1px solid var(--border); padding: 20px; border-radius: 12px; color: white; font-size: 14px; margin-bottom: 20px; }
-        .login-btn { width: 100%; background: var(--primary); border: none; padding: 20px; border-radius: 12px; color: black; font-weight: 900; cursor: pointer; text-transform: uppercase; }
+        /* --- LOGIN --- */
+        #loginScreen { position: fixed; inset: 0; background: var(--bg); display: flex; justify-content: center; align-items: center; z-index: 9999; }
+        .login-card { background: var(--card); border-radius: 30px; padding: 50px 40px; width: 90%; max-width: 420px; border: 1px solid var(--border); text-align: center; }
+        .login-input { width: 100%; background: #111418; border: 1px solid var(--border); padding: 18px; border-radius: 12px; color: white; margin-bottom: 20px; }
+        .login-btn { width: 100%; background: var(--primary); border: none; padding: 18px; border-radius: 12px; font-weight: 900; cursor: pointer; text-transform: uppercase; }
 
         /* --- DASHBOARD --- */
         #dashboard { display: none; }
-        header { height: 80px; background: var(--card); display: flex; align-items: center; justify-content: space-between; padding: 0 40px; border-bottom: 3px solid var(--primary); position: sticky; top: 0; z-index: 1000; }
-        .logo-text { font-size: 26px; color: var(--primary); text-transform: uppercase; }
-        .container { padding: 40px; max-width: 1500px; margin: 0 auto; }
-        .tab-box { display: flex; gap: 20px; margin-bottom: 40px; background: rgba(255,255,255,0.03); padding: 12px; border-radius: 20px; border: 1px solid var(--border); }
-        .tab { flex: 1; padding: 18px; text-align: center; border-radius: 15px; cursor: pointer; font-size: 14px; color: #848e9c; border: 2px solid transparent; }
-        .tab.active { background: var(--card); border-color: var(--primary); color: var(--primary); }
-        .badge { background: var(--down); color: white; padding: 4px 10px; border-radius: 8px; font-size: 11px; margin-left: 8px; }
+        header { height: 75px; background: var(--card); display: flex; align-items: center; justify-content: space-between; padding: 0 30px; border-bottom: 2px solid var(--primary); position: sticky; top: 0; z-index: 1000; }
+        .container { padding: 25px; max-width: 1300px; margin: 0 auto; }
+        
+        .tab-box { display: flex; gap: 10px; margin-bottom: 25px; background: rgba(255,255,255,0.03); padding: 8px; border-radius: 15px; }
+        .tab { flex: 1; padding: 12px; text-align: center; border-radius: 10px; cursor: pointer; color: #848e9c; font-size: 11px; transition: 0.3s; }
+        .tab.active { background: var(--card); border: 1px solid var(--primary); color: var(--primary); }
+        .badge { background: var(--down); color: white; padding: 2px 6px; border-radius: 5px; font-size: 9px; margin-left: 5px; }
 
         /* Withdraw Card */
-        .withdraw-card { background: var(--card); border-radius: 25px; padding: 25px; margin-bottom: 25px; border: 1px solid var(--border); display: grid; grid-template-columns: 1.2fr 1fr 1.5fr 1.2fr; align-items: center; gap: 25px; position: relative; }
-        .label { font-size: 10px; color: #848e9c; margin-bottom: 8px; text-transform: uppercase; }
-        .val { font-size: 15px; font-weight: 900; }
-        .address-box { display: flex; align-items: center; justify-content: space-between; background: rgba(0,0,0,0.3); padding: 12px; border-radius: 12px; }
-        .inspect-btn { position: absolute; top: 20px; right: 20px; color: var(--primary); cursor: pointer; font-size: 18px; transition: 0.3s; }
-        .inspect-btn:hover { transform: scale(1.2); color: white; }
+        .withdraw-card { 
+            background: var(--card); border-radius: 20px; padding: 20px; margin-bottom: 15px;
+            border: 1px solid var(--border); display: grid; grid-template-columns: 1fr 1fr 1fr 1.2fr; 
+            align-items: center; gap: 15px; position: relative;
+        }
+        .inspect-trigger { position: absolute; top: 12px; right: 12px; color: var(--primary); cursor: pointer; font-size: 18px; }
+        .label { font-size: 9px; color: #848e9c; text-transform: uppercase; margin-bottom: 4px; }
+        .val { font-size: 13px; font-weight: 900; word-break: break-all; }
 
-        /* --- MODAL / POPUP --- */
-        #userModal { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.9); display: none; justify-content: center; align-items: center; z-index: 10000; }
-        .modal-content { background: var(--card); width: 90%; max-width: 800px; max-height: 80vh; border-radius: 25px; border: 2px solid var(--primary); padding: 30px; overflow-y: auto; position: relative; }
-        .close-modal { position: absolute; top: 20px; right: 20px; color: var(--down); cursor: pointer; font-size: 24px; }
-        .stat-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 15px; margin-top: 20px; }
-        .stat-item { background: rgba(255,255,255,0.03); padding: 15px; border-radius: 15px; border: 1px solid var(--border); text-align: center; }
-        .stat-val { font-size: 18px; color: var(--primary); margin-top: 5px; }
+        /* Address & Hash Boxes */
+        .address-box { display: flex; align-items: center; justify-content: space-between; background: rgba(0,0,0,0.3); padding: 8px; border-radius: 8px; border: 1px solid var(--border); margin-top: 5px; }
+        .hash-link { 
+            color: var(--primary); text-decoration: none; font-size: 10px; font-family: monospace;
+            display: inline-block; max-width: 140px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+            background: rgba(240, 185, 11, 0.1); padding: 5px 8px; border-radius: 5px; margin-top: 5px; border: 1px solid transparent;
+        }
+        .hash-link:hover { border-color: var(--primary); background: var(--primary); color: black; }
 
-        /* Action UI */
-        .hash-input { background: #0b0e11; border: 2px solid var(--border); color: var(--primary); padding: 15px; border-radius: 12px; width: 100%; margin-bottom: 12px; }
-        .btn-group { display: flex; gap: 12px; }
-        .btn { flex: 1; padding: 15px; border: none; border-radius: 12px; font-weight: 900; cursor: pointer; text-transform: uppercase; }
-        .btn-approve { background: var(--up); }
-        .btn-reject { background: var(--down); color: #fff; }
+        .hash-input { background: #0b0e11; border: 1px solid var(--border); color: var(--primary); padding: 10px; border-radius: 8px; width: 100%; margin-bottom: 8px; font-size: 11px; }
+        .btn-group { display: flex; gap: 5px; }
+        .btn { flex: 1; padding: 10px; border: none; border-radius: 8px; font-weight: 900; cursor: pointer; font-size: 10px; text-transform: uppercase; }
+
+        /* --- INVESTIGATION MODAL --- */
+        #userModal { position: fixed; inset: 0; background: rgba(0,0,0,0.95); display: none; justify-content: center; align-items: center; z-index: 10001; padding: 15px; }
+        .modal-content { 
+            background: var(--card); width: 100%; max-width: 800px; max-height: 90vh; 
+            border-radius: 25px; border: 2px solid var(--primary); padding: 25px; 
+            position: relative; display: flex; flex-direction: column; overflow: hidden;
+        }
+        .modal-body { overflow-y: auto; flex-grow: 1; padding-right: 10px; }
+        
+        .stat-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin: 20px 0; }
+        .stat-item { background: rgba(255,255,255,0.03); padding: 12px; border-radius: 12px; text-align: center; border: 1px solid var(--border); }
+        .stat-val { font-size: 14px; color: var(--primary); }
+        
+        .invest-tab-row { display: flex; gap: 8px; overflow-x: auto; padding-bottom: 10px; margin-bottom: 10px; border-bottom: 1px solid var(--border); }
+        .i-tab { background: #111418; border: 1px solid var(--border); color: #848e9c; padding: 8px 15px; border-radius: 8px; font-size: 9px; cursor: pointer; white-space: nowrap; font-weight: 900; }
+        .i-tab.active { background: var(--primary); color: black; }
+        
+        #sectorSummary { background: rgba(240, 185, 11, 0.1); padding: 12px; border-radius: 10px; color: var(--primary); font-size: 11px; text-align: center; margin-bottom: 15px; border: 1px dashed var(--primary); font-weight: 900; }
+        #investLogs { background: rgba(0,0,0,0.2); border-radius: 15px; padding: 10px; }
+
+        @media (max-width: 768px) {
+            .withdraw-card { grid-template-columns: 1fr; gap: 12px; padding: 15px; }
+            .stat-grid { grid-template-columns: 1fr; }
+            header { padding: 0 15px; }
+            .container { padding: 15px; }
+        }
     </style>
 </head>
 <body>
 
     <div id="loginScreen">
         <div class="login-card">
-            <div class="logo-gfx">
-                <div class="logo-top"></div>
-                <div class="logo-bot"><div class="logo-eye"></div><div class="logo-eye"></div></div>
-            </div>
-            <div class="login-title">Admin <span>Panel</span></div>
-            <input type="email" id="adminEmail" class="input-box" placeholder="Admin Email">
-            <input type="password" id="adminPass" class="input-box" placeholder="Password">
-            <button class="login-btn" onclick="handleLogin()">Access Dashboard</button>
-            <p id="loginError" style="color:var(--down); font-size:12px; margin-top:15px; display:none;">Access Denied!</p>
+            <div class="login-title">ADMIN <span>PANEL</span></div>
+            <input type="email" id="admEmail" class="login-input" placeholder="Admin Email">
+            <input type="password" id="admPass" class="login-input" placeholder="Password">
+            <button class="login-btn" onclick="tryLogin()">Access Dashboard</button>
+            <p id="admErr" style="color:var(--down); font-size:12px; margin-top:15px; display:none;">Login Failed! Check Credentials.</p>
         </div>
     </div>
 
     <div id="dashboard">
         <header>
-            <div class="logo-text">Wallet Management</div>
-            <i class="fas fa-sign-out-alt" style="color:var(--down); font-size:24px; cursor:pointer;" onclick="adminLogout()"></i>
+            <div style="font-size: 20px; color: var(--primary); letter-spacing: 1px;">Wallet Management </div>
+            <i class="fas fa-power-off" style="color:var(--down); cursor:pointer; font-size: 22px;" onclick="adminLogout()"></i>
         </header>
+
         <div class="container">
             <div class="tab-box">
-                <div class="tab active" onclick="switchTab('pending')">PENDING <span id="pCount" class="badge">0</span></div>
-                <div class="tab" onclick="switchTab('success')">SUCCESS</div>
-                <div class="tab" onclick="switchTab('failed')">REJECTED</div>
+                <div class="tab active" onclick="switchMainTab('pending')">PENDING <span id="pCount" class="badge">0</span></div>
+                <div class="tab" onclick="switchMainTab('success')">SUCCESS</div>
+                <div class="tab" onclick="switchMainTab('failed')">REJECTED</div>
             </div>
             <div id="withdrawList"></div>
         </div>
@@ -99,169 +119,231 @@
 
     <div id="userModal">
         <div class="modal-content">
-            <i class="fas fa-times-circle close-modal" onclick="closeModal()"></i>
-            <h2 id="modalUserEmail" style="color:var(--primary); margin-bottom:10px;">User History</h2>
-            <p style="font-size:10px; color:#848e9c;">LAST 365 DAYS ANALYSIS</p>
+            <i class="fas fa-times-circle" style="position:absolute; top:15px; right:15px; color:var(--down); cursor:pointer; font-size:26px; z-index:1000;" onclick="closeModal()"></i>
             
-            <div class="stat-grid">
-                <div class="stat-item"><div class="label">Total Deposit</div><div class="stat-val" id="statDeposit">0.00</div></div>
-                <div class="stat-item"><div class="label">Game Profits</div><div class="stat-val" id="statGame" style="color:var(--up)">+0.00</div></div>
-                <div class="stat-item"><div class="label">Trade Volume</div><div class="stat-val" id="statTrade">0.00</div></div>
-            </div>
-
-            <div style="margin-top:30px;">
-                <div class="label">Recent Activity Logs</div>
-                <div id="activityLogs" style="font-size:11px; color:#eaecee; background:rgba(0,0,0,0.2); padding:15px; border-radius:15px; max-height:200px; overflow-y:auto;">
-                    Loading activity...
+            <div class="modal-body">
+                <div style="border-left: 5px solid var(--primary); padding-left: 15px;">
+                    <h3 id="mUserEmail" style="font-size:15px; color: white;">ANALYSING USER</h3>
+                    <div id="mReserve" style="color:var(--up); font-size:11px; margin-top:5px;">RESERVE: 0.00 USDT</div>
                 </div>
+
+                <div class="stat-grid">
+                    <div class="stat-item"><div class="label">Total In (1Y)</div><div class="stat-val" id="mIn">0.00</div></div>
+                    <div class="stat-item"><div class="label">Total Out (1Y)</div><div class="stat-val" id="mOut" style="color:var(--down)">0.00</div></div>
+                    <div class="stat-item"><div class="label">Net Profit (1Y)</div><div class="stat-val" id="mProfit">0.00</div></div>
+                </div>
+
+                <div class="invest-tab-row">
+                    <button class="i-tab active" onclick="filterInv('all')">ALL HISTORY</button>
+                    <button class="i-tab" onclick="filterInv('Deposit')">DEPOSIT</button>
+                    <button class="i-tab" onclick="filterInv('Spot')">SPOT</button>
+                    <button class="i-tab" onclick="filterInv('Crash')">CRASH</button>
+                    <button class="i-tab" onclick="filterInv('Prediction')">PRED</button>
+                    <button class="i-tab" onclick="filterInv('Future')">FUTURE</button>
+                    <button class="i-tab" onclick="filterInv('Airdrop')">AIRDROP</button>
+                    <button class="i-tab" onclick="filterInv('Withdraw')">WITHDRAW</button>
+                </div>
+
+                <div id="sectorSummary">Select a sector to view summary</div>
+                <div id="investLogs"></div>
             </div>
         </div>
     </div>
 
 <script>
-// --- FIREBASE ---
-const firebaseConfig = { apiKey: "AIzaSyAMxtJedkehhxJRMPZLjhpKHqneHEWsGlE", authDomain: "smat-exchange.firebaseapp.com", databaseURL: "https://smat-exchange-default-rtdb.firebaseio.com", projectId: "smat-exchange" };
+// --- CONFIG ---
+const firebaseConfig = { 
+    apiKey: "AIzaSyAMxtJedkehhxJRMPZLjhpKHqneHEWsGlE", 
+    authDomain: "smat-exchange.firebaseapp.com", 
+    databaseURL: "https://smat-exchange-default-rtdb.firebaseio.com",
+    projectId: "smat-exchange" 
+};
 firebase.initializeApp(firebaseConfig);
 const db = firebase.database();
 const auth = firebase.auth();
 
-let currentTab = 'pending';
-let lastPendingCount = 0;
+let activeMainTab = 'pending';
+let lastCount = 0;
+let userFullHistory = [];
 
-function handleLogin() {
-    const email = document.getElementById('adminEmail').value;
-    const pass = document.getElementById('adminPass').value;
-    auth.signInWithEmailAndPassword(email, pass).catch(() => document.getElementById('loginError').style.display='block');
+// --- AUTH ---
+function tryLogin() {
+    const e = document.getElementById('admEmail').value;
+    const p = document.getElementById('admPass').value;
+    auth.signInWithEmailAndPassword(e, p).catch(() => document.getElementById('admErr').style.display='block');
 }
 
-function init() {
-    auth.onAuthStateChanged(user => {
-        if (user) { document.getElementById('loginScreen').style.display='none'; document.getElementById('dashboard').style.display='block'; loadWithdrawals(); }
-        else { document.getElementById('loginScreen').style.display='flex'; document.getElementById('dashboard').style.display='none'; }
-    });
-}
+auth.onAuthStateChanged(user => {
+    if (user) {
+        document.getElementById('loginScreen').style.display = 'none';
+        document.getElementById('dashboard').style.display = 'block';
+        loadMainData();
+    } else {
+        document.getElementById('loginScreen').style.display = 'flex';
+        document.getElementById('dashboard').style.display = 'none';
+    }
+});
 
-function switchTab(t) {
-    currentTab = t;
+function adminLogout() { auth.signOut(); }
+
+// --- DASHBOARD CORE ---
+function switchMainTab(t) {
+    activeMainTab = t;
     document.querySelectorAll('.tab').forEach(el => el.classList.remove('active'));
     event.currentTarget.classList.add('active');
-    loadWithdrawals();
+    loadMainData();
 }
 
-function loadWithdrawals() {
+function getExplorer(net, hash) {
+    if(!hash) return "#";
+    const n = net ? net.toLowerCase() : "";
+    if(n.includes('trc') || n.includes('tron')) return `https://tronscan.org/#/transaction/${hash}`;
+    if(n.includes('bsc') || n.includes('bep')) return `https://bscscan.com/tx/${hash}`;
+    return `https://tronscan.org/#/transaction/${hash}`;
+}
+
+function loadMainData() {
     db.ref('users').on('value', snap => {
         const users = snap.val();
-        let html = '';
-        let pendingCount = 0;
-        let allWithdraws = [];
-
+        let html = ''; let pCount = 0; let list = [];
+        
         for (let uid in users) {
-            const history = users[uid].history;
-            if (history) {
-                for (let txId in history) {
-                    const tx = history[txId];
+            const hist = users[uid].history;
+            if (hist) {
+                Object.keys(hist).forEach(tid => {
+                    const tx = hist[tid];
                     if (tx.method === 'Withdraw') {
-                        if (tx.status === 'pending') pendingCount++;
-                        allWithdraws.push({ uid, txId, email: users[uid].email, ...tx });
+                        if (tx.status === 'pending') pCount++;
+                        list.push({ uid, tid, email: users[uid].email, ...tx });
                     }
-                }
+                });
             }
         }
 
-        if (pendingCount > lastPendingCount) { new Audio('https://assets.mixkit.co/active_storage/sfx/2869/2869-preview.mp3').play().catch(()=>{}); lastPendingCount = pendingCount; }
-        document.getElementById('pCount').innerText = pendingCount;
-
-        const filtered = allWithdraws.filter(x => x.status === currentTab).sort((a,b) => b.timestamp - a.timestamp);
+        document.getElementById('pCount').innerText = pCount;
+        const filtered = list.filter(x => x.status === activeMainTab).sort((a,b) => b.timestamp - a.timestamp);
 
         filtered.forEach(tx => {
+            const expUrl = getExplorer(tx.network, tx.hash);
             html += `
             <div class="withdraw-card">
-                <i class="fas fa-user-shield inspect-btn" onclick="openUserInsights('${tx.uid}', '${tx.email}')" title="Inspect User Account"></i>
-                <div>
-                    <div class="label">User / Time</div>
-                    <div class="val" style="font-size:12px; color:var(--primary)">${tx.email}</div>
-                    <div style="font-size:10px; color:#848e9c; margin-top:5px;">${new Date(tx.timestamp).toLocaleString()}</div>
-                </div>
-                <div>
-                    <div class="label">Asset & Amount</div>
-                    <div class="val" style="font-size:18px">${tx.amount} <span>${tx.coin}</span></div>
-                    <div style="font-size:10px; color:var(--up); margin-top:5px;">${tx.network}</div>
-                </div>
-                <div>
-                    <div class="label">Address</div>
-                    <div class="address-box">
-                        <div class="val" style="font-family:monospace; font-size:11px;">${tx.address}</div>
-                        <i class="fas fa-copy" onclick="copyText('${tx.address}')" style="color:var(--primary); cursor:pointer;"></i>
-                    </div>
-                </div>
-                <div class="action-container">
+                <i class="fas fa-user-shield inspect-trigger" onclick="openInspector('${tx.uid}', '${tx.email}')"></i>
+                <div><div class="label">User Email</div><div class="val" style="color:var(--primary)">${tx.email}</div><small style="font-size:8px; opacity:0.6;">${new Date(tx.timestamp).toLocaleString()}</small></div>
+                <div><div class="label">Amount</div><div class="val">${tx.amount} ${tx.coin}</div><small style="color:var(--up); font-size:9px;">${tx.network}</small></div>
+                <div><div class="label">Address</div><div class="address-box"><span class="val" style="font-size:10px; font-family:monospace; opacity:0.8;">${tx.address.substring(0,15)}...</span><i class="fas fa-copy" style="cursor:pointer;color:var(--primary)" onclick="copyAddr('${tx.address}')"></i></div></div>
+                <div style="text-align:right">
                     ${tx.status === 'pending' ? `
-                        <input type="text" id="hash_${tx.txId}" class="hash-input" placeholder="TrxHash">
-                        <div class="btn-group">
-                            <button class="btn btn-approve" onclick="approveTx('${tx.uid}', '${tx.txId}')">Approve</button>
-                            <button class="btn btn-reject" onclick="rejectTx('${tx.uid}', '${tx.txId}', '${tx.coin}', ${tx.amount})">Reject</button>
-                        </div>
-                    ` : `<div style="text-align:right"><div class="val" style="color:${tx.status==='success'?'var(--up)':'var(--down)'}">${tx.status.toUpperCase()}</div><small style="font-size:9px; color:#848e9c;">${tx.hash||''}</small></div>`}
+                        <input type="text" id="h_${tx.tid}" class="hash-input" placeholder="Paste TrxHash">
+                        <div class="btn-group"><button class="btn" style="background:var(--up)" onclick="approve('${tx.uid}','${tx.tid}')">APPROVE</button><button class="btn" style="background:var(--down)" onclick="reject('${tx.uid}','${tx.tid}','${tx.coin}',${tx.amount})">REJECT</button></div>
+                    ` : `
+                        <div class="val" style="color:${tx.status==='success'?'var(--up)':'var(--down)'}">${tx.status.toUpperCase()}</div>
+                        ${tx.status==='success' ? `<a href="${expUrl}" target="_blank" class="hash-link"><i class="fas fa-external-link-alt"></i> ${tx.hash}</a>` : ''}
+                    `}
                 </div>
             </div>`;
         });
-        document.getElementById('withdrawList').innerHTML = html || '<div class="empty">NO RECORDS</div>';
+        document.getElementById('withdrawList').innerHTML = html || '<div style="text-align:center; padding:50px; color:#848e9c;">NO DATA FOUND</div>';
     });
 }
 
-// --- USER INSIGHTS LOGIC ---
-async function openUserInsights(uid, email) {
+// --- INVESTIGATION LOGIC ---
+async function openInspector(uid, email) {
     document.getElementById('userModal').style.display = 'flex';
-    document.getElementById('modalUserEmail').innerText = email;
+    document.getElementById('mUserEmail').innerText = email;
+    document.getElementById('investLogs').innerHTML = "Calculating Insights...";
     
-    const oneYearAgo = Date.now() - (365 * 24 * 60 * 60 * 1000);
-    let totalDep = 0, totalGame = 0, totalTrade = 0, logsHtml = '';
+    const oneYear = Date.now() - (365 * 24 * 60 * 60 * 1000);
+    const uSnap = await db.ref(`users/${uid}`).once('value');
+    const uData = uSnap.val();
+    
+    if(uData) {
+        document.getElementById('mReserve').innerHTML = `RESERVE: <span style="color:var(--primary)">${(uData.balance||0).toFixed(2)} USDT</span> | <span style="color:var(--primary)">${(uData.smat_balance||0).toFixed(2)} SMAT</span>`;
+    }
 
-    const snap = await db.ref(`users/${uid}/history`).once('value');
-    const history = snap.val();
-
-    if(history) {
-        Object.values(history).forEach(item => {
-            if(item.timestamp > oneYearAgo) {
-                if(item.method.toLowerCase().includes('deposit') && item.status === 'success') totalDep += parseFloat(item.amount);
-                if(item.method.toLowerCase().includes('game')) totalGame += parseFloat(item.amount);
-                if(item.method.toLowerCase().includes('trade')) totalTrade += parseFloat(item.amount);
-                
-                logsHtml += `<div style="margin-bottom:8px; border-bottom:1px solid rgba(255,255,255,0.05); padding-bottom:5px;">
-                    <span style="color:var(--primary)">[${new Date(item.timestamp).toLocaleDateString()}]</span> 
-                    ${item.method.toUpperCase()} - ${item.amount} ${item.coin} (${item.status})
-                </div>`;
-            }
+    userFullHistory = [];
+    let tin = 0, tout = 0, tprof = 0;
+    if(uData && uData.history) {
+        userFullHistory = Object.values(uData.history).filter(i => i.timestamp > oneYear).sort((a,b) => b.timestamp - a.timestamp);
+        userFullHistory.forEach(i => {
+            const a = parseFloat(i.amount) || 0;
+            const m = i.method.toLowerCase();
+            if(m.includes('deposit') || m.includes('airdrop')) tin += a;
+            else if(m.includes('withdraw')) tout += Math.abs(a);
+            else tprof += a;
         });
     }
 
-    document.getElementById('statDeposit').innerText = totalDep.toFixed(2);
-    document.getElementById('statGame').innerText = (totalGame >= 0 ? '+' : '') + totalGame.toFixed(2);
-    document.getElementById('statTrade').innerText = totalTrade.toFixed(2);
-    document.getElementById('activityLogs').innerHTML = logsHtml || "No recent activity found.";
+    document.getElementById('mIn').innerText = tin.toFixed(2);
+    document.getElementById('mOut').innerText = tout.toFixed(2);
+    document.getElementById('mProfit').innerText = (tprof >= 0 ? '+' : '') + tprof.toFixed(2);
+    document.getElementById('mProfit').style.color = tprof >= 0 ? 'var(--up)' : 'var(--down)';
+
+    filterInv('all');
+}
+
+function filterInv(type) {
+    document.querySelectorAll('.i-tab').forEach(b => b.classList.toggle('active', b.innerText.toLowerCase().includes(type.toLowerCase()) || (type==='all' && b.innerText==='ALL HISTORY')));
+    
+    let html = ''; let sTotal = 0;
+    const filtered = (type === 'all') ? userFullHistory : userFullHistory.filter(i => i.method.toLowerCase().includes(type.toLowerCase()));
+    
+    filtered.forEach(i => {
+        const a = parseFloat(i.amount) || 0; sTotal += a;
+        html += `<div style="display:flex; justify-content:space-between; padding:12px; border-bottom:1px solid rgba(255,255,255,0.05); font-size:11px;">
+            <div><div style="color:var(--primary); font-weight:900;">${i.method.toUpperCase()}</div><div style="font-size:8px; color:#848e9c;">${new Date(i.timestamp).toLocaleString()}</div></div>
+            <div style="text-align:right"><div style="color:${a>=0?'var(--up)':'var(--down)'}; font-weight:900;">${a>=0?'+':''}${a} ${i.coin}</div><div style="font-size:8px; color:#848e9c;">${i.status}</div></div>
+        </div>`;
+    });
+
+    document.getElementById('sectorSummary').innerHTML = type === 'all' ? "FULL 1-YEAR INSIGHT SUMMARY" : `TOTAL ${type.toUpperCase()}: <span style="color:${sTotal>=0?'var(--up)':'var(--down)'}">${sTotal.toFixed(4)}</span>`;
+    document.getElementById('investLogs').innerHTML = html || '<div style="text-align:center; padding:20px; color:#848e9c;">NO SECTOR DATA</div>';
 }
 
 function closeModal() { document.getElementById('userModal').style.display = 'none'; }
-function copyText(t) { navigator.clipboard.writeText(t); alert("Address Copied!"); }
 
-async function approveTx(uid, txId) {
-    const hash = document.getElementById('hash_'+txId).value;
-    if(!hash) return alert("Hash Required!");
-    await db.ref(`users/${uid}/history/${txId}`).update({ status:'success', hash:hash });
-    alert("Approved!");
-}
-
-async function rejectTx(uid, txId, coin, amount) {
-    if(confirm("Reject?")) {
-        const key = coin.toLowerCase()==='usdt'?'balance':coin.toLowerCase()+'_balance';
-        const s = await db.ref(`users/${uid}/${key}`).once('value');
-        await db.ref(`users/${uid}`).update({ [key]: (s.val()||0)+amount });
-        await db.ref(`users/${uid}/history/${txId}`).update({ status:'failed', hash:'REJECTED' });
+// --- POWERFUL COPY FUNCTION ---
+function copyAddr(text) {
+    if (navigator.clipboard && window.isSecureContext) {
+        navigator.clipboard.writeText(text).then(() => {
+            alert("Address Copied!");
+        }).catch(() => fallbackCopy(text));
+    } else {
+        fallbackCopy(text);
     }
 }
 
-function adminLogout() { auth.signOut(); }
-window.onload = init;
+function fallbackCopy(text) {
+    const textArea = document.createElement("textarea");
+    textArea.value = text;
+    textArea.style.position = "fixed"; textArea.style.left = "-9999px";
+    document.body.appendChild(textArea);
+    textArea.select();
+    try {
+        document.execCommand('copy');
+        alert("Address Copied!");
+    } catch (err) {
+        alert("Failed to copy. Please copy manually.");
+    }
+    document.body.removeChild(textArea);
+}
+
+// --- ACTIONS ---
+async function approve(uid, tid) {
+    const h = document.getElementById('h_'+tid).value;
+    if(!h || h.length < 5) return alert("Valid TrxHash is required!");
+    await db.ref(`users/${uid}/history/${tid}`).update({ status:'success', hash:h });
+    alert("Transaction Approved!");
+}
+
+async function reject(uid, tid, coin, amt) {
+    if(confirm("Are you sure you want to Reject and Refund?")) {
+        const key = coin.toLowerCase()==='usdt'?'balance':coin.toLowerCase()+'_balance';
+        const s = await db.ref(`users/${uid}/${key}`).once('value');
+        await db.ref(`users/${uid}`).update({ [key]: (s.val()||0) + amt });
+        await db.ref(`users/${uid}/history/${tid}`).update({ status:'failed', hash:'REJECTED' });
+        alert("Transaction Rejected & Funds Refunded.");
+    }
+}
 </script>
 </body>
 </html>
