@@ -103,7 +103,8 @@
         .preview-img { width: 100%; height: 80px; object-fit: cover; border-radius: 8px; display: none; margin-top: 8px; border: 1px solid var(--primary); }
 
         /* Status Loader */
-        .spin-kyc { width: 40px; height: 40px; border: 4px solid rgba(243, 186, 47, 0.2); border-top-color: var(--primary); border-radius: 50%; animation: spin 1s linear infinite; margin: 20px auto; }
+        .spin-kyc { width: 40px; height: 40px; border: 4px solid rgba(243, 186, 47, 0.2); border-top-color: var(--primary); border-radius: 50%; animation: spin-loader 1s linear infinite; margin: 20px auto; }
+        @keyframes spin-loader { 100% { transform: rotate(360deg); } }
 
         /* --- Status Badges --- */
         .status-badge { padding: 4px 8px; border-radius: 4px; font-size: 9px; font-weight: bold; text-transform: uppercase; }
@@ -128,9 +129,52 @@
         .f-nav { text-decoration: none; color: var(--text-sec); text-align: center; font-size: 10px; flex: 1; display: flex; flex-direction: column; align-items: center; }
         .f-nav i { font-size: 22px; margin-bottom: 5px; }
         .f-nav.active { color: var(--primary); }
-        .crash-link { width: 60px; height: 60px; background: var(--primary); border-radius: 50%; color: black; font-weight: 900; display: flex; align-items: center; justify-content: center; margin-top: -35px; box-shadow: 0 5px 20px rgba(243,186,47,0.4); text-decoration: none; font-size: 11px; position: relative; z-index: 5; }
-        .spin-circle { position: absolute; width: 70px; height: 70px; border: 2px dashed var(--primary); border-radius: 50%; animation: spin 5s linear infinite; top: -40px; }
-        @keyframes spin { 100% { transform: rotate(360deg); } }
+
+        /* --- New Gaming FAB Menu Styling --- */
+        .fab-wrapper { position: relative; width: 75px; display: flex; justify-content: center; }
+        
+        .fab-options {
+            position: absolute; bottom: 40px; display: flex; justify-content: center;
+            align-items: center; pointer-events: none; width: 300px; height: 200px;
+        }
+
+        .popup-btn {
+            position: absolute; background: var(--card-bg); border: 2.5px solid var(--primary);
+            color: var(--text-main); padding: 8px 18px; border-radius: 50px;
+            text-decoration: none; font-weight: 800; font-size: 12px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.6);
+            transition: all 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            opacity: 0; transform: scale(0.3) translateY(120px);
+            pointer-events: auto; white-space: nowrap; z-index: 2900;
+        }
+
+        /* Inverted U Arc Logic */
+        .fab-options.show .btn-left { opacity: 1; transform: translate(-95px, -45px) scale(1); }
+        .fab-options.show .btn-center { opacity: 1; transform: translate(0, -115px) scale(1); }
+        .fab-options.show .btn-right { opacity: 1; transform: translate(95px, -45px) scale(1); }
+
+        .main-fab {
+            width: 65px; height: 65px; background: var(--primary);
+            border: none; border-radius: 50%; cursor: pointer;
+            box-shadow: 0 0 20px rgba(243, 186, 47, 0.4);
+            display: flex; justify-content: center; align-items: center;
+            z-index: 3100; margin-top: -35px; outline: none;
+            transition: background 0.3s, box-shadow 0.3s;
+        }
+
+        @keyframes continuous-spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+        
+        .main-fab.active {
+            animation: continuous-spin 2s linear infinite;
+            background: var(--down); box-shadow: 0 0 35px rgba(246, 70, 93, 0.5);
+        }
+
+        .gaming-icon { font-size: 30px; color: #000; transition: color 0.3s; }
+        .main-fab.active .gaming-icon { color: #fff; }
+
+        @keyframes subtle-pulse { 0% { transform: scale(1); } 50% { transform: scale(1.05); } 100% { transform: scale(1); } }
+        .main-fab:not(.active) { animation: subtle-pulse 3s infinite ease-in-out; }
+
     </style>
 </head>
 <body>
@@ -282,7 +326,18 @@
     <footer class="footer">
         <a href="home.html" class="f-nav active"><i class="fas fa-home"></i>Home</a>
         <a href="Trade.html" class="f-nav"><i class="fas fa-chart-line"></i>Trade</a>
-        <div style="position:relative; width:75px; display:flex; justify-content:center"><div class="spin-circle"></div><a href="Crash.html" class="crash-link">CRASH</a></div>
+        
+        <div class="fab-wrapper">
+            <div class="fab-options" id="fabOptions">
+                <a href="Crash.html" class="popup-btn btn-left">Crash</a>
+                <a href="Prediction.html" class="popup-btn btn-center">Prediction</a>
+                <a href="Feature.html" class="popup-btn btn-right">Future</a>
+            </div>
+            <button class="main-fab" id="mainFab" onclick="toggleGamingMenu()">
+                <i class="fa-solid fa-gamepad gaming-icon"></i>
+            </button>
+        </div>
+
         <a href="Explorer.html" class="f-nav"><i class="fas fa-compass"></i>Explore</a>
         <a href="Wallet.html" class="f-nav"><i class="fas fa-wallet"></i>Wallet</a>
     </footer>
@@ -305,11 +360,9 @@
         const auth = getAuth(app);
         const db = getDatabase(app);
 
-        // --- REFERRAL TRACKING START ---
         const urlParams = new URLSearchParams(window.location.search);
         const refID = urlParams.get('ref');
         if (refID) { localStorage.setItem('pendingReferral', refID); }
-        // --- REFERRAL TRACKING END ---
 
         let realBalanceValue = 0;
         let isBalanceHidden = localStorage.getItem('hideBalance') === 'true';
@@ -336,7 +389,6 @@
             } else { location.href = 'logIn.html'; }
         });
 
-        // --- KYC Functions ---
         async function uploadToImgBB(file) {
             const apiKey = "ae6200c9d5bd021db45b02211a7f1096";
             const formData = new FormData();
@@ -480,59 +532,48 @@
             renderCoins(cat);
         }
 
-        // --- NEW TAB LOGIC START (FIXED) ---
+        // Gaming Menu Toggle
+        function toggleGamingMenu() {
+            const options = document.getElementById('fabOptions');
+            const mainBtn = document.getElementById('mainFab');
+            options.classList.toggle('show');
+            mainBtn.classList.toggle('active');
+            if (navigator.vibrate) navigator.vibrate(50);
+        }
+
+        // Close Menu when clicking outside
+        window.addEventListener('click', (e) => {
+            if (!e.target.closest('.fab-wrapper')) {
+                document.getElementById('fabOptions').classList.remove('show');
+                document.getElementById('mainFab').classList.remove('active');
+            }
+        });
+
         function renderCoins(filter = 'hot') {
             const container = document.getElementById('coinList');
             if (!container) return;
-            
-            // Getting live data from coin.js (GLOBAL_COINS)
             const liveData = (typeof GLOBAL_COINS !== 'undefined') ? [...GLOBAL_COINS] : [];
             const now = Date.now();
             const threeDaysMs = 3 * 24 * 60 * 60 * 1000;
 
-            // Step 1: Attach latest stats to each coin for sorting
             const dataWithStats = liveData.map(coin => {
                 const s = coin.sym.toLowerCase();
                 const currentPrice = window[s + "Val"] || parseFloat(localStorage.getItem(s + "_latest_price")) || coin.price;
                 const vol = parseFloat(localStorage.getItem(s + "_volume") || 0);
                 const diff = currentPrice - coin.price;
                 const changePercent = coin.price > 0 ? (diff / coin.price) * 100 : 0;
-                
                 return { ...coin, currentPrice, vol, changePercent };
             });
 
             let filtered = [];
+            if (filter === 'hot') filtered = dataWithStats.sort((a, b) => b.vol - a.vol).slice(0, 5);
+            else if (filter === 'gainer') filtered = dataWithStats.filter(c => c.changePercent > 0).sort((a, b) => b.changePercent - a.changePercent).slice(0, 5);
+            else if (filter === 'loser') filtered = dataWithStats.filter(c => c.changePercent < 0).sort((a, b) => a.changePercent - b.changePercent).slice(0, 5);
+            else if (filter === 'new') filtered = dataWithStats.filter(c => (now - (c.listedAt || 0)) < threeDaysMs).sort((a, b) => (b.listedAt || 0) - (a.listedAt || 0)).slice(0, 5);
 
-            // Step 2: Sorting Logic based on tabs
-            if (filter === 'hot') {
-                // HOT: Highest Volume first, top 5
-                filtered = dataWithStats.sort((a, b) => b.vol - a.vol).slice(0, 5);
-            } 
-            else if (filter === 'gainer') {
-                // GAINER: Highest Positive % first, top 5
-                filtered = dataWithStats.filter(c => c.changePercent > 0)
-                                        .sort((a, b) => b.changePercent - a.changePercent)
-                                        .slice(0, 5);
-            } 
-            else if (filter === 'loser') {
-                // LOSER: Lowest Negative % first, top 5
-                filtered = dataWithStats.filter(c => c.changePercent < 0)
-                                        .sort((a, b) => a.changePercent - b.changePercent)
-                                        .slice(0, 5);
-            } 
-            else if (filter === 'new') {
-                // NEW: Added within 3 days, top 5
-                filtered = dataWithStats.filter(c => (now - (c.listedAt || 0)) < threeDaysMs)
-                                        .sort((a, b) => (b.listedAt || 0) - (a.listedAt || 0))
-                                        .slice(0, 5);
-            }
-
-            // Step 3: Display results
             container.innerHTML = filtered.map(coin => {
                 const s = coin.sym.toLowerCase();
                 const isUp = coin.changePercent >= 0;
-                const now = Date.now();
-
                 return `
                 <div class="coin-row" onclick="location.href='Trade.html?coin=${s}'">
                     <div style="display:flex; align-items:center; gap:12px">
@@ -552,7 +593,6 @@
                 </div>`;
             }).join('');
         }
-        // --- NEW TAB LOGIC END ---
 
         setInterval(() => renderCoins(window.currentActiveTab), 1500);
     </script>
