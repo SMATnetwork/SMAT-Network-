@@ -61,13 +61,16 @@
         .a-bal { font-family: var(--font-bold); font-size: 15px; font-weight: 900; margin-bottom: 2px; }
         .a-usd { font-size: 12px; color: var(--text-sec); font-weight: 600; }
 
-        /* Footer - Unified Design */
-        .footer { position: fixed; bottom: 0; width: 100%; height: 75px; background: #181a20; display: flex; justify-content: space-around; align-items: center; border-top: 1px solid var(--border); z-index: 1000; }
-        .f-nav { text-decoration: none; color: var(--text-sec); text-align: center; font-size: 10px; flex: 1; display: flex; flex-direction: column; align-items: center; gap: 4px; }
-        .f-nav.active { color: var(--primary); }
+        /* Footer - EXACTLY FROM HOME PAGE */
+        .footer { position: fixed; bottom: 0; width: 100%; height: 75px; background: #181a20; display: flex; justify-content: space-around; align-items: center; border-top: 1px solid #2b3139; z-index: 1000; }
+        .f-nav { text-decoration: none; color: #848e9c; text-align: center; font-size: 10px; flex: 1; display: flex; flex-direction: column; align-items: center; gap: 4px; }
+        .f-nav i { font-size: 22px; }
+        .f-nav.active { color: #f0b90b; }
+        
         .u-curve { position: relative; top: -22px; width: 75px; height: 75px; display: flex; justify-content: center; align-items: center; }
-        .spin-circle { position: absolute; width: 70px; height: 70px; border: 2.5px dashed var(--primary); border-radius: 50%; animation: spin 5s linear infinite; }
-        .crash-link { width: 58px; height: 58px; background: var(--primary); border-radius: 50%; color: black; font-family: var(--font-bold); font-weight: 900; font-size: 11px; display: flex; align-items: center; justify-content: center; text-decoration: none; z-index: 5; }
+        .spin-circle { position: absolute; width: 70px; height: 70px; border: 2.5px dashed #f0b90b; border-radius: 50%; animation: spin 5s linear infinite; }
+        .crash-link { width: 58px; height: 58px; background: #f0b90b; border-radius: 50%; color: black; font-family: 'Montserrat', sans-serif; font-weight: 900; font-size: 11px; display: flex; align-items: center; justify-content: center; text-decoration: none; z-index: 5; box-shadow: 0 0 15px rgba(243, 186, 47, 0.4); }
+        
         @keyframes spin { 100% { transform: rotate(360deg); } }
     </style>
 </head>
@@ -86,8 +89,7 @@
     </div>
 
     <h3 class="asset-title">My Assets</h3>
-    <div class="asset-list" id="assetList">
-        </div>
+    <div class="asset-list" id="assetList"></div>
 
     <footer class="footer">
         <a href="home.html" class="f-nav"><i class="fas fa-home"></i>Home</a>
@@ -114,22 +116,22 @@ const db = firebase.database();
 const auth = firebase.auth();
 
 let coinPrices = {};
-let mainBalance = 0; // Home পেজের মতো মেইন ব্যালেন্স
+let mainBalance = 0;
 
 function initWallet() {
     auth.onAuthStateChanged(user => {
         if (user) {
-            // ১. লাইভ মার্কেট প্রাইস লিসেনার
+            // ১. লাইভ মার্কেট প্রাইস
             db.ref('market').on('value', snap => {
                 coinPrices = snap.val() || {};
                 updateUI();
             });
 
-            // ২. মেইন ব্যালেন্স লিসেনার (যেটি Home পেজে ব্যবহার করা হয়েছে)
+            // ২. হোম পেজের মতো মেইন ব্যালেন্স কল (users/uid/balance)
             db.ref('users/' + user.uid).on('value', snap => {
                 const userData = snap.val();
                 if (userData) {
-                    mainBalance = userData.balance || 0; // সরাসরি 'balance' পাথ থেকে কল
+                    mainBalance = userData.balance || 0;
                     updateUI();
                 }
             });
@@ -143,18 +145,14 @@ function updateUI() {
     const listContainer = document.getElementById('assetList');
     let html = '';
 
-    // যেহেতু আপনার সিস্টেমে বর্তমানে USDT-ই মূল ব্যালেন্স হিসেবে 'balance' ফিল্ডে থাকে
-    // তাই আমরা USDT-এর জায়গায় মেইন ব্যালেন্সটি দেখাবো।
-    
     GLOBAL_COINS.forEach(coin => {
         const sym = coin.sym.toLowerCase();
         const price = (coinPrices[sym] && coinPrices[sym].price) ? coinPrices[sym].price : coin.price;
         
-        // USDT এর জন্য মেইন ব্যালেন্স ব্যবহার হবে, অন্যগুলোর জন্য ০ (যদি না আলাদা balances পাথ থাকে)
+        // USDT হিসেবে মেইন ব্যালেন্স ম্যাপিং
         let balance = (sym === 'usdt') ? mainBalance : 0; 
         let usdValue = balance * price;
 
-        // শুধুমাত্র USDT অথবা ব্যালেন্স আছে এমন কয়েন দেখাবে
         if (balance > 0 || sym === 'usdt') {
             html += `
                 <div class="asset-card">
@@ -175,11 +173,8 @@ function updateUI() {
     });
 
     listContainer.innerHTML = html;
-    
-    // মেইন ব্যালেন্স ডিসপ্লে (বড় করে)
     document.getElementById('totalBalance').innerText = mainBalance.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2});
     
-    // BTC এস্টিমেটেড ভ্যালু
     const btcPrice = (coinPrices['btc'] && coinPrices['btc'].price) ? coinPrices['btc'].price : 65000;
     const estBtc = mainBalance / btcPrice;
     document.getElementById('estBtc').innerText = estBtc.toFixed(6);
@@ -187,6 +182,5 @@ function updateUI() {
 
 window.onload = initWallet;
 </script>
-
 </body>
 </html>
