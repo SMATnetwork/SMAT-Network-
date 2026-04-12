@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SMAT Admin | Trx Manager</title>
+    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-database-compat.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNTEyIiBoZWlnaHQ9IjUxMiIgdmlld0JveD0iMCAwIDUxMiA1MTIiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+CiAgPGNpcmNsZSBjeD0iMjU2IiBjeT0iMjU2IiByPSIyNDAiIGZpbGw9IiNmM2JhMmYiLz4KICA8Y2lyY2xlIGN4PSIyNTYiIGN5PSIyNTYiIHI9IjIxNSIgc3Ryb2tlPSJ3aGl0ZSIgc3Ryb2tlLXdpZHRoPSI4IiBmaWxsPSJ0cmFuc3BhcmVudCIvPgogIDxwYXRoIGQ9Ik0xNTAgMTcwIEMxNTAgMTQ1IDE3MCAxMzUgMjAwIDEzNSBMMzQwIDEzNSBDMzU1IDEzNSAzNjUgMTQ1IDM2NSAxNjAgQzM2NSAxNzUgMzU1IDE4NSAzNDAgMTg1IEwyMDUgMTg1IEMxOTAgMTg1IDE4NSAxOTAgMTg1IDIwNSBDMTg1IDIyMCAxOTAgMjI1IDIwNSAyMjUgTDM0MCAyMjUgQzM3MCAyMjUgMzkwIDI0NSAzOTAgMjc1IEwzOTAgMzI1IEMzOTAgMzU1IDM3MCAzNzUgMzQwIDM3NSBMMTcwIDM3NSBDMTU1IDM3NSAxNDUgMzY1IDE0NSAzNTAgQzE0NSAzMzUgMTU1IDMyNSAxNzAgMzI1IEwzMzUgMzI1IEMzNTAgMzI1IDM1NSAzMjAgMzU1IDMwNSBDMzU1IDI5MCAzNTAgMjg1IDMzNSAyODUgTDIwMCAyODUgQzE3MCAyODUgMTUwIDI2NSAxNTAgMjM1IFoiIGZpbGw9IndoaXRlIi8+Cjwvc3ZnPg==">
+
+<style>
+        :root { --bg: #080a0c; --card: #111418; --primary: #f0b90b; --up: #0ecb81; --down: #f6465d; --text: #eaecee; --border: rgba(255, 255, 255, 0.05); }
+        body { background: var(--bg); color: var(--text); font-family: 'Inter', sans-serif; margin: 0; display: flex; }
+        .sidebar { width: 250px; background: var(--card); height: 100vh; padding: 20px; border-right: 1px solid var(--border); }
+        .main { flex: 1; padding: 40px; }
+        .table-card { background: var(--card); border-radius: 15px; padding: 20px; border: 1px solid var(--border); }
+        table { width: 100%; border-collapse: collapse; margin-top: 20px; }
+        th { text-align: left; color: #848e9c; font-size: 12px; padding: 12px; border-bottom: 1px solid var(--border); }
+        td { padding: 12px; font-size: 14px; border-bottom: 1px solid var(--border); }
+        .btn { padding: 6px 12px; border: none; border-radius: 5px; cursor: pointer; font-weight: bold; }
+        .btn-app { background: var(--up); color: #000; }
+        .btn-rej { background: var(--down); color: #fff; }
+        .hash-tag { color: var(--primary); font-size: 10px; font-family: monospace; display: block; margin-top: 5px; text-decoration: none; }
+    </style>
+</head>
+<body>
+
+<div class="sidebar">
+    <h2 style="color:var(--primary)">SMAT Admin</h2>
+    <p style="font-size: 12px; color: #848e9c;">Transaction Terminal</p>
+</div>
+
+<div class="main">
+    <div class="table-card">
+        <h3>Withdrawal Requests</h3>
+        <table>
+            <thead>
+                <tr>
+                    <th>USER</th>
+                    <th>AMOUNT</th>
+                    <th>ADDRESS</th>
+                    <th>HASH / STATUS</th>
+                    <th>ACTION</th>
+                </tr>
+            </thead>
+            <tbody id="txTable"></tbody>
+        </table>
+    </div>
+</div>
+
+<script>
+const firebaseConfig = { 
+    apiKey: "AIzaSyAMxtJedkehhxJRMPZLjhpKHqneHEWsGlE", 
+    authDomain: "smat-exchange.firebaseapp.com", 
+    projectId: "smat-exchange", 
+    databaseURL: "https://smat-exchange-default-rtdb.firebaseio.com"
+};
+firebase.initializeApp(firebaseConfig);
+const db = firebase.database();
+
+function loadData() {
+    db.ref('users').on('value', snap => {
+        const users = snap.val();
+        let html = '';
+        for (let uid in users) {
+            const history = users[uid].history;
+            if (history) {
+                for (let txId in history) {
+                    const tx = history[txId];
+                    if (tx.method === 'Withdraw') {
+                        html += `
+                        <tr>
+                            <td>${users[uid].email || 'User'}</td>
+                            <td style="color:var(--primary)">${tx.amount} ${tx.coin}</td>
+                            <td><small>${tx.address}</small></td>
+                            <td>
+                                ${tx.status === 'success' ? 
+                                    `<a class="hash-tag" href="https://bscscan.com/tx/${tx.hash}" target="_blank">${tx.hash.substring(0,10)}...</a>` : 
+                                    `<span style="color:var(--primary)">${tx.status.toUpperCase()}</span>`}
+                            </td>
+                            <td>
+                                ${tx.status === 'pending' ? `
+                                    <button class="btn btn-app" onclick="approve('${uid}', '${txId}')">Approve</button>
+                                    <button class="btn btn-rej" onclick="reject('${uid}', '${txId}', '${tx.coin}', ${tx.amount})">Reject</button>
+                                ` : '<i class="fas fa-check-circle" style="color:var(--up)"></i> Done'}
+                            </td>
+                        </tr>`;
+                    }
+                }
+            }
+        }
+        document.getElementById('txTable').innerHTML = html;
+    });
+}
+
+async function approve(uid, txId) {
+    const hash = prompt("Enter BscScan Transaction Hash:");
+    if (hash) {
+        await db.ref(`users/${uid}/history/${txId}`).update({ status: 'success', hash: hash });
+        alert("Approved successfully!");
+    }
+}
+
+async function reject(uid, txId, coin, amount) {
+    if (confirm("Reject & Refund?")) {
+        const coinKey = (coin.toLowerCase() === 'usdt') ? 'balance' : coin.toLowerCase() + '_balance';
+        const userRef = db.ref(`users/${uid}`);
+        const snap = await userRef.child(coinKey).once('value');
+        await userRef.update({ [coinKey]: (snap.val() || 0) + amount });
+        await userRef.child(`history/${txId}`).update({ status: 'failed', hash: 'Rejected' });
+        alert("Refunded and Rejected.");
+    }
+}
+
+loadData();
+</script>
+</body>
+</html>
