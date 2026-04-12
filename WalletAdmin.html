@@ -3,118 +3,218 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>SMAT Admin | Trx Manager</title>
+    <title>SMAT | Admin Wallet Management</title>
     <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-auth-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-database-compat.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNTEyIiBoZWlnaHQ9IjUxMiIgdmlld0JveD0iMCAwIDUxMiA1MTIiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+CiAgPGNpcmNsZSBjeD0iMjU2IiBjeT0iMjU2IiByPSIyNDAiIGZpbGw9IiNmM2JhMmYiLz4KICA8Y2lyY2xlIGN4PSIyNTYiIGN5PSIyNTYiIHI9IjIxNSIgc3Ryb2tlPSJ3aGl0ZSIgc3Ryb2tlLXdpZHRoPSI4IiBmaWxsPSJ0cmFuc3BhcmVudCIvPgogIDxwYXRoIGQ9Ik0xNTAgMTcwIEMxNTAgMTQ1IDE3MCAxMzUgMjAwIDEzNSBMMzQwIDEzNSBDMzU1IDEzNSAzNjUgMTQ1IDM2NSAxNjAgQzM2NSAxNzUgMzU1IDE4NSAzNDAgMTg1IEwyMDUgMTg1IEMxOTAgMTg1IDE4NSAxOTAgMTg1IDIwNSBDMTg1IDIyMCAxOTAgMjI1IDIwNSAyMjUgTDM0MCAyMjUgQzM3MCAyMjUgMzkwIDI0NSAzOTAgMjc1IEwzOTAgMzI1IEMzOTAgMzU1IDM3MCAzNzUgMzQwIDM3NSBMMTcwIDM3NSBDMTU1IDM3NSAxNDUgMzY1IDE0NSAzNTAgQzE0NSAzMzUgMTU1IDMyNSAxNzAgMzI1IEwzMzUgMzI1IEMzNTAgMzI1IDM1NSAzMjAgMzU1IDMwNSBDMzU1IDI5MCAzNTAgMjg1IDMzNSAyODUgTDIwMCAyODUgQzE3MCAyODUgMTUwIDI2NSAxNTAgMjM1IFoiIGZpbGw9IndoaXRlIi8+Cjwvc3ZnPg==">
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@900&family=Inter:wght@400;600&display=swap" rel="stylesheet">
+    
+    <style>
+        :root {
+            --bg: #0b0e11; --card: #1e2329; --primary: #f0b90b;
+            --up: #0ecb81; --down: #f6465d; --border: rgba(255, 255, 255, 0.08);
+            --font-main: 'Montserrat', sans-serif;
+        }
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: var(--font-main); }
+        body { background: var(--bg); color: white; overflow-x: hidden; }
 
-<style>
-        :root { --bg: #080a0c; --card: #111418; --primary: #f0b90b; --up: #0ecb81; --down: #f6465d; --text: #eaecee; --border: rgba(255, 255, 255, 0.05); }
-        body { background: var(--bg); color: var(--text); font-family: 'Inter', sans-serif; margin: 0; display: flex; }
-        .sidebar { width: 250px; background: var(--card); height: 100vh; padding: 20px; border-right: 1px solid var(--border); }
-        .main { flex: 1; padding: 40px; }
-        .table-card { background: var(--card); border-radius: 15px; padding: 20px; border: 1px solid var(--border); }
-        table { width: 100%; border-collapse: collapse; margin-top: 20px; }
-        th { text-align: left; color: #848e9c; font-size: 12px; padding: 12px; border-bottom: 1px solid var(--border); }
-        td { padding: 12px; font-size: 14px; border-bottom: 1px solid var(--border); }
-        .btn { padding: 6px 12px; border: none; border-radius: 5px; cursor: pointer; font-weight: bold; }
-        .btn-app { background: var(--up); color: #000; }
-        .btn-rej { background: var(--down); color: #fff; }
-        .hash-tag { color: var(--primary); font-size: 10px; font-family: monospace; display: block; margin-top: 5px; text-decoration: none; }
+        /* Header Styles */
+        header { 
+            height: 80px; background: var(--card); display: flex; align-items: center; 
+            justify-content: space-between; padding: 0 30px; border-bottom: 2px solid var(--primary);
+            position: sticky; top: 0; z-index: 1000;
+        }
+        .header-title { font-size: 24px; letter-spacing: 1px; color: var(--primary); }
+        .logout-btn { color: var(--down); font-size: 24px; cursor: pointer; transition: 0.3s; }
+        .logout-btn:hover { transform: scale(1.1); }
+
+        /* Stats & Tabs */
+        .container { padding: 30px; max-width: 1400px; margin: 0 auto; }
+        .tab-box { 
+            display: flex; gap: 15px; margin-bottom: 30px; background: rgba(255,255,255,0.03); 
+            padding: 10px; border-radius: 15px; border: 1px solid var(--border);
+        }
+        .tab { 
+            flex: 1; padding: 15px; text-align: center; border-radius: 12px; cursor: pointer;
+            font-size: 14px; color: var(--text-sec); border: 1px solid transparent; transition: 0.3s;
+        }
+        .tab.active { background: var(--card); border-color: var(--primary); color: var(--primary); box-shadow: 0 5px 15px rgba(0,0,0,0.3); }
+
+        /* Table & Cards */
+        .withdraw-card { 
+            background: var(--card); border-radius: 20px; padding: 20px; margin-bottom: 20px;
+            border: 1px solid var(--border); display: grid; grid-template-columns: 1fr 1fr 1.5fr 1fr; 
+            align-items: center; gap: 20px; animation: slideIn 0.4s ease-out;
+        }
+        @keyframes slideIn { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+
+        .label { font-size: 10px; color: #848e9c; margin-bottom: 5px; text-transform: uppercase; }
+        .val { font-size: 16px; font-weight: 900; }
+
+        /* Buttons & Hash Box */
+        .action-group { display: flex; gap: 10px; }
+        .btn { 
+            padding: 12px 20px; border: none; border-radius: 10px; font-weight: 900; 
+            cursor: pointer; font-size: 12px; transition: 0.3s; text-transform: uppercase;
+        }
+        .btn-approve { background: var(--up); color: #000; }
+        .btn-reject { background: var(--down); color: #fff; }
+        .btn:hover { filter: brightness(1.2); transform: translateY(-2px); }
+
+        .hash-input { 
+            background: #0b0e11; border: 1px solid var(--border); color: var(--primary);
+            padding: 12px; border-radius: 10px; width: 100%; outline: none;
+            font-family: monospace; font-size: 12px; margin-bottom: 10px;
+        }
+
+        /* Notification Badge */
+        .badge { background: var(--down); color: white; padding: 2px 8px; border-radius: 50px; font-size: 10px; margin-left: 5px; }
     </style>
 </head>
 <body>
 
-<div class="sidebar">
-    <h2 style="color:var(--primary)">SMAT Admin</h2>
-    <p style="font-size: 12px; color: #848e9c;">Transaction Terminal</p>
-</div>
+    <header>
+        <div class="header-title">WALLET MANAGEMENT</div>
+        <i class="fas fa-sign-out-alt logout-btn" onclick="adminLogout()"></i>
+    </header>
 
-<div class="main">
-    <div class="table-card">
-        <h3>Withdrawal Requests</h3>
-        <table>
-            <thead>
-                <tr>
-                    <th>USER</th>
-                    <th>AMOUNT</th>
-                    <th>ADDRESS</th>
-                    <th>HASH / STATUS</th>
-                    <th>ACTION</th>
-                </tr>
-            </thead>
-            <tbody id="txTable"></tbody>
-        </table>
+    <div class="container">
+        <div class="tab-box">
+            <div class="tab active" onclick="switchTab('pending')">PENDING <span id="pCount" class="badge">0</span></div>
+            <div class="tab" onclick="switchTab('success')">SUCCESS</div>
+            <div class="tab" onclick="switchTab('failed')">REJECTED</div>
+        </div>
+
+        <div id="withdrawList">
+            </div>
     </div>
-</div>
 
 <script>
+// --- FIREBASE CONFIG ---
 const firebaseConfig = { 
     apiKey: "AIzaSyAMxtJedkehhxJRMPZLjhpKHqneHEWsGlE", 
     authDomain: "smat-exchange.firebaseapp.com", 
-    projectId: "smat-exchange", 
-    databaseURL: "https://smat-exchange-default-rtdb.firebaseio.com"
+    databaseURL: "https://smat-exchange-default-rtdb.firebaseio.com",
+    projectId: "smat-exchange" 
 };
 firebase.initializeApp(firebaseConfig);
 const db = firebase.database();
+const auth = firebase.auth();
 
-function loadData() {
+let currentTab = 'pending';
+let lastPendingCount = 0;
+
+function init() {
+    auth.onAuthStateChanged(user => {
+        if (!user) { location.href = "logIn.html"; }
+        else { loadWithdrawals(); }
+    });
+}
+
+function switchTab(t) {
+    currentTab = t;
+    document.querySelectorAll('.tab').forEach(el => el.classList.remove('active'));
+    event.currentTarget.classList.add('active');
+    loadWithdrawals();
+}
+
+function loadWithdrawals() {
     db.ref('users').on('value', snap => {
         const users = snap.val();
         let html = '';
+        let pendingCount = 0;
+        let allWithdraws = [];
+
         for (let uid in users) {
             const history = users[uid].history;
             if (history) {
                 for (let txId in history) {
                     const tx = history[txId];
                     if (tx.method === 'Withdraw') {
-                        html += `
-                        <tr>
-                            <td>${users[uid].email || 'User'}</td>
-                            <td style="color:var(--primary)">${tx.amount} ${tx.coin}</td>
-                            <td><small>${tx.address}</small></td>
-                            <td>
-                                ${tx.status === 'success' ? 
-                                    `<a class="hash-tag" href="https://bscscan.com/tx/${tx.hash}" target="_blank">${tx.hash.substring(0,10)}...</a>` : 
-                                    `<span style="color:var(--primary)">${tx.status.toUpperCase()}</span>`}
-                            </td>
-                            <td>
-                                ${tx.status === 'pending' ? `
-                                    <button class="btn btn-app" onclick="approve('${uid}', '${txId}')">Approve</button>
-                                    <button class="btn btn-rej" onclick="reject('${uid}', '${txId}', '${tx.coin}', ${tx.amount})">Reject</button>
-                                ` : '<i class="fas fa-check-circle" style="color:var(--up)"></i> Done'}
-                            </td>
-                        </tr>`;
+                        if (tx.status === 'pending') pendingCount++;
+                        allWithdraws.push({ uid, txId, email: users[uid].email, ...tx });
                     }
                 }
             }
         }
-        document.getElementById('txTable').innerHTML = html;
+
+        // Notification Sound for new pending
+        if (pendingCount > lastPendingCount) {
+            new Audio('https://assets.mixkit.co/active_storage/sfx/2869/2869-preview.mp3').play();
+            lastPendingCount = pendingCount;
+        }
+        document.getElementById('pCount').innerText = pendingCount;
+
+        // Filter and Sort (Latest First)
+        const filtered = allWithdraws.filter(x => x.status === currentTab).sort((a,b) => b.timestamp - a.timestamp);
+
+        filtered.forEach(tx => {
+            html += `
+            <div class="withdraw-card">
+                <div>
+                    <div class="label">User / Time</div>
+                    <div class="val" style="font-size:12px">${tx.email}</div>
+                    <div style="font-size:10px; color:#848e9c">${new Date(tx.timestamp).toLocaleString()}</div>
+                </div>
+                <div>
+                    <div class="label">Asset & Amount</div>
+                    <div class="val" style="color:var(--primary)">${tx.amount} ${tx.coin}</div>
+                    <div style="font-size:10px">${tx.network}</div>
+                </div>
+                <div>
+                    <div class="label">Destination Address</div>
+                    <div class="val" style="font-family:monospace; font-size:11px; color:#fff; background:rgba(255,255,255,0.05); padding:8px; border-radius:8px">${tx.address}</div>
+                </div>
+                <div class="action-group">
+                    ${tx.status === 'pending' ? `
+                        <div style="width:100%">
+                            <input type="text" id="hash_${tx.txId}" class="hash-input" placeholder="Paste TrxHash here...">
+                            <div style="display:flex; gap:10px">
+                                <button class="btn btn-approve" onclick="approveTx('${tx.uid}', '${tx.txId}')">Approve</button>
+                                <button class="btn btn-reject" onclick="rejectTx('${tx.uid}', '${tx.txId}', '${tx.coin}', ${tx.amount})">Reject</button>
+                            </div>
+                        </div>
+                    ` : `
+                        <div class="val" style="color:${tx.status === 'success' ? 'var(--up)' : 'var(--down)'}">
+                            ${tx.status.toUpperCase()}<br>
+                            <small style="font-size:9px; color:#848e9c">${tx.hash || ''}</small>
+                        </div>
+                    `}
+                </div>
+            </div>`;
+        });
+
+        document.getElementById('withdrawList').innerHTML = html || `<div style="text-align:center; padding:50px; color:#848e9c">NO ${currentTab.toUpperCase()} REQUESTS</div>`;
     });
 }
 
-async function approve(uid, txId) {
-    const hash = prompt("Enter BscScan Transaction Hash:");
-    if (hash) {
+async function approveTx(uid, txId) {
+    const hash = document.getElementById('hash_' + txId).value;
+    if (!hash) return alert("Please enter Transaction Hash first!");
+    
+    if(confirm("Complete this withdrawal?")) {
         await db.ref(`users/${uid}/history/${txId}`).update({ status: 'success', hash: hash });
-        alert("Approved successfully!");
+        alert("Success!");
     }
 }
 
-async function reject(uid, txId, coin, amount) {
-    if (confirm("Reject & Refund?")) {
+async function rejectTx(uid, txId, coin, amount) {
+    if(confirm("Reject and Refund user?")) {
         const coinKey = (coin.toLowerCase() === 'usdt') ? 'balance' : coin.toLowerCase() + '_balance';
-        const userRef = db.ref(`users/${uid}`);
-        const snap = await userRef.child(coinKey).once('value');
-        await userRef.update({ [coinKey]: (snap.val() || 0) + amount });
-        await userRef.child(`history/${txId}`).update({ status: 'failed', hash: 'Rejected' });
-        alert("Refunded and Rejected.");
+        const uRef = db.ref(`users/${uid}`);
+        const s = await uRef.child(coinKey).once('value');
+        await uRef.update({ [coinKey]: (s.val() || 0) + amount });
+        await uRef.child(`history/${txId}`).update({ status: 'failed', hash: 'REJECTED' });
+        alert("Rejected & Refunded.");
     }
 }
 
-loadData();
+function adminLogout() {
+    auth.signOut().then(() => location.href = "logIn.html");
+}
+
+window.onload = init;
 </script>
 </body>
 </html>
