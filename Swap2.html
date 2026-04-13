@@ -122,7 +122,7 @@
         db.ref(`users/${userUID}`).on('value', snap => {
             const d = snap.val();
             if(d) {
-                userBalances.USDT = d.balance || 0;
+                userBalances.USDT = d.usdt_balance || 0;
                 userBalances.BNB = d.bnb_balance || 0;
                 userBalances.ETH = d.eth_balance || 0;
                 userBalances.oxSMAT = d.oxsmat_balance || 0;
@@ -163,13 +163,18 @@
     }
 
     function setMax() {
-        const f = document.getElementById('select-from').value;
-        const bal = userBalances[f];
-        // 0.1% Fee বাদ দিয়ে ইনপুট দেওয়া
-        const max = bal > 0 ? bal / 1.001 : 0; 
-        document.getElementById('input-from').value = max.toFixed(8);
-        calculate();
-    }
+    const f = document.getElementById('select-from').value;
+    const bal = userBalances[f]; // ইউজারের ওয়ালেটে যা আছে সবটাই ধরলাম
+    
+    if (bal <= 0) return;
+
+    // আমরা ইনপুট বক্সে পুরো ব্যালেন্সটাই বসাবো
+    document.getElementById('input-from').value = bal; 
+    
+    // এরপর calculate() কল করলেই সে অটোমেটিক ০.১% ফি বাদ দিয়ে আউটপুট দেখাবে
+    calculate(); 
+}
+
 
     function updateTokens() { updateUIBalances(); calculate(); }
 
@@ -193,13 +198,13 @@
         document.getElementById('swap-btn').disabled = true;
 
         try {
-            const up = {};
-            const fPath = f === 'USDT' ? 'balance' : `${f.toLowerCase()}_balance`;
-            const tPath = t === 'USDT' ? 'balance' : `${t.toLowerCase()}_balance`;
+            const fPath = `${f.toLowerCase()}_balance`;
+const tPath = `${t.toLowerCase()}_balance`;
 
-            // Deduct from + fee
-            up[`users/${userUID}/${fPath}`] = userBalances[f] - (fAmt + (fAmt * 0.001));
-            up[`users/${userUID}/${tPath}`] = userBalances[t] + tAmt;
+            // Deduct only the exact input amount because fee was already included in the calculation
+up[`users/${userUID}/${fPath}`] = userBalances[f] - fAmt;
+up[`users/${userUID}/${tPath}`] = userBalances[t] + tAmt;
+
 
             const logKey = db.ref(`users/${userUID}/history`).push().key;
             up[`users/${userUID}/history/${logKey}`] = {
