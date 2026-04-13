@@ -22,6 +22,16 @@ const GLOBAL_COINS = [
         contract: '0x123...smat', 
         vol: '1.2M' 
     },
+{ 
+        sym: 'oxSMAT', 
+        name: 'oxPower SMAT', 
+        price: 8.00, 
+        decimal: 18, 
+        key: 'oxsmat_balance', 
+        networks: ['No Transferable Token'], 
+        contract: '0x217...eth', 
+        vol: '12.1B' 
+    },
     { 
         sym: 'btc', 
         name: 'Bitcoin', 
