@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>SMAT | Pro Mining</title>
+    <title>SMAT | Advanced Mining Hub</title>
 
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
@@ -20,281 +20,287 @@
             --glass: rgba(255, 255, 255, 0.03);
         }
 
-        body { background: var(--bg); color: white; font-family: 'Inter', sans-serif; overflow-x: hidden; }
+        body { background: var(--bg); color: white; font-family: 'Inter', sans-serif; overflow-x: hidden; margin: 0; }
         
-        /* Premium Gradient Header */
-        .mining-header {
-            padding: 40px 20px;
-            background: radial-gradient(circle at top right, rgba(240, 185, 11, 0.15), transparent);
+        /* Premium Core Animation */
+        .mining-section {
+            padding: 30px 20px;
+            background: radial-gradient(circle at top, rgba(240, 185, 11, 0.1), transparent);
             text-align: center;
         }
 
-        /* Mining Glow Circle */
-        .mining-circle-container {
-            width: 220px; height: 220px; margin: 0 auto;
+        .mining-circle {
+            width: 200px; height: 200px; margin: 0 auto;
             position: relative; display: flex; align-items: center; justify-content: center;
         }
-        .outer-glow {
+        .outer-ring {
             position: absolute; width: 100%; height: 100%;
-            border-radius: 50%; border: 2px dashed var(--primary);
-            animation: rotate 10s linear infinite; opacity: 0.3;
+            border: 2px dashed var(--primary); border-radius: 50%;
+            animation: spin 15s linear infinite; opacity: 0.4;
         }
-        .inner-core {
-            width: 160px; height: 160px; background: var(--card);
+        .core-hub {
+            width: 150px; height: 150px; background: var(--card);
             border-radius: 50%; border: 4px solid var(--primary);
-            display: flex; flex-direction: column; align-items: center; justify-content: center;
             box-shadow: 0 0 30px rgba(240, 185, 11, 0.2);
-            z-index: 5;
+            z-index: 10; display: flex; flex-direction: column; align-items: center; justify-content: center;
         }
 
-        /* Animations */
-        @keyframes rotate { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
-        .active-pulse { animation: pulse 2s infinite; }
-        @keyframes pulse { 0% { transform: scale(1); } 50% { transform: scale(1.05); box-shadow: 0 0 50px rgba(240, 185, 11, 0.4); } 100% { transform: scale(1); } }
+        @keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+        .active-glow { animation: glow 2s infinite alternate; }
+        @keyframes glow { from { box-shadow: 0 0 20px rgba(240, 185, 11, 0.2); } to { box-shadow: 0 0 50px rgba(240, 185, 11, 0.5); } }
 
-        /* Pop-up Graphics */
-        .modal { 
-            display: none; position: fixed; inset: 0; 
-            background: rgba(0,0,0,0.9); z-index: 1000; 
-            backdrop-filter: blur(10px); align-items: flex-end; 
-        }
-        .modal-content { 
-            background: #181a20; width: 100%; 
-            border-radius: 30px 30px 0 0; padding: 30px 20px;
-            border-top: 3px solid var(--primary);
-            transform: translateY(100%); transition: 0.3s;
-        }
-        .modal.active .modal-content { transform: translateY(0); }
+        /* Boost Cards */
+        .grid-stats { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; padding: 20px; }
+        .b-card { background: var(--glass); border: 1px solid var(--border); border-radius: 20px; padding: 15px; position: relative; }
+        .b-val { color: var(--primary); font-family: 'Montserrat'; font-size: 18px; font-weight: 900; }
+        .b-label { font-size: 9px; color: #848e9c; font-weight: 700; text-transform: uppercase; }
 
-        .stat-card { background: var(--glass); border: 1px solid var(--border); border-radius: 16px; padding: 15px; }
-        .btn-main { background: var(--primary); color: black; font-weight: 900; width: 100%; padding: 16px; border-radius: 16px; text-transform: uppercase; }
+        /* Staking UI */
+        .stake-container { background: rgba(240, 185, 11, 0.03); border: 1px solid rgba(240, 185, 11, 0.1); border-radius: 24px; margin: 0 20px 20px; padding: 20px; }
         
-        .footer-nav {
-            position: fixed; bottom: 0; width: 100%; height: 75px;
-            background: #181a20; border-top: 1px solid var(--border);
-            display: flex; justify-content: space-around; align-items: center;
-        }
-        .nav-link { color: #848e9c; text-decoration: none; font-size: 11px; text-align: center; }
-        .nav-link.active { color: var(--primary); }
+        /* Modal Graphics */
+        .modal { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.9); z-index: 1000; backdrop-filter: blur(8px); align-items: flex-end; }
+        .modal-ui { background: #181a20; width: 100%; border-radius: 30px 30px 0 0; padding: 30px 20px; border-top: 2px solid var(--primary); }
+
+        .btn-p { background: var(--primary); color: black; font-weight: 900; width: 100%; padding: 16px; border-radius: 16px; transition: 0.2s; }
+        .btn-p:active { transform: scale(0.98); }
+
+        .footer-nav { position: fixed; bottom: 0; width: 100%; height: 70px; background: #181a20; border-top: 1px solid var(--border); display: flex; justify-content: space-around; align-items: center; z-index: 50; }
+        .nav-item { color: #848e9c; font-size: 10px; font-weight: bold; text-align: center; text-decoration: none; }
+        .nav-item.active { color: var(--primary); }
     </style>
 </head>
 <body>
 
-    <div class="mining-header">
-        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
-            <div style="text-align: left;">
-                <p style="color: var(--primary); font-weight: 900; font-size: 12px; letter-spacing: 1px;">SMAT L1 MINING</p>
-                <h2 id="user-id" style="font-size: 18px; font-weight: 700;">Loading...</h2>
+    <div class="mining-section">
+        <div class="flex justify-between items-center mb-6">
+            <div class="text-left">
+                <p class="text-[10px] text-yellow-500 font-black uppercase tracking-widest">SMAT Network L1</p>
+                <h2 id="user-display-id" class="text-lg font-bold">SMAT-LOADING</h2>
             </div>
-            <i class="fas fa-info-circle text-gray-500" onclick="openReferInfo()"></i>
-        </div>
-
-        <div class="mining-circle-container">
-            <div class="outer-glow" id="glow-ring"></div>
-            <div class="inner-core" id="mining-core" onclick="startMining()">
-                <i id="hammer-icon" class="fas fa-hammer text-3xl mb-2" style="color: var(--primary);"></i>
-                <p id="mining-status-text" style="font-size: 10px; font-weight: 800; color: #848e9c;">READY TO MINE</p>
-                <h3 id="timer-display" style="font-size: 20px; font-weight: 900; font-family: 'Montserrat';">00:00:00</h3>
+            <div onclick="openReferList()" class="bg-white/5 p-2 px-4 rounded-full border border-white/10 cursor-pointer">
+                <i class="fas fa-users text-yellow-500 mr-2"></i><span id="active-ref-count" class="font-bold text-xs">0</span>
             </div>
         </div>
 
-        <div style="margin-top: 30px;">
-            <p style="font-size: 11px; color: #848e9c; margin-bottom: 5px;">SESSION EARNINGS</p>
-            <h1 style="font-size: 32px; font-weight: 900; color: var(--primary);"><span id="session-bal">0.000000</span> <small style="font-size: 12px;">SMAT</small></h1>
+        <div class="mining-circle">
+            <div class="outer-ring" id="ring"></div>
+            <div class="core-hub" id="hub" onclick="triggerMining()">
+                <i id="h-icon" class="fas fa-hammer text-3xl text-yellow-500 mb-1"></i>
+                <p id="h-status" class="text-[8px] font-black text-gray-500">READY</p>
+                <h3 id="timer" class="text-xl font-black font-mono">24:00:00</h3>
+            </div>
+        </div>
+
+        <div class="mt-8">
+            <p class="text-[10px] text-gray-500 font-bold uppercase">Mined in current session</p>
+            <h1 class="text-4xl font-black text-yellow-500"><span id="session-smat">0.00000000</span></h1>
         </div>
     </div>
 
-    <div style="padding: 0 20px;">
-        <div class="grid grid-cols-2 gap-4">
-            <div class="stat-card">
-                <p style="font-size: 9px; color: #848e9c;">MINING SPEED</p>
-                <h4 style="font-size: 18px; font-weight: 900;"><span id="speed-val">1.00</span>x</h4>
-            </div>
-            <div class="stat-card">
-                <p style="font-size: 9px; color: #848e9c;">ACTIVE REFS</p>
-                <h4 style="font-size: 18px; font-weight: 900; color: var(--primary);"><span id="active-refs">0</span></h4>
-            </div>
+    <div class="grid-stats">
+        <div class="b-card">
+            <p class="b-label">Total Boost</p>
+            <p class="b-val" id="total-boost">1.00x</p>
+            <p class="text-[7px] text-gray-500 mt-1">Multiplied speed</p>
         </div>
+        <div class="b-card">
+            <p class="b-label">Next Reset</p>
+            <p class="text-sm font-bold text-red-500 mt-1">06:00 AM</p>
+            <p class="text-[7px] text-gray-500 mt-1">Daily activity reset</p>
+        </div>
+    </div>
 
-        <div class="stat-card" style="margin-top: 15px; display: flex; justify-content: space-between; align-items: center;">
+    <div class="stake-container">
+        <div class="flex justify-between items-center mb-4">
             <div>
-                <p style="font-size: 9px; color: #848e9c;">TOTAL ASSETS STAKED</p>
-                <h4 id="staked-tvl" style="font-size: 16px; font-weight: 700;">$0.00</h4>
+                <h3 class="text-sm font-black">oxSMAT Boost <span class="bg-yellow-500 text-black px-2 py-0.5 rounded text-[8px] ml-2">10X</span></h3>
+                <p class="text-[9px] text-gray-500">Every staked oxSMAT adds 10x speed</p>
             </div>
-            <button onclick="location.href='Stake.html'" style="background: rgba(240, 185, 11, 0.1); color: var(--primary); border: 1px solid var(--primary); padding: 5px 15px; border-radius: 8px; font-size: 10px; font-weight: 900;">MANAGE</button>
+            <div class="text-right">
+                <p class="text-[8px] text-gray-500 uppercase">Available</p>
+                <p class="text-xs font-bold" id="ox-bal-display">0.00</p>
+            </div>
+        </div>
+        
+        <div class="bg-black/40 rounded-2xl p-4 border border-white/5 flex justify-between mb-4">
+            <div><p class="text-[8px] text-gray-500">STAKED</p><p class="font-black text-yellow-500" id="ox-staked-val">0.00</p></div>
+            <div class="text-right"><p class="text-[8px] text-gray-500">BOOST GAIN</p><p class="font-black text-green-500" id="ox-boost-display">+0x</p></div>
+        </div>
+
+        <div class="flex gap-2">
+            <button onclick="openStakeModal('stake')" class="flex-1 bg-yellow-500 text-black py-3 rounded-xl font-black text-[10px]">STAKE</button>
+            <button onclick="openStakeModal('unstake')" class="flex-1 bg-white/5 border border-white/10 text-white py-3 rounded-xl font-black text-[10px]">UNSTAKE</button>
+        </div>
+        <p class="text-[8px] text-center text-red-500 mt-3 font-bold italic">* 1% Fee if unstaked within 7 days</p>
+    </div>
+
+    <div class="px-5 space-y-3 mb-28">
+        <p class="text-[10px] font-bold text-gray-500 uppercase">Daily Activity Rewards (Yesterday)</p>
+        <div class="b-card flex justify-between items-center py-4">
+            <span class="text-xs font-bold"><i class="fas fa-exchange-alt mr-3 text-blue-400"></i>Trade Volume</span>
+            <span class="text-yellow-500 font-black text-sm" id="trade-v-boost">+0x</span>
+        </div>
+        <div class="b-card flex justify-between items-center py-4">
+            <span class="text-xs font-bold"><i class="fas fa-rocket mr-3 text-red-400"></i>Crash Games</span>
+            <span class="text-yellow-500 font-black text-sm" id="crash-v-boost">+0x</span>
+        </div>
+        <div class="b-card flex justify-between items-center py-4">
+            <span class="text-xs font-bold"><i class="fas fa-predict mr-3 text-purple-400"></i>Prediction</span>
+            <span class="text-yellow-500 font-black text-sm" id="pred-v-boost">+0x</span>
         </div>
     </div>
 
-    <div id="referPopup" class="modal" onclick="closePopup(event)">
-        <div class="modal-content">
-            <h3 style="font-family: 'Montserrat'; font-size: 20px; margin-bottom: 20px;">Mining Analytics</h3>
-            <div id="refer-list" style="max-height: 250px; overflow-y: auto;" class="space-y-3">
-                </div>
-            <div class="stat-card" style="margin-top: 20px; border: 1px dashed var(--primary);">
-                <p style="font-size: 10px; line-height: 1.5;">🚀 <b>Speed Boost:</b> Base (1x) + Active Friend (1x) + 10% of Friend's Staking value.</p>
-            </div>
-            <button class="btn-main" style="margin-top: 20px;" onclick="closeAllModals()">GOT IT</button>
-        </div>
-    </div>
+    <div id="stakeModal" class="modal"><div class="modal-ui">
+        <h3 id="m-title" class="font-black text-xl mb-1">Stake oxSMAT</h3>
+        <p class="text-[10px] text-gray-500 mb-6 uppercase">Max Available: <span id="m-max" class="text-white">0.00</span></p>
+        <input id="m-input" type="number" placeholder="0.00" class="w-full bg-black p-4 rounded-2xl border border-white/10 mb-6 outline-none text-xl font-bold">
+        <button id="m-btn" class="btn-p">CONFIRM ACTION</button>
+        <button onclick="closeModals()" class="w-full text-gray-500 text-xs font-bold mt-4">CANCEL</button>
+    </div></div>
 
     <footer class="footer-nav">
-        <a href="index.html" class="nav-link"><i class="fas fa-chart-line block text-lg mb-1"></i>Trade</a>
-        <a href="Mining.html" class="nav-link active"><i class="fas fa-hammer block text-lg mb-1"></i>Mining</a>
-        <a href="Wallet.html" class="nav-link"><i class="fas fa-wallet block text-lg mb-1"></i>Wallet</a>
+        <a href="Trade.html" class="nav-item"><i class="fas fa-chart-bar block text-lg mb-1"></i>Trade</a>
+        <a href="Mining.html" class="nav-item active"><i class="fas fa-hammer block text-lg mb-1"></i>Mining</a>
+        <a href="Wallet.html" class="nav-item"><i class="fas fa-wallet block text-lg mb-1"></i>Wallet</a>
     </footer>
 
-    <script>
-        // Firebase Configuration (Same as your exchange)
-        const firebaseConfig = { apiKey: "AIzaSyAMxtJedkehhxJRMPZLjhpKHqneHEWsGlE", authDomain: "smat-exchange.firebaseapp.com", projectId: "smat-exchange", databaseURL: "https://smat-exchange-default-rtdb.firebaseio.com", storageBucket: "smat-exchange.appspot.com", messagingSenderId: "836334569396", appId: "1:836334569396:web:679effe640b3453412d4e1" };
-        firebase.initializeApp(firebaseConfig);
-        const db = firebase.database();
-        const auth = firebase.auth();
+<script>
+    // --- STATE MANAGEMENT (Wallet Sync) ---
+    const state = {
+        smatBalance: parseFloat(localStorage.getItem('smatBalance')) || 0,
+        oxBalance: parseFloat(localStorage.getItem('oxBalance')) || 0, // Wallet থেকে কল
+        oxStaked: parseFloat(localStorage.getItem('oxStaked')) || 0,
+        oxStakeDate: parseInt(localStorage.getItem('oxStakeDate')) || 0,
+        
+        miningActive: localStorage.getItem('miningActive') === 'true',
+        endTime: parseInt(localStorage.getItem('mineEndTime')) || 0,
+        sessionSmat: 0,
+        
+        // Activity Data (From Yesterday - Reset 6AM logic needed in backend)
+        yesterdayTrade: 0, 
+        yesterdayCrash: 0,
+        yesterdayPred: 0,
+        activeRefs: 0
+    };
 
-        let userData = {};
-        let miningInterval;
+    function save() {
+        localStorage.setItem('smatBalance', state.smatBalance);
+        localStorage.setItem('oxBalance', state.oxBalance);
+        localStorage.setItem('oxStaked', state.oxStaked);
+        localStorage.setItem('oxStakeDate', state.oxStakeDate);
+        localStorage.setItem('miningActive', state.miningActive);
+        localStorage.setItem('mineEndTime', state.endTime);
+    }
 
-        function init() {
-            auth.onAuthStateChanged(user => {
-                if (user) {
-                    db.ref('users/' + user.uid).on('value', snap => {
-                        userData = snap.val() || {};
-                        updateUI();
-                    });
-                } else { location.href = "login.html"; }
-            });
-        }
+    // --- FIREBASE SIMULATION & UI UPDATE ---
+    function updateUI() {
+        document.getElementById('ox-bal-display').innerText = state.oxBalance.toFixed(2);
+        document.getElementById('ox-staked-val').innerText = state.oxStaked.toFixed(2);
+        
+        // Boost Calculations
+        let refBoost = state.activeRefs * 1.0;
+        let oxBoost = state.oxStaked * 10;
+        let activityBoost = state.yesterdayTrade + state.yesterdayCrash + state.yesterdayPred;
+        let totalSpeed = 1.0 + refBoost + oxBoost + activityBoost;
 
-        function updateUI() {
-            document.getElementById('user-id').innerText = userData.smatId || "SMAT-USER";
+        document.getElementById('ox-boost-display').innerText = `+${oxBoost}x`;
+        document.getElementById('trade-v-boost').innerText = `+${state.yesterdayTrade}x`;
+        document.getElementById('crash-v-boost').innerText = `+${state.yesterdayCrash}x`;
+        document.getElementById('pred-v-boost').innerText = `+${state.yesterdayPred}x`;
+        document.getElementById('total-boost').innerText = totalSpeed.toFixed(2) + "x";
+        document.getElementById('active-ref-count').innerText = state.activeRefs;
+
+        return totalSpeed;
+    }
+
+    // --- MINING ENGINE ---
+    function triggerMining() {
+        if(state.miningActive) return;
+        state.miningActive = true;
+        state.endTime = Date.now() + 86400000;
+        state.sessionSmat = 0;
+        save();
+        alert("Mining Engine Started!");
+    }
+
+    function miningLoop() {
+        if(!state.miningActive) return;
+
+        let remain = state.endTime - Date.now();
+        if(remain <= 0) {
+            state.miningActive = false;
+            state.smatBalance += state.sessionSmat;
+            state.sessionSmat = 0;
+            save();
+            updateUI();
+        } else {
+            let h = Math.floor(remain/3600000).toString().padStart(2,'0');
+            let m = Math.floor((remain%3600000)/60000).toString().padStart(2,'0');
+            let s = Math.floor((remain%60000)/1000).toString().padStart(2,'0');
+            document.getElementById('timer').innerText = `${h}:${m}:${s}`;
             
-            // Calculate Speed based on your formula
-            let baseSpeed = 1.0;
-            let refSpeed = (userData.activeReferrals || 0) * 1.0;
-            let stakingBonus = (userData.refStakingTVL || 0) * 0.1;
-            let totalSpeed = baseSpeed + refSpeed + stakingBonus;
-
-            document.getElementById('speed-val').innerText = totalSpeed.toFixed(2);
-            document.getElementById('active-refs').innerText = userData.activeReferrals || 0;
-            document.getElementById('staked-tvl').innerText = "$" + (userData.totalStaked || 0).toLocaleString();
-
-            checkMiningStatus();
+            // 0.0025 base SMAT/Hour
+            let speed = updateUI();
+            state.sessionSmat += (0.0025 * speed) / 3600;
+            document.getElementById('session-smat').innerText = state.sessionSmat.toFixed(8);
+            
+            document.getElementById('hub').classList.add('active-glow');
+            document.getElementById('h-status').innerText = "RUNNING";
+            document.getElementById('h-status').classList.replace('text-gray-500', 'text-yellow-500');
         }
+    }
 
-        function checkMiningStatus() {
-            const now = Date.now();
-            const endTime = userData.miningEndTime || 0;
+    // --- STAKING LOGIC ---
+    function openStakeModal(type) {
+        const modal = document.getElementById('stakeModal');
+        const title = document.getElementById('m-title');
+        const max = document.getElementById('m-max');
+        const btn = document.getElementById('m-btn');
+        
+        modal.style.display = 'flex';
+        if(type === 'stake') {
+            title.innerText = "Stake oxSMAT";
+            max.innerText = state.oxBalance.toFixed(2);
+            btn.onclick = () => executeStake('stake');
+        } else {
+            title.innerText = "Unstake oxSMAT";
+            max.innerText = state.oxStaked.toFixed(2);
+            btn.onclick = () => executeStake('unstake');
+        }
+    }
 
-            if (now < endTime) {
-                // Mining is Running
-                startAnimation(true);
-                if (!miningInterval) {
-                    miningInterval = setInterval(() => {
-                        updateTimer(endTime);
-                        calculateEarning();
-                    }, 1000);
-                }
-            } else {
-                // Mining Stopped
-                startAnimation(false);
-                clearInterval(miningInterval);
-                miningInterval = null;
-                document.getElementById('timer-display').innerText = "00:00:00";
-                document.getElementById('mining-status-text').innerText = "READY TO MINE";
+    function executeStake(type) {
+        const amt = parseFloat(document.getElementById('m-input').value);
+        if(isNaN(amt) || amt <= 0) return alert("Invalid Amount");
+
+        if(type === 'stake') {
+            if(amt > state.oxBalance) return alert("Insufficient oxSMAT");
+            state.oxBalance -= amt;
+            state.oxStaked += amt;
+            state.oxStakeDate = Date.now();
+        } else {
+            if(amt > state.oxStaked) return alert("Insufficient Staked Amount");
+            
+            let finalAmt = amt;
+            // 7 Days Check (7 * 24 * 60 * 60 * 1000)
+            if(Date.now() - state.oxStakeDate < 604800000) {
+                let fee = amt * 0.01;
+                finalAmt = amt - fee;
+                alert(`Early Unstake Fee 1% (${fee.toFixed(2)}) deducted.`);
             }
+            state.oxStaked -= amt;
+            state.oxBalance += finalAmt;
         }
+        save(); updateUI(); closeModals();
+    }
 
-        function startAnimation(active) {
-            const core = document.getElementById('mining-core');
-            const ring = document.getElementById('glow-ring');
-            if (active) {
-                core.classList.add('active-pulse');
-                ring.style.opacity = "1";
-                document.getElementById('mining-status-text').innerText = "MINING ACTIVE";
-                document.getElementById('mining-status-text').style.color = "var(--primary)";
-            } else {
-                core.classList.remove('active-pulse');
-                ring.style.opacity = "0.3";
-            }
-        }
+    function closeModals() { document.querySelectorAll('.modal').forEach(m => m.style.display = 'none'); }
 
-        function updateTimer(endTime) {
-            const remain = endTime - Date.now();
-            const h = Math.floor(remain / 3600000).toString().padStart(2, '0');
-            const m = Math.floor((remain % 3600000) / 60000).toString().padStart(2, '0');
-            const s = Math.floor((remain % 60000) / 1000).toString().padStart(2, '0');
-            document.getElementById('timer-display').innerText = `${h}:${m}:${s}`;
-        }
-
-        function calculateEarning() {
-            // Formula: 0.0025 SMAT per Hour base
-            let speed = parseFloat(document.getElementById('speed-val').innerText);
-            let hourlyRate = 0.0025 * speed;
-            let perSec = hourlyRate / 3600;
-            
-            let sessionStart = userData.miningStartTime || Date.now();
-            let elapsedSec = Math.floor((Date.now() - sessionStart) / 1000);
-            let earned = elapsedSec * perSec;
-            
-            document.getElementById('session-bal').innerText = earned.toFixed(6);
-        }
-
-        async function startMining() {
-            if (Date.now() < (userData.miningEndTime || 0)) return; // Already running
-
-            const startTime = Date.now();
-            const endTime = startTime + (24 * 60 * 60 * 1000); // 24 Hours
-
-            await db.ref('users/' + auth.currentUser.uid).update({
-                miningStartTime: startTime,
-                miningEndTime: endTime
-            });
-            
-            // Trigger Animation Haptic/Sound if needed
-            alert("Mining Started for 24 Hours!");
-        }
-
-        function openReferInfo() {
-            const pop = document.getElementById('referPopup');
-            pop.style.display = 'flex';
-            setTimeout(() => pop.classList.add('active'), 10);
-            
-            // Fetch Refer List from Firebase
-            const listCont = document.getElementById('refer-list');
-            listCont.innerHTML = "<p style='color:gray; font-size:12px; text-align:center;'>Fetching members...</p>";
-
-            db.ref('users').orderByChild('referredBy').equalTo(auth.currentUser.uid).once('value', snap => {
-                const users = snap.val();
-                if (!users) { listCont.innerHTML = "<p style='text-align:center; font-size:12px;'>No referrals yet.</p>"; return; }
-                
-                let html = "";
-                Object.values(users).forEach(u => {
-                    let status = (Date.now() < (u.miningEndTime || 0)) ? 'ACTIVE' : 'INACTIVE';
-                    html += `
-                        <div class="stat-card" style="display:flex; justify-content:space-between; align-items:center; background: rgba(255,255,255,0.02);">
-                            <div>
-                                <p style="font-weight:bold; font-size:13px;">${u.smatId || 'Anonymous'}</p>
-                                <p style="font-size:9px; color:${status==='ACTIVE'?'#0ecb81':'#f6465d'}">${status}</p>
-                            </div>
-                            <div style="text-align:right">
-                                <p style="font-size:9px; color:gray;">STAKED</p>
-                                <p style="font-size:11px; font-weight:bold;">$${(u.totalStaked || 0).toFixed(2)}</p>
-                            </div>
-                        </div>
-                    `;
-                });
-                listCont.innerHTML = html;
-            });
-        }
-
-        function closeAllModals() {
-            const pop = document.getElementById('referPopup');
-            pop.classList.remove('active');
-            setTimeout(() => pop.style.display = 'none', 300);
-        }
-
-        function closePopup(e) { if(e.target.id === 'referPopup') closeAllModals(); }
-
-        window.onload = init;
-    </script>
+    window.onload = () => {
+        updateUI();
+        setInterval(miningLoop, 1000);
+    };
+</script>
 </body>
 </html>
