@@ -200,7 +200,7 @@ function updateUI() {
     const sorted = GLOBAL_COINS.map(c => {
         const s = c.sym.toLowerCase();
         const price = livePrices[s]?.price || c.price;
-        const bal = (s === 'usdt') ? (userData.balance || 0) : (userData[s + '_balance'] || 0);
+        const bal = parseFloat(userData[s + '_balance']) || 0;        
         return { ...c, price, bal, val: bal * price };
     }).sort((a,b) => b.val - a.val);
 
@@ -227,7 +227,7 @@ function filterCoins() {
     const query = document.getElementById('coinSearch').value.toLowerCase();
     const list = GLOBAL_COINS.map(c => {
         const s = c.sym.toLowerCase();
-        const bal = (s === 'usdt') ? (userData.balance || 0) : (userData[s + '_balance'] || 0);
+        const bal = parseFloat(userData[s + '_balance']) || 0;        
         return { ...c, bal };
     }).sort((a,b) => b.bal - a.bal)
     .filter(c => c.name.toLowerCase().includes(query) || c.sym.toLowerCase().includes(query));
@@ -244,7 +244,7 @@ function filterCoins() {
 function openActionPopup(sym, mode) {
     const coin = GLOBAL_COINS.find(c => c.sym.toLowerCase() === sym);
     const s = coin.sym.toLowerCase();
-    const bal = (s === 'usdt') ? (userData.balance || 0) : (userData[s + '_balance'] || 0);
+    const bal = parseFloat(userData[s + '_balance']) || 0;    
     const price = livePrices[s]?.price || coin.price;
 
     document.getElementById('popCoinLogo').src = `assets/logos/${s}.png`;
@@ -371,14 +371,14 @@ async function processWithdraw() {
     const amt = parseFloat(document.getElementById('withAmt').value);
     const addr = document.getElementById('withAddr').value;
     const s = document.getElementById('popCoinName').innerText.toLowerCase();
-    const bal = (s === 'usdt') ? (userData.balance || 0) : (userData[s + '_balance'] || 0);
+    const bal = parseFloat(userData[s + '_balance']) || 0;    
     const price = livePrices[s]?.price || 1, fee = 0.25 / price;
 
     if(!addr || isNaN(amt) || amt <= 0 || (amt + fee) > bal) return alert("Insufficient Balance!");
 
     const txId = db.ref('transactions').push().key;
     const data = { method: 'Withdraw', coin: s.toUpperCase(), amount: amt, network: document.getElementById('withNet').value, address: addr, status: 'pending', timestamp: Date.now(), hash: '...' };
-    await db.ref('users/' + auth.currentUser.uid).update({ [(s==='usdt'?'balance':s+'_balance')]: bal - (amt + fee) });
+    await db.ref('users/' + auth.currentUser.uid).update({ [s + '_balance']: bal - (amt + fee) });    
     await db.ref('users/' + auth.currentUser.uid + '/history/' + txId).set(data);
     alert("Withdrawal Submitted!"); hidePopup();
 }
@@ -387,13 +387,13 @@ async function processTransfer() {
     const amt = parseFloat(document.getElementById('transAmt').value);
     const target = document.getElementById('transTarget').value;
     const s = document.getElementById('popCoinName').innerText.toLowerCase();
-    const bal = (s === 'usdt') ? (userData.balance || 0) : (userData[s + '_balance'] || 0);
+    const bal = parseFloat(userData[s + '_balance']) || 0;    
 
     if(!target || isNaN(amt) || amt <= 0 || amt > bal) return alert("Check Input!");
 
     const txId = db.ref('transactions').push().key;
     const data = { method: 'Internal Transfer', coin: s.toUpperCase(), amount: amt, network: 'Internal', address: target, status: 'success', timestamp: Date.now(), hash: 'Null' };
-    await db.ref('users/' + auth.currentUser.uid).update({ [(s==='usdt'?'balance':s+'_balance')]: bal - amt });
+    await db.ref('users/' + auth.currentUser.uid).update({ [s + '_balance']: bal - amt });    
     await db.ref('users/' + auth.currentUser.uid + '/history/' + txId).set(data);
     alert("Sent Successfully!"); hidePopup();
 }
