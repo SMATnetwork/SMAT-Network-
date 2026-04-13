@@ -185,27 +185,35 @@
         updateTokens();
     }
 
-    async function executeSwap() {
+        async function executeSwap() {
         const f = document.getElementById('select-from').value;
         const t = document.getElementById('select-to').value;
         const fAmt = parseFloat(document.getElementById('input-from').value);
         const tAmt = parseFloat(document.getElementById('input-to').value);
 
         if(!fAmt || fAmt <= 0) return alert("Enter amount");
+        if(f === t) return alert("Cannot swap the same coin");
 
         document.getElementById('btn-loader').style.display = 'block';
         document.getElementById('btn-text').innerText = 'PROCESSING...';
         document.getElementById('swap-btn').disabled = true;
 
         try {
+            const up = {};
+            // ডাইনামিক পাথ সেট করা (যেমন: usdt_balance, oxsmat_balance)
             const fPath = `${f.toLowerCase()}_balance`;
-const tPath = `${t.toLowerCase()}_balance`;
+            const tPath = `${t.toLowerCase()}_balance`;
 
-            // Deduct only the exact input amount because fee was already included in the calculation
-up[`users/${userUID}/${fPath}`] = userBalances[f] - fAmt;
-up[`users/${userUID}/${tPath}`] = userBalances[t] + tAmt;
+            // ইউজারের বর্তমান ব্যালেন্স চেক (নিরাপত্তার জন্য)
+            if (userBalances[f] < fAmt) {
+                throw new Error("Insufficient Balance");
+            }
 
+            // ব্যালেন্স আপডেট লজিক
+            up[`users/${userUID}/${fPath}`] = userBalances[f] - fAmt;
+            up[`users/${userUID}/${tPath}`] = (userBalances[t] || 0) + tAmt;
 
+            // ট্রানজেকশন হিস্ট্রি যোগ করা
             const logKey = db.ref(`users/${userUID}/history`).push().key;
             up[`users/${userUID}/history/${logKey}`] = {
                 method: `Swap ${f} to ${t}`,
@@ -216,15 +224,20 @@ up[`users/${userUID}/${tPath}`] = userBalances[t] + tAmt;
             };
 
             await db.ref().update(up);
+            
             alert(`Swap Successful!\nReceived: ${tAmt.toFixed(6)} ${t}`);
             document.getElementById('input-from').value = "";
             calculate();
-        } catch (e) { alert("Error: Swap Failed"); }
+        } catch (e) { 
+            console.error(e);
+            alert("Error: " + e.message); 
+        }
         
         document.getElementById('btn-loader').style.display = 'none';
         document.getElementById('btn-text').innerText = 'CONFIRM SWAP';
         document.getElementById('swap-btn').disabled = false;
     }
+
 
     setInterval(fetchPrices, 15000);
     window.onload = fetchPrices;
