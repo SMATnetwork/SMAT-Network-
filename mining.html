@@ -147,20 +147,21 @@ let displaySmat = 0; // এই লাইনে বসান
 
 
         onAuthStateChanged(auth, (u) => {
-            if (u) {
-                user = u;
-                onValue(ref(db, `users/${u.uid}`), (snap) => {
-                    uData = snap.val() || {};
-                    // Force Numbers to avoid NaN
-                    uData.sessionSmat = parseFloat(uData.sessionSmat) || 0;
-                    uData.oxStaked = parseFloat(uData.oxStaked) || 0;
-                    uData.oxBalance = parseFloat(uData.oxBalance) || 0;
-                    
-                    if(uData.smatID) syncRefs(uData.smatID);
-                    updateUI();
-                });
-            } else { window.location.href = 'logIn.html'; }
+    if (u) {
+        user = u;
+        onValue(ref(db, `users/${u.uid}`), (snap) => {
+            uData = snap.val() || {};
+            // আপনার ডাইনামিক সিস্টেম অনুযায়ী সঠিক ব্যালেন্স রিড করা
+            uData.oxBalance = parseFloat(uData.oxsmat_balance) || 0; 
+            uData.oxStaked = parseFloat(uData.oxStaked) || 0;
+            uData.sessionSmat = parseFloat(uData.sessionSmat) || 0;
+            
+            if(uData.smatID) syncRefs(uData.smatID);
+            updateUI();
         });
+    } else { window.location.href = 'logIn.html'; }
+});
+
 
         function syncRefs(sid) {
             onValue(query(ref(db, 'users'), orderByChild('referredBy'), equalTo(sid)), (snap) => {
@@ -219,24 +220,41 @@ let displaySmat = 0; // এই লাইনে বসান
         };
 
         async function handleStaking(mode) {
-            const amount = parseFloat(document.getElementById('amountInput').value);
-            if(!amount || amount <= 0) return alert("Enter amount");
-            const uRef = ref(db, `users/${user.uid}`);
-            
-            if(mode === 'stake') {
-                if(amount > uData.oxBalance) return alert("Insufficient Balance");
-                await update(uRef, { oxBalance: uData.oxBalance - amount, oxStaked: uData.oxStaked + amount, lastStakeTime: Date.now() });
-            } else {
-                if(amount > uData.oxStaked) return alert("Insufficient Staked");
-                let receive = amount;
-                if(Date.now() - (uData.lastStakeTime || 0) < 604800000) {
-                    const fee = amount * 0.01; receive = amount - fee;
-                    alert(`1% Fee deducted: $${fee.toFixed(4)}`);
-                }
-                await update(uRef, { oxBalance: uData.oxBalance + receive, oxStaked: uData.oxStaked - amount });
-            }
-            closeModals();
+    const amount = parseFloat(document.getElementById('amountInput').value);
+    if(!amount || amount <= 0) return alert("Enter amount");
+    const uRef = ref(db, `users/${user.uid}`);
+    
+    // ডাইনামিক কি (Key) এর নাম
+    const balKey = 'oxsmat_balance';
+
+    if(mode === 'stake') {
+        if(amount > uData.oxBalance) return alert("Insufficient Balance");
+        
+        await update(uRef, { 
+            [balKey]: uData.oxBalance - amount, 
+            oxStaked: uData.oxStaked + amount, 
+            lastStakeTime: Date.now() 
+        });
+    } else {
+        if(amount > uData.oxStaked) return alert("Insufficient Staked");
+        
+        let receive = amount;
+        // ৭ দিনের আগে আনস্ট্যাক করলে ১% ফি
+        if(Date.now() - (uData.lastStakeTime || 0) < 604800000) {
+            const fee = amount * 0.01; 
+            receive = amount - fee;
+            alert(`1% Fee deducted: $${fee.toFixed(4)}`);
         }
+        
+        await update(uRef, { 
+            [balKey]: uData.oxBalance + receive, 
+            oxStaked: uData.oxStaked - amount 
+        });
+    }
+    closeModals();
+}
+
+
 
         window.openReferralAnalytics = () => {
             const modal = document.getElementById('referralModal');
