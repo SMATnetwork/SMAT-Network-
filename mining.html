@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>SMAT Network | Pro Mining</title>
+    <title>SMAT Network | Mining Hub</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
@@ -11,19 +11,15 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@900&family=Inter:wght@400;600;700&display=swap');
         :root { --bg: #0b0e11; --card: #1e2329; --primary: #f0b90b; --up: #0ecb81; --border: rgba(255,255,255,0.08); }
-        body { background: var(--bg); color: white; font-family: 'Inter', sans-serif; margin: 0; padding-bottom: 100px; overflow-x: hidden; }
+        body { background: var(--bg); color: white; font-family: 'Inter', sans-serif; margin: 0; padding-bottom: 100px; -webkit-user-select: none; }
         .mining-header { padding: 30px 20px; background: radial-gradient(circle at top, rgba(240, 185, 11, 0.15), transparent); text-align: center; }
         .core-hub { width: 150px; height: 150px; background: var(--card); border-radius: 50%; border: 4px solid var(--primary); display: flex; flex-direction: column; align-items: center; justify-content: center; cursor: pointer; transition: 0.3s; margin: 0 auto; }
         .active-glow { animation: glow 2s infinite alternate; border-color: var(--up); box-shadow: 0 0 30px rgba(14, 203, 129, 0.3); }
         @keyframes glow { from { opacity: 0.8; } to { opacity: 1; } }
-        .modal { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.95); z-index: 5000; backdrop-filter: blur(10px); align-items: flex-end; }
+        .modal { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.9); z-index: 5000; backdrop-filter: blur(10px); align-items: flex-end; }
         .modal-ui { background: #181a20; width: 100%; border-radius: 30px 30px 0 0; padding: 25px; border-top: 3px solid var(--primary); transform: translateY(100%); transition: 0.3s; }
         .modal.active .modal-ui { transform: translateY(0); }
-        .status-dot { width: 8px; height: 8px; border-radius: 50%; display: inline-block; margin-right: 6px; }
-        .dot-on { background: var(--up); box-shadow: 0 0 8px var(--up); }
-        .dot-off { background: #f6465d; }
         .footer-nav { position: fixed; bottom: 0; width: 100%; height: 75px; background: #181a20; border-top: 1px solid var(--border); display: flex; justify-content: space-around; align-items: center; z-index: 4000; }
         .nav-item { color: #848e9c; font-size: 10px; text-align: center; text-decoration: none; flex: 1; }
         .nav-item.active { color: var(--primary); }
@@ -37,7 +33,7 @@
                 <p class="text-[10px] text-yellow-500 font-black uppercase">SMAT Network L1</p>
                 <h2 id="user-display-id" class="text-lg font-bold">...</h2>
             </div>
-            <div onclick="openReferralAnalytics()" class="bg-white/5 p-2 px-4 rounded-full border border-white/10 cursor-pointer">
+            <div onclick="openReferralAnalytics()" class="bg-white/5 p-2 px-4 rounded-full border border-white/10 cursor-pointer active:opacity-50">
                 <i class="fas fa-users text-yellow-500 mr-2"></i><span id="active-ref-count" class="font-bold text-xs">0</span>
             </div>
         </div>
@@ -67,7 +63,7 @@
 
     <div class="bg-yellow-500/5 border border-yellow-500/10 rounded-3xl m-5 p-5">
         <div class="flex justify-between items-center mb-4">
-            <h3 class="text-sm font-black uppercase tracking-tight">oxSMAT Boost <span class="text-yellow-500 ml-1">10X</span></h3>
+            <h3 class="text-sm font-black uppercase">oxSMAT Boost <span class="text-yellow-500 ml-1">10X</span></h3>
             <div class="text-right"><p class="text-[8px] text-gray-400 uppercase">Staked</p><p class="text-xs font-bold text-yellow-500" id="ox-staked-val">0.00</p></div>
         </div>
         <div class="flex gap-2">
@@ -78,12 +74,10 @@
 
     <div class="px-5 space-y-2 mb-32">
         <div class="bg-white/5 border border-white/5 rounded-2xl flex justify-between py-4 px-5 text-xs font-bold">
-            <span><i class="fas fa-rocket mr-2 text-red-500"></i>Crash Boost</span>
-            <span id="crash-boost" class="text-yellow-500">+0x</span>
+            <span><i class="fas fa-rocket mr-2 text-red-500"></i>Crash Boost</span><span id="crash-boost" class="text-yellow-500">+0x</span>
         </div>
         <div class="bg-white/5 border border-white/5 rounded-2xl flex justify-between py-4 px-5 text-xs font-bold">
-            <span><i class="fas fa-chart-pie mr-2 text-purple-500"></i>Predict Boost</span>
-            <span id="pred-boost" class="text-yellow-500">+0x</span>
+            <span><i class="fas fa-chart-pie mr-2 text-purple-500"></i>Predict Boost</span><span id="pred-boost" class="text-yellow-500">+0x</span>
         </div>
     </div>
 
@@ -104,14 +98,14 @@
     </div></div>
 
     <div id="referralModal" class="modal"><div class="modal-ui">
-        <h3 class="font-black text-xl mb-6 uppercase">Referral Network</h3>
+        <h3 class="font-black text-xl mb-6 uppercase">Referral Stats</h3>
         <div class="grid grid-cols-3 gap-2 mb-6 text-center">
             <div class="bg-white/5 p-3 rounded-2xl"><p class="text-[8px] text-gray-500 font-bold uppercase">Total</p><p id="pop-total-ref" class="text-lg font-black">0</p></div>
             <div class="bg-white/5 p-3 rounded-2xl"><p class="text-[8px] text-green-500 font-bold uppercase">Active</p><p id="pop-active-ref" class="text-lg font-black text-green-500">0</p></div>
             <div class="bg-white/5 p-3 rounded-2xl"><p class="text-[8px] text-yellow-500 font-bold uppercase">Boost</p><p id="pop-boost-ref" class="text-lg font-black text-yellow-500">+0x</p></div>
         </div>
         <div class="max-h-60 overflow-y-auto space-y-2" id="ref-list-ui"></div>
-        <button onclick="closeModals()" class="w-full bg-white/5 py-4 rounded-xl font-bold mt-6 text-xs">CLOSE</button>
+        <button onclick="closeModals()" class="w-full bg-white/5 py-4 rounded-xl font-bold mt-6 text-xs text-gray-500">CLOSE</button>
     </div></div>
 
     <footer class="footer-nav">
@@ -137,9 +131,7 @@
         const auth = getAuth(app);
         const db = getDatabase(app);
 
-        let user = null;
-        let uData = {};
-        let referrals = [];
+        let user = null, uData = {}, referrals = [];
         const BASE_MINING = 0.00005;
 
         onAuthStateChanged(auth, (u) => {
@@ -147,7 +139,7 @@
                 user = u;
                 onValue(ref(db, `users/${u.uid}`), (snap) => {
                     uData = snap.val() || {};
-                    // NaN Fix: যদি ডাটাবেজে না থাকে তবে ডিফল্ট ০ সেট করা
+                    // CRITICAL: NaN Fix - If undefined, set to 0
                     if (uData.sessionSmat === undefined || isNaN(uData.sessionSmat)) uData.sessionSmat = 0;
                     if(uData.smatID) syncRefs(uData.smatID);
                     updateUI();
@@ -164,25 +156,24 @@
 
         function updateUI() {
             if(!user) return;
-            const activeRefs = referrals.filter(r => r.miningActive === true).length;
+            const activeRefsCount = referrals.filter(r => r.miningActive === true).length;
             
-            // Speed Calculation
             let cBoost = uData.crashVol_6am || 0;
             let pBoost = uData.predVol_6am || 0;
             let sBoost = (uData.oxStaked || 0) * 10;
-            let rBoost = activeRefs * 1.0;
+            let rBoost = activeRefsCount * 1.0;
             let totalSpeed = 1.0 + cBoost + pBoost + sBoost + rBoost;
 
-            document.getElementById('user-display-id').innerText = uData.smatID || "Assigning...";
+            document.getElementById('user-display-id').innerText = uData.smatID || "SMAT-XXXX";
             document.getElementById('ox-staked-val').innerText = (uData.oxStaked || 0).toFixed(2);
-            document.getElementById('active-ref-count').innerText = activeRefs;
+            document.getElementById('active-ref-count').innerText = activeRefsCount;
             document.getElementById('total-boost').innerText = totalSpeed.toFixed(2) + "x";
             document.getElementById('crash-boost').innerText = `+${cBoost}x`;
             document.getElementById('pred-boost').innerText = `+${pBoost}x`;
             
-            // NaN Check before display
-            let currentSmat = parseFloat(uData.sessionSmat || 0);
-            document.getElementById('session-smat').innerText = isNaN(currentSmat) ? "0.00000000" : currentSmat.toFixed(8);
+            // Session Balance Protection
+            let displayBal = parseFloat(uData.sessionSmat || 0);
+            document.getElementById('session-smat').innerText = isNaN(displayBal) ? "0.00000000" : displayBal.toFixed(8);
 
             if(uData.miningActive) {
                 document.getElementById('hub').classList.add('active-glow');
@@ -204,12 +195,13 @@
             });
         };
 
-        // Staking & Referral Functions (Updated with Warning/Popups)
         window.openActionModal = (mode) => {
             const modal = document.getElementById('actionModal');
             document.getElementById('modalTitle').innerText = mode === 'stake' ? "Stake oxSMAT" : "Unstake oxSMAT";
+            document.getElementById('inputLabel').innerText = mode === 'stake' ? "Available oxSMAT" : "Staked oxSMAT";
             document.getElementById('available-bal').innerText = mode === 'stake' ? (uData.oxBalance || 0).toFixed(2) : (uData.oxStaked || 0).toFixed(2);
             
+            // 7 Days Warning Logic
             const isEarly = mode === 'unstake' && (Date.now() - (uData.lastStakeTime || 0) < 7*24*60*60*1000);
             document.getElementById('feeNotice').classList.toggle('hidden', !isEarly);
 
@@ -220,7 +212,7 @@
 
         async function handleStaking(mode) {
             const amount = parseFloat(document.getElementById('amountInput').value);
-            if(!amount || amount <= 0) return alert("Invalid amount");
+            if(!amount || amount <= 0) return alert("Enter amount");
             const uRef = ref(db, `users/${user.uid}`);
             
             if(mode === 'stake') {
@@ -228,32 +220,33 @@
                 await update(uRef, { oxBalance: uData.oxBalance - amount, oxStaked: (uData.oxStaked || 0) + amount, lastStakeTime: Date.now() });
             } else {
                 if(amount > (uData.oxStaked || 0)) return alert("Insufficient Staked");
-                let receive = amount;
+                let finalReceive = amount;
                 if(Date.now() - (uData.lastStakeTime || 0) < 7*24*60*60*1000) {
-                    const fee = amount * 0.01; receive = amount - fee;
+                    const fee = amount * 0.01; finalReceive = amount - fee;
                     alert(`Early Unstake: 1% Fee ($${fee.toFixed(2)}) deducted.`);
                 }
-                await update(uRef, { oxBalance: (uData.oxBalance || 0) + receive, oxStaked: uData.oxStaked - amount });
+                await update(uRef, { oxBalance: (uData.oxBalance || 0) + finalReceive, oxStaked: uData.oxStaked - amount });
             }
             closeModals();
         }
 
         window.openReferralAnalytics = () => {
             const modal = document.getElementById('referralModal');
-            const activeCount = referrals.filter(r => r.miningActive).length;
+            const activeRefs = referrals.filter(r => r.miningActive);
             document.getElementById('pop-total-ref').innerText = referrals.length;
-            document.getElementById('pop-active-ref').innerText = activeCount;
-            document.getElementById('pop-boost-ref').innerText = `+${activeCount}x`;
+            document.getElementById('pop-active-ref').innerText = activeRefs.length;
+            document.getElementById('pop-boost-ref').innerText = `+${activeRefs.length}x`;
             document.getElementById('ref-list-ui').innerHTML = referrals.map(r => `
                 <div class="flex justify-between items-center p-4 bg-white/5 rounded-2xl border border-white/5">
-                    <div class="flex items-center"><span class="status-dot ${r.miningActive?'dot-on':'dot-off'}"></span><span class="text-xs font-bold">${r.email.split('@')[0]}</span></div>
-                    <span class="text-[10px] font-black ${r.miningActive?'text-green-500':'text-gray-500'}">${r.miningActive?'+1x Active':'Inactive'}</span>
+                    <div class="flex items-center"><span class="w-2 h-2 rounded-full mr-2 ${r.miningActive?'bg-green-500 shadow-[0_0_8px_#0ecb81]':'bg-red-500'}"></span><span class="text-xs font-bold">${r.email?.split('@')[0] || 'User'}</span></div>
+                    <span class="text-[10px] font-black ${r.miningActive?'text-green-500':''}">${r.miningActive?'+1x Active':'Inactive'}</span>
                 </div>
             `).join('');
             modal.style.display = 'flex';
             setTimeout(() => modal.classList.add('active'), 10);
         };
 
+        // Every 1 Second Update
         setInterval(() => {
             if(!uData.miningActive || !user) return;
             let remain = uData.mineEndTime - Date.now();
@@ -265,11 +258,11 @@
                 let s = Math.floor((remain%60000)/1000).toString().padStart(2,'0');
                 document.getElementById('timer').innerText = `${h}:${m}:${s}`;
 
-                // Real-time Mining Logic
-                const activeRefs = referrals.filter(r => r.miningActive).length;
-                let speed = 1.0 + (uData.crashVol_6am || 0) + (uData.predVol_6am || 0) + (uData.oxStaked * 10) + (activeRefs * 1.0);
+                // Speed Calc
+                const activeCount = referrals.filter(r => r.miningActive).length;
+                let speed = 1.0 + (uData.crashVol_6am || 0) + (uData.predVol_6am || 0) + (uData.oxStaked * 10) + (activeCount * 1.0);
                 
-                // NaN Protection while adding
+                // Real-time Update (Adding to local object for smooth UI)
                 let currentVal = parseFloat(uData.sessionSmat || 0);
                 uData.sessionSmat = currentVal + (BASE_MINING * speed) / 3600;
                 document.getElementById('session-smat').innerText = uData.sessionSmat.toFixed(8);
