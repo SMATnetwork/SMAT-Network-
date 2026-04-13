@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>SMAT Network | Mining Hub</title>
+    <title>SMAT Network | Pro Mining</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
@@ -12,25 +12,18 @@
     
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@900&family=Inter:wght@400;600;700&display=swap');
-        :root { --bg: #0b0e11; --card: #1e2329; --primary: #f0b90b; --up: #0ecb81; --down: #f6465d; --border: rgba(255,255,255,0.08); }
-        body { background: var(--bg); color: white; font-family: 'Inter', sans-serif; margin: 0; padding-bottom: 100px; }
-        
-        .mining-header { padding: 30px 20px; background: radial-gradient(circle at top, rgba(240, 185, 11, 0.1), transparent); text-align: center; }
-        .core-hub { width: 150px; height: 150px; background: var(--card); border-radius: 50%; border: 4px solid var(--primary); display: flex; flex-direction: column; align-items: center; justify-content: center; cursor: pointer; transition: 0.3s; margin: 0 auto; position: relative; }
-        .active-glow { animation: glow 2s infinite alternate; border-color: var(--up); }
-        @keyframes glow { from { box-shadow: 0 0 20px rgba(14, 203, 129, 0.2); } to { box-shadow: 0 0 50px rgba(14, 203, 129, 0.5); } }
-
-        .b-card { background: rgba(255,255,255,0.03); border: 1px solid var(--border); border-radius: 20px; padding: 15px; }
-        
-        /* Modals */
-        .modal { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.9); z-index: 5000; backdrop-filter: blur(10px); align-items: flex-end; }
+        :root { --bg: #0b0e11; --card: #1e2329; --primary: #f0b90b; --up: #0ecb81; --border: rgba(255,255,255,0.08); }
+        body { background: var(--bg); color: white; font-family: 'Inter', sans-serif; margin: 0; padding-bottom: 100px; overflow-x: hidden; }
+        .mining-header { padding: 30px 20px; background: radial-gradient(circle at top, rgba(240, 185, 11, 0.15), transparent); text-align: center; }
+        .core-hub { width: 150px; height: 150px; background: var(--card); border-radius: 50%; border: 4px solid var(--primary); display: flex; flex-direction: column; align-items: center; justify-content: center; cursor: pointer; transition: 0.3s; margin: 0 auto; }
+        .active-glow { animation: glow 2s infinite alternate; border-color: var(--up); box-shadow: 0 0 30px rgba(14, 203, 129, 0.3); }
+        @keyframes glow { from { opacity: 0.8; } to { opacity: 1; } }
+        .modal { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.95); z-index: 5000; backdrop-filter: blur(10px); align-items: flex-end; }
         .modal-ui { background: #181a20; width: 100%; border-radius: 30px 30px 0 0; padding: 25px; border-top: 3px solid var(--primary); transform: translateY(100%); transition: 0.3s; }
         .modal.active .modal-ui { transform: translateY(0); }
-
         .status-dot { width: 8px; height: 8px; border-radius: 50%; display: inline-block; margin-right: 6px; }
         .dot-on { background: var(--up); box-shadow: 0 0 8px var(--up); }
-        .dot-off { background: var(--down); }
-
+        .dot-off { background: #f6465d; }
         .footer-nav { position: fixed; bottom: 0; width: 100%; height: 75px; background: #181a20; border-top: 1px solid var(--border); display: flex; justify-content: space-around; align-items: center; z-index: 4000; }
         .nav-item { color: #848e9c; font-size: 10px; text-align: center; text-decoration: none; flex: 1; }
         .nav-item.active { color: var(--primary); }
@@ -42,16 +35,16 @@
         <div class="flex justify-between items-center mb-6">
             <div class="text-left">
                 <p class="text-[10px] text-yellow-500 font-black uppercase">SMAT Network L1</p>
-                <h2 id="user-display-id" class="text-lg font-bold">SMAT-0000</h2>
+                <h2 id="user-display-id" class="text-lg font-bold">...</h2>
             </div>
-            <div onclick="openReferralAnalytics()" class="bg-white/5 p-2 px-4 rounded-full border border-white/10 cursor-pointer active:scale-95 transition">
+            <div onclick="openReferralAnalytics()" class="bg-white/5 p-2 px-4 rounded-full border border-white/10 cursor-pointer">
                 <i class="fas fa-users text-yellow-500 mr-2"></i><span id="active-ref-count" class="font-bold text-xs">0</span>
             </div>
         </div>
 
         <div class="core-hub" id="hub" onclick="triggerMining()">
             <i id="h-icon" class="fas fa-hammer text-3xl text-yellow-500 mb-1"></i>
-            <p id="h-status" class="text-[8px] font-black text-gray-500 uppercase">OFFLINE</p>
+            <p id="h-status" class="text-[8px] font-black text-gray-500 uppercase tracking-widest">OFFLINE</p>
             <h3 id="timer" class="text-xl font-black font-mono">24:00:00</h3>
         </div>
 
@@ -62,13 +55,19 @@
     </div>
 
     <div class="grid grid-cols-2 gap-3 px-5 mb-5">
-        <div class="b-card"><p class="text-[8px] text-gray-500 font-bold uppercase">Total Speed</p><p class="text-xl font-black text-yellow-500" id="total-boost">1.00x</p></div>
-        <div class="b-card text-center"><p class="text-[8px] text-gray-500 font-bold uppercase">Reset</p><p class="text-[10px] font-bold text-red-500">DAILY 06:00 AM</p></div>
+        <div class="bg-white/5 border border-white/5 rounded-2xl p-4">
+            <p class="text-[8px] text-gray-500 font-bold uppercase">Total Speed</p>
+            <p class="text-xl font-black text-yellow-500" id="total-boost">1.00x</p>
+        </div>
+        <div class="bg-white/5 border border-white/5 rounded-2xl p-4 text-center">
+            <p class="text-[8px] text-gray-500 font-bold uppercase">Reset</p>
+            <p class="text-[10px] font-bold text-red-500 mt-1 uppercase">Daily 06:00 AM</p>
+        </div>
     </div>
 
     <div class="bg-yellow-500/5 border border-yellow-500/10 rounded-3xl m-5 p-5">
         <div class="flex justify-between items-center mb-4">
-            <h3 class="text-sm font-black uppercase">oxSMAT BOOST <span class="text-yellow-500 text-[10px] ml-1">10X</span></h3>
+            <h3 class="text-sm font-black uppercase tracking-tight">oxSMAT Boost <span class="text-yellow-500 ml-1">10X</span></h3>
             <div class="text-right"><p class="text-[8px] text-gray-400 uppercase">Staked</p><p class="text-xs font-bold text-yellow-500" id="ox-staked-val">0.00</p></div>
         </div>
         <div class="flex gap-2">
@@ -78,41 +77,42 @@
     </div>
 
     <div class="px-5 space-y-2 mb-32">
-        <p class="text-[10px] font-bold text-gray-500 uppercase">Activity Volume Boosters</p>
-        <div class="b-card flex justify-between py-4 px-5 text-xs font-bold"><span><i class="fas fa-rocket mr-2 text-red-500"></i>Crash Boost</span><span id="crash-boost" class="text-yellow-500">+0x</span></div>
-        <div class="b-card flex justify-between py-4 px-5 text-xs font-bold"><span><i class="fas fa-chart-pie mr-2 text-purple-500"></i>Predict Boost</span><span id="pred-boost" class="text-yellow-500">+0x</span></div>
-    </div>
-
-    <div id="actionModal" class="modal">
-        <div class="modal-ui">
-            <h3 id="modalTitle" class="font-black text-xl mb-2 uppercase">Stake oxSMAT</h3>
-            <div class="bg-black/40 p-4 rounded-2xl border border-white/5 mb-4 text-center">
-                <p id="inputLabel" class="text-[10px] text-gray-400 font-bold uppercase mb-1">Available</p>
-                <p id="available-bal" class="text-2xl font-black text-yellow-500">0.00</p>
-                <input type="number" id="amountInput" placeholder="0.00" class="w-full bg-transparent text-center text-lg mt-2 outline-none border-b border-white/10">
-            </div>
-            <div id="feeNotice" class="hidden bg-red-500/10 border border-red-500/20 p-3 rounded-xl mb-4 text-[10px] text-red-400 text-center font-bold">
-                <i class="fas fa-exclamation-triangle"></i> Early Unstake: 1% Fee will be deducted (Under 7 Days).
-            </div>
-            <div class="flex gap-2">
-                <button onclick="closeModals()" class="flex-1 bg-white/5 py-4 rounded-xl font-bold text-xs uppercase tracking-widest">Cancel</button>
-                <button id="confirmBtn" class="flex-1 bg-yellow-500 text-black py-4 rounded-xl font-black text-xs uppercase tracking-widest">Confirm</button>
-            </div>
+        <div class="bg-white/5 border border-white/5 rounded-2xl flex justify-between py-4 px-5 text-xs font-bold">
+            <span><i class="fas fa-rocket mr-2 text-red-500"></i>Crash Boost</span>
+            <span id="crash-boost" class="text-yellow-500">+0x</span>
+        </div>
+        <div class="bg-white/5 border border-white/5 rounded-2xl flex justify-between py-4 px-5 text-xs font-bold">
+            <span><i class="fas fa-chart-pie mr-2 text-purple-500"></i>Predict Boost</span>
+            <span id="pred-boost" class="text-yellow-500">+0x</span>
         </div>
     </div>
 
-    <div id="referralModal" class="modal">
-        <div class="modal-ui">
-            <h3 class="font-black text-xl mb-6 uppercase">Referral Stats</h3>
-            <div class="grid grid-cols-3 gap-2 mb-6 text-center">
-                <div class="bg-white/5 p-3 rounded-2xl"><p class="text-[8px] text-gray-500 font-bold uppercase">Total</p><p id="pop-total-ref" class="text-lg font-black">0</p></div>
-                <div class="bg-white/5 p-3 rounded-2xl"><p class="text-[8px] text-green-500 font-bold uppercase">Active</p><p id="pop-active-ref" class="text-lg font-black text-green-500">0</p></div>
-                <div class="bg-white/5 p-3 rounded-2xl"><p class="text-[8px] text-yellow-500 font-bold uppercase">Boost</p><p id="pop-boost-ref" class="text-lg font-black text-yellow-500">+0x</p></div>
-            </div>
-            <div class="max-h-60 overflow-y-auto space-y-2" id="ref-list-ui"></div>
-            <button onclick="closeModals()" class="w-full bg-white/5 py-4 rounded-xl font-bold mt-6 text-xs text-gray-500">CLOSE</button>
+    <div id="actionModal" class="modal"><div class="modal-ui">
+        <h3 id="modalTitle" class="font-black text-xl mb-2 uppercase">Stake oxSMAT</h3>
+        <div class="bg-black/40 p-4 rounded-2xl border border-white/5 mb-4 text-center">
+            <p id="inputLabel" class="text-[10px] text-gray-400 font-bold uppercase mb-1">Available</p>
+            <p id="available-bal" class="text-2xl font-black text-yellow-500">0.00</p>
+            <input type="number" id="amountInput" placeholder="0.00" class="w-full bg-transparent text-center text-lg mt-2 outline-none border-b border-white/10">
         </div>
-    </div>
+        <div id="feeNotice" class="hidden bg-red-500/10 border border-red-500/20 p-3 rounded-xl mb-4 text-[10px] text-red-400 text-center font-bold">
+            <i class="fas fa-exclamation-triangle mr-1"></i> Warning: 1% Fee for early unstake (Under 7 Days).
+        </div>
+        <div class="flex gap-2">
+            <button onclick="closeModals()" class="flex-1 bg-white/5 py-4 rounded-xl font-bold text-xs uppercase">Cancel</button>
+            <button id="confirmBtn" class="flex-1 bg-yellow-500 text-black py-4 rounded-xl font-black text-xs uppercase">Confirm</button>
+        </div>
+    </div></div>
+
+    <div id="referralModal" class="modal"><div class="modal-ui">
+        <h3 class="font-black text-xl mb-6 uppercase">Referral Network</h3>
+        <div class="grid grid-cols-3 gap-2 mb-6 text-center">
+            <div class="bg-white/5 p-3 rounded-2xl"><p class="text-[8px] text-gray-500 font-bold uppercase">Total</p><p id="pop-total-ref" class="text-lg font-black">0</p></div>
+            <div class="bg-white/5 p-3 rounded-2xl"><p class="text-[8px] text-green-500 font-bold uppercase">Active</p><p id="pop-active-ref" class="text-lg font-black text-green-500">0</p></div>
+            <div class="bg-white/5 p-3 rounded-2xl"><p class="text-[8px] text-yellow-500 font-bold uppercase">Boost</p><p id="pop-boost-ref" class="text-lg font-black text-yellow-500">+0x</p></div>
+        </div>
+        <div class="max-h-60 overflow-y-auto space-y-2" id="ref-list-ui"></div>
+        <button onclick="closeModals()" class="w-full bg-white/5 py-4 rounded-xl font-bold mt-6 text-xs">CLOSE</button>
+    </div></div>
 
     <footer class="footer-nav">
         <a href="home.html" class="nav-item"><i class="fas fa-home block text-lg mb-1"></i>Home</a>
@@ -147,18 +147,17 @@
                 user = u;
                 onValue(ref(db, `users/${u.uid}`), (snap) => {
                     uData = snap.val() || {};
+                    // NaN Fix: যদি ডাটাবেজে না থাকে তবে ডিফল্ট ০ সেট করা
+                    if (uData.sessionSmat === undefined || isNaN(uData.sessionSmat)) uData.sessionSmat = 0;
                     if(uData.smatID) syncRefs(uData.smatID);
                     updateUI();
                 });
-            } else {
-                window.location.href = 'logIn.html';
-            }
+            } else { window.location.href = 'logIn.html'; }
         });
 
         function syncRefs(sid) {
             onValue(query(ref(db, 'users'), orderByChild('referredBy'), equalTo(sid)), (snap) => {
-                const data = snap.val();
-                referrals = data ? Object.values(data) : [];
+                referrals = snap.val() ? Object.values(snap.val()) : [];
                 updateUI();
             });
         }
@@ -167,21 +166,23 @@
             if(!user) return;
             const activeRefs = referrals.filter(r => r.miningActive === true).length;
             
+            // Speed Calculation
+            let cBoost = uData.crashVol_6am || 0;
+            let pBoost = uData.predVol_6am || 0;
+            let sBoost = (uData.oxStaked || 0) * 10;
+            let rBoost = activeRefs * 1.0;
+            let totalSpeed = 1.0 + cBoost + pBoost + sBoost + rBoost;
+
             document.getElementById('user-display-id').innerText = uData.smatID || "Assigning...";
             document.getElementById('ox-staked-val').innerText = (uData.oxStaked || 0).toFixed(2);
             document.getElementById('active-ref-count').innerText = activeRefs;
-            
-            // Speed Calculation
-            let crashBoost = uData.crashVol_6am || 0;
-            let predBoost = uData.predVol_6am || 0;
-            let stakeBoost = (uData.oxStaked || 0) * 10;
-            let refBoost = activeRefs * 1.0;
-            let totalSpeed = 1.0 + crashBoost + predBoost + stakeBoost + refBoost;
-
             document.getElementById('total-boost').innerText = totalSpeed.toFixed(2) + "x";
-            document.getElementById('crash-boost').innerText = `+${crashBoost}x`;
-            document.getElementById('pred-boost').innerText = `+${predBoost}x`;
-            document.getElementById('session-smat').innerText = (uData.sessionSmat || 0).toFixed(8);
+            document.getElementById('crash-boost').innerText = `+${cBoost}x`;
+            document.getElementById('pred-boost').innerText = `+${pBoost}x`;
+            
+            // NaN Check before display
+            let currentSmat = parseFloat(uData.sessionSmat || 0);
+            document.getElementById('session-smat').innerText = isNaN(currentSmat) ? "0.00000000" : currentSmat.toFixed(8);
 
             if(uData.miningActive) {
                 document.getElementById('hub').classList.add('active-glow');
@@ -195,7 +196,6 @@
         }
 
         window.triggerMining = () => {
-            if(!user) return window.location.href = "logIn.html";
             if(uData.miningActive) return;
             update(ref(db, `users/${user.uid}`), {
                 miningActive: true,
@@ -204,20 +204,14 @@
             });
         };
 
+        // Staking & Referral Functions (Updated with Warning/Popups)
         window.openActionModal = (mode) => {
             const modal = document.getElementById('actionModal');
             document.getElementById('modalTitle').innerText = mode === 'stake' ? "Stake oxSMAT" : "Unstake oxSMAT";
-            document.getElementById('inputLabel').innerText = mode === 'stake' ? "Available oxSMAT" : "Staked oxSMAT";
             document.getElementById('available-bal').innerText = mode === 'stake' ? (uData.oxBalance || 0).toFixed(2) : (uData.oxStaked || 0).toFixed(2);
-
-            if(mode === 'unstake') {
-                const stakeTime = uData.lastStakeTime || 0;
-                if(Date.now() - stakeTime < 7 * 24 * 60 * 60 * 1000) {
-                    document.getElementById('feeNotice').classList.remove('hidden');
-                }
-            } else {
-                document.getElementById('feeNotice').classList.add('hidden');
-            }
+            
+            const isEarly = mode === 'unstake' && (Date.now() - (uData.lastStakeTime || 0) < 7*24*60*60*1000);
+            document.getElementById('feeNotice').classList.toggle('hidden', !isEarly);
 
             modal.style.display = 'flex';
             setTimeout(() => modal.classList.add('active'), 10);
@@ -227,46 +221,35 @@
         async function handleStaking(mode) {
             const amount = parseFloat(document.getElementById('amountInput').value);
             if(!amount || amount <= 0) return alert("Invalid amount");
-            
             const uRef = ref(db, `users/${user.uid}`);
+            
             if(mode === 'stake') {
                 if(amount > (uData.oxBalance || 0)) return alert("Insufficient Balance");
-                await update(uRef, {
-                    oxBalance: uData.oxBalance - amount,
-                    oxStaked: (uData.oxStaked || 0) + amount,
-                    lastStakeTime: Date.now()
-                });
+                await update(uRef, { oxBalance: uData.oxBalance - amount, oxStaked: (uData.oxStaked || 0) + amount, lastStakeTime: Date.now() });
             } else {
-                if(amount > (uData.oxStaked || 0)) return alert("Insufficient Staked Amount");
-                let receiveAmount = amount;
-                if(Date.now() - (uData.lastStakeTime || 0) < 7 * 24 * 60 * 60 * 1000) {
-                    const fee = amount * 0.01;
-                    receiveAmount = amount - fee;
-                    alert(`1% Fee ($${fee.toFixed(2)}) deducted for early unstake.`);
+                if(amount > (uData.oxStaked || 0)) return alert("Insufficient Staked");
+                let receive = amount;
+                if(Date.now() - (uData.lastStakeTime || 0) < 7*24*60*60*1000) {
+                    const fee = amount * 0.01; receive = amount - fee;
+                    alert(`Early Unstake: 1% Fee ($${fee.toFixed(2)}) deducted.`);
                 }
-                await update(uRef, {
-                    oxBalance: (uData.oxBalance || 0) + receiveAmount,
-                    oxStaked: uData.oxStaked - amount
-                });
+                await update(uRef, { oxBalance: (uData.oxBalance || 0) + receive, oxStaked: uData.oxStaked - amount });
             }
             closeModals();
         }
 
         window.openReferralAnalytics = () => {
             const modal = document.getElementById('referralModal');
-            const activeRefs = referrals.filter(r => r.miningActive);
-            
+            const activeCount = referrals.filter(r => r.miningActive).length;
             document.getElementById('pop-total-ref').innerText = referrals.length;
-            document.getElementById('pop-active-ref').innerText = activeRefs.length;
-            document.getElementById('pop-boost-ref').innerText = `+${activeRefs.length}x`;
-
+            document.getElementById('pop-active-ref').innerText = activeCount;
+            document.getElementById('pop-boost-ref').innerText = `+${activeCount}x`;
             document.getElementById('ref-list-ui').innerHTML = referrals.map(r => `
                 <div class="flex justify-between items-center p-4 bg-white/5 rounded-2xl border border-white/5">
                     <div class="flex items-center"><span class="status-dot ${r.miningActive?'dot-on':'dot-off'}"></span><span class="text-xs font-bold">${r.email.split('@')[0]}</span></div>
                     <span class="text-[10px] font-black ${r.miningActive?'text-green-500':'text-gray-500'}">${r.miningActive?'+1x Active':'Inactive'}</span>
                 </div>
             `).join('');
-
             modal.style.display = 'flex';
             setTimeout(() => modal.classList.add('active'), 10);
         };
@@ -282,11 +265,13 @@
                 let s = Math.floor((remain%60000)/1000).toString().padStart(2,'0');
                 document.getElementById('timer').innerText = `${h}:${m}:${s}`;
 
-                // Calculate current boost
+                // Real-time Mining Logic
                 const activeRefs = referrals.filter(r => r.miningActive).length;
-                let totalSpeed = 1.0 + (uData.crashVol_6am || 0) + (uData.predVol_6am || 0) + (uData.oxStaked * 10) + (activeRefs * 1.0);
+                let speed = 1.0 + (uData.crashVol_6am || 0) + (uData.predVol_6am || 0) + (uData.oxStaked * 10) + (activeRefs * 1.0);
                 
-                uData.sessionSmat += (BASE_MINING * totalSpeed) / 3600;
+                // NaN Protection while adding
+                let currentVal = parseFloat(uData.sessionSmat || 0);
+                uData.sessionSmat = currentVal + (BASE_MINING * speed) / 3600;
                 document.getElementById('session-smat').innerText = uData.sessionSmat.toFixed(8);
             }
         }, 1000);
