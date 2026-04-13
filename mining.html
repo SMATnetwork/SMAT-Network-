@@ -237,6 +237,20 @@ let displaySmat = 0; // এই লাইনে বসান
             modal.style.display = 'flex';
         };
 
+window.closeModals = () => {
+    // অ্যাকশন মডাল এবং রেফারেল মডাল দুটোই খুঁজে বের করে হাইড করবে
+    const actionModal = document.getElementById('actionModal');
+    const referralModal = document.getElementById('referralModal');
+    
+    if(actionModal) actionModal.style.display = 'none';
+    if(referralModal) referralModal.style.display = 'none';
+    
+    // ইনপুট ফিল্ড ক্লিয়ার করে দেওয়া (ঐচ্ছিক কিন্তু ভালো)
+    const amountInput = document.getElementById('amountInput');
+    if(amountInput) amountInput.value = '';
+};
+
+
                         // Every 1 Second Update
         setInterval(() => {
             if (!uData.miningActive || !user || !uData.mineEndTime) return;
