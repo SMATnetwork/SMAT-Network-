@@ -6,65 +6,26 @@
     <title>SMAT Network | Pro Mining Hub</title>
 
     <script src="https://cdn.tailwindcss.com"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-auth-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-database-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-database-compat.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@900&family=Inter:wght@400;600;700&display=swap');
-
-        :root {
-            --bg: #0b0e11; --card: #1e2329; --primary: #f0b90b;
-            --border: rgba(255, 255, 255, 0.08);
-            --glass: rgba(255, 255, 255, 0.03);
-        }
-
-        body { background: var(--bg); color: white; font-family: 'Inter', sans-serif; overflow-x: hidden; margin: 0; padding-bottom: 90px; }
-        
-        .mining-header {
-            padding: 30px 20px;
-            background: radial-gradient(circle at top, rgba(240, 185, 11, 0.1), transparent);
-            text-align: center;
-        }
-
-        .mining-circle {
-            width: 190px; height: 190px; margin: 0 auto;
-            position: relative; display: flex; align-items: center; justify-content: center;
-        }
-        .outer-ring {
-            position: absolute; width: 100%; height: 100%;
-            border: 2px dashed var(--primary); border-radius: 50%;
-            animation: spin 15s linear infinite; opacity: 0.3;
-        }
-        .core-hub {
-            width: 140px; height: 140px; background: var(--card);
-            border-radius: 50%; border: 4px solid var(--primary);
-            box-shadow: 0 0 30px rgba(240, 185, 11, 0.2);
-            z-index: 10; display: flex; flex-direction: column; align-items: center; justify-content: center;
-            cursor: pointer; transition: 0.3s;
-        }
-
-        @keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+        :root { --bg: #0b0e11; --card: #1e2329; --primary: #f0b90b; --border: rgba(255, 255, 255, 0.08); --up: #0ecb81; --down: #f6465d; }
+        body { background: var(--bg); color: white; font-family: 'Inter', sans-serif; margin: 0; padding-bottom: 100px; }
+        .mining-header { padding: 30px 20px; background: radial-gradient(circle at top, rgba(240, 185, 11, 0.1), transparent); text-align: center; }
+        .core-hub { width: 140px; height: 140px; background: var(--card); border-radius: 50%; border: 4px solid var(--primary); box-shadow: 0 0 30px rgba(240, 185, 11, 0.2); z-index: 10; display: flex; flex-direction: column; align-items: center; justify-content: center; cursor: pointer; transition: 0.3s; margin: 0 auto; }
         .active-glow { animation: glow 2s infinite alternate; }
         @keyframes glow { from { box-shadow: 0 0 20px rgba(240, 185, 11, 0.2); } to { box-shadow: 0 0 50px rgba(240, 185, 11, 0.5); } }
-
-        .b-card { background: var(--glass); border: 1px solid var(--border); border-radius: 20px; padding: 15px; }
-        .b-val { color: var(--primary); font-family: 'Montserrat'; font-weight: 900; }
-
-        .stake-container { background: rgba(240, 185, 11, 0.03); border: 1px solid rgba(240, 185, 11, 0.1); border-radius: 24px; margin: 0 20px 20px; padding: 20px; }
-
-        .modal { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.9); z-index: 1000; backdrop-filter: blur(10px); align-items: flex-end; }
+        .b-card { background: rgba(255,255,255,0.03); border: 1px solid var(--border); border-radius: 20px; padding: 15px; }
+        .modal { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.9); z-index: 5000; backdrop-filter: blur(10px); align-items: flex-end; }
         .modal-ui { background: #181a20; width: 100%; border-radius: 30px 30px 0 0; padding: 25px; border-top: 3px solid var(--primary); }
-
-        .status-dot { width: 8px; height: 8px; border-radius: 50%; display: inline-block; margin-right: 6px; }
-        .dot-on { background: #0ecb81; box-shadow: 0 0 8px #0ecb81; }
-        .dot-off { background: #f6465d; }
-
-        .footer-nav { position: fixed; bottom: 0; width: 100%; height: 75px; background: #181a20; border-top: 1px solid var(--border); display: flex; justify-content: space-around; align-items: center; z-index: 100; }
-        .nav-item { color: #848e9c; font-size: 10px; font-weight: bold; text-align: center; text-decoration: none; flex: 1; }
+        .footer-nav { position: fixed; bottom: 0; width: 100%; height: 75px; background: #181a20; border-top: 1px solid var(--border); display: flex; justify-content: space-around; align-items: center; z-index: 4000; }
+        .nav-item { color: #848e9c; font-size: 10px; text-align: center; text-decoration: none; flex: 1; }
         .nav-item.active { color: var(--primary); }
-        .nav-item i { font-size: 20px; margin-bottom: 4px; display: block; }
+        input::-webkit-outer-spin-button, input::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
     </style>
 </head>
 <body>
@@ -72,7 +33,7 @@
     <div class="mining-header">
         <div class="flex justify-between items-center mb-6">
             <div class="text-left">
-                <p class="text-[10px] text-yellow-500 font-black uppercase tracking-widest">SMAT Network L1</p>
+                <p class="text-[10px] text-yellow-500 font-black uppercase">SMAT Network L1</p>
                 <h2 id="user-display-id" class="text-lg font-bold">SMAT-0000</h2>
             </div>
             <div onclick="openReferralAnalytics()" class="bg-white/5 p-2 px-4 rounded-full border border-white/10 cursor-pointer">
@@ -80,62 +41,68 @@
             </div>
         </div>
 
-        <div class="mining-circle">
-            <div class="outer-ring"></div>
-            <div class="core-hub" id="hub" onclick="triggerMining()">
-                <i id="h-icon" class="fas fa-hammer text-3xl text-yellow-500 mb-1"></i>
-                <p id="h-status" class="text-[8px] font-black text-gray-500 uppercase">OFFLINE</p>
-                <h3 id="timer" class="text-xl font-black font-mono">24:00:00</h3>
-            </div>
+        <div class="core-hub" id="hub" onclick="triggerMining()">
+            <i id="h-icon" class="fas fa-hammer text-3xl text-yellow-500 mb-1"></i>
+            <p id="h-status" class="text-[8px] font-black text-gray-500 uppercase">OFFLINE</p>
+            <h3 id="timer" class="text-xl font-black font-mono">24:00:00</h3>
         </div>
 
         <div class="mt-8">
-            <p class="text-[10px] text-gray-500 font-bold uppercase tracking-widest">Current Session Earnings</p>
-            <h1 class="text-4xl font-black text-yellow-500"><span id="session-smat">0.00000000</span></h1>
+            <p class="text-[10px] text-gray-500 font-bold uppercase">Mined Session</p>
+            <h1 class="text-4xl font-black text-yellow-500 tracking-tighter"><span id="session-smat">0.00000000</span></h1>
         </div>
     </div>
 
     <div class="grid grid-cols-2 gap-3 px-5 mb-5">
-        <div class="b-card">
-            <p class="text-[8px] text-gray-500 font-bold uppercase">Total Multiplier</p>
-            <p class="text-xl b-val" id="total-boost">0.00x</p>
-        </div>
-        <div class="b-card text-center">
-            <p class="text-[8px] text-gray-500 font-bold uppercase">6AM Boost Reset</p>
-            <p id="reset-timer" class="text-sm font-bold text-red-500">READY</p>
-        </div>
+        <div class="b-card"><p class="text-[8px] text-gray-500 font-bold uppercase">Total Speed</p><p class="text-xl font-black text-yellow-500" id="total-boost">1.00x</p></div>
+        <div class="b-card text-center"><p class="text-[8px] text-gray-500 font-bold uppercase">Boost Reset</p><p class="text-[10px] font-bold text-red-500 uppercase">Daily 06:00 AM</p></div>
     </div>
 
-    <div class="stake-container">
+    <div class="bg-yellow-500/5 border border-yellow-500/10 rounded-3xl m-5 p-5">
         <div class="flex justify-between items-center mb-4">
-            <div><h3 class="text-sm font-black uppercase">oxSMAT Boost</h3><p class="text-[9px] text-gray-500">Stake to earn 10x speed</p></div>
-            <div class="text-right"><p class="text-[8px] text-gray-500 uppercase">Available</p><p class="text-xs font-bold text-yellow-500" id="ox-bal-display">0.00</p></div>
+            <h3 class="text-sm font-black">oxSMAT STAKING</h3>
+            <div class="text-right"><p class="text-[8px] text-gray-500 uppercase">Staked</p><p class="text-xs font-bold text-yellow-500" id="ox-staked-val">0.00</p></div>
         </div>
         <div class="flex gap-2">
-            <button onclick="openStakeModal('stake')" class="flex-1 bg-yellow-500 text-black py-3 rounded-xl font-black text-[10px] uppercase">Stake</button>
-            <button onclick="openStakeModal('unstake')" class="flex-1 bg-white/5 border border-white/10 text-white py-3 rounded-xl font-black text-[10px] uppercase">Unstake</button>
+            <button onclick="openActionModal('stake')" class="flex-1 bg-yellow-500 text-black py-3 rounded-xl font-black text-[10px] uppercase">Stake</button>
+            <button onclick="openActionModal('unstake')" class="flex-1 bg-white/5 border border-white/10 text-white py-3 rounded-xl font-black text-[10px] uppercase">Unstake</button>
         </div>
     </div>
 
-    <div id="referralModal" class="modal">
+    <div class="px-5 space-y-2 mb-32">
+        <div class="b-card flex justify-between py-4 px-5 text-xs font-bold"><span>Trade Boost</span><span id="trade-boost" class="text-yellow-500">+0x</span></div>
+        <div class="b-card flex justify-between py-4 px-5 text-xs font-bold"><span>Crash Boost</span><span id="crash-boost" class="text-yellow-500">+0x</span></div>
+    </div>
+
+    <div id="actionModal" class="modal">
         <div class="modal-ui">
-            <h3 class="font-black text-xl mb-6 uppercase">Referral Insights</h3>
-            <div class="grid grid-cols-3 gap-2 mb-6 text-center">
-                <div class="bg-white/5 p-3 rounded-2xl"><p class="text-[8px] text-gray-500 font-bold uppercase">Total</p><p id="pop-total-ref" class="text-lg font-black">0</p></div>
-                <div class="bg-white/5 p-3 rounded-2xl"><p class="text-[8px] text-green-500 font-bold uppercase">Active</p><p id="pop-active-ref" class="text-lg font-black text-green-500">0</p></div>
-                <div class="bg-white/5 p-3 rounded-2xl"><p class="text-[8px] text-yellow-500 font-bold uppercase">Boost</p><p id="pop-boost-ref" class="text-lg font-black text-yellow-500">+0x</p></div>
+            <h3 id="modalTitle" class="font-black text-xl mb-2 uppercase">Stake oxSMAT</h3>
+            <p id="modalDesc" class="text-[10px] text-gray-500 mb-6">Speed multiplier will increase by 10x per staked coin.</p>
+            
+            <div class="bg-black/40 p-4 rounded-2xl border border-white/5 mb-4">
+                <div class="flex justify-between text-[10px] mb-2 uppercase font-bold text-gray-400">
+                    <span id="inputLabel">Available oxSMAT</span>
+                    <span id="available-bal">0.00</span>
+                </div>
+                <input type="number" id="amountInput" placeholder="0.00" class="w-full bg-transparent text-2xl font-black outline-none text-white">
             </div>
-            <div class="max-h-48 overflow-y-auto space-y-2" id="ref-list-ui"></div>
-            <button onclick="closeModals()" class="w-full bg-white/5 py-4 rounded-xl font-bold mt-6 text-xs text-gray-400 uppercase">Close</button>
+
+            <div id="feeNotice" class="hidden bg-red-500/10 border border-red-500/20 p-3 rounded-xl mb-4 text-[10px] text-red-400">
+                <i class="fas fa-exclamation-triangle mr-1"></i> Warning: Unstaking before 7 days attracts a 1% platform fee.
+            </div>
+
+            <div class="flex gap-2">
+                <button onclick="closeModals()" class="flex-1 bg-white/5 py-4 rounded-xl font-bold text-xs uppercase">Cancel</button>
+                <button id="confirmBtn" class="flex-1 bg-yellow-500 text-black py-4 rounded-xl font-black text-xs uppercase">Confirm</button>
+            </div>
         </div>
     </div>
 
     <footer class="footer-nav">
-        <a href="home.html" class="nav-item"><i class="fas fa-home"></i>Home</a>
-        <a href="Swap.html" class="nav-item"><i class="fas fa-random"></i>Swap</a>
-        <a href="Mining.html" class="nav-item active"><i class="fas fa-hammer"></i>Mining</a>
-        <a href="Crash.html" class="nav-item"><i class="fas fa-rocket"></i>Crash</a>
-        <a href="Prediction.html" class="nav-item"><i class="fas fa-chart-line"></i>Predict</a>
+        <a href="home.html" class="nav-item"><i class="fas fa-home block text-lg mb-1"></i>Home</a>
+        <a href="Swap.html" class="nav-item"><i class="fas fa-random block text-lg mb-1"></i>Swap</a>
+        <a href="Mining.html" class="nav-item active"><i class="fas fa-hammer block text-lg mb-1"></i>Mining</a>
+        <a href="Wallet.html" class="nav-item"><i class="fas fa-wallet block text-lg mb-1"></i>Wallet</a>
     </footer>
 
     <script type="module">
@@ -156,138 +123,122 @@
         const auth = getAuth(app);
         const db = getDatabase(app);
 
-        const state = {
-            isLoggedIn: false,
-            smatId: "SMAT-0000",
-            oxBalance: 0,
-            oxStaked: 0,
-            miningActive: false,
-            endTime: 0,
-            sessionSmat: 0,
-            referrals: []
-        };
+        let uData = {};
+        let currentMode = 'stake';
 
         onAuthStateChanged(auth, (user) => {
             if (user) {
-                state.isLoggedIn = true;
-                // Home ফাইলের মতো ডাটা কল
                 onValue(ref(db, 'users/' + user.uid), (snap) => {
-                    const d = snap.val();
-                    if(d) {
-                        state.smatId = d.smatID || "Assigning...";
-                        state.oxBalance = d.oxBalance || 0;
-                        state.oxStaked = d.oxStaked || 0;
-                        state.miningActive = d.miningActive || false;
-                        state.endTime = d.mineEndTime || 0;
-                        state.sessionSmat = d.sessionSmat || 0;
-                        
-                        // রেফারেল লোড (রিয়েল ডাটা)
-                        loadReferrals(state.smatId);
-                        updateUI();
-                    }
+                    uData = snap.val() || {};
+                    updateUI();
                 });
-            } else {
-                state.isLoggedIn = false;
-                resetStateToZero();
-            }
+                loadRefs(user.uid);
+            } else { window.location.href = 'logIn.html'; }
         });
 
-        function resetStateToZero() {
-            document.getElementById('user-display-id').innerText = "SMAT-0000";
-            document.getElementById('total-boost').innerText = "0.00x";
-            document.getElementById('session-smat').innerText = "0.00000000";
-            document.getElementById('ox-bal-display').innerText = "0.00";
-            document.getElementById('active-ref-count').innerText = "0";
+        function updateUI() {
+            document.getElementById('user-display-id').innerText = uData.smatID || "Assigning...";
+            document.getElementById('ox-staked-val').innerText = (uData.oxStaked || 0).toFixed(2);
+            document.getElementById('session-smat').innerText = (uData.sessionSmat || 0).toFixed(8);
+            
+            let v_trade = uData.yesterdayTradeVol || 0;
+            let v_crash = uData.yesterdayCrashVol || 0;
+            let ref_boost = (uData.activeRefs || 0) * 1.0;
+            let stake_boost = (uData.oxStaked || 0) * 10;
+            
+            let total = 1.0 + v_trade + v_crash + ref_boost + stake_boost;
+            document.getElementById('total-boost').innerText = total.toFixed(2) + "x";
+            document.getElementById('trade-boost').innerText = `+${v_trade}x`;
+            document.getElementById('crash-boost').innerText = `+${v_crash}x`;
+            
+            if(uData.miningActive) {
+                document.getElementById('hub').classList.add('active-glow');
+                document.getElementById('h-status').innerText = "MINING ACTIVE";
+                document.getElementById('h-status').style.color = "#0ecb81";
+            }
         }
 
-        function loadReferrals(sid) {
-            onValue(query(ref(db, 'users'), orderByChild('referredBy'), equalTo(sid)), (snap) => {
-                const data = snap.val();
-                state.referrals = data ? Object.values(data) : [];
-                updateUI();
-            });
+        window.openActionModal = (mode) => {
+            currentMode = mode;
+            const modal = document.getElementById('actionModal');
+            document.getElementById('modalTitle').innerText = mode === 'stake' ? "Stake oxSMAT" : "Unstake oxSMAT";
+            document.getElementById('inputLabel').innerText = mode === 'stake' ? "Available oxSMAT" : "Staked oxSMAT";
+            document.getElementById('available-bal').innerText = mode === 'stake' ? (uData.oxBalance || 0).toFixed(2) : (uData.oxStaked || 0).toFixed(2);
+            
+            // ৭ দিন চেক এবং ফি নোটিশ
+            if(mode === 'unstake') {
+                const stakeTime = uData.lastStakeTime || 0;
+                const weekMs = 7 * 24 * 60 * 60 * 1000;
+                if(Date.now() - stakeTime < weekMs) {
+                    document.getElementById('feeNotice').classList.remove('hidden');
+                } else {
+                    document.getElementById('feeNotice').classList.add('hidden');
+                }
+            } else { document.getElementById('feeNotice').classList.add('hidden'); }
+
+            modal.style.display = 'flex';
+            document.getElementById('confirmBtn').onclick = processAction;
+        };
+
+        async function processAction() {
+            const amount = parseFloat(document.getElementById('amountInput').value);
+            if(!amount || amount <= 0) return alert("Enter valid amount");
+
+            const userRef = ref(db, 'users/' + auth.currentUser.uid);
+            
+            if(currentMode === 'stake') {
+                if(amount > uData.oxBalance) return alert("Insufficient Balance");
+                await update(userRef, {
+                    oxBalance: uData.oxBalance - amount,
+                    oxStaked: (uData.oxStaked || 0) + amount,
+                    lastStakeTime: Date.now()
+                });
+            } else {
+                if(amount > uData.oxStaked) return alert("Insufficient Staked Amount");
+                
+                let finalAmount = amount;
+                const stakeTime = uData.lastStakeTime || 0;
+                const weekMs = 7 * 24 * 60 * 60 * 1000;
+
+                // ১% ফি লজিক যদি ৭ দিনের আগে হয়
+                if(Date.now() - stakeTime < weekMs) {
+                    const fee = amount * 0.01;
+                    finalAmount = amount - fee;
+                    alert(`1% Fee ($${fee.toFixed(2)}) deducted for early unstake.`);
+                }
+
+                await update(userRef, {
+                    oxBalance: (uData.oxBalance || 0) + finalAmount,
+                    oxStaked: uData.oxStaked - amount
+                });
+            }
+            closeModals();
+            alert("Success!");
         }
 
         window.triggerMining = () => {
-            if(!state.isLoggedIn) {
-                alert("Please Login to start mining!");
-                window.location.href = "logIn.html";
-                return;
-            }
-            if(state.miningActive) return;
-
-            const user = auth.currentUser;
-            const endTime = Date.now() + 86400000;
-            update(ref(db, 'users/' + user.uid), {
+            if(uData.miningActive) return;
+            update(ref(db, 'users/' + auth.currentUser.uid), {
                 miningActive: true,
-                mineEndTime: endTime,
+                mineEndTime: Date.now() + 86400000,
                 sessionSmat: 0
             });
         };
 
-        function updateUI() {
-            if(!state.isLoggedIn) return;
-            
-            document.getElementById('user-display-id').innerText = state.smatId;
-            document.getElementById('ox-bal-display').innerText = state.oxBalance.toFixed(2);
-            
-            let activeRefs = state.referrals.filter(r => r.miningActive).length;
-            let refBoost = activeRefs * 1.0;
-            let oxBoost = state.oxStaked * 10;
-            let totalSpeed = 1.0 + refBoost + oxBoost;
-
-            document.getElementById('active-ref-count').innerText = activeRefs;
-            document.getElementById('total-boost').innerText = totalSpeed.toFixed(2) + "x";
-            return totalSpeed;
-        }
-
         setInterval(() => {
-            if(!state.isLoggedIn || !state.miningActive) return;
-
-            let remain = state.endTime - Date.now();
+            if(!uData.miningActive) return;
+            let remain = uData.mineEndTime - Date.now();
             if(remain <= 0) {
-                // মাইনিং শেষ হলে ডাটাবেজ আপডেট
                 update(ref(db, 'users/' + auth.currentUser.uid), { miningActive: false });
             } else {
                 let h = Math.floor(remain/3600000).toString().padStart(2,'0');
                 let m = Math.floor((remain%3600000)/60000).toString().padStart(2,'0');
                 let s = Math.floor((remain%60000)/1000).toString().padStart(2,'0');
                 document.getElementById('timer').innerText = `${h}:${m}:${s}`;
-                
-                let speed = updateUI();
-                state.sessionSmat += (0.0025 * speed) / 3600;
-                document.getElementById('session-smat').innerText = state.sessionSmat.toFixed(8);
-                
-                document.getElementById('hub').classList.add('active-glow');
-                document.getElementById('h-status').innerText = "MINING ACTIVE";
-                document.getElementById('h-status').style.color = "#0ecb81";
             }
         }, 1000);
 
-        window.openReferralAnalytics = () => {
-            if(!state.isLoggedIn) return;
-            const modal = document.getElementById('referralModal');
-            const listUi = document.getElementById('ref-list-ui');
-            let activeCount = state.referrals.filter(r => r.miningActive).length;
-            
-            document.getElementById('pop-total-ref').innerText = state.referrals.length;
-            document.getElementById('pop-active-ref').innerText = activeCount;
-            document.getElementById('pop-boost-ref').innerText = `+${activeCount}x`;
-
-            listUi.innerHTML = state.referrals.map(ref => `
-                <div class="flex justify-between items-center p-4 bg-white/5 rounded-xl border border-white/5">
-                    <div class="flex items-center">
-                        <span class="status-dot ${ref.miningActive?'dot-on':'dot-off'}"></span>
-                        <span class="text-sm font-bold">${ref.email.split('@')[0]}</span>
-                    </div>
-                    <span class="text-[10px] font-black ${ref.miningActive?'text-green-500':'text-gray-500'}">${ref.miningActive?'+1x Active':'Inactive'}</span>
-                </div>
-            `).join('');
-
-            modal.style.display = 'flex';
-        };
-
-        window.closeModals = () => { document.querySelectorAll('.modal').forEach(m => m.style.display = 'none'); };
+        window.closeModals = () => { document.getElementById('actionModal').style.display = 'none'; };
     </script>
 </body>
 </html>
