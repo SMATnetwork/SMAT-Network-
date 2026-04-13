@@ -173,7 +173,7 @@
             
             // Session Balance Protection
             let displayBal = parseFloat(uData.sessionSmat || 0);
-            document.getElementById('session-smat').innerText = isNaN(displayBal) ? "0.00000000" : displayBal.toFixed(8);
+            document.getElementById('session-smat').innerText = isNaN(displayBal) ? "0.0000000000" : displayBal.toFixed(10);
 
             if(uData.miningActive) {
                 document.getElementById('hub').classList.add('active-glow');
