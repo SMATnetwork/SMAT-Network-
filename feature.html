@@ -122,7 +122,8 @@
         <a href="Wallet.html" class="f-nav"><i class="fas fa-wallet"></i>Assets</a>
     </footer>
 
-    <script>
+        <script>
+        // ১. কনফিগারেশন
         const firebaseConfig = {
             apiKey: "AIzaSyAMxtJedkehhxJRMPZLjhpKHqneHEWsGlE",
             authDomain: "smat-exchange.firebaseapp.com",
@@ -136,15 +137,18 @@
         const smatID = localStorage.getItem('smatID');
         if (!smatID) { window.location.href = "logIn.html"; }
 
+        // ২. ভেরিয়েবলস
         let currentPair = 'BTC/USDT', currentSide = 'buy', leverage = 20;
         let userBalance = 0, allPositions = [], binanceWS = null;
         let lastFundingTimestamp = 0;
         let visibleCount = 20;
 
+        // ৩. ফান্ডিং টাইমার এবং অটো লজিক
         function listenToTimer() {
             db.ref('fundingLogic/timeLeft').on('value', (snap) => {
                 const totalSeconds = snap.val();
                 if (totalSeconds !== null) {
+                    // ৮ ঘণ্টা পর পর ফান্ডিং ফি (২৮৮০০ সেকেন্ড)
                     if (totalSeconds === 28800 && lastFundingTimestamp !== totalSeconds) { 
                         applyFundingFee(); 
                         lastFundingTimestamp = totalSeconds;
@@ -162,14 +166,16 @@
                 let totalFee = 0;
                 allPositions.forEach(pos => {
                     const positionValue = pos.entry * pos.amount;
-                    totalFee += positionValue * 0.001; 
+                    totalFee += positionValue * 0.001; // ০.১% ফান্ডিং ফি
                 });
                 if (totalFee > 0) {
-                    db.ref(`users/${smatID}/balance`).set(userBalance - totalFee);
+                    // ব্যালেন্স আপডেট (usdt_balance)
+                    db.ref(`users/${smatID}/usdt_balance`).transaction((current) => (current || 0) - totalFee);
                 }
             }
         }
 
+        // ৪. কয়েন সিলেকশন এবং বাইনান্স কানেকশন
         function loadDynamicCoins() {
             db.ref('featureAssets').on('value', (snap) => {
                 const data = snap.val();
@@ -201,15 +207,13 @@
             binanceWS = new WebSocket(`wss://stream.binance.com:9443/ws/${symbol.toLowerCase()}@ticker`);
             binanceWS.onmessage = (event) => {
                 const data = JSON.parse(event.data);
-                
-                // ১. লাইভ প্রাইস আপডেট
                 const price = parseFloat(data.c).toFixed(4);
                 const priceEl = document.getElementById('live-price');
                 const oldPrice = parseFloat(priceEl.innerText);
+                
                 priceEl.innerText = price;
                 priceEl.style.color = price >= oldPrice ? 'var(--up)' : 'var(--down)';
 
-                // ২. প্রাইস চেঞ্জ পার্সেন্টেজ আপডেট
                 const change = parseFloat(data.P).toFixed(2);
                 const changeEl = document.getElementById('price-change');
                 changeEl.innerText = (change >= 0 ? '+' : '') + change + '%';
@@ -219,7 +223,9 @@
                     document.getElementById('trade-price').value = price;
                     updateMetrics();
                 }
+                
                 updateOrderBook(price);
+                checkLiquidation(price); // অটো লিকুইডেশন চেক
                 renderPositions();
             };
         }
@@ -229,11 +235,14 @@
             dp.style.display = dp.style.display === 'block' ? 'none' : 'block';
         }
 
+        // ৫. ব্যালেন্স এবং পজিশন লিসেনার
         function initListeners() {
-            db.ref(`users/${smatID}/balance`).on('value', (snap) => {
+            // ব্যালেন্স পাথ সংশোধিত: usdt_balance
+            db.ref(`users/${smatID}/usdt_balance`).on('value', (snap) => {
                 userBalance = snap.val() || 0;
                 document.getElementById('display-bal').innerText = userBalance.toFixed(4) + " USDT";
             });
+
             db.ref(`users/${smatID}/active_positions`).on('value', (snap) => {
                 const data = snap.val();
                 allPositions = [];
@@ -247,17 +256,23 @@
             });
         }
 
+        // ৬. ট্রেডিং লজিক
         function updateMetrics() {
             const p = parseFloat(document.getElementById('trade-price').value) || 0;
             const a = parseFloat(document.getElementById('trade-amt').value) || 0;
-            const fee = (p * a) * 0.001;
+            const fee = (p * a) * 0.001; // ০.১% ওপেনিং ফি
             const margin = (p * a) / leverage;
+            
             document.getElementById('cost-disp').innerText = margin.toFixed(4) + " USDT";
             document.getElementById('fee-disp').innerText = fee.toFixed(4) + " USDT";
+            
             if(a > 0) {
+                // লিকুইডেশন ফর্মুলা: ৯০% লস প্রোটেকশন
                 let liq = (currentSide === 'buy') ? p * (1 - (0.9/leverage)) : p * (1 + (0.9/leverage));
                 document.getElementById('liq-disp').innerText = Math.max(0, liq).toFixed(4);
-            } else { document.getElementById('liq-disp').innerText = "--"; }
+            } else { 
+                document.getElementById('liq-disp').innerText = "--"; 
+            }
         }
 
         function setSide(s) {
@@ -280,15 +295,20 @@
             updateMetrics();
         }
 
+        // ৭. পজিশন হ্যান্ডলিং
         function placeOrder() {
             const p = parseFloat(document.getElementById('trade-price').value);
             const a = parseFloat(document.getElementById('trade-amt').value);
             if(!a || a <= 0) return alert("Enter valid amount");
+            
             const margin = (p * a) / leverage;
             const fee = (p * a) * 0.001;
+            
             if((margin + fee) > userBalance) return alert("Insufficient Balance!");
             
-            db.ref(`users/${smatID}/balance`).set(userBalance - (margin + fee));
+            // ব্যালেন্স ডিডাক্ট (usdt_balance)
+            db.ref(`users/${smatID}/usdt_balance`).transaction((current) => (current || 0) - (margin + fee));
+            
             db.ref(`users/${smatID}/active_positions`).push({
                 pair: currentPair, side: currentSide, entry: p, amount: a, leverage: leverage, margin: margin,
                 liq: document.getElementById('liq-disp').innerText, timestamp: Date.now()
@@ -298,6 +318,8 @@
         function renderPositions() {
             const container = document.getElementById('pos-container');
             const showMoreBtn = document.getElementById('show-more-pos');
+            if(!container) return;
+
             container.innerHTML = '';
             const livePrice = parseFloat(document.getElementById('live-price').innerText);
             const visibleItems = allPositions.slice(0, visibleCount);
@@ -305,6 +327,7 @@
             visibleItems.forEach(pos => {
                 let pnl = (pos.side === 'buy') ? (livePrice - pos.entry) * pos.amount : (pos.entry - livePrice) * pos.amount;
                 let roe = (pnl / pos.margin) * 100;
+                
                 container.innerHTML += `
                     <div class="pos-card">
                         <div class="pos-header">
@@ -317,20 +340,31 @@
                         </div>
                     </div>`;
             });
-
             showMoreBtn.style.display = allPositions.length > visibleCount ? 'block' : 'none';
         }
 
-        function showMorePositions() {
-            visibleCount += 10;
-            renderPositions();
+        // ৮. অটো লিকুইডেশন লজিক
+        function checkLiquidation(livePrice) {
+            const price = parseFloat(livePrice);
+            allPositions.forEach(pos => {
+                const liqPrice = parseFloat(pos.liq);
+                if ((pos.side === 'buy' && price <= liqPrice) || (pos.side === 'sell' && price >= liqPrice)) {
+                    // লিকুইডেশন হলে মার্জিন জিরো হয়ে যাবে (ইউজার কিছু ফেরত পাবে না)
+                    closePos(pos.firebaseKey, -pos.margin, 0); 
+                    console.log("Position Liquidated: ", pos.pair);
+                }
+            });
         }
 
         function closePos(key, pnl, margin) {
-            db.ref(`users/${smatID}/balance`).set(userBalance + (margin + pnl));
+            // ব্যালেন্স রিফান্ড (usdt_balance) = মার্জিন + লাভ/ক্ষতি
+            const finalReturn = Math.max(0, margin + pnl); // নিশ্চিত করা যেন মাইনাস না হয়
+            
+            db.ref(`users/${smatID}/usdt_balance`).transaction((current) => (current || 0) + finalReturn);
             db.ref(`users/${smatID}/active_positions/${key}`).remove();
         }
 
+        // ৯. অর্ডার বুক এবং ইউটিলিটি
         function updateOrderBook(price) {
             const p = parseFloat(price);
             let a = '', b = '';
@@ -346,6 +380,11 @@
             document.getElementById('ob-bids').innerHTML = b;
         }
 
+        function showMorePositions() {
+            visibleCount += 10;
+            renderPositions();
+        }
+
         window.onload = () => {
             listenToTimer();
             initListeners();
@@ -353,5 +392,6 @@
             connectBinance('btcusdt');
         };
     </script>
+
 </body>
 </html>
