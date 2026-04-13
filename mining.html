@@ -1,0 +1,300 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>SMAT | Pro Mining</title>
+
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-database-compat.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@900&family=Inter:wght@400;600;700&display=swap');
+
+        :root {
+            --bg: #0b0e11; --card: #1e2329; --primary: #f0b90b;
+            --border: rgba(255, 255, 255, 0.08);
+            --glass: rgba(255, 255, 255, 0.03);
+        }
+
+        body { background: var(--bg); color: white; font-family: 'Inter', sans-serif; overflow-x: hidden; }
+        
+        /* Premium Gradient Header */
+        .mining-header {
+            padding: 40px 20px;
+            background: radial-gradient(circle at top right, rgba(240, 185, 11, 0.15), transparent);
+            text-align: center;
+        }
+
+        /* Mining Glow Circle */
+        .mining-circle-container {
+            width: 220px; height: 220px; margin: 0 auto;
+            position: relative; display: flex; align-items: center; justify-content: center;
+        }
+        .outer-glow {
+            position: absolute; width: 100%; height: 100%;
+            border-radius: 50%; border: 2px dashed var(--primary);
+            animation: rotate 10s linear infinite; opacity: 0.3;
+        }
+        .inner-core {
+            width: 160px; height: 160px; background: var(--card);
+            border-radius: 50%; border: 4px solid var(--primary);
+            display: flex; flex-direction: column; align-items: center; justify-content: center;
+            box-shadow: 0 0 30px rgba(240, 185, 11, 0.2);
+            z-index: 5;
+        }
+
+        /* Animations */
+        @keyframes rotate { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+        .active-pulse { animation: pulse 2s infinite; }
+        @keyframes pulse { 0% { transform: scale(1); } 50% { transform: scale(1.05); box-shadow: 0 0 50px rgba(240, 185, 11, 0.4); } 100% { transform: scale(1); } }
+
+        /* Pop-up Graphics */
+        .modal { 
+            display: none; position: fixed; inset: 0; 
+            background: rgba(0,0,0,0.9); z-index: 1000; 
+            backdrop-filter: blur(10px); align-items: flex-end; 
+        }
+        .modal-content { 
+            background: #181a20; width: 100%; 
+            border-radius: 30px 30px 0 0; padding: 30px 20px;
+            border-top: 3px solid var(--primary);
+            transform: translateY(100%); transition: 0.3s;
+        }
+        .modal.active .modal-content { transform: translateY(0); }
+
+        .stat-card { background: var(--glass); border: 1px solid var(--border); border-radius: 16px; padding: 15px; }
+        .btn-main { background: var(--primary); color: black; font-weight: 900; width: 100%; padding: 16px; border-radius: 16px; text-transform: uppercase; }
+        
+        .footer-nav {
+            position: fixed; bottom: 0; width: 100%; height: 75px;
+            background: #181a20; border-top: 1px solid var(--border);
+            display: flex; justify-content: space-around; align-items: center;
+        }
+        .nav-link { color: #848e9c; text-decoration: none; font-size: 11px; text-align: center; }
+        .nav-link.active { color: var(--primary); }
+    </style>
+</head>
+<body>
+
+    <div class="mining-header">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+            <div style="text-align: left;">
+                <p style="color: var(--primary); font-weight: 900; font-size: 12px; letter-spacing: 1px;">SMAT L1 MINING</p>
+                <h2 id="user-id" style="font-size: 18px; font-weight: 700;">Loading...</h2>
+            </div>
+            <i class="fas fa-info-circle text-gray-500" onclick="openReferInfo()"></i>
+        </div>
+
+        <div class="mining-circle-container">
+            <div class="outer-glow" id="glow-ring"></div>
+            <div class="inner-core" id="mining-core" onclick="startMining()">
+                <i id="hammer-icon" class="fas fa-hammer text-3xl mb-2" style="color: var(--primary);"></i>
+                <p id="mining-status-text" style="font-size: 10px; font-weight: 800; color: #848e9c;">READY TO MINE</p>
+                <h3 id="timer-display" style="font-size: 20px; font-weight: 900; font-family: 'Montserrat';">00:00:00</h3>
+            </div>
+        </div>
+
+        <div style="margin-top: 30px;">
+            <p style="font-size: 11px; color: #848e9c; margin-bottom: 5px;">SESSION EARNINGS</p>
+            <h1 style="font-size: 32px; font-weight: 900; color: var(--primary);"><span id="session-bal">0.000000</span> <small style="font-size: 12px;">SMAT</small></h1>
+        </div>
+    </div>
+
+    <div style="padding: 0 20px;">
+        <div class="grid grid-cols-2 gap-4">
+            <div class="stat-card">
+                <p style="font-size: 9px; color: #848e9c;">MINING SPEED</p>
+                <h4 style="font-size: 18px; font-weight: 900;"><span id="speed-val">1.00</span>x</h4>
+            </div>
+            <div class="stat-card">
+                <p style="font-size: 9px; color: #848e9c;">ACTIVE REFS</p>
+                <h4 style="font-size: 18px; font-weight: 900; color: var(--primary);"><span id="active-refs">0</span></h4>
+            </div>
+        </div>
+
+        <div class="stat-card" style="margin-top: 15px; display: flex; justify-content: space-between; align-items: center;">
+            <div>
+                <p style="font-size: 9px; color: #848e9c;">TOTAL ASSETS STAKED</p>
+                <h4 id="staked-tvl" style="font-size: 16px; font-weight: 700;">$0.00</h4>
+            </div>
+            <button onclick="location.href='Stake.html'" style="background: rgba(240, 185, 11, 0.1); color: var(--primary); border: 1px solid var(--primary); padding: 5px 15px; border-radius: 8px; font-size: 10px; font-weight: 900;">MANAGE</button>
+        </div>
+    </div>
+
+    <div id="referPopup" class="modal" onclick="closePopup(event)">
+        <div class="modal-content">
+            <h3 style="font-family: 'Montserrat'; font-size: 20px; margin-bottom: 20px;">Mining Analytics</h3>
+            <div id="refer-list" style="max-height: 250px; overflow-y: auto;" class="space-y-3">
+                </div>
+            <div class="stat-card" style="margin-top: 20px; border: 1px dashed var(--primary);">
+                <p style="font-size: 10px; line-height: 1.5;">🚀 <b>Speed Boost:</b> Base (1x) + Active Friend (1x) + 10% of Friend's Staking value.</p>
+            </div>
+            <button class="btn-main" style="margin-top: 20px;" onclick="closeAllModals()">GOT IT</button>
+        </div>
+    </div>
+
+    <footer class="footer-nav">
+        <a href="index.html" class="nav-link"><i class="fas fa-chart-line block text-lg mb-1"></i>Trade</a>
+        <a href="Mining.html" class="nav-link active"><i class="fas fa-hammer block text-lg mb-1"></i>Mining</a>
+        <a href="Wallet.html" class="nav-link"><i class="fas fa-wallet block text-lg mb-1"></i>Wallet</a>
+    </footer>
+
+    <script>
+        // Firebase Configuration (Same as your exchange)
+        const firebaseConfig = { apiKey: "AIzaSyAMxtJedkehhxJRMPZLjhpKHqneHEWsGlE", authDomain: "smat-exchange.firebaseapp.com", projectId: "smat-exchange", databaseURL: "https://smat-exchange-default-rtdb.firebaseio.com", storageBucket: "smat-exchange.appspot.com", messagingSenderId: "836334569396", appId: "1:836334569396:web:679effe640b3453412d4e1" };
+        firebase.initializeApp(firebaseConfig);
+        const db = firebase.database();
+        const auth = firebase.auth();
+
+        let userData = {};
+        let miningInterval;
+
+        function init() {
+            auth.onAuthStateChanged(user => {
+                if (user) {
+                    db.ref('users/' + user.uid).on('value', snap => {
+                        userData = snap.val() || {};
+                        updateUI();
+                    });
+                } else { location.href = "login.html"; }
+            });
+        }
+
+        function updateUI() {
+            document.getElementById('user-id').innerText = userData.smatId || "SMAT-USER";
+            
+            // Calculate Speed based on your formula
+            let baseSpeed = 1.0;
+            let refSpeed = (userData.activeReferrals || 0) * 1.0;
+            let stakingBonus = (userData.refStakingTVL || 0) * 0.1;
+            let totalSpeed = baseSpeed + refSpeed + stakingBonus;
+
+            document.getElementById('speed-val').innerText = totalSpeed.toFixed(2);
+            document.getElementById('active-refs').innerText = userData.activeReferrals || 0;
+            document.getElementById('staked-tvl').innerText = "$" + (userData.totalStaked || 0).toLocaleString();
+
+            checkMiningStatus();
+        }
+
+        function checkMiningStatus() {
+            const now = Date.now();
+            const endTime = userData.miningEndTime || 0;
+
+            if (now < endTime) {
+                // Mining is Running
+                startAnimation(true);
+                if (!miningInterval) {
+                    miningInterval = setInterval(() => {
+                        updateTimer(endTime);
+                        calculateEarning();
+                    }, 1000);
+                }
+            } else {
+                // Mining Stopped
+                startAnimation(false);
+                clearInterval(miningInterval);
+                miningInterval = null;
+                document.getElementById('timer-display').innerText = "00:00:00";
+                document.getElementById('mining-status-text').innerText = "READY TO MINE";
+            }
+        }
+
+        function startAnimation(active) {
+            const core = document.getElementById('mining-core');
+            const ring = document.getElementById('glow-ring');
+            if (active) {
+                core.classList.add('active-pulse');
+                ring.style.opacity = "1";
+                document.getElementById('mining-status-text').innerText = "MINING ACTIVE";
+                document.getElementById('mining-status-text').style.color = "var(--primary)";
+            } else {
+                core.classList.remove('active-pulse');
+                ring.style.opacity = "0.3";
+            }
+        }
+
+        function updateTimer(endTime) {
+            const remain = endTime - Date.now();
+            const h = Math.floor(remain / 3600000).toString().padStart(2, '0');
+            const m = Math.floor((remain % 3600000) / 60000).toString().padStart(2, '0');
+            const s = Math.floor((remain % 60000) / 1000).toString().padStart(2, '0');
+            document.getElementById('timer-display').innerText = `${h}:${m}:${s}`;
+        }
+
+        function calculateEarning() {
+            // Formula: 0.0025 SMAT per Hour base
+            let speed = parseFloat(document.getElementById('speed-val').innerText);
+            let hourlyRate = 0.0025 * speed;
+            let perSec = hourlyRate / 3600;
+            
+            let sessionStart = userData.miningStartTime || Date.now();
+            let elapsedSec = Math.floor((Date.now() - sessionStart) / 1000);
+            let earned = elapsedSec * perSec;
+            
+            document.getElementById('session-bal').innerText = earned.toFixed(6);
+        }
+
+        async function startMining() {
+            if (Date.now() < (userData.miningEndTime || 0)) return; // Already running
+
+            const startTime = Date.now();
+            const endTime = startTime + (24 * 60 * 60 * 1000); // 24 Hours
+
+            await db.ref('users/' + auth.currentUser.uid).update({
+                miningStartTime: startTime,
+                miningEndTime: endTime
+            });
+            
+            // Trigger Animation Haptic/Sound if needed
+            alert("Mining Started for 24 Hours!");
+        }
+
+        function openReferInfo() {
+            const pop = document.getElementById('referPopup');
+            pop.style.display = 'flex';
+            setTimeout(() => pop.classList.add('active'), 10);
+            
+            // Fetch Refer List from Firebase
+            const listCont = document.getElementById('refer-list');
+            listCont.innerHTML = "<p style='color:gray; font-size:12px; text-align:center;'>Fetching members...</p>";
+
+            db.ref('users').orderByChild('referredBy').equalTo(auth.currentUser.uid).once('value', snap => {
+                const users = snap.val();
+                if (!users) { listCont.innerHTML = "<p style='text-align:center; font-size:12px;'>No referrals yet.</p>"; return; }
+                
+                let html = "";
+                Object.values(users).forEach(u => {
+                    let status = (Date.now() < (u.miningEndTime || 0)) ? 'ACTIVE' : 'INACTIVE';
+                    html += `
+                        <div class="stat-card" style="display:flex; justify-content:space-between; align-items:center; background: rgba(255,255,255,0.02);">
+                            <div>
+                                <p style="font-weight:bold; font-size:13px;">${u.smatId || 'Anonymous'}</p>
+                                <p style="font-size:9px; color:${status==='ACTIVE'?'#0ecb81':'#f6465d'}">${status}</p>
+                            </div>
+                            <div style="text-align:right">
+                                <p style="font-size:9px; color:gray;">STAKED</p>
+                                <p style="font-size:11px; font-weight:bold;">$${(u.totalStaked || 0).toFixed(2)}</p>
+                            </div>
+                        </div>
+                    `;
+                });
+                listCont.innerHTML = html;
+            });
+        }
+
+        function closeAllModals() {
+            const pop = document.getElementById('referPopup');
+            pop.classList.remove('active');
+            setTimeout(() => pop.style.display = 'none', 300);
+        }
+
+        function closePopup(e) { if(e.target.id === 'referPopup') closeAllModals(); }
+
+        window.onload = init;
+    </script>
+</body>
+</html>
