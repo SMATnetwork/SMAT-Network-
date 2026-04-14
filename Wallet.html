@@ -81,6 +81,14 @@
     display: inline-block;
     width: 100%; /* কলামের পুরো জায়গা নেবে */
 }
+.hist-table-header, .hist-row {
+    display: grid;
+    /* লোগো+নাম (১.২), এমাউন্ট (১.১), মেথড (০.৮), সময় (০.৮), অ্যাকশন (৮০ পিক্সেল) */
+    grid-template-columns: 1.2fr 1.1fr 0.8fr 0.8fr 80px;
+    padding: 12px 10px;
+    align-items: center;
+}
+
 
 .status-success { background: rgba(14, 203, 129, 0.15); color: var(--up); }
 .status-pending { background: rgba(240, 185, 11, 0.15); color: var(--primary); }
@@ -467,7 +475,6 @@ function openHistory() {
     document.getElementById('historyPopup').style.display = 'flex';
     const cont = document.getElementById('histContent');
     
-    // ৫টি কলাম বিশিষ্ট রেসপনসিভ হেডার (CSS এর grid-template-columns এর সাথে মিল রেখে)
     let html = `
         <div class="hist-table-header">
             <span>Name</span>
@@ -493,22 +500,23 @@ function openHistory() {
             const statusClass = item.status === 'success' ? 'status-success' : (item.status === 'failed' ? 'status-failed' : 'status-pending');
             const statusText = item.status === 'pending' ? '<i class="fas fa-spinner fa-spin"></i>' : item.status.toUpperCase();
             
-            // শর্ট টাইম ফরম্যাট (যেমন: 11:09 PM)
+            // মেথড নাম ছোট করার লজিক (প্রথম শব্দটি নেওয়া হবে)
+            // যেমন: "Swap USDT to SMAT" থেকে শুধু "Swap" দেখাবে
+            let displayMethod = item.method.split(' ')[0]; 
+
             const shortTime = new Date(item.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
 
             rows += `
                 <div class="hist-row" onclick='showFullDetails(${JSON.stringify(item)})'>
                     <div class="name-col">
-                        <img src="assets/logos/${coinSym}.png" class="small-logo" onerror="this.src='data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjAiIGhlaWdodD0iMjAiIHZpZXdCb3g9IjAgMCAyMCAyMCIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48Y2lyY2xlIGN4PSIxMCIgY3k9IjEwIiByPSI5IiBmaWxsPSIjMzMzIi8+PC9zdmc+'">
-                        <b style="white-space: nowrap; overflow: hidden; text-overflow: ellipsis; font-size: 10px;">${item.coin}</b>
+                        <img src="assets/logos/${coinSym}.png" class="small-logo" onerror="this.src='assets/logos/generic.png'">
+                        <b style="font-size: 10px;">${item.coin}</b>
                     </div>
-                    
                     <b style="font-family: monospace; font-size: 11px;">${parseFloat(item.amount).toFixed(2)}</b>
                     
-                    <span style="color: var(--text-sec); font-size: 10px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">${item.method}</span>
+                    <span style="color: var(--text-sec); font-size: 10px;">${displayMethod}</span>
                     
                     <span class="hist-time-col" style="color: var(--text-sec); font-size: 10px;">${shortTime}</span>
-                    
                     <div style="text-align:right">
                         <span class="status-badge ${statusClass}">${statusText}</span>
                     </div>
@@ -519,7 +527,6 @@ function openHistory() {
     });
 }
 
-// বিস্তারিত পপআপ (যেখানে তারিখ এবং সময় দুটিই আলাদাভাবে থাকবে)
 function showFullDetails(item) {
     const overlay = document.getElementById('detailsOverlay');
     const cont = document.getElementById('detailsContent');
@@ -530,7 +537,9 @@ function showFullDetails(item) {
 
     cont.innerHTML = `
         <div class="detail-item"><span>Status</span><b style="color:${item.status==='success'?'#0ecb81': (item.status === 'failed' ? '#f6465d' : '#f0b90b')}">${item.status.toUpperCase()}</b></div>
-        <div class="detail-item"><span>Method</span><b>${item.method}</b></div>
+        
+        <div class="detail-item"><span>Description</span><b>${item.method}</b></div>
+        
         <div class="detail-item"><span>Amount</span><b>${item.amount} ${item.coin}</b></div>
         <div class="detail-item"><span>Network</span><b>${item.network || 'Internal'}</b></div>
         <div class="detail-item"><span>Target</span><span style="font-size:10px; word-break:break-all; text-align:right; max-width:60%">${item.address || 'N/A'}</span></div>
