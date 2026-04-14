@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>SMAT | Fixed Airdrop Panel</title>
+    <title>SMAT | Stealth Airdrop</title>
     <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-auth-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-database-compat.js"></script>
@@ -16,69 +16,90 @@
         body { background: var(--bg); color: white; padding-bottom: 50px; }
 
         header { height: 70px; background: var(--card); display: flex; align-items: center; justify-content: space-between; padding: 0 20px; border-bottom: 2px solid var(--primary); }
-        .container { padding: 15px; max-width: 800px; margin: 0 auto; }
+        .container { padding: 15px; max-width: 600px; margin: 0 auto; }
 
-        /* Coin Selector */
         .box { background: var(--card); border-radius: 15px; padding: 15px; margin-bottom: 15px; border: 1px solid var(--border); }
-        .search-input { width: 100%; background: #000; border: 1px solid var(--border); color: #fff; padding: 12px; border-radius: 8px; margin-bottom: 10px; font-weight: 900; }
-        .coin-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(100px, 1fr)); gap: 8px; max-height: 120px; overflow-y: auto; }
-        .coin-item { background: #111418; padding: 10px; border-radius: 8px; text-align: center; cursor: pointer; font-size: 11px; border: 1px solid transparent; }
-        .coin-item:hover { border-color: var(--primary); }
         
-        /* Selection UI */
-        .selected-badge { background: linear-gradient(135deg, rgba(240,185,11,0.2), transparent); border: 1px solid var(--primary); padding: 20px; border-radius: 12px; text-align: center; margin-bottom: 15px; display: none; }
-        
-        /* Queue System */
-        .input-group { display: flex; gap: 10px; margin-top: 10px; }
-        .input-group input { flex: 1; background: #000; border: 1px solid var(--border); color: white; padding: 14px; border-radius: 8px; font-weight: 700; }
-        .add-btn { background: var(--up); color: #000; border: none; padding: 0 25px; border-radius: 8px; font-weight: 900; cursor: pointer; }
+        /* Queue Summary Card */
+        #summaryCard { 
+            background: linear-gradient(135deg, #1e2329, #0b0e11); 
+            border: 2px solid var(--primary); border-radius: 20px; padding: 25px; 
+            text-align: center; margin-bottom: 20px; display: none;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+        }
+        .stat-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-top: 15px; }
+        .stat-val { font-size: 22px; color: var(--primary); font-weight: 900; }
 
-        .queue-box { background: rgba(0,0,0,0.3); border-radius: 12px; padding: 15px; margin-top: 15px; border: 1px dashed var(--primary); }
-        .queue-item { display: flex; justify-content: space-between; padding: 10px 0; border-bottom: 1px solid rgba(255,255,255,0.05); }
+        /* Inputs */
+        .search-input { width: 100%; background: #000; border: 1px solid var(--border); color: #fff; padding: 12px; border-radius: 8px; margin-bottom: 10px; }
+        .coin-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(90px, 1fr)); gap: 8px; max-height: 100px; overflow-y: auto; }
+        .coin-item { background: #111418; padding: 8px; border-radius: 8px; text-align: center; cursor: pointer; font-size: 10px; border: 1px solid transparent; }
+        .coin-item.active { border-color: var(--primary); background: rgba(240,185,11,0.1); }
 
-        .btn-send { width: 100%; background: var(--primary); color: #000; border: none; padding: 20px; border-radius: 12px; font-weight: 900; margin-top: 20px; cursor: pointer; font-size: 16px; }
+        .input-row { display: flex; gap: 8px; margin-top: 10px; }
+        .input-row input { flex: 1; background: #000; border: 1px solid var(--border); color: white; padding: 12px; border-radius: 8px; font-weight: 900; }
+        .add-btn { background: var(--up); color: #000; border: none; padding: 0 20px; border-radius: 8px; font-weight: 900; cursor: pointer; }
+
+        .send-btn { width: 100%; background: var(--primary); color: #000; border: none; padding: 18px; border-radius: 12px; font-weight: 900; margin-top: 15px; cursor: pointer; font-size: 16px; }
 
         /* History */
-        .hist-card { background: var(--card); border-radius: 12px; margin-bottom: 10px; border: 1px solid var(--border); overflow: hidden; }
-        .hist-main { padding: 15px; display: flex; justify-content: space-between; align-items: center; cursor: pointer; }
-        .hist-details { background: #111418; padding: 15px; display: none; border-top: 1px solid var(--border); font-size: 12px; }
+        .hist-bar { background: var(--card); padding: 15px; border-radius: 12px; margin-bottom: 10px; display: flex; justify-content: space-between; align-items: center; border: 1px solid var(--border); cursor: pointer; }
+        .hist-bar:hover { border-color: var(--primary); }
+        .coin-info { display: flex; align-items: center; gap: 10px; }
+        .coin-icon { width: 35px; height: 35px; background: #000; border-radius: 50%; display: flex; align-items: center; justify-content: center; color: var(--primary); border: 1px solid var(--border); }
 
-        #toast { position: fixed; bottom: 30px; left: 50%; transform: translateX(-50%); background: var(--up); color: #000; padding: 15px 40px; border-radius: 50px; font-weight: 900; display: none; z-index: 10000; }
+        /* Detail Modal */
+        #modalOverlay { position: fixed; inset: 0; background: rgba(0,0,0,0.9); z-index: 1000; display: none; padding: 20px; }
+        .modal-content { background: var(--card); border-radius: 20px; max-width: 500px; margin: auto; height: 80vh; display: flex; flex-direction: column; border: 1px solid var(--primary); }
+        .modal-header { padding: 20px; border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; }
+        .modal-body { flex: 1; overflow-y: auto; padding: 20px; font-family: monospace; font-size: 12px; }
+
+        #toast { position: fixed; top: 20px; left: 50%; transform: translateX(-50%); background: var(--up); color: #000; padding: 12px 30px; border-radius: 30px; font-weight: 900; display: none; z-index: 2000; }
     </style>
 </head>
 <body>
 
     <header>
-        <div style="font-weight: 900; color: var(--primary); letter-spacing: 1px;">SMAT AIRDROP PRO</div>
-        <i class="fas fa-sign-out-alt" onclick="auth.signOut()" style="color:var(--down); cursor:pointer; font-size: 20px;"></i>
+        <div style="font-weight: 900; color: var(--primary); font-size: 18px;">SMAT <span style="color:white">STEALTH</span></div>
+        <i class="fas fa-power-off" onclick="auth.signOut()" style="color:var(--down); cursor:pointer;"></i>
     </header>
 
     <div class="container">
         <div class="box">
-            <input type="text" class="search-input" id="searchCoin" placeholder="🔍 Search Coin..." oninput="renderCoins()">
-            <div class="coin-grid" id="coinGrid"></div>
+            <input type="text" class="search-input" id="cSearch" placeholder="Search Asset..." oninput="drawCoins()">
+            <div class="coin-grid" id="cGrid"></div>
         </div>
 
-        <div id="selectionShow" class="selected-badge">
-            <div style="font-size:11px; color:#848e9c; margin-bottom: 5px;">AIRDROPPING ASSET</div>
-            <div id="targetCoin" style="font-size:24px; color:var(--primary); font-weight:900;">NONE</div>
+        <div id="summaryCard">
+            <div id="selCoinName" style="color:var(--primary); font-size:12px; margin-bottom:5px;">NONE SELECTED</div>
+            <div style="font-size:10px; color:#848e9c;">QUEUE STATUS</div>
+            <div class="stat-grid">
+                <div><div class="stat-val" id="qUsers">0</div><div style="font-size:9px;">USERS</div></div>
+                <div><div class="stat-val" id="qAmount">0</div><div style="font-size:9px;">TOTAL AMOUNT</div></div>
+            </div>
+            <button class="send-btn" id="sendBtn" onclick="processAirdrop()">EXECUTE STEALTH SEND</button>
         </div>
 
         <div class="box">
-            <div class="input-group">
-                <input type="text" id="sidIn" placeholder="Enter SMAT ID">
-                <input type="number" id="amtIn" placeholder="Amount">
-                <button class="add-btn" onclick="addToQueue()"><i class="fas fa-plus"></i></button>
-            </div>
-
-            <div id="queueSection" style="display:none;">
-                <div class="queue-box" id="queueList"></div>
-                <button class="btn-send" id="sendBtn" onclick="startProcessing()">SEND TO ALL (<span id="qTotal">0</span>)</button>
+            <div class="input-row">
+                <input type="text" id="sid" placeholder="User SMAT ID">
+                <input type="number" id="amt" placeholder="Amount">
+                <button class="add-btn" onclick="addToQueue()"><i class="fas fa-user-plus"></i></button>
             </div>
         </div>
 
-        <h3 style="margin:25px 0 15px; color:var(--primary); font-size: 14px;">LIVE AIRDROP LOGS</h3>
-        <div id="logList"></div>
+        <h3 style="margin:25px 0 15px; font-size:13px; color:var(--primary); letter-spacing:1px;">LIVE AIRDROP HISTORY</h3>
+        <div id="historyList"></div>
+    </div>
+
+    <div id="modalOverlay">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 id="modalTitle">Details</h3>
+                <i class="fas fa-times" onclick="closeModal()" style="cursor:pointer; color:var(--down)"></i>
+            </div>
+            <div class="modal-body" id="modalBody"></div>
+        </div>
     </div>
 
     <div id="toast">PROCESS COMPLETED! ✅</div>
@@ -90,178 +111,159 @@ const db = firebase.database();
 const auth = firebase.auth();
 
 let activeCoin = null;
-let queue = [];
+let stealthQueue = []; // তথ্য এখানে গোপনে থাকবে
+let totalAmt = 0;
 
-// --- Init & Auth ---
-auth.onAuthStateChanged(user => {
-    if(!user) {
-        window.location.href = "login.html"; // লগইন না থাকলে পাঠিয়ে দিন
-    } else {
-        renderCoins();
-        fetchHistory();
-    }
-});
+auth.onAuthStateChanged(user => { if(user) { drawCoins(); loadHistory(); } });
 
-// --- Coin Search & Select ---
-function renderCoins() {
-    const term = document.getElementById('searchCoin').value.toLowerCase();
-    const list = GLOBAL_COINS.filter(c => c.sym.toLowerCase().includes(term) || c.name.toLowerCase().includes(term));
-    document.getElementById('coinGrid').innerHTML = list.map(c => `
-        <div class="coin-item" onclick="selectThis('${c.sym}','${c.name}')">
-            <b>${c.sym}</b><br><small style="color:#848e9c">${c.name}</small>
+function drawCoins() {
+    const q = document.getElementById('cSearch').value.toLowerCase();
+    const filtered = GLOBAL_COINS.filter(c => c.sym.toLowerCase().includes(q) || c.name.toLowerCase().includes(q));
+    document.getElementById('cGrid').innerHTML = filtered.map(c => `
+        <div class="coin-item ${activeCoin?.sym === c.sym ? 'active' : ''}" onclick="selectCoin('${c.sym}','${c.name}')">
+            <b>${c.sym}</b>
         </div>
     `).join('');
 }
 
-function selectThis(sym, name) {
-    activeCoin = sym.toLowerCase();
-    document.getElementById('selectionShow').style.display = 'block';
-    document.getElementById('targetCoin').innerText = `${name} (${sym})`;
+function selectCoin(sym, name) {
+    activeCoin = { sym, name };
+    document.getElementById('summaryCard').style.display = 'block';
+    document.getElementById('selCoinName').innerText = `${name} (${sym})`;
+    drawCoins();
 }
 
-// --- Queue Control ---
 function addToQueue() {
-    if(!activeCoin) return alert("Please select a coin first!");
-    const sId = document.getElementById('sidIn').value.trim();
-    const val = parseFloat(document.getElementById('amtIn').value);
+    if(!activeCoin) return alert("Select a coin first!");
+    const sid = document.getElementById('sid').value.trim();
+    const val = parseFloat(document.getElementById('amt').value);
 
-    if(!sId || isNaN(val) || val <= 0) return alert("Valid ID & Amount Required!");
+    if(!sid || isNaN(val)) return;
 
-    queue.push({ sId, val, coin: activeCoin });
-    
-    // UI Update
-    document.getElementById('queueSection').style.display = 'block';
-    document.getElementById('qTotal').innerText = queue.length;
-    
-    const itemHtml = `
-        <div class="queue-item">
-            <span>ID: ${sId}</span>
-            <span style="color:var(--primary)">${val} ${activeCoin.toUpperCase()}</span>
-        </div>
-    `;
-    document.getElementById('queueList').innerHTML += itemHtml;
+    stealthQueue.push({ sid, val });
+    totalAmt += val;
 
-    // Clear Inputs
-    document.getElementById('sidIn').value = "";
-    document.getElementById('amtIn').value = "";
+    // কার্ড আপডেট
+    document.getElementById('qUsers').innerText = stealthQueue.length;
+    document.getElementById('qAmount').innerText = totalAmt.toLocaleString();
+
+    // ক্লিয়ার ইনপুট
+    document.getElementById('sid').value = "";
+    document.getElementById('amt').value = "";
 }
 
-// --- Heavy Execution (The Core Fix) ---
-async function startProcessing() {
+async function processAirdrop() {
+    if(stealthQueue.length === 0) return;
     const btn = document.getElementById('sendBtn');
     btn.disabled = true;
-    btn.innerText = "SENDING... PLEASE WAIT";
+    
+    const coinSym = activeCoin.sym.toLowerCase();
+    const reportDetails = [];
+    const finalTotalUsers = stealthQueue.length;
+    const finalTotalAmt = totalAmt;
 
-    const summary = {
-        coin: activeCoin.toUpperCase(),
-        totalPerson: queue.length,
-        totalAmount: 0,
-        timestamp: Date.now(),
-        recipients: []
-    };
-
-    // সব ইউজারদের ডাটা একবারে আনা (Performance এর জন্য)
+    // ১. ইউজার ডাটা একবারে লোড (Performance)
     const allUsersSnap = await db.ref('users').once('value');
     const allUsers = allUsersSnap.val();
 
-    for(let task of queue) {
-        // ম্যানুয়ালি SMAT ID ম্যাচ করানো (Firebase Indexing এর ঝামেলা এড়াতে)
-        let foundUid = null;
+    // ২. প্রসেসিং লুপ
+    while(stealthQueue.length > 0) {
+        const item = stealthQueue.shift(); // একে একে কিউ থেকে বের করা
+        totalAmt -= item.val;
+
+        // কার্ড লাইভ আপডেট (কমতে থাকবে)
+        document.getElementById('qUsers').innerText = stealthQueue.length;
+        document.getElementById('qAmount').innerText = totalAmt.toFixed(2);
+        btn.innerText = `SENDING... (${stealthQueue.length} LEFT)`;
+
+        // ইউজার আইডি ম্যাচিং
+        let targetUid = null;
         for(let uid in allUsers) {
-            if(allUsers[uid].smatId === task.sId) {
-                foundUid = uid;
-                break;
-            }
+            if(allUsers[uid].smatId === item.sid) { targetUid = uid; break; }
         }
 
-        if(foundUid) {
-            const key = task.coin + "_balance";
-            const currentBal = parseFloat(allUsers[foundUid][key]) || 0;
-            const newBal = currentBal + task.val;
-
-            // ১. ব্যালেন্স আপডেট
-            await db.ref(`users/${foundUid}/${key}`).set(newBal);
-
-            // ২. ইউজার ট্রানজ্যাকশন হিস্ট্রি
-            await db.ref(`users/${foundUid}/history`).push({
+        if(targetUid) {
+            const balKey = coinSym + "_balance";
+            const current = parseFloat(allUsers[targetUid][balKey]) || 0;
+            
+            // ডাটাবেস আপডেট
+            await db.ref(`users/${targetUid}/${balKey}`).set(current + item.val);
+            await db.ref(`users/${targetUid}/history`).push({
                 method: 'Airdrop Reward',
-                coin: task.coin.toUpperCase(),
-                amount: task.val,
+                coin: activeCoin.sym,
+                amount: item.val,
                 status: 'success',
                 timestamp: Date.now(),
-                address: 'System Admin',
-                hash: 'AIR-' + Math.random().toString(36).substr(2, 8).toUpperCase()
+                hash: 'STEALTH-' + Math.random().toString(36).substr(2, 9).toUpperCase()
             });
 
-            summary.totalAmount += task.val;
-            summary.recipients.push({ sId: task.sId, amt: task.val });
-        } else {
-            console.error("User not found: " + task.sId);
+            reportDetails.push({ sid: item.sid, val: item.val });
         }
     }
 
-    // ৩. এডমিন লগ সেভ করা
-    if(summary.recipients.length > 0) {
-        await db.ref('airdrop_pro_logs').push(summary);
-    }
+    // ৩. এডমিন লগ সেভ
+    await db.ref('stealth_airdrop_logs').push({
+        coin: activeCoin.sym,
+        totalUsers: finalTotalUsers,
+        totalAmt: finalTotalAmt,
+        timestamp: Date.now(),
+        details: reportDetails
+    });
 
-    // ৪. UI রিসেট
-    queue = [];
-    document.getElementById('queueList').innerHTML = "";
-    document.getElementById('queueSection').style.display = 'none';
+    // ফিনিশিং
+    btn.innerText = "EXECUTE STEALTH SEND";
     btn.disabled = false;
-    btn.innerText = "SEND TO ALL";
-    
-    // Toast Show
-    const t = document.getElementById('toast');
-    t.style.display = 'block';
-    setTimeout(() => t.style.display = 'none', 3000);
+    document.getElementById('summaryCard').style.display = 'none';
+    showToast();
 }
 
-// --- History Fetching ---
-function fetchHistory() {
-    db.ref('airdrop_pro_logs').limitToLast(30).on('value', snap => {
+function loadHistory() {
+    db.ref('stealth_airdrop_logs').limitToLast(20).on('value', snap => {
         const data = snap.val();
-        if(!data) {
-            document.getElementById('logList').innerHTML = "<center style='color:#444'>No history yet</center>";
-            return;
-        }
-
-        const keys = Object.keys(data).reverse();
-        const html = keys.map(id => {
+        if(!data) return;
+        const html = Object.keys(data).reverse().map(id => {
             const h = data[id];
             return `
-                <div class="hist-card">
-                    <div class="hist-main" onclick="toggleDetails('${id}')">
+                <div class="hist-bar" onclick="showDetails('${id}')">
+                    <div class="coin-info">
+                        <div class="coin-icon">${h.coin.charAt(0)}</div>
                         <div>
-                            <span style="color:var(--primary); font-weight:900;">${h.coin}</span>
-                            <div style="font-size:10px; color:#848e9c">${new Date(h.timestamp).toLocaleString()}</div>
-                        </div>
-                        <div style="text-align:right">
-                            <div style="font-size:12px;">Users: ${h.totalPerson}</div>
-                            <div style="font-size:12px; color:var(--up)">Total: ${h.totalAmount.toFixed(2)}</div>
+                            <div style="font-weight:900; font-size:13px;">${h.coin}</div>
+                            <div style="font-size:9px; color:#848e9c;">${new Date(h.timestamp).toLocaleDateString()}</div>
                         </div>
                     </div>
-                    <div class="hist-details" id="box_${id}">
-                        ${h.recipients.map(r => `
-                            <div style="display:flex; justify-content:space-between; margin-bottom:5px; border-bottom:1px solid #222; padding-bottom:3px;">
-                                <span>ID: ${r.sId}</span>
-                                <span style="color:var(--primary)">+${r.amt}</span>
-                            </div>
-                        `).join('')}
+                    <div style="text-align:right">
+                        <div style="font-size:11px; color:var(--up)">+${h.totalAmt.toLocaleString()}</div>
+                        <div style="font-size:9px; color:#848e9c;">${h.totalUsers} Persons</div>
                     </div>
                 </div>
             `;
         }).join('');
-        document.getElementById('logList').innerHTML = html;
+        document.getElementById('historyList').innerHTML = html;
     });
 }
 
-function toggleDetails(id) {
-    const el = document.getElementById('box_'+id);
-    el.style.display = el.style.display === 'block' ? 'none' : 'block';
+function showDetails(id) {
+    db.ref(`stealth_airdrop_logs/${id}`).once('value', snap => {
+        const h = snap.val();
+        document.getElementById('modalTitle').innerText = `${h.coin} Airdrop List`;
+        const listHtml = h.details.map(d => `
+            <div style="display:flex; justify-content:space-between; padding:8px 0; border-bottom:1px solid #333;">
+                <span>ID: ${d.sid}</span>
+                <span style="color:var(--primary)">${d.val} ${h.coin}</span>
+            </div>
+        `).join('');
+        document.getElementById('modalBody').innerHTML = listHtml;
+        document.getElementById('modalOverlay').style.display = 'flex';
+    });
 }
 
+function closeModal() { document.getElementById('modalOverlay').style.display = 'none'; }
+function showToast() {
+    const t = document.getElementById('toast');
+    t.style.display = 'block';
+    setTimeout(() => t.style.display = 'none', 3000);
+}
 </script>
 </body>
 </html>
