@@ -286,59 +286,62 @@ window.closeModals = () => {
 
 
                         // Every 1 Second Update
-        setInterval(() => {
-            if (!uData.miningActive || !user || !uData.mineEndTime) return;
-            
-            let now = Date.now();
-            let remain = uData.mineEndTime - now;
-            
-            if (remain <= 0) {
-                // সেশন শেষ, ওয়ালেটে ব্যালেন্স ট্রান্সফার
-                const finalSessionAmount = parseFloat(uData.sessionSmat) || 0;
-                const currentWalletSmat = parseFloat(uData.smatBalance) || 0;
+        // Every 1 Second Update
+setInterval(() => {
+    if (!uData.miningActive || !user || !uData.mineEndTime) return;
+    
+    let now = Date.now();
+    let remain = uData.mineEndTime - now;
+    
+    if (remain <= 0) {
+        // --- ফিক্সড লজিক: সেশন শেষ, ওয়ালেটে ব্যালেন্স ট্রান্সফার ---
+        
+        // ১. ডাটাবেসের বর্তমান লেটেস্ট ভ্যালু আবার চেক করা যাতে নিখুঁত হিসাব থাকে
+        const finalSessionAmount = parseFloat(displaySmat) || 0;
+        const currentWalletSmat = parseFloat(uData.smat_balance) || 0; // এখানে smat_balance হবে
 
-                update(ref(db, `users/${user.uid}`), { 
-                    miningActive: false,
-                    smatBalance: currentWalletSmat + finalSessionAmount,
-                    sessionSmat: 0,
-                    mineEndTime: 0 
-                }).then(() => {
-                    alert("Mining Session Ended! Rewards added to your wallet.");
-                    location.reload();
-                });
-            } else {
-                // টাইমার ডিসপ্লে
-                let h = Math.floor(remain / 3600000).toString().padStart(2, '0');
-                let m = Math.floor((remain % 3600000) / 60000).toString().padStart(2, '0');
-                let s = Math.floor((remain % 60000) / 1000).toString().padStart(2, '0');
-                document.getElementById('timer').innerText = `${h}:${m}:${s}`;
+        const uRef = ref(db, `users/${user.uid}`);
+        
+        update(uRef, { 
+            miningActive: false,
+            smat_balance: currentWalletSmat + finalSessionAmount, // সঠিক ফিল্ডে যোগ হচ্ছে
+            sessionSmat: 0,
+            mineEndTime: 0 
+        }).then(() => {
+            alert("Congratulations! Mining rewards added to your wallet.");
+            location.reload();
+        }).catch((error) => {
+            console.error("Balance Update Failed:", error);
+        });
 
-                // বর্তমান স্পিড ক্যালকুলেশন
-                const activeCount = referrals.filter(r => r.miningActive).length;
-                let speed = 1.0 + (parseFloat(uData.crashVol_6am) || 0) + 
-                            (parseFloat(uData.predVol_6am) || 0) + 
-                            ((parseFloat(uData.oxStaked) || 0) * 10) + 
-                            (activeCount * 1.0);
+    } else {
+        // টাইমার ডিসপ্লে
+        let h = Math.floor(remain / 3600000).toString().padStart(2, '0');
+        let m = Math.floor((remain % 3600000) / 60000).toString().padStart(2, '0');
+        let s = Math.floor((remain % 60000) / 1000).toString().padStart(2, '0');
+        document.getElementById('timer').innerText = `${h}:${m}:${s}`;
 
-                // --- সমাধান লজিক: রিলোড ফ্রেন্ডলি আপডেট ---
-                // ১. displaySmat যদি ০ থাকে (পেজ জাস্ট লোড হয়েছে), তবে ডেটাবেজের মানটা নিয়ে নাও
-                if (typeof displaySmat === 'undefined' || displaySmat === 0) {
-                    displaySmat = parseFloat(uData.sessionSmat) || 0;
-                }
-                
-                // ২. প্রতি সেকেন্ডে স্পিড অনুযায়ী ব্যালেন্স যোগ করো (রিয়েল টাইম)
-                displaySmat += (BASE_MINING * speed) / 3600;
-                
-                // ৩. স্ক্রিনে দেখাও
-                document.getElementById('session-smat').innerText = displaySmat.toFixed(8);
-                document.getElementById('total-boost').innerText = speed.toFixed(2) + "x";
+        // বর্তমান স্পিড ক্যালকুলেশন
+        const activeCount = referrals.filter(r => r.miningActive).length;
+        let speed = 1.0 + (parseFloat(uData.crashVol_6am) || 0) + 
+                    (parseFloat(uData.predVol_6am) || 0) + 
+                    ((parseFloat(uData.oxStaked) || 0) * 10) + 
+                    (activeCount * 1.0);
 
-                // ৪. প্রতি ২০ সেকেন্ডে একবার ডেটাবেজে অটো-সেভ (রিলোড দিলে যেন রিসেট না হয়)
-                if (Math.floor(now / 1000) % 20 === 0) {
-                    update(ref(db, `users/${user.uid}`), { sessionSmat: displaySmat });
-                }
-            }
-        }, 1000);
+        // রিয়েল টাইম ব্যালেন্স আপডেট
+        if (typeof displaySmat === 'undefined' || displaySmat === 0) {
+            displaySmat = parseFloat(uData.sessionSmat) || 0;
+        }
+        
+        displaySmat += (BASE_MINING * speed) / 3600;
+        document.getElementById('session-smat').innerText = displaySmat.toFixed(8);
+
+        // প্রতি ২০ সেকেন্ডে অটো-সেভ
+        if (Math.floor(now / 1000) % 20 === 0) {
+            update(ref(db, `users/${user.uid}`), { sessionSmat: displaySmat });
+        }
+    }
+}, 1000);
 
     </script>
 </body>
