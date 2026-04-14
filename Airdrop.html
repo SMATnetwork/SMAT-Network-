@@ -20,11 +20,9 @@
         * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Montserrat', sans-serif; }
         body { background: var(--bg); color: white; min-height: 100vh; overflow-x: hidden; }
 
-        /* --- Auth Overlay --- */
         #authOverlay { position: fixed; inset: 0; background: var(--bg); z-index: 9999; display: flex; align-items: center; justify-content: center; padding: 20px; }
         .login-card { background: var(--card); border: 1px solid var(--border); padding: 40px; border-radius: 30px; width: 100%; max-width: 400px; text-align: center; box-shadow: 0 0 50px rgba(0,0,0,0.5); }
 
-        /* --- Header --- */
         header { 
             height: 75px; background: rgba(18, 21, 26, 0.9); backdrop-filter: blur(15px);
             display: flex; align-items: center; justify-content: space-between;
@@ -39,7 +37,6 @@
 
         .container { max-width: 550px; margin: 30px auto; padding: 0 15px; padding-bottom: 50px; }
 
-        /* --- Search & Grid --- */
         .search-container { background: var(--card); border-radius: 25px; padding: 20px; border: 1px solid var(--border); margin-bottom: 25px; }
         .search-bar { background: var(--input-bg); border: 1.5px solid var(--border); border-radius: 18px; padding: 16px; display: flex; align-items: center; gap: 12px; margin-bottom: 20px; }
         .search-bar input { background: none; border: none; color: white; width: 100%; outline: none; font-weight: 900; font-size: 14px; }
@@ -54,14 +51,12 @@
         @keyframes fadeIn { from { opacity: 0; transform: scale(0.9); } to { opacity: 1; transform: scale(1); } }
         .close-sel { position: absolute; right: 20px; top: 20px; cursor: pointer; color: var(--text-muted); font-size: 20px; }
 
-        /* --- Inputs --- */
         .input-card { background: var(--card); border-radius: 30px; padding: 30px; border: 1px solid var(--border); margin-bottom: 25px; }
         .modern-input { margin-bottom: 20px; }
         .modern-input label { font-size: 11px; font-weight: 900; color: var(--text-muted); text-transform: uppercase; margin-bottom: 10px; display: block; letter-spacing: 1px; }
         .modern-input input { width: 100%; background: var(--input-bg); border: 2px solid var(--border); padding: 20px; border-radius: 18px; color: white; font-weight: 900; font-size: 16px; transition: 0.3s; }
         .modern-input input:focus { border-color: var(--primary); outline: none; background: #000; }
 
-        /* --- Queue Card --- */
         .queue-card { background: var(--input-bg); border: 2px dashed var(--border); border-radius: 25px; padding: 20px; margin: 25px 0; display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
         .q-box { text-align: center; }
         .q-box span { font-size: 10px; font-weight: 900; color: var(--text-muted); display: block; margin-bottom: 8px; }
@@ -72,20 +67,20 @@
         .btn-add:hover { border-color: var(--secondary); color: var(--secondary); }
         .btn-send { background: linear-gradient(135deg, var(--primary), #00d170); color: #000; box-shadow: 0 10px 30px rgba(0, 255, 136, 0.2); }
 
-        /* --- History --- */
         .history-title { text-align: center; margin: 50px 0 30px; font-weight: 900; color: var(--secondary); font-size: 24px; text-transform: uppercase; }
         .h-header { display: grid; grid-template-columns: 70px 1.5fr 1fr 1.2fr; padding: 0 25px 15px; font-size: 11px; font-weight: 900; color: var(--text-muted); }
         .h-row { background: var(--card); border-radius: 22px; border: 1px solid var(--border); padding: 18px 25px; display: grid; grid-template-columns: 70px 1.5fr 1fr 1.2fr; align-items: center; margin-bottom: 12px; cursor: pointer; transition: 0.3s; }
         .h-row:hover { border-color: var(--primary); transform: translateX(10px); }
         .h-row img { width: 35px; height: 35px; border-radius: 50%; }
 
-        /* --- Modal --- */
         #modal { position: fixed; inset: 0; background: rgba(0,0,0,0.95); backdrop-filter: blur(20px); z-index: 1000; display: none; align-items: center; justify-content: center; padding: 20px; }
         .modal-box { background: var(--card); border: 1px solid var(--primary); border-radius: 35px; width: 100%; max-width: 450px; max-height: 80vh; overflow: hidden; display: flex; flex-direction: column; }
         .modal-head { padding: 30px; text-align: center; border-bottom: 1px solid var(--border); background: rgba(0,255,136,0.03); }
         .modal-body { flex: 1; overflow-y: auto; padding: 25px; }
+        
+        .show-more-btn { background: var(--input-bg); border: 1px solid var(--border); color: var(--primary); width: 100%; padding: 15px; border-radius: 15px; margin-top: 15px; cursor: pointer; font-weight: 900; text-transform: uppercase; transition: 0.3s; }
+        .show-more-btn:hover { background: var(--primary); color: #000; }
 
-        /* --- Success Toast --- */
         #successToast { 
             position: fixed; top: -100px; left: 50%; transform: translateX(-50%);
             background: var(--primary); color: #000; padding: 20px 40px; border-radius: 20px;
@@ -177,11 +172,13 @@
 <div id="modal" onclick="if(event.target==this) closeModal()">
     <div class="modal-box">
         <div class="modal-head">
+            <i class="fas fa-times-circle" style="position: absolute; right: 25px; top: 25px; color: var(--text-muted); cursor: pointer;" onclick="closeModal()"></i>
             <img id="mIcon" src="" style="width: 60px; border-radius: 50%; margin-bottom: 15px; border: 2px solid var(--primary); padding: 5px;">
             <h2 id="mCoinName" style="color: var(--primary); font-weight: 900;">-</h2>
             <p style="font-size: 11px; font-weight: 900; color: var(--text-muted); margin-top: 8px;">DISTRIBUTION REPORT</p>
         </div>
         <div id="mBody" class="modal-body"></div>
+        <div id="mFooter" style="padding: 10px 25px 25px;"></div>
     </div>
 </div>
 
@@ -215,7 +212,7 @@ let totalAmt = 0;
 function drawCoins() {
     const q = document.getElementById('coinSearch').value.toLowerCase();
     const grid = document.getElementById('selectorUI');
-    const filtered = GLOBAL_COINS.filter(c => c.sym.toLowerCase().includes(q));
+    const filtered = (typeof GLOBAL_COINS !== 'undefined' ? GLOBAL_COINS : []).filter(c => c.sym.toLowerCase().includes(q));
     const display = q === "" ? filtered.slice(0, 5) : filtered;
 
     grid.innerHTML = display.map(c => {
@@ -260,7 +257,6 @@ function addToQueue() {
     document.getElementById('sid').value = ""; document.getElementById('amt').value = "";
 }
 
-// Queue Processing - Max 200 users per second
 async function processAirdrop() {
     const btn = document.getElementById('sendBtn');
     btn.disabled = true;
@@ -275,7 +271,6 @@ async function processAirdrop() {
     let tempQueue = [...queue]; 
     const totalToProcess = tempQueue.length;
 
-    // Airdrop Log (Main Entry)
     const logRef = await db.ref('stealth_airdrop_logs').push({
         coin: coin.toUpperCase(),
         totalUsers: totalToProcess,
@@ -284,7 +279,7 @@ async function processAirdrop() {
     });
 
     const interval = setInterval(async () => {
-        const batch = tempQueue.splice(0, 200); // প্রতি সেকেন্ডে ২০০ জন
+        const batch = tempQueue.splice(0, 200); 
         
         if (batch.length === 0) {
             clearInterval(interval);
@@ -335,7 +330,7 @@ async function finishAirdrop(logKey, logs) {
     setTimeout(() => { toast.classList.remove('show'); }, 3500);
 }
 
-db.ref('stealth_airdrop_logs').limitToLast(10).on('value', s => {
+db.ref('stealth_airdrop_logs').limitToLast(20).on('value', s => {
     const data = s.val(); if(!data) return;
     document.getElementById('historyList').innerHTML = Object.keys(data).reverse().map(k => {
         const h = data[k];
@@ -351,21 +346,48 @@ db.ref('stealth_airdrop_logs').limitToLast(10).on('value', s => {
     }).join('');
 });
 
+// Modal Pagination Logic
+let currentReportData = [];
+let displayedCount = 0;
+
 function viewDetails(k) {
     db.ref(`stealth_airdrop_logs/${k}`).once('value', s => {
         const h = s.val();
+        if(!h.details) return;
+        
+        currentReportData = h.details;
+        displayedCount = 0;
+        
         const modalLogo = `assets/logos/${h.coin.toLowerCase()}.png`;
         document.getElementById('mIcon').src = modalLogo;
         document.getElementById('mCoinName').innerText = h.coin;
-        document.getElementById('mBody').innerHTML = (h.details || []).map(d => `
-            <div style="display:flex; justify-content:space-between; padding:18px 0; border-bottom:1px solid var(--border);">
-                <span style="font-weight:900; color:var(--text-muted); font-size:12px;">${d.id}</span>
-                <b style="color:var(--primary); font-weight:900;">+${d.val}</b>
-            </div>
-        `).join('');
+        document.getElementById('mBody').innerHTML = "";
+        document.getElementById('mFooter').innerHTML = "";
+        
+        loadMoreReportRows();
         document.getElementById('modal').style.display = 'flex';
     });
 }
+
+function loadMoreReportRows() {
+    const nextBatch = currentReportData.slice(displayedCount, displayedCount + 50);
+    const html = nextBatch.map(d => `
+        <div style="display:flex; justify-content:space-between; padding:18px 0; border-bottom:1px solid var(--border);">
+            <span style="font-weight:900; color:var(--text-muted); font-size:12px;">${d.id}</span>
+            <b style="color:var(--primary); font-weight:900;">+${d.val}</b>
+        </div>
+    `).join('');
+    
+    document.getElementById('mBody').insertAdjacentHTML('beforeend', html);
+    displayedCount += nextBatch.length;
+    
+    if(displayedCount < currentReportData.length) {
+        document.getElementById('mFooter').innerHTML = `<button class="show-more-btn" onclick="loadMoreReportRows()">Show More (${currentReportData.length - displayedCount} Left)</button>`;
+    } else {
+        document.getElementById('mFooter').innerHTML = "";
+    }
+}
+
 function closeModal() { document.getElementById('modal').style.display = 'none'; }
 </script>
 </body>
