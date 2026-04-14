@@ -182,7 +182,6 @@ function toggleFab() {
 }
 
 // --- CORE FUNCTIONS ---
-// Amount (পরিমান) এর জন্য ৮ দশমিক
 function formatAmt(num) {
     if(!num) return "0.00";
     return parseFloat(num).toLocaleString(undefined, { 
@@ -191,7 +190,6 @@ function formatAmt(num) {
     });
 }
 
-// Price (দাম) এর জন্য ৪ দশমিক
 function formatPrice(num) {
     if(!num) return "0.00";
     return parseFloat(num).toLocaleString(undefined, { 
@@ -200,27 +198,39 @@ function formatPrice(num) {
     });
 }
 
-// --- CUSTOM GRAPHIC TOAST NOTIFICATION ---
+// --- FIXED GRAPHIC TOAST NOTIFICATION (TOP-CENTER) ---
 function showNotify(type, title, message) {
-    const container = document.getElementById('notification-container');
-    const toast = document.createElement('div');
-    toast.className = 'swap-toast';
-    
-    // টাইপ অনুযায়ী আইকন এবং কালার সেট করা
-    let icon = 'fa-info-circle';
-    let titleColor = 'var(--primary)'; // SMAT Gold
-    
-    if (type === 'success') {
-        icon = 'fa-check-circle';
-        titleColor = 'var(--up)'; // Green
-    } else if (type === 'error') {
-        icon = 'fa-times-circle';
-        titleColor = 'var(--down)'; // Red
+    let container = document.getElementById('notification-container');
+    if (!container) {
+        container = document.createElement('div');
+        container.id = 'notification-container';
+        container.style = "position:fixed; top:20px; left:50%; transform:translateX(-50%); z-index:10000; display:flex; flex-direction:column; gap:10px; width:90%; max-width:350px;";
+        document.body.appendChild(container);
     }
 
-    // সুন্দর গ্রাফিক্স কন্টেন্ট
+    const toast = document.createElement('div');
+    toast.style = `
+        background: rgba(15, 15, 15, 0.98);
+        border: 1px solid var(--primary);
+        border-radius: 12px;
+        padding: 15px;
+        text-align: center;
+        box-shadow: 0 10px 30px rgba(0,0,0,0.6);
+        cursor: pointer;
+        animation: toastSlideDown 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+    `;
+    
+    toast.onclick = function() {
+        this.style.animation = "toastSlideUp 0.3s ease forwards";
+        setTimeout(() => this.remove(), 300);
+    };
+    
+    let icon = 'fa-info-circle', titleColor = 'var(--primary)';
+    if (type === 'success') { icon = 'fa-check-circle'; titleColor = 'var(--up)'; }
+    else if (type === 'error') { icon = 'fa-times-circle'; titleColor = 'var(--down)'; }
+
     toast.innerHTML = `
-        <div style="font-weight: 800; color: ${titleColor}; margin-bottom: 5px; font-size: 14px; display: flex; align-items: center; gap: 8px;">
+        <div style="font-weight: 800; color: ${titleColor}; margin-bottom: 5px; font-size: 14px; display: flex; align-items: center; justify-content: center; gap: 8px;">
             <i class="fas ${icon}"></i> ${title.toUpperCase()}
         </div>
         <div style="font-size: 11px; color: #ccc; font-weight: 700;">${message}</div>
@@ -228,14 +238,21 @@ function showNotify(type, title, message) {
 
     container.appendChild(toast);
 
-    // ৩ সেকেন্ড পর অটো অদৃশ্য হওয়ার লজিক
     setTimeout(() => {
-        toast.classList.add('hide');
-        setTimeout(() => {
-            toast.remove();
-        }, 500); // অ্যানিমেশন শেষ হওয়ার পর রিমুভ
-    }, 3000);
+        if(toast.parentElement) {
+            toast.style.animation = "toastSlideUp 0.4s ease forwards";
+            setTimeout(() => toast.remove(), 400);
+        }
+    }, 5000);
 }
+
+// Inject Toast Animations
+const toastStyle = document.createElement('style');
+toastStyle.innerHTML = `
+    @keyframes toastSlideDown { from { opacity:0; transform:translateY(-40px); } to { opacity:1; transform:translateY(0); } }
+    @keyframes toastSlideUp { from { opacity:1; transform:translateY(0); } to { opacity:0; transform:translateY(-40px); } }
+`;
+document.head.appendChild(toastStyle);
 
 // Firebase Initialization
 const firebaseConfig = { apiKey: "AIzaSyAMxtJedkehhxJRMPZLjhpKHqneHEWsGlE", authDomain: "smat-exchange.firebaseapp.com", projectId: "smat-exchange", databaseURL: "https://smat-exchange-default-rtdb.firebaseio.com", storageBucket: "smat-exchange.appspot.com", messagingSenderId: "836334569396", appId: "1:836334569396:web:679effe640b3453412d4e1" };
@@ -255,7 +272,6 @@ function init() {
 }
 
 function updateUI() {
-    // ১. ডাটা প্রসেসিং এবং সর্টিং
     const sorted = GLOBAL_COINS.map(c => {
         const s = c.sym.toLowerCase();
         const price = livePrices[s]?.price || c.price;
@@ -263,34 +279,23 @@ function updateUI() {
         return { ...c, price, bal, val: bal * price };
     }).sort((a,b) => b.val - a.val);
 
-    // ২. অ্যাসেট লিস্ট রেন্ডারিং
     document.getElementById('assetList').innerHTML = sorted.map(c => `
         <div class="asset-card" onclick="openActionPopup('${c.sym.toLowerCase()}', 'all')">
-            <div class="a-logo">
-                <img src="assets/logos/${c.sym.toLowerCase()}.png">
-            </div>
+            <div class="a-logo"><img src="assets/logos/${c.sym.toLowerCase()}.png"></div>
             <div style="flex:1">
                 <h4>${c.sym.toUpperCase()}</h4>
-                <p style="font-size:11px; color:var(--text-sec)">
-                    $${formatPrice(c.price)}
-                </p>
+                <p style="font-size:11px; color:var(--text-sec)">$${formatPrice(c.price)}</p>
             </div>
             <div style="text-align:right">
                 <b>${formatAmt(c.bal)}</b><br>
-                <span style="font-size:11px; color:var(--text-sec)">
-                    $${formatPrice(c.val.toFixed(4))} 
-                </span>
+                <span style="font-size:11px; color:var(--text-sec)">$${formatPrice(c.val.toFixed(4))}</span>
             </div>
         </div>
     `).join('');
     
-    // ৩. টোটাল ব্যালেন্স ক্যালকুলেশন এবং ৪ দশমিকে ডিসপ্লে
     let total = sorted.reduce((a, b) => a + b.val, 0);
-    
-    // Total Assets Value এর জন্য ৪ দশমিক ফিক্স করা হলো
     document.getElementById('totalBalance').innerText = formatPrice(total.toFixed(4));
 }
-
 
 function openCoinSelector(mode) {
     currentSelectorMode = mode;
@@ -433,9 +438,6 @@ function openHistory() {
     });
 }
 
-// --- PROCESSORS ---
-
-// Withdraw Processor
 async function processWithdraw() {
     const amtInput = document.getElementById('withAmt').value;
     const addr = document.getElementById('withAddr').value.trim();
@@ -452,25 +454,14 @@ async function processWithdraw() {
     try {
         const newBalance = parseFloat((bal - (amt + fee)).toFixed(8));
         const txId = db.ref('transactions').push().key;
-        const data = { 
-            method: 'Withdraw', 
-            coin: s.toUpperCase(), 
-            amount: amt, 
-            network: document.getElementById('withNet').value, 
-            address: addr, 
-            status: 'pending', 
-            timestamp: Date.now(), 
-            hash: '...' 
-        };
-
+        const data = { method: 'Withdraw', coin: s.toUpperCase(), amount: amt, network: document.getElementById('withNet').value, address: addr, status: 'pending', timestamp: Date.now(), hash: '...' };
         await db.ref('users/' + auth.currentUser.uid).update({ [s + '_balance']: newBalance });    
         await db.ref('users/' + auth.currentUser.uid + '/history/' + txId).set(data);
         showNotify('success', 'Submitted', 'Your withdrawal request has been submitted successfully!');
         hidePopup();
-    } catch (e) { showNotify('error', 'System Error', 'Error processing withdrawal. Please try again.'); }
+    } catch (e) { showNotify('error', 'System Error', 'Error processing withdrawal.'); }
 }
 
-// Transfer Processor (Internal)
 async function processTransfer() {
     const amt = parseFloat(document.getElementById('transAmt').value);
     const target = document.getElementById('transTarget').value.trim();
@@ -482,18 +473,7 @@ async function processTransfer() {
     try {
         const newBalance = parseFloat((bal - amt).toFixed(8));
         const txId = db.ref('transactions').push().key;
-        
-        const data = { 
-            method: 'Internal Transfer', 
-            coin: s.toUpperCase(), 
-            amount: amt, 
-            network: 'Internal', 
-            address: target, 
-            status: 'success', 
-            timestamp: Date.now(), 
-            hash: 'Null' 
-        };
-
+        const data = { method: 'Internal Transfer', coin: s.toUpperCase(), amount: amt, network: 'Internal', address: target, status: 'success', timestamp: Date.now(), hash: 'Null' };
         await db.ref('users/' + auth.currentUser.uid).update({ [s + '_balance']: newBalance });    
         await db.ref('users/' + auth.currentUser.uid + '/history/' + txId).set(data);
         showNotify('success', 'Transfer Successful', 'Sent ' + amt + ' ' + s.toUpperCase() + ' successfully!'); 
@@ -510,6 +490,7 @@ function closePopupOverlay(e) { if(e.target.id === 'actionOverlay') hidePopup();
 
 window.onload = init;
 </script>
+
 
 
 </body>
