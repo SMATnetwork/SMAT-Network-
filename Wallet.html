@@ -198,7 +198,7 @@ function init() {
         if (user) {
             db.ref('market').on('value', s => { livePrices = s.val() || {}; updateUI(); });
             db.ref('users/' + user.uid).on('value', s => { userData = s.val() || {}; updateUI(); });
-        } else { location.href = "login.html"; }
+        } else { location.href = "logIn.html"; }
     });
 }
 
