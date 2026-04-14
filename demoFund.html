@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>SMAT CEX | Demo Balance Panel</title>
+    <title>SMAT CEX | USDT Balance Panel</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;700;900&display=swap');
@@ -56,7 +56,7 @@
 
 <div class="admin-card">
     <div class="header">
-        <h1>Demo Balance Panel</h1>
+        <h1>USDT Balance Panel</h1>
         <p>ইউজার আইডি দিয়ে সরাসরি USDT পাঠান</p>
     </div>
 
@@ -76,7 +76,7 @@
 
 <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-    import { getDatabase, ref, set, onValue } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
+    import { getDatabase, ref, set, get } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
 
     const firebaseConfig = {
         apiKey: "AIzaSyAMxtJedkehhxJRMPZLjhpKHqneHEWsGlE",
@@ -89,12 +89,12 @@
     const app = initializeApp(firebaseConfig);
     const db = getDatabase(app);
 
-    window.processPayment = () => {
+    window.processPayment = async () => {
         const smatID = document.getElementById('targetID').value.trim();
-        const amount = parseFloat(document.getElementById('targetAmount').value);
+        const addAmount = parseFloat(document.getElementById('targetAmount').value);
         const statusEl = document.getElementById('status');
 
-        if(!smatID || isNaN(amount)) {
+        if(!smatID || isNaN(addAmount)) {
             showStatus("সবগুলো ঘর ঠিকভাবে পূরণ করুন!", "var(--down)");
             return;
         }
@@ -102,29 +102,36 @@
         statusEl.innerText = "ইউজার খোঁজা হচ্ছে...";
         statusEl.style.color = "var(--primary)";
 
-        const usersRef = ref(db, 'users');
-        onValue(usersRef, (snapshot) => {
+        try {
+            const usersRef = ref(db, 'users');
+            const snapshot = await get(usersRef);
             const users = snapshot.val();
             let firebaseKey = null;
+            let currentBalance = 0;
 
             if(users) {
                 Object.keys(users).forEach(key => {
                     if(users[key].smatID === smatID) {
                         firebaseKey = key;
+                        // বর্তমান usdt_balance নেওয়া হচ্ছে, না থাকলে ০ ধরা হবে
+                        currentBalance = parseFloat(users[key].usdt_balance) || 0;
                     }
                 });
             }
 
             if(firebaseKey) {
-                // ব্যালেন্স সেট করা হচ্ছে (এটি সরাসরি USDT হিসেবে কাজ করবে)
-                set(ref(db, `users/${firebaseKey}/balance`), amount).then(() => {
-                    showStatus(`${smatID} আইডিতে ${amount} USDT যোগ হয়েছে!`, "var(--up)");
-                    document.getElementById('targetAmount').value = "";
-                });
+                const newTotal = currentBalance + addAmount;
+                // 'balance' এর পরিবর্তে 'usdt_balance' পাথে ডাটা সেট করা হচ্ছে
+                await set(ref(db, `users/${firebaseKey}/usdt_balance`), newTotal);
+                
+                showStatus(`${smatID} আইডিতে ${addAmount} USDT যোগ হয়েছে!`, "var(--up)");
+                document.getElementById('targetAmount').value = "";
             } else {
                 showStatus("এই SMAT ID পাওয়া যায়নি!", "var(--down)");
             }
-        }, { onlyOnce: true });
+        } catch (error) {
+            showStatus("এরর: " + error.message, "var(--down)");
+        }
     };
 
     function showStatus(msg, color) {
