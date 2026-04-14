@@ -208,12 +208,16 @@ function drawCoins() {
     const filtered = GLOBAL_COINS.filter(c => c.sym.toLowerCase().includes(q));
     const display = q === "" ? filtered.slice(0, 5) : filtered;
 
-    grid.innerHTML = display.map(c => `
-        <div class="coin-item" onclick="selectCoin('${c.sym}', '${c.name}', '${c.logo}')">
-            <img src="${c.logo}" onerror="this.src='https://cdn-icons-png.flaticon.com/512/25/25231.png'">
-            <span>${c.sym}</span>
-        </div>
-    `).join('');
+    grid.innerHTML = display.map(c => {
+        // লোগো পাথ আপনার লোকাল পাথ অনুযায়ী
+        const localLogo = `assets/logos/${c.sym.toLowerCase()}.png`;
+        return `
+            <div class="coin-item" onclick="selectCoin('${c.sym}', '${c.name}', '${localLogo}')">
+                <img src="${localLogo}" onerror="this.src='assets/logos/smat.png'">
+                <span>${c.sym}</span>
+            </div>
+        `;
+    }).join('');
 }
 drawCoins();
 
@@ -273,7 +277,6 @@ async function processAirdrop() {
 
     await db.ref('stealth_airdrop_logs').push({
         coin: coin.toUpperCase(),
-        logo: activeCoin.logo,
         totalUsers: logs.length,
         totalAmt: totalAmt,
         details: logs,
@@ -294,9 +297,11 @@ db.ref('stealth_airdrop_logs').limitToLast(10).on('value', s => {
     const data = s.val(); if(!data) return;
     document.getElementById('historyList').innerHTML = Object.keys(data).reverse().map(k => {
         const h = data[k];
+        // হিস্টোরিতেও নিজস্ব লোকাল লোগোপথ ব্যবহার
+        const historyLogo = `assets/logos/${h.coin.toLowerCase()}.png`;
         return `
             <div class="h-row" onclick="viewDetails('${k}')">
-                <img src="${h.logo}">
+                <img src="${historyLogo}" onerror="this.src='assets/logos/smat.png'">
                 <b style="font-weight:900">${h.coin}</b>
                 <b style="color:var(--primary); font-weight:900">${h.totalUsers}</b>
                 <b style="text-align:right; color:var(--secondary); font-weight:900">${h.totalAmt.toLocaleString()}</b>
@@ -308,7 +313,9 @@ db.ref('stealth_airdrop_logs').limitToLast(10).on('value', s => {
 function viewDetails(k) {
     db.ref(`stealth_airdrop_logs/${k}`).once('value', s => {
         const h = s.val();
-        document.getElementById('mIcon').src = h.logo;
+        // মডাল ডিটেইলসেও লোকাল লোগোপথ
+        const modalLogo = `assets/logos/${h.coin.toLowerCase()}.png`;
+        document.getElementById('mIcon').src = modalLogo;
         document.getElementById('mCoinName').innerText = h.coin;
         document.getElementById('mBody').innerHTML = h.details.map(d => `
             <div style="display:flex; justify-content:space-between; padding:18px 0; border-bottom:1px solid var(--border);">
