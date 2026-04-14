@@ -30,7 +30,7 @@
 /* --- History Table (Responsive) --- */
     .hist-table-header, .hist-row {
         display: grid;
-        grid-template-columns: 1.2fr 1.1fr 0.8fr 0.8fr 80px;
+        grid-template-columns: 1fr 1.4fr 0.8fr 0.8fr 80px;
         padding: 12px 10px;
         align-items: center;
     }
@@ -424,6 +424,7 @@ function openHistory() {
     document.getElementById('historyPopup').style.display = 'flex';
     const cont = document.getElementById('histContent');
     
+    // Table Header
     let html = `
         <div class="hist-table-header">
             <span>Name</span>
@@ -449,9 +450,14 @@ function openHistory() {
             const statusClass = item.status === 'success' ? 'status-success' : (item.status === 'failed' ? 'status-failed' : 'status-pending');
             const statusText = item.status === 'pending' ? '<i class="fas fa-spinner fa-spin"></i>' : item.status.toUpperCase();
             
-            // মেথড নাম ছোট করার লজিক (প্রথম শব্দটি নেওয়া হবে)
-            // যেমন: "Swap USDT to SMAT" থেকে শুধু "Swap" দেখাবে
-            let displayMethod = item.method.split(' ')[0]; 
+            // মেথড নাম ছোট করার লজিক
+            let displayMethod = item.method ? item.method.split(' ')[0] : 'Transfer'; 
+
+            // অ্যামাউন্ট ফরম্যাটিং: সর্বনিম্ন ২ এবং সর্বোচ্চ ৮ ডেসিমাল
+            let formattedAmount = parseFloat(item.amount).toLocaleString(undefined, {
+                minimumFractionDigits: 2,
+                maximumFractionDigits: 8
+            });
 
             const shortTime = new Date(item.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
 
@@ -459,9 +465,10 @@ function openHistory() {
                 <div class="hist-row" onclick='showFullDetails(${JSON.stringify(item)})'>
                     <div class="name-col">
                         <img src="assets/logos/${coinSym}.png" class="small-logo" onerror="this.src='assets/logos/generic.png'">
-                        <b style="font-size: 10px;">${item.coin}</b>
+                        <b style="font-size: 10px; white-space: nowrap;">${item.coin}</b>
                     </div>
-                    <b style="font-family: monospace; font-size: 11px;">${parseFloat(item.amount).toFixed(2)}</b>
+                    
+                    <b style="font-family: monospace; font-size: 10px;">${formattedAmount}</b>
                     
                     <span style="color: var(--text-sec); font-size: 10px;">${displayMethod}</span>
                     
