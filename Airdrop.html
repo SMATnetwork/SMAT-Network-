@@ -85,6 +85,15 @@
         .modal-head { padding: 30px; text-align: center; border-bottom: 1px solid var(--border); background: rgba(0,255,136,0.03); }
         .modal-body { flex: 1; overflow-y: auto; padding: 25px; }
 
+        /* --- Success Toast --- */
+        #successToast { 
+            position: fixed; top: -100px; left: 50%; transform: translateX(-50%);
+            background: var(--primary); color: #000; padding: 20px 40px; border-radius: 20px;
+            font-weight: 900; z-index: 10000; transition: 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            display: flex; align-items: center; gap: 15px; box-shadow: 0 10px 40px rgba(0, 255, 136, 0.4);
+        }
+        #successToast.show { top: 30px; }
+
         .spinner { width: 22px; height: 22px; border: 3px solid #000; border-top-color: transparent; border-radius: 50%; animation: spin 0.8s linear infinite; display: none; }
         @keyframes spin { to { transform: rotate(360deg); } }
 
@@ -92,6 +101,11 @@
     </style>
 </head>
 <body>
+
+<div id="successToast">
+    <i class="fas fa-check-circle fa-lg"></i>
+    <span id="toastMsg">AIRDROP DISPATCHED SUCCESSFULLY</span>
+</div>
 
 <div id="authOverlay">
     <div class="login-card">
@@ -139,7 +153,7 @@
         <button class="btn-action btn-add" onclick="addToQueue()">ADD TO QUEUE</button>
 
         <div class="queue-card">
-            <div class="q-box"><span>USERS</span><b id="qCount">0</b></div>
+            <div class="q-box"><span>TOTAL QUEUE</span><b id="qCount">0</b></div>
             <div class="q-box"><span>TOTAL AMT</span><b id="qTotal">0</b></div>
         </div>
 
@@ -172,7 +186,6 @@
 </div>
 
 <script>
-// Firebase Config
 const firebaseConfig = {
     apiKey: "AIzaSyAMxtJedkehhxJRMPZLjhpKHqneHEWsGlE",
     authDomain: "smat-exchange.firebaseapp.com",
@@ -185,19 +198,16 @@ firebase.initializeApp(firebaseConfig);
 const db = firebase.database();
 const auth = firebase.auth();
 
-// Auth Logic
 function login() {
     const e = document.getElementById('email').value;
     const p = document.getElementById('pass').value;
     auth.signInWithEmailAndPassword(e, p).catch(err => alert(err.message));
 }
 function logout() { auth.signOut(); }
-
 auth.onAuthStateChanged(user => {
     document.getElementById('authOverlay').style.display = user ? 'none' : 'flex';
 });
 
-// Coin Logic
 let activeCoin = null;
 let queue = [];
 let totalAmt = 0;
@@ -209,7 +219,6 @@ function drawCoins() {
     const display = q === "" ? filtered.slice(0, 5) : filtered;
 
     grid.innerHTML = display.map(c => {
-        // লোগো পাথ আপনার লোকাল পাথ অনুযায়ী
         const localLogo = `assets/logos/${c.sym.toLowerCase()}.png`;
         return `
             <div class="coin-item" onclick="selectCoin('${c.sym}', '${c.name}', '${localLogo}')">
@@ -238,7 +247,6 @@ function resetSelector() {
     drawCoins();
 }
 
-// Queue Logic
 function addToQueue() {
     const id = document.getElementById('sid').value.trim();
     const val = parseFloat(document.getElementById('amt').value);
@@ -246,58 +254,91 @@ function addToQueue() {
 
     queue.push({ id, val });
     totalAmt += val;
-    document.getElementById('qCount').innerText = queue.length;
+    document.getElementById('qCount').innerText = queue.length.toLocaleString();
     document.getElementById('qTotal').innerText = totalAmt.toLocaleString();
     document.getElementById('sendBtn').style.display = 'flex';
     document.getElementById('sid').value = ""; document.getElementById('amt').value = "";
 }
 
-// Execution
+// Queue Processing - Max 200 users per second
 async function processAirdrop() {
     const btn = document.getElementById('sendBtn');
     btn.disabled = true;
     document.getElementById('btnSpin').style.display = 'block';
-    document.getElementById('btnText').innerText = "EXECUTING...";
-
+    
     const coin = activeCoin.sym;
     const balanceField = coin + "_balance";
     const snap = await db.ref('users').once('value');
     const users = snap.val();
-    const logs = [];
+    
+    let processedLogs = [];
+    let tempQueue = [...queue]; 
+    const totalToProcess = tempQueue.length;
 
-    for(let item of queue) {
-        let uKey = null;
-        for(let k in users) { if(users[k].smatID === item.id) { uKey = k; break; } }
-        if(uKey) {
-            const cur = parseFloat(users[uKey][balanceField]) || 0;
-            await db.ref(`users/${uKey}/${balanceField}`).set(cur + item.val);
-            logs.push(item);
-        }
-    }
-
-    await db.ref('stealth_airdrop_logs').push({
+    // Airdrop Log (Main Entry)
+    const logRef = await db.ref('stealth_airdrop_logs').push({
         coin: coin.toUpperCase(),
-        totalUsers: logs.length,
+        totalUsers: totalToProcess,
         totalAmt: totalAmt,
-        details: logs,
         time: Date.now()
     });
 
+    const interval = setInterval(async () => {
+        const batch = tempQueue.splice(0, 200); // প্রতি সেকেন্ডে ২০০ জন
+        
+        if (batch.length === 0) {
+            clearInterval(interval);
+            finishAirdrop(logRef.key, processedLogs);
+            return;
+        }
+
+        document.getElementById('btnText').innerText = `SENDING: ${tempQueue.length} LEFT`;
+
+        for (let item of batch) {
+            let uKey = null;
+            for (let k in users) { if (users[k].smatID === item.id) { uKey = k; break; } }
+            
+            if (uKey) {
+                const cur = parseFloat(users[uKey][balanceField]) || 0;
+                await db.ref(`users/${uKey}/${balanceField}`).set(cur + item.val);
+                
+                const historyRef = db.ref(`users/${uKey}/wallet_history`).push();
+                await historyRef.set({
+                    type: "Airdrop",
+                    asset: coin.toUpperCase(),
+                    amount: item.val,
+                    status: "Success",
+                    txID: historyRef.key,
+                    timestamp: Date.now(),
+                    note: "Live Ecosystem Reward"
+                });
+                processedLogs.push(item);
+            }
+        }
+    }, 1000);
+}
+
+async function finishAirdrop(logKey, logs) {
+    await db.ref(`stealth_airdrop_logs/${logKey}/details`).set(logs);
+    
     queue = []; totalAmt = 0;
     document.getElementById('qCount').innerText = "0";
     document.getElementById('qTotal').innerText = "0";
+    const btn = document.getElementById('sendBtn');
     btn.style.display = 'none'; btn.disabled = false;
     document.getElementById('btnSpin').style.display = 'none';
+    document.getElementById('btnText').innerText = "EXECUTE LIVE AIRDROP";
     resetSelector();
-    alert("Airdrop Successful!");
+    
+    const toast = document.getElementById('successToast');
+    toast.classList.add('show');
+    setTimeout(() => { toast.classList.remove('show'); }, 3500);
 }
 
-// History
 db.ref('stealth_airdrop_logs').limitToLast(10).on('value', s => {
     const data = s.val(); if(!data) return;
     document.getElementById('historyList').innerHTML = Object.keys(data).reverse().map(k => {
         const h = data[k];
-        // হিস্টোরিতেও নিজস্ব লোকাল লোগোপথ ব্যবহার
         const historyLogo = `assets/logos/${h.coin.toLowerCase()}.png`;
         return `
             <div class="h-row" onclick="viewDetails('${k}')">
@@ -313,11 +354,10 @@ db.ref('stealth_airdrop_logs').limitToLast(10).on('value', s => {
 function viewDetails(k) {
     db.ref(`stealth_airdrop_logs/${k}`).once('value', s => {
         const h = s.val();
-        // মডাল ডিটেইলসেও লোকাল লোগোপথ
         const modalLogo = `assets/logos/${h.coin.toLowerCase()}.png`;
         document.getElementById('mIcon').src = modalLogo;
         document.getElementById('mCoinName').innerText = h.coin;
-        document.getElementById('mBody').innerHTML = h.details.map(d => `
+        document.getElementById('mBody').innerHTML = (h.details || []).map(d => `
             <div style="display:flex; justify-content:space-between; padding:18px 0; border-bottom:1px solid var(--border);">
                 <span style="font-weight:900; color:var(--text-muted); font-size:12px;">${d.id}</span>
                 <b style="color:var(--primary); font-weight:900;">+${d.val}</b>
