@@ -168,6 +168,7 @@
     <a href="mining.html" class="f-nav active"><i class="fas fa-microchip"></i>Mining</a>
 </footer>
 
+<div id="notification-container"></div>
 
 
 <script>
@@ -180,7 +181,7 @@ function toggleFab() {
     fab.classList.toggle('active');
 }
 
-// --- FORMATTING FUNCTIONS ---
+// --- CORE FUNCTIONS ---
 // Amount (পরিমান) এর জন্য ৮ দশমিক
 function formatAmt(num) {
     if(!num) return "0.00";
@@ -199,16 +200,45 @@ function formatPrice(num) {
     });
 }
 
+// --- CUSTOM GRAPHIC TOAST NOTIFICATION ---
+function showNotify(type, title, message) {
+    const container = document.getElementById('notification-container');
+    const toast = document.createElement('div');
+    toast.className = 'swap-toast';
+    
+    // টাইপ অনুযায়ী আইকন এবং কালার সেট করা
+    let icon = 'fa-info-circle';
+    let titleColor = 'var(--primary)'; // SMAT Gold
+    
+    if (type === 'success') {
+        icon = 'fa-check-circle';
+        titleColor = 'var(--up)'; // Green
+    } else if (type === 'error') {
+        icon = 'fa-times-circle';
+        titleColor = 'var(--down)'; // Red
+    }
+
+    // সুন্দর গ্রাফিক্স কন্টেন্ট
+    toast.innerHTML = `
+        <div style="font-weight: 800; color: ${titleColor}; margin-bottom: 5px; font-size: 14px; display: flex; align-items: center; gap: 8px;">
+            <i class="fas ${icon}"></i> ${title.toUpperCase()}
+        </div>
+        <div style="font-size: 11px; color: #ccc; font-weight: 700;">${message}</div>
+    `;
+
+    container.appendChild(toast);
+
+    // ৩ সেকেন্ড পর অটো অদৃশ্য হওয়ার লজিক
+    setTimeout(() => {
+        toast.classList.add('hide');
+        setTimeout(() => {
+            toast.remove();
+        }, 500); // অ্যানিমেশন শেষ হওয়ার পর রিমুভ
+    }, 3000);
+}
+
 // Firebase Initialization
-const firebaseConfig = { 
-    apiKey: "AIzaSyAMxtJedkehhxJRMPZLjhpKHqneHEWsGlE", 
-    authDomain: "smat-exchange.firebaseapp.com", 
-    projectId: "smat-exchange", 
-    databaseURL: "https://smat-exchange-default-rtdb.firebaseio.com", 
-    storageBucket: "smat-exchange.appspot.com", 
-    messagingSenderId: "836334569396", 
-    appId: "1:836334569396:web:679effe640b3453412d4e1" 
-};
+const firebaseConfig = { apiKey: "AIzaSyAMxtJedkehhxJRMPZLjhpKHqneHEWsGlE", authDomain: "smat-exchange.firebaseapp.com", projectId: "smat-exchange", databaseURL: "https://smat-exchange-default-rtdb.firebaseio.com", storageBucket: "smat-exchange.appspot.com", messagingSenderId: "836334569396", appId: "1:836334569396:web:679effe640b3453412d4e1" };
 firebase.initializeApp(firebaseConfig);
 const db = firebase.database();
 const auth = firebase.auth();
@@ -341,7 +371,6 @@ function openHistory() {
             if (item.method && item.method.toLowerCase().includes('deposit')) { typeIcon = 'fa-plus-circle'; typeColor = 'var(--up)'; }
             else if (item.method && item.method.toLowerCase().includes('withdraw')) { typeIcon = 'fa-arrow-up-right-from-square'; typeColor = 'var(--down)'; }
 
-            // নেটওয়ার্ক এবং অ্যাড্রেস লজিক (undefined রোধে)
             let displayNet = item.network;
             if(!displayNet) {
                 if(item.method === 'Internal Transfer') displayNet = 'Internal';
@@ -398,9 +427,9 @@ async function processWithdraw() {
     const price = livePrices[s]?.price || 1;
     const fee = 0.25 / price;
 
-    if (!addr) return alert("Please enter a recipient address!");
-    if (isNaN(amt) || amt <= 0) return alert("Please enter a valid amount!");
-    if ((amt + fee) > bal) return alert("Insufficient Balance!");
+    if (!addr) return showNotify('error', 'Withdrawal Failed', 'Please enter a recipient address!');
+    if (isNaN(amt) || amt <= 0) return showNotify('error', 'Withdrawal Failed', 'Please enter a valid amount!');
+    if ((amt + fee) > bal) return showNotify('error', 'Withdrawal Failed', 'Insufficient Balance! (You need to cover the fee: ' + fee.toFixed(8) + ')');
 
     try {
         const newBalance = parseFloat((bal - (amt + fee)).toFixed(8));
@@ -418,9 +447,9 @@ async function processWithdraw() {
 
         await db.ref('users/' + auth.currentUser.uid).update({ [s + '_balance']: newBalance });    
         await db.ref('users/' + auth.currentUser.uid + '/history/' + txId).set(data);
-        alert("Withdrawal Submitted!");
+        showNotify('success', 'Submitted', 'Your withdrawal request has been submitted successfully!');
         hidePopup();
-    } catch (e) { alert("Error processing withdraw."); }
+    } catch (e) { showNotify('error', 'System Error', 'Error processing withdrawal. Please try again.'); }
 }
 
 // Transfer Processor (Internal)
@@ -430,13 +459,12 @@ async function processTransfer() {
     const s = document.getElementById('popCoinName').innerText.toLowerCase();
     const bal = parseFloat(userData[s + '_balance']) || 0;    
 
-    if(!target || isNaN(amt) || amt <= 0 || amt > bal) return alert("Check Input!");
+    if(!target || isNaN(amt) || amt <= 0 || amt > bal) return showNotify('error', 'Transfer Failed', 'Check recipient or amount!');
 
     try {
         const newBalance = parseFloat((bal - amt).toFixed(8));
         const txId = db.ref('transactions').push().key;
         
-        // Transfer এর জন্য network হবে Internal
         const data = { 
             method: 'Internal Transfer', 
             coin: s.toUpperCase(), 
@@ -450,20 +478,21 @@ async function processTransfer() {
 
         await db.ref('users/' + auth.currentUser.uid).update({ [s + '_balance']: newBalance });    
         await db.ref('users/' + auth.currentUser.uid + '/history/' + txId).set(data);
-        alert("Sent Successfully!"); 
+        showNotify('success', 'Transfer Successful', 'Sent ' + amt + ' ' + s.toUpperCase() + ' successfully!'); 
         hidePopup();
-    } catch (e) { alert("Error processing transfer."); }
+    } catch (e) { showNotify('error', 'System Error', 'Error processing transfer.'); }
 }
 
 function hidePopup() { document.getElementById('actionOverlay').style.display = 'none'; }
 function closeHistory() { document.getElementById('historyPopup').style.display = 'none'; }
 function closeSelector() { document.getElementById('coinSelector').style.display = 'none'; }
-function copyValueText(t) { navigator.clipboard.writeText(t); alert("Copied!"); }
+function copyValueText(t) { navigator.clipboard.writeText(t); showNotify('success', 'Copied', 'Address copied to clipboard.'); }
 function copyValue(id) { copyValueText(document.getElementById(id).innerText); }
 function closePopupOverlay(e) { if(e.target.id === 'actionOverlay') hidePopup(); }
 
 window.onload = init;
 </script>
+
 
 </body>
 </html>
