@@ -2,305 +2,269 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>SMAT Swap - Modern Crypto Aggregator</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>SMAT Swap | Real-time</title>
     
-    <link id="favicon" rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><circle cx='50' cy='50' r='48' fill='%23f3ba2f' stroke='black' stroke-width='1'/><text x='50%25' y='55%25' text-anchor='middle' dy='.3em' fill='black' font-family='Courier New, monospace' font-weight='900' font-size='55'>S</text></svg>">
-
+    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-database-compat.js"></script>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700;800&family=Inter:wght@400;600;700&display=swap');
-
-        /* Theme Variables */
-        :root {
-            --bg: #0b0e11; --text: #ffffff; --card: #1e2329;
-            --border: #3b424a; --input: #2b3139; --yellow: #f0b90b;
-        }
-
-        /* Global Reset & Typography */
-        body { background-color: var(--bg); color: var(--text); font-family: 'Inter', sans-serif; overflow-x: hidden; }
-        
-        /* Styled Large Headline */
-        .page-headline { 
-            font-family: 'Poppins', sans-serif; 
-            font-weight: 800; 
-            font-size: 36px; 
-            text-align: center; 
-            background: linear-gradient(135deg, #ffffff 0%, #f0b90b 100%); 
-            -webkit-background-clip: text; 
-            -webkit-text-fill-color: transparent; 
-            letter-spacing: -1.5px; 
-            margin-bottom: 5px; 
-        }
-
-        /* Swap Card Styling */
-        .swap-card { background: var(--card); border: 1px solid var(--border); border-radius: 28px; padding: 25px; position: relative; box-shadow: 0 15px 50px rgba(0,0,0,0.3); }
-        
-        /* Input Box with Modern Styling */
-        .input-box { background: var(--input); border-radius: 20px; padding: 18px; border: 1px solid transparent; transition: 0.2s; }
-        .input-box:focus-within { border-color: var(--yellow); box-shadow: 0 0 15px rgba(240, 185, 11, 0.1); }
-        
-        /* Central Swap Arrow */
-        .swap-arrow { 
-            position: absolute; left: 50%; top: 43%; transform: translate(-50%, -50%);
-            width: 42px; height: 42px; background: #1e2329; border: 4px solid #0b0e11;
-            border-radius: 14px; display: flex; align-items: center; justify-content: center;
-            cursor: pointer; z-index: 10; color: var(--yellow); transition: 0.3s;
-        }
-        .swap-arrow:hover { transform: translate(-50%, -50%) rotate(180deg); background: var(--yellow); color: black; }
-
-        /* Token Select Dropdown Styling */
-        .token-select { background: #3b424a; padding: 8px 16px; border-radius: 14px; display: flex; align-items: center; gap: 10px; font-weight: 700; font-size: 15px; border: 1px solid rgba(255,255,255,0.05); }
-        
-        /* Main Action Button States */
-        .btn-swap { background: var(--yellow); color: black; width: 100%; padding: 18px; border-radius: 18px; font-weight: 700; font-size: 17px; margin-top: 25px; transition: 0.3s; position: relative; display: flex; justify-content: center; align-items: center; letter-spacing: 0.5px; }
-        .btn-loading { background: #3b424a !important; color: transparent !important; cursor: not-allowed; }
-        .btn-loading::after { content: ""; position: absolute; width: 24px; height: 24px; border: 3px solid #f0b90b; border-top-color: transparent; border-radius: 50%; animation: spin 0.8s linear infinite; }
-        .btn-success { background: #03a66d !important; color: white !important; font-size: 22px !important; }
-
+        @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@700;800&family=Inter:wght@400;600;700&display=swap');
+        :root { --bg: #0b0e11; --card: #1e2329; --primary: #f0b90b; --border: #3b424a; --input: #2b3139; }
+        body { background-color: var(--bg); color: white; font-family: 'Inter', sans-serif; overflow-x: hidden; }
+        .page-headline { font-family: 'Poppins', sans-serif; font-weight: 800; font-size: 28px; text-align: center; background: linear-gradient(135deg, #fff 0%, var(--primary) 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; margin-bottom: 20px; padding-top: 20px; }
+        .swap-card { background: var(--card); border: 1px solid var(--border); border-radius: 24px; padding: 20px; position: relative; width: 100%; box-shadow: 0 10px 30px rgba(0,0,0,0.5); }
+        .input-box { background: var(--input); border-radius: 16px; padding: 15px; border: 1px solid transparent; transition: 0.3s; }
+        .input-box:focus-within { border-color: var(--primary); }
+        .token-select { background: #3b424a; padding: 8px; border-radius: 10px; font-weight: 700; color: white; border: none; cursor: pointer; }
+        .swap-arrow { position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%); width: 40px; height: 40px; background: var(--card); border: 4px solid var(--bg); border-radius: 12px; display: flex; align-items: center; justify-content: center; cursor: pointer; z-index: 10; color: var(--primary); }
+        .btn-swap { background: var(--primary); color: black; width: 100%; padding: 16px; border-radius: 16px; font-weight: 800; margin-top: 20px; transition: 0.3s; font-size: 16px; }
+        .btn-swap:disabled { opacity: 0.4; cursor: not-allowed; }
+        #warning { color: #f6465d; font-size: 11px; font-weight: 700; margin-top: 10px; display: none; text-align: center; }
+        .loader { width: 20px; height: 20px; border: 3px solid black; border-top-color: transparent; border-radius: 50%; animation: spin 0.8s linear infinite; display: none; }
         @keyframes spin { to { transform: rotate(360deg); } }
 
-        /* Notification Toast Styling */
-        #swap-notif { position: fixed; top: -100px; left: 50%; transform: translateX(-50%); background: #03a66d; color: white; border-radius: 16px; padding: 18px 30px; font-size: 15px; font-weight: 700; display: flex; align-items: center; gap: 12px; z-index: 999; transition: all 0.5s cubic-bezier(0.68, -0.55, 0.265, 1.55); box-shadow: 0 15px 40px rgba(0,0,0,0.6); border: 2px solid rgba(255,255,255,0.1); }
-        #swap-notif.show { top: 30px; }
-
-        /* Details Breakdown Area */
-        .details-box { background: rgba(0,0,0,0.25); border-radius: 16px; padding: 15px; border: 1px solid var(--border); font-size: 12px; }
-        
-        /* Navigation Bar Styling (Index Match) */
-        .nav-item { flex: 1; display: flex; flex-direction: column; align-items: center; gap: 4px; text-decoration: none; transition: 0.2s; }
-        .nav-item:hover i, .nav-item:hover span { color: var(--yellow) !important; }
+        /* Custom Toast Styles */
+        #notification-container { position: fixed; top: 20px; right: 20px; z-index: 10000; }
+        .swap-toast { background: #1a1a1a; color: #fff; border-left: 4px solid var(--primary); padding: 15px 20px; border-radius: 12px; box-shadow: 0 10px 25px rgba(0,0,0,0.6); margin-bottom: 10px; animation: slideIn 0.4s ease-out forwards; min-width: 250px; }
+        .swap-toast.hide { animation: slideOut 0.4s ease-in forwards; }
+        @keyframes slideIn { from { transform: translateX(110%); } to { transform: translateX(0); } }
+        @keyframes slideOut { from { transform: translateX(0); } to { transform: translateX(110%); } }
     </style>
 </head>
-<body class="flex justify-center">
+<body class="flex justify-center min-h-screen">
 
-<div id="swap-notif"><i class="fas fa-check-circle text-xl"></i> Swap Successful! Balance Updated.</div>
+<div id="notification-container"></div>
 
-<div class="w-full max-w-md min-h-screen pb-32">
-    <div class="pt-10 pb-6 px-6 text-center">
-        <h1 class="page-headline">SMAT Swap</h1>
-        <div class="inline-flex items-center gap-1.5 bg-green-500/10 text-green-500 px-3 py-1 rounded-full border border-green-500/20 text-[11px] font-bold uppercase tracking-wider">
-            <span class="w-2 h-2 bg-green-500 rounded-full animate-pulse"></span> LIVE MARKET
+<div class="w-full max-w-md px-4">
+    <h1 class="page-headline">SMAT SWAP</h1>
+
+    <div class="swap-card">
+        <div class="input-box">
+            <div class="flex justify-between mb-2">
+                <span class="text-[10px] text-gray-500 font-bold uppercase">Pay From</span>
+                <span class="text-[10px] text-gray-300">Available: <span id="bal-from" class="text-primary">0.00</span></span>
+            </div>
+            <div class="flex justify-between items-center gap-2">
+                <input id="input-from" type="number" placeholder="0.00" class="bg-transparent text-2xl font-bold outline-none w-full placeholder-gray-600" oninput="calculate()">
+                <select id="select-from" class="token-select" onchange="updateTokens()">
+                    <option value="USDT">USDT</option>
+                    <option value="BNB">BNB</option>
+                    <option value="ETH">ETH</option>
+                    <option value="oxSMAT">oxSMAT</option>
+                </select>
+            </div>
+            <button onclick="setMax()" class="mt-2 text-[10px] text-primary bg-yellow-500/10 px-2 py-1 rounded font-bold uppercase">Max (Inc. Fee)</button>
         </div>
-    </div>
 
-    <div class="px-4">
-        <div class="swap-card">
-            <div class="input-box mb-2">
-                <div class="flex justify-between mb-3">
-                    <span class="text-[11px] text-gray-500 font-extrabold uppercase tracking-wider">You Pay</span>
-                    <div class="flex gap-2 items-center">
-                        <span class="text-[11px] text-gray-400 font-medium">Bal: <span id="from-balance" class="font-mono">0.00000000</span></span>
-                        <button onclick="setMax()" class="text-[10px] bg-yellow-500/20 text-yellow-500 px-2.5 py-1 rounded font-bold uppercase hover:bg-yellow-500 hover:text-black transition-all">Max</button>
-                    </div>
-                </div>
-                <div class="flex justify-between items-center">
-                    <input id="input-from" type="number" placeholder="0.00" class="bg-transparent text-3xl font-extrabold outline-none w-1/2 tracking-tight text-white placeholder:text-gray-700" oninput="calculate()">
-                    <div class="token-select">
-                        <img id="from-icon" src="" width="22" class="rounded-full">
-                        <span id="from-symbol">BNB</span>
-                        <i class="fas fa-chevron-down text-[10px] text-gray-500 ml-1"></i>
-                    </div>
-                </div>
-            </div>
-
-            <div class="swap-arrow" onclick="reverse()">
-                <i class="fas fa-retweet text-lg"></i>
-            </div>
-
-            <div class="input-box mt-2">
-                <div class="flex justify-between mb-3">
-                    <span class="text-[11px] text-gray-500 font-extrabold uppercase tracking-wider">You Receive (Estimated)</span>
-                </div>
-                <div class="flex justify-between items-center">
-                    <input id="input-to" type="number" placeholder="0.00" class="bg-transparent text-3xl font-extrabold outline-none w-1/2 tracking-tight text-white placeholder:text-gray-700" readonly>
-                    <div class="token-select">
-                        <img id="to-icon" src="" width="22" class="rounded-full">
-                        <span id="to-symbol">USDT</span>
-                        <i class="fas fa-chevron-down text-[10px] text-gray-500 ml-1"></i>
-                    </div>
-                </div>
-            </div>
-
-            <div class="mt-8 space-y-3">
-                <div class="details-box space-y-2.5">
-                    <div class="flex justify-between items-center">
-                        <span class="text-gray-500 uppercase font-bold text-[10px] tracking-wider">Selling</span>
-                        <span id="det-pay" class="font-mono text-gray-200">0.00000000 ---</span>
-                    </div>
-                    <div class="flex justify-between items-center">
-                        <span class="text-gray-500 uppercase font-bold text-[10px] tracking-wider">Service Fee (0.1%)</span>
-                        <span id="det-fee" class="text-red-400 font-mono">0.00000000 ---</span>
-                    </div>
-                    <div class="flex justify-between pt-3 border-t border-gray-800 items-center">
-                        <span class="text-gray-300 font-bold uppercase text-[10px] tracking-wider">Net Received</span>
-                        <span id="det-receive" class="text-yellow-500 font-bold font-mono text-sm">0.000000 ---</span>
-                    </div>
-                </div>
-            </div>
-
-            <button class="btn-swap uppercase" id="swap-btn" onclick="execute()">CONFIRM SWAP</button>
+        <div class="my-[-12px] relative h-10 flex items-center justify-center">
+            <div class="swap-arrow" onclick="reverseTokens()"><i class="fas fa-retweet"></i></div>
         </div>
-    </div>
 
-    <div class="fixed bottom-0 left-0 w-full bg-[var(--card)] border-t border-[var(--border)] px-2 py-3 flex justify-around items-center z-[110] shadow-[0_-10px_30px_rgba(0,0,0,0.5)]">
-        <a href="Terminal.html" class="nav-item group"><i class="fas fa-terminal text-lg text-gray-500"></i><span class="text-[9px] font-bold text-gray-500 uppercase">Terminal</span></a>
-        <a href="index.html" class="nav-item group"><i class="fas fa-wallet text-lg text-gray-500"></i><span class="text-[9px] font-bold text-gray-500 uppercase">Exchange</span></a>
-        <a href="Swap.html" class="nav-item"><i class="fas fa-random text-lg text-yellow-500"></i><span class="text-[9px] font-bold text-yellow-500 uppercase">Swap</span></a>
-        <a href="Ecosystem.html" class="nav-item group"><i class="fas fa-layer-group text-lg text-gray-500"></i><span class="text-[9px] font-bold text-gray-500 uppercase">Ecosystems</span></a>
+        <div class="input-box">
+            <div class="flex justify-between mb-2">
+                <span class="text-[10px] text-gray-500 font-bold uppercase">Receive To</span>
+                <span class="text-[10px] text-gray-300">Balance: <span id="bal-to" class="text-primary">0.00</span></span>
+            </div>
+            <div class="flex justify-between items-center gap-2">
+                <input id="input-to" type="number" placeholder="0.00" class="bg-transparent text-2xl font-bold outline-none w-full" readonly>
+                <select id="select-to" class="token-select" onchange="updateTokens()">
+                    <option value="oxSMAT">oxSMAT</option>
+                    <option value="USDT">USDT</option>
+                    <option value="BNB">BNB</option>
+                    <option value="ETH">ETH</option>
+                </select>
+            </div>
+        </div>
+
+        <div id="warning"><i class="fas fa-exclamation-circle"></i> INSUFFICIENT BALANCE</div>
+
+        <div class="mt-4 p-4 bg-black/30 rounded-xl space-y-2 border border-white/5">
+            <div class="flex justify-between text-[11px]"><span class="text-gray-400">Exchange Rate</span><span id="live-rate" class="font-mono text-white">Loading...</span></div>
+            <div class="flex justify-between text-[11px]"><span class="text-gray-400">Protocol Fee (0.1%)</span><span id="fee-display" class="font-mono text-red-400">0.00</span></div>
+        </div>
+
+        <button id="swap-btn" class="btn-swap flex items-center justify-center gap-2" onclick="executeSwap()">
+            <div id="btn-loader" class="loader"></div>
+            <span id="btn-text">CONFIRM SWAP</span>
+        </button>
     </div>
 </div>
 
 <script>
-    /* Application Core State (Including Live Price Fallbacks) */
-    const state = {
-        from: 'BNB',
-        to: 'USDT',
-        tokens: {
-            BNB: { symbol: 'BNB', price: 0, icon: 'https://raw.githubusercontent.com/trustwallet/assets/master/blockchains/smartchain/info/logo.png' },
-            USDT: { symbol: 'USDT', price: 1.00, icon: 'https://raw.githubusercontent.com/trustwallet/assets/master/blockchains/smartchain/assets/0x55d398326f99059fF775485246999027B3197955/logo.png' },
-            SMAT: { symbol: 'SMAT', price: 0.05, icon: 'data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><circle cx="50" cy="50" r="48" fill="%23f3ba2f"/><text x="50%25" y="55%25" text-anchor="middle" dy=".3em" fill="black" font-weight="900" font-size="55">S</text></svg>' }
-        }
+    const firebaseConfig = {
+        apiKey: "AIzaSyAMxtJedkehhxJRMPZLjhpKHqneHEWsGlE",
+        authDomain: "smat-exchange.firebaseapp.com",
+        databaseURL: "https://smat-exchange-default-rtdb.firebaseio.com",
+        projectId: "smat-exchange"
     };
+    firebase.initializeApp(firebaseConfig);
+    const db = firebase.database();
+    const auth = firebase.auth();
 
-    /* Function 1: Fetch Live Prices from Binance API (Real-time update) */
+    let userUID = null;
+    let prices = { USDT: 1, BNB: 0, ETH: 0, oxSMAT: 8 };
+    let userBalances = { USDT: 0, BNB: 0, ETH: 0, oxSMAT: 0 };
+
+    // Auth & Persistence Check
+    auth.onAuthStateChanged(user => {
+        if (user) { 
+            userUID = user.uid; 
+            syncBalances(); 
+        } else {
+            // Logout হলে ০ করে রিডাইরেক্ট
+            resetToZero();
+            window.location.href = "login.html"; 
+        }
+    });
+
+    function resetToZero() {
+        document.getElementById('bal-from').innerText = "0.00";
+        document.getElementById('bal-to').innerText = "0.00";
+    }
+
     async function fetchPrices() {
         try {
-            const res = await fetch('https://api.binance.com/api/v3/ticker/price?symbol=BNBUSDT');
-            const data = await res.json();
-            state.tokens.BNB.price = parseFloat(data.price);
-            calculate(); // Recalculate based on new price
-        } catch (e) {
-            console.error("Price fetch failed, using fallback.");
-            state.tokens.BNB.price = 612.45; // Fallback price
+            const [b, e] = await Promise.all([
+                fetch('https://api.binance.com/api/v3/ticker/price?symbol=BNBUSDT'),
+                fetch('https://api.binance.com/api/v3/ticker/price?symbol=ETHUSDT')
+            ]);
+            const bj = await b.json(); const ej = await e.json();
+            prices.BNB = parseFloat(bj.price);
+            prices.ETH = parseFloat(ej.price);
+            calculate();
+        } catch (err) { console.log("Price fetch fail"); }
+    }
+
+    function syncBalances() {
+        db.ref(`users/${userUID}`).on('value', snap => {
+            const d = snap.val();
+            if(d) {
+                userBalances.USDT = d.usdt_balance || 0;
+                userBalances.BNB = d.bnb_balance || 0;
+                userBalances.ETH = d.eth_balance || 0;
+                userBalances.oxSMAT = d.oxsmat_balance || 0;
+                updateUIBalances();
+            }
+        });
+    }
+
+    function updateUIBalances() {
+        const from = document.getElementById('select-from').value;
+        const to = document.getElementById('select-to').value;
+        if(userUID) {
+            document.getElementById('bal-from').innerText = userBalances[from].toFixed(6);
+            document.getElementById('bal-to').innerText = userBalances[to].toFixed(6);
         }
     }
 
-    /* Function 2: Calculation Logic with 0.1% Fee and High Decimal Precision */
     function calculate() {
-        const inputField = document.getElementById('input-from');
-        const val = parseFloat(inputField.value) || 0;
-        const feeRate = 0.001; // 0.1% Swap Fee
+        const f = document.getElementById('select-from').value;
+        const t = document.getElementById('select-to').value;
+        const input = parseFloat(document.getElementById('input-from').value) || 0;
         
-        const fPrice = state.tokens[state.from].price;
-        const tPrice = state.tokens[state.to].price;
+        const fee = input * 0.001;
+        const netInput = input - fee;
+        const out = (netInput * prices[f]) / prices[t];
 
-        // Ensure price is loaded
-        if(fPrice === 0) return;
+        document.getElementById('input-to').value = input > 0 ? out.toFixed(6) : "";
+        document.getElementById('fee-display').innerText = `${fee.toFixed(6)} ${f}`;
+        document.getElementById('live-rate').innerText = `1 ${f} = ${((1 * prices[f])/prices[t]).toFixed(4)} ${t}`;
 
-        // Perform dynamic conversion
-        const feeAmount = val * feeRate;
-        const netToSwap = val - feeAmount;
-        const result = (netToSwap * fPrice) / tPrice;
-
-        // Display output up to 6 decimals
-        document.getElementById('input-to').value = val > 0 ? result.toFixed(6) : "";
-        
-        // Update Breakdown Section with higher precision display
-        document.getElementById('det-pay').innerText = `${val.toFixed(8)} ${state.from}`;
-        document.getElementById('det-fee').innerText = `-${feeAmount.toFixed(8)} ${state.from}`;
-        document.getElementById('det-receive').innerText = `${result.toFixed(6)} ${state.to}`;
-    }
-
-    /* Function 3: Set Max Available Balance to Input (Fixed for 18 Decimals) */
-    function setMax() {
-        const balances = JSON.parse(localStorage.getItem('balances')) || { BNB: 0.00174758, USDT: 100.0, SMAT: 0 };
-        let totalBal = balances[state.from] || 0;
-        
-        // Use fixed to handle high precision without floating point errors
-        // replace(/\.?0+$/, "") removes unnecessary trailing zeros
-        document.getElementById('input-from').value = parseFloat(totalBal).toFixed(18).replace(/\.?0+$/, "");
-        calculate();
-    }
-
-    /* Function 4: Reverse Swap Direction (To <-> From) */
-    function reverse() {
-        [state.from, state.to] = [state.to, state.from];
-        updateUI();
-        calculate();
-    }
-
-    /* Function 5: Update UI Icons, Symbols and Balance Display */
-    function updateUI() {
-        document.getElementById('from-symbol').innerText = state.from;
-        document.getElementById('to-symbol').innerText = state.to;
-        document.getElementById('from-icon').src = state.tokens[state.from].icon;
-        document.getElementById('to-icon').src = state.tokens[state.to].icon;
-        
-        const balances = JSON.parse(localStorage.getItem('balances')) || { BNB: 0.00174758, USDT: 100.0, SMAT: 0 };
-        // Show 8 decimals in the balance display area
-        document.getElementById('from-balance').innerText = parseFloat(balances[state.from] || 0).toFixed(8);
-    }
-
-    /* Function 6: Execute Swap with Loading Spinner and Animated Success State */
-    function execute() {
-        const inputVal = parseFloat(document.getElementById('input-from').value);
+        const warn = document.getElementById('warning');
         const btn = document.getElementById('swap-btn');
-        const notif = document.getElementById('swap-notif');
-        
-        const balances = JSON.parse(localStorage.getItem('balances')) || { BNB: 0.00174758, USDT: 100.0, SMAT: 0 };
-        const currentBalance = parseFloat(balances[state.from]);
-
-        // Input Validations
-        if(!inputVal || inputVal <= 0) return alert("Please enter amount");
-        
-        // Adding a tiny epsilon to handle 18-decimal floating point precision errors
-        if(inputVal > (currentBalance + 0.0000000000000001)) {
-            return alert("Insufficient balance!");
+        if(input > userBalances[f]) {
+            warn.style.display = 'block';
+            btn.disabled = true;
+        } else {
+            warn.style.display = 'none';
+            btn.disabled = false;
         }
-
-        // 1. Start Spinning Animation on Button
-        btn.classList.add('btn-loading');
-        btn.innerHTML = ""; // Clear text for spinner
-
-        // 2. Simulate Blockchain Confirmation Request (3 seconds)
-        setTimeout(() => {
-            // 3. Stop Loading & Show Green Tick Success State
-            btn.classList.remove('btn-loading');
-            btn.classList.add('btn-success');
-            btn.innerHTML = `<i class="fas fa-check"></i>`; // Tick Icon
-
-            // 4. Actual Balance Update in LocalStorage
-            const receiveAmt = parseFloat(document.getElementById('input-to').value);
-            
-            // Deduct 'from' amount, add 'to' amount (ensure high precision)
-            balances[state.from] = Math.max(0, currentBalance - inputVal); 
-            balances[state.to] = (parseFloat(balances[state.to]) || 0) + receiveAmt;
-            
-            localStorage.setItem('balances', JSON.stringify(balances));
-
-            // 5. Show Top Successful Notification Toast
-            notif.classList.add('show');
-            updateUI(); // Refresh the balance displayed on screen
-
-            // 6. Reset UI to default state after 4 seconds
-            setTimeout(() => {
-                btn.classList.remove('btn-success');
-                btn.innerText = "CONFIRM SWAP";
-                notif.classList.remove('show');
-                document.getElementById('input-from').value = ""; // Clear Input Field
-                calculate(); // Reset detailed breakdown
-            }, 4000);
-
-        }, 3000); // 3 second delay for animation
     }
 
-    /* Page Initialization on Load */
-    window.onload = () => {
-        updateUI(); // Update assets on load
-        fetchPrices(); // Fetch initial prices
-        
-        // Set auto-refresh for prices every 15 seconds
-        setInterval(fetchPrices, 15000); 
+    function setMax() {
+        const f = document.getElementById('select-from').value;
+        document.getElementById('input-from').value = userBalances[f]; 
+        calculate(); 
+    }
 
-        // Ensure notification element exists (if needed dynamic creation)
-        if(!document.getElementById('swap-notif')) {
-            document.body.insertAdjacentHTML('beforeend', `<div id="swap-notif"><i class="fas fa-check-circle text-xl"></i> Swap Successful! Balance Updated.</div>`);
+    function updateTokens() { updateUIBalances(); calculate(); }
+
+    function reverseTokens() {
+        const s1 = document.getElementById('select-from');
+        const s2 = document.getElementById('select-to');
+        const temp = s1.value; s1.value = s2.value; s2.value = temp;
+        updateTokens();
+    }
+
+    // Custom Toast Function
+    function showToast(title, message) {
+        const container = document.getElementById('notification-container');
+        const toast = document.createElement('div');
+        toast.className = 'swap-toast';
+        toast.innerHTML = `
+            <div style="color:var(--primary); font-weight:800; font-size:14px; margin-bottom:4px;">${title}</div>
+            <div style="font-size:12px; color:#ccc;">${message}</div>
+        `;
+        container.appendChild(toast);
+        setTimeout(() => {
+            toast.classList.add('hide');
+            setTimeout(() => toast.remove(), 400);
+        }, 3000);
+    }
+
+    async function executeSwap() {
+        const f = document.getElementById('select-from').value;
+        const t = document.getElementById('select-to').value;
+        const fAmt = parseFloat(document.getElementById('input-from').value);
+        const tAmt = parseFloat(document.getElementById('input-to').value);
+
+        if(!fAmt || fAmt <= 0) return showToast("ERROR", "Please enter a valid amount");
+        if(f === t) return showToast("ERROR", "Cannot swap the same coin");
+
+        document.getElementById('btn-loader').style.display = 'block';
+        document.getElementById('btn-text').innerText = 'PROCESSING...';
+        document.getElementById('swap-btn').disabled = true;
+
+        try {
+            const up = {};
+            const fPath = `${f.toLowerCase()}_balance`;
+            const tPath = `${t.toLowerCase()}_balance`;
+
+            if (userBalances[f] < fAmt) throw new Error("Insufficient Balance");
+
+            up[`users/${userUID}/${fPath}`] = userBalances[f] - fAmt;
+            up[`users/${userUID}/${tPath}`] = (userBalances[t] || 0) + tAmt;
+
+            const logKey = db.ref(`users/${userUID}/history`).push().key;
+            up[`users/${userUID}/history/${logKey}`] = {
+                method: `Swap ${f} to ${t}`,
+                amount: tAmt,
+                coin: t,
+                status: 'success',
+                timestamp: Date.now()
+            };
+
+            await db.ref().update(up);
+            
+            // সুন্দর পপআপ ব্যবহার
+            showToast("SWAP SUCCESSFUL", `Received: ${tAmt.toFixed(6)} ${t}`);
+            document.getElementById('input-from').value = "";
+            calculate();
+        } catch (e) { 
+            showToast("FAILED", e.message);
         }
-    };
-</script>
+        
+        document.getElementById('btn-loader').style.display = 'none';
+        document.getElementById('btn-text').innerText = 'CONFIRM SWAP';
+        document.getElementById('swap-btn').disabled = false;
+    }
 
+    setInterval(fetchPrices, 15000);
+    window.onload = fetchPrices;
+</script>
 </body>
 </html>
