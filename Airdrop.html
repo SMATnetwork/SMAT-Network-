@@ -3,250 +3,226 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>SMAT | Bulk Airdrop</title>
+    <title>SMAT | Pro Admin Panel</title>
     <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-auth-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-database-compat.js"></script>
     <script src="coin.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@900&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@900&family=Inter:wght@400;700&display=swap" rel="stylesheet">
 
     <style>
         :root {
             --bg: #0b0e11; --card: #1e2329; --primary: #f0b90b;
             --up: #0ecb81; --down: #f6465d; --border: rgba(255, 255, 255, 0.1);
-            --font: 'Montserrat', sans-serif;
         }
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Inter', sans-serif; outline: none; }
+        body { background: var(--bg); color: white; min-height: 100vh; padding-bottom: 50px; }
 
-        * { box-sizing: border-box; margin: 0; padding: 0; font-family: var(--font); outline: none; }
-        body { background: var(--bg); color: white; min-height: 100vh; }
-
-        /* --- LOGIN SCREEN --- */
+        /* Login logic remains same as wallet */
         #loginScreen { position: fixed; inset: 0; background: var(--bg); display: flex; justify-content: center; align-items: center; z-index: 9999; }
-        .login-card { background: var(--card); border-radius: 30px; padding: 50px 40px; width: 90%; max-width: 420px; border: 1px solid var(--border); text-align: center; }
-        .login-input { width: 100%; background: #111418; border: 1px solid var(--border); padding: 18px; border-radius: 12px; color: white; margin-bottom: 20px; font-weight: 900; }
-        .login-btn { width: 100%; background: var(--primary); border: none; padding: 18px; border-radius: 12px; font-weight: 900; cursor: pointer; text-transform: uppercase; }
+        .login-card { background: var(--card); border-radius: 30px; padding: 40px; width: 90%; max-width: 400px; border: 1px solid var(--border); text-align: center; }
 
-        /* --- DASHBOARD --- */
-        #dashboard { display: none; padding-bottom: 50px; }
-        header { height: 75px; background: var(--card); display: flex; align-items: center; justify-content: space-between; padding: 0 30px; border-bottom: 2px solid var(--primary); position: sticky; top: 0; z-index: 1000; }
-        .container { padding: 25px; max-width: 900px; margin: 0 auto; }
+        header { height: 70px; background: var(--card); display: flex; align-items: center; justify-content: space-between; padding: 0 30px; border-bottom: 2px solid var(--primary); sticky: top; }
+        .container { padding: 20px; max-width: 1000px; margin: 0 auto; }
+
+        /* Searchable Select Container */
+        .select-container { background: var(--card); padding: 15px; border-radius: 15px; border: 1px solid var(--border); margin-bottom: 20px; }
+        .search-box { width: 100%; background: #0b0e11; border: 1px solid var(--border); color: white; padding: 12px; border-radius: 10px; margin-bottom: 10px; }
+        .coin-list-dropdown { max-height: 150px; overflow-y: auto; display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+        .coin-opt { background: rgba(0,0,0,0.3); padding: 10px; border-radius: 8px; cursor: pointer; font-size: 12px; border: 1px solid transparent; }
+        .coin-opt.active { border-color: var(--primary); background: rgba(240, 185, 11, 0.1); color: var(--primary); }
+
+        textarea { width: 100%; height: 180px; background: #111418; border: 1px solid var(--border); color: var(--primary); padding: 15px; border-radius: 12px; font-family: monospace; resize: none; margin: 10px 0; }
         
-        .admin-card { background: var(--card); border-radius: 25px; padding: 30px; border: 1px solid var(--border); box-shadow: 0 15px 35px rgba(0,0,0,0.4); }
+        .btn-action { width: 100%; background: var(--primary); color: black; font-weight: 900; border: none; padding: 18px; border-radius: 12px; cursor: pointer; font-size: 16px; }
         
-        .stat-row { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 25px; }
-        .stat-box { background: rgba(0,0,0,0.2); padding: 20px; border-radius: 15px; text-align: center; border: 1px solid var(--border); }
-        .stat-box h2 { color: var(--primary); font-size: 24px; }
-        .stat-box p { font-size: 10px; color: #848e9c; margin-top: 5px; }
+        /* History Styles */
+        .history-section { margin-top: 40px; }
+        .hist-card { background: var(--card); border-radius: 15px; padding: 15px; margin-bottom: 10px; border-left: 4px solid var(--primary); }
+        .hist-header { display: flex; justify-content: space-between; font-size: 11px; color: #848e9c; margin-bottom: 5px; }
 
-        select, textarea { 
-            width: 100%; background: #111418; border: 1px solid var(--border); 
-            color: white; padding: 15px; border-radius: 12px; margin: 10px 0; font-weight: 900;
-        }
-        textarea { height: 200px; font-family: monospace; font-size: 12px; resize: none; border-left: 4px solid var(--primary); }
-        
-        .btn-distribute { 
-            background: var(--primary); color: black; font-weight: 900; border: none; 
-            padding: 20px; border-radius: 15px; cursor: pointer; width: 100%; font-size: 16px;
-            transition: 0.3s; margin-top: 20px; text-transform: uppercase; box-shadow: 0 5px 15px rgba(240, 185, 11, 0.2);
-        }
-        .btn-distribute:active { transform: scale(0.98); }
-        .btn-distribute:disabled { background: #444; color: #888; cursor: not-allowed; transform: none; }
-
-        /* Progress Bar */
-        #progressArea { display:none; margin-top:25px; }
-        .progress-bg { background: rgba(255,255,255,0.05); border-radius: 20px; height: 12px; overflow: hidden; border: 1px solid var(--border); }
-        #progressBar { width: 0%; height: 100%; background: linear-gradient(90deg, var(--primary), var(--up)); transition: 0.3s; }
-        #statusText { text-align: center; font-size: 12px; margin-top: 10px; color: var(--up); }
-
-        @media (max-width: 600px) {
-            header { padding: 0 15px; }
-            .container { padding: 15px; }
-            .login-card { padding: 30px 20px; }
-        }
+        .progress-bar { height: 8px; background: #111418; border-radius: 10px; margin: 15px 0; display: none; overflow: hidden; }
+        .progress-fill { width: 0%; height: 100%; background: var(--up); transition: 0.3s; }
     </style>
 </head>
 <body>
 
     <div id="loginScreen">
         <div class="login-card">
-            <h1 style="color:var(--primary); margin-bottom:10px;">AIRDROP</h1>
-            <p style="color:#848e9c; font-size:12px; margin-bottom:30px;">SECURE ADMIN GATEWAY</p>
-            <input type="email" id="admEmail" class="login-input" placeholder="Admin Email">
-            <input type="password" id="admPass" class="login-input" placeholder="Password">
-            <button class="login-btn" onclick="tryLogin()">Login Admin</button>
-            <p id="loginErr" style="color:var(--down); font-size:12px; margin-top:15px; display:none;">Invalid Credentials!</p>
+            <h2 style="color:var(--primary); font-family: 'Montserrat', sans-serif;">ADMIN ACCESS</h2>
+            <input type="email" id="admEmail" style="width:100%; margin: 20px 0 10px; padding:15px; border-radius:10px; border:1px solid var(--border); background:#111418; color:white;" placeholder="Admin Email">
+            <input type="password" id="admPass" style="width:100%; margin-bottom: 20px; padding:15px; border-radius:10px; border:1px solid var(--border); background:#111418; color:white;" placeholder="Password">
+            <button class="btn-action" onclick="tryLogin()">Login Dashboard</button>
         </div>
     </div>
 
-    <div id="dashboard">
+    <div id="dashboard" style="display:none;">
         <header>
-            <div style="font-size: 18px; color: var(--primary);">SMAT Bulk Sender</div>
-            <i class="fas fa-sign-out-alt" style="color:var(--down); cursor:pointer; font-size: 20px;" onclick="adminLogout()"></i>
+            <div style="font-weight: 900; color: var(--primary);">SMAT SYSTEM ADMIN</div>
+            <i class="fas fa-power-off" style="color:var(--down); cursor:pointer;" onclick="auth.signOut()"></i>
         </header>
 
         <div class="container">
-            <div class="admin-card">
-                <div class="stat-row">
-                    <div class="stat-box">
-                        <p>VALID ENTRIES</p>
-                        <h2 id="countEntries">0</h2>
-                    </div>
-                    <div class="stat-box">
-                        <p>TOTAL AMOUNT</p>
-                        <h2 id="totalAirdrop">0.00</h2>
-                    </div>
-                </div>
+            <div class="select-container">
+                <p style="font-size:12px; color:#848e9c; margin-bottom:10px;">1. SELECT COIN (SEARCHABLE)</p>
+                <input type="text" class="search-box" id="coinSearch" placeholder="Type coin name or symbol..." oninput="filterCoins()">
+                <div class="coin-list-dropdown" id="coinDropdown"></div>
+            </div>
 
-                <label style="font-size:10px; color:var(--primary); margin-left:5px;">SELECT ASSET</label>
-                <select id="coinSelect"></select>
+            <p style="font-size:12px; color:#848e9c;">2. USER LIST (FORMAT: SMAT_ID, AMOUNT)</p>
+            <textarea id="bulkInput" placeholder="SMAT12345, 100&#10;SMAT67890, 50.5"></textarea>
 
-                <label style="font-size:10px; color:var(--primary); margin-left:5px; margin-top:15px; display:block;">PASTE LIST (SMATID, AMOUNT)</label>
-                <textarea id="bulkData" placeholder="SMAT1001, 500&#10;SMAT1002, 1250.50&#10;SMAT1003, 10" oninput="updatePreview()"></textarea>
+            <div class="progress-bar" id="progBar"><div class="progress-fill" id="progFill"></div></div>
+            <p id="statusTxt" style="text-align:center; font-size:12px; color:var(--up);"></p>
 
-                <div id="progressArea">
-                    <div class="progress-bg"><div id="progressBar"></div></div>
-                    <div id="statusText">Initialising...</div>
-                </div>
+            <button class="btn-action" id="sendBtn" onclick="executeAirdrop()">EXECUTE BULK SEND</button>
 
-                <button id="sendBtn" class="btn-distribute" onclick="runAirdrop()">
-                    <i class="fas fa-bolt"></i> Execute Airdrop
-                </button>
+            <div class="history-section">
+                <h3 style="margin-bottom:15px; border-left: 3px solid var(--primary); padding-left:10px;">SENDING HISTORY</h3>
+                <div id="adminHistoryList"></div>
             </div>
         </div>
     </div>
 
 <script>
-const firebaseConfig = { 
-    apiKey: "AIzaSyAMxtJedkehhxJRMPZLjhpKHqneHEWsGlE", 
-    authDomain: "smat-exchange.firebaseapp.com", 
-    databaseURL: "https://smat-exchange-default-rtdb.firebaseio.com",
-    projectId: "smat-exchange" 
-};
+const firebaseConfig = { apiKey: "AIzaSyAMxtJedkehhxJRMPZLjhpKHqneHEWsGlE", authDomain: "smat-exchange.firebaseapp.com", databaseURL: "https://smat-exchange-default-rtdb.firebaseio.com", projectId: "smat-exchange" };
 firebase.initializeApp(firebaseConfig);
 const db = firebase.database();
 const auth = firebase.auth();
 
-// ১. লগইন ফাংশন (আপনার Wallet Panel এর মতই)
+let selectedCoin = "";
+
+// --- Auth ---
 function tryLogin() {
-    const e = document.getElementById('admEmail').value;
-    const p = document.getElementById('admPass').value;
-    auth.signInWithEmailAndPassword(e, p).catch(() => {
-        document.getElementById('loginErr').style.display = 'block';
-    });
+    auth.signInWithEmailAndPassword(document.getElementById('admEmail').value, document.getElementById('admPass').value)
+    .catch(e => alert("Login Failed: " + e.message));
 }
 
-function adminLogout() { auth.signOut(); }
-
-// ২. অথেনটিকেশন স্টেট চেক
 auth.onAuthStateChanged(user => {
-    if (user) {
+    if(user) {
         document.getElementById('loginScreen').style.display = 'none';
         document.getElementById('dashboard').style.display = 'block';
-        setupCoinList();
+        filterCoins();
+        loadAdminHistory();
     } else {
         document.getElementById('loginScreen').style.display = 'flex';
         document.getElementById('dashboard').style.display = 'none';
     }
 });
 
-// ৩. কয়েন ড্রপডাউন সেটআপ
-function setupCoinList() {
-    const select = document.getElementById('coinSelect');
-    if(typeof GLOBAL_COINS !== 'undefined') {
-        select.innerHTML = GLOBAL_COINS.map(c => `<option value="${c.sym.toLowerCase()}">${c.name} (${c.sym.toUpperCase()})</option>`).join('');
-    } else {
-        select.innerHTML = `<option value="usdt">USDT (Tether)</option><option value="smat">SMAT (Native)</option>`;
-    }
+// --- Searchable Coin List ---
+function filterCoins() {
+    const q = document.getElementById('coinSearch').value.toLowerCase();
+    const list = GLOBAL_COINS.filter(c => c.name.toLowerCase().includes(q) || c.sym.toLowerCase().includes(q));
+    const html = list.map(c => `
+        <div class="coin-opt ${selectedCoin === c.sym.toLowerCase() ? 'active' : ''}" onclick="selectCoin('${c.sym.toLowerCase()}')">
+            ${c.sym.toUpperCase()} - ${c.name}
+        </div>
+    `).join('');
+    document.getElementById('coinDropdown').innerHTML = html;
 }
 
-// ৪. স্ট্যাটাস প্রিভিউ আপডেট
-function updatePreview() {
-    const text = document.getElementById('bulkData').value.trim();
-    if(!text) {
-        document.getElementById('countEntries').innerText = "0";
-        document.getElementById('totalAirdrop').innerText = "0.00";
-        return;
-    }
-    const lines = text.split('\n');
-    let total = 0;
-    let count = 0;
-    lines.forEach(l => {
-        const p = l.split(',');
-        if(p[1]) {
-            total += parseFloat(p[1].trim()) || 0;
-            count++;
-        }
-    });
-    document.getElementById('countEntries').innerText = count;
-    document.getElementById('totalAirdrop').innerText = total.toLocaleString();
+function selectCoin(sym) {
+    selectedCoin = sym;
+    filterCoins();
 }
 
-// ৫. মূল ডিস্ট্রিবিউশন লজিক
-async function runAirdrop() {
-    const text = document.getElementById('bulkData').value.trim();
-    const coin = document.getElementById('coinSelect').value;
+// --- Airdrop Execution ---
+async function executeAirdrop() {
+    const input = document.getElementById('bulkInput').value.trim();
+    if(!selectedCoin) return alert("Please select a coin first!");
+    if(!input) return alert("Input list is empty!");
+
+    const lines = input.split('\n');
+    const totalLines = lines.length;
     const btn = document.getElementById('sendBtn');
-    
-    if(!text) return alert("Please paste user data first!");
-    const lines = text.split('\n');
-    
-    if(!confirm(`Are you sure you want to send to ${lines.length} users?`)) return;
+    const progBar = document.getElementById('progBar');
+    const progFill = document.getElementById('progFill');
+
+    if(!confirm(`Send ${selectedCoin.toUpperCase()} to ${totalLines} users?`)) return;
 
     btn.disabled = true;
-    document.getElementById('progressArea').style.display = 'block';
+    progBar.style.display = 'block';
 
-    for(let i = 0; i < lines.length; i++) {
-        const line = lines[i].trim();
-        if(!line) continue;
+    let successCount = 0;
+    let totalAmtSent = 0;
 
-        const [smatId, amount] = line.split(',').map(s => s.trim());
-        const amt = parseFloat(amount);
+    for(let i = 0; i < totalLines; i++) {
+        const [sId, amtStr] = lines[i].split(',').map(s => s.trim());
+        const amt = parseFloat(amtStr);
 
-        if(smatId && !isNaN(amt)) {
-            try {
-                // SMAT ID দিয়ে ইউজার খোঁজা
-                const userQuery = await db.ref('users').orderByChild('smatId').equalTo(smatId).once('value');
-                const userData = userQuery.val();
+        if(sId && !isNaN(amt)) {
+            // ১. ইউজারকে তার SMAT ID দিয়ে খুঁজে বের করা
+            const userSnap = await db.ref('users').orderByChild('smatId').equalTo(sId).once('value');
+            const userData = userSnap.val();
 
-                if(userData) {
-                    const uid = Object.keys(userData)[0];
-                    const balanceKey = coin + '_balance';
-                    const currentBal = parseFloat(userData[uid][balanceKey]) || 0;
-                    
-                    // ১. ব্যালেন্স আপডেট
-                    const newBal = (currentBal + amt).toFixed(8);
-                    await db.ref(`users/${uid}/${balanceKey}`).set(parseFloat(newBal));
+            if(userData) {
+                const uid = Object.keys(userData)[0];
+                const balKey = selectedCoin + '_balance';
+                const currentBal = parseFloat(userData[uid][balKey]) || 0;
 
-                    // ২. হিস্ট্রি রেকর্ড তৈরি
-                    const txId = db.ref(`users/${uid}/history`).push().key;
-                    await db.ref(`users/${uid}/history/${txId}`).set({
-                        method: 'Airdrop Reward',
-                        coin: coin.toUpperCase(),
-                        amount: amt,
-                        network: 'Mainnet',
-                        address: 'Official Airdrop',
-                        status: 'success',
-                        timestamp: Date.now(),
-                        hash: 'AD-' + Math.random().toString(36).substring(2,10).toUpperCase()
-                    });
-                }
-            } catch (err) {
-                console.error("Error sending to: " + smatId, err);
+                // ২. ব্যালেন্স আপডেট (Atomic Update)
+                await db.ref(`users/${uid}/${balKey}`).set(currentBal + amt);
+
+                // ৩. ইউজারের ট্রানজ্যাকশন হিস্ট্রি
+                await db.ref(`users/${uid}/history`).push({
+                    method: 'Airdrop Reward',
+                    coin: selectedCoin.toUpperCase(),
+                    amount: amt,
+                    status: 'success',
+                    timestamp: Date.now(),
+                    address: 'Admin Panel',
+                    hash: 'SYSTEM-' + Math.random().toString(36).substr(2, 9).toUpperCase()
+                });
+
+                successCount++;
+                totalAmtSent += amt;
             }
         }
-
-        // প্রোগ্রেস বার আপডেট
-        const progress = Math.floor(((i + 1) / lines.length) * 100);
-        document.getElementById('progressBar').style.width = progress + '%';
-        document.getElementById('statusText').innerText = `Processing: ${i+1} of ${lines.length}`;
+        
+        const pct = Math.floor(((i + 1) / totalLines) * 100);
+        progFill.style.width = pct + '%';
+        document.getElementById('statusTxt').innerText = `Processing: ${i+1}/${totalLines}`;
     }
 
-    alert("Bulk Airdrop Completed!");
+    // ৪. এডমিন হিস্ট্রি সেভ করা (আপনার জন্য)
+    await db.ref('admin_airdrop_history').push({
+        coin: selectedCoin.toUpperCase(),
+        totalUsers: successCount,
+        totalAmount: totalAmtSent,
+        timestamp: Date.now()
+    });
+
+    alert(`Successfully sent to ${successCount} users!`);
     btn.disabled = false;
-    document.getElementById('progressArea').style.display = 'none';
-    document.getElementById('bulkData').value = "";
-    updatePreview();
+    progBar.style.display = 'none';
+    document.getElementById('bulkInput').value = "";
+    loadAdminHistory();
+}
+
+// --- Load Admin History ---
+function loadAdminHistory() {
+    db.ref('admin_airdrop_history').limitToLast(20).on('value', snap => {
+        const data = snap.val();
+        if(!data) return;
+        const html = Object.values(data).reverse().map(h => `
+            <div class="hist-card">
+                <div class="hist-header">
+                    <span>${new Date(h.timestamp).toLocaleString()}</span>
+                    <span style="color:var(--up)">SUCCESS</span>
+                </div>
+                <div style="display:flex; justify-content:space-between; align-items:center;">
+                    <div>
+                        <h4 style="color:var(--primary)">${h.totalAmount.toFixed(2)} ${h.coin}</h4>
+                        <p style="font-size:10px; color:#848e9c;">Sent to ${h.totalUsers} users</p>
+                    </div>
+                    <i class="fas fa-check-circle" style="color:var(--up)"></i>
+                </div>
+            </div>
+        `).join('');
+        document.getElementById('adminHistoryList').innerHTML = html;
+    });
 }
 </script>
 </body>
