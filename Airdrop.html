@@ -166,50 +166,60 @@ function addToQueue() {
 }
 
 async function processAirdrop() {
-    const btn = document.getElementById('sendBtn'); btn.disabled = true;
+    const btn = document.getElementById('sendBtn'); 
+    btn.disabled = true;
     document.getElementById('btnSpin').style.display = 'block';
-    const coin = activeCoin.sym, balanceField = coin + "_balance";
     
-    // ১. প্রথমে ইউজার ডেটা একবার রিড করে নিন
+    const coin = activeCoin.sym.toUpperCase(); // কয়েন বড় হাতের করে নিলাম
+    const balanceField = activeCoin.sym.toLowerCase() + "_balance";
+    
     const snap = await db.ref('users').once('value');
     const allUsers = snap.val();
     
-    let logsForAdmin = []; // অ্যাডমিন প্যানেলের ডিটেইলস পপআপের জন্য
+    let logsForAdmin = [];
     const currentQueue = [...queue]; 
     const currentTotal = totalAmt;
 
-    // ২. অ্যাডমিন হিস্ট্রিতে মেইন এন্ট্রি তৈরি
+    // ১. অ্যাডমিনদের দেখার জন্য মেইন লগ (History List এর জন্য)
     const logRef = db.ref('stealth_airdrop_logs').push();
     await logRef.set({
-        coin: coin.toUpperCase(),
+        coin: coin,
         totalUsers: currentQueue.length,
         totalAmt: currentTotal,
         time: Date.now()
     });
 
-    // ৩. লুপ চালিয়ে ডেটা পাঠানো (পুরো লুপ শেষ না হওয়া পর্যন্ত ওয়েট করবে)
+    // ২. লুপ চালিয়ে প্রত্যেক ইউজারের ওয়ালেটে প্রমানসহ ব্যালেন্স পাঠানো
     for (let item of currentQueue) {
         let uKey = Object.keys(allUsers || {}).find(k => allUsers[k].smatID === item.id);
+        
         if (uKey) {
             const currentBal = parseFloat(allUsers[uKey][balanceField]) || 0;
-            // ওয়ালেট ব্যালেন্স আপডেট
+            
+            // ব্যালেন্স আপডেট
             await db.ref(`users/${uKey}/${balanceField}`).set(currentBal + item.val);
-            // ইউজারের ওয়ালেট হিস্ট্রিতে প্রমান রাখা
+            
+            // ইউজারের Wallet.html হিস্ট্রির জন্য সঠিক অবজেক্ট পাঠানো
+            // এখানে ফিল্ডের নামগুলো Wallet.html এর লজিকের সাথে হুবহু মিলানো হয়েছে
             await db.ref(`users/${uKey}/wallet_history`).push({
-                type: "Airdrop",
-                asset: coin.toUpperCase(),
+                type: "AIRDROP", // এটিই ইউজারের প্যানেলে টাইটেল হিসেবে দেখাবে
+                asset: coin,
                 amount: item.val,
-                status: "Success",
+                status: "SUCCESS",
+                network: "INTERNAL",
+                address: "SMAT System",
+                txID: "AIR-" + Math.random().toString(36).substr(2, 9).toUpperCase(),
                 timestamp: Date.now(),
-                note: "Live Ecosystem Reward"
+                note: "Live Ecosystem Reward" // এই নোটটি হিস্ট্রিতে শো করবে
             });
-            // অ্যাডমিন পপআপের জন্য ডেটা স্টোর করা
+            
             logsForAdmin.push(item);
         }
-        document.getElementById('btnText').innerText = `REMAINING: ${currentQueue.length - logsForAdmin.length}`;
+        // প্রগ্রেস দেখাচ্ছে কতজন বাকি
+        document.getElementById('btnText').innerText = `SENDING: ${logsForAdmin.length}/${currentQueue.length}`;
     }
 
-    // ৪. অ্যাডমিন হিস্ট্রির ভেতরে 'details' আপডেট করা (পপআপে ডেটা আসার জন্য)
+    // ৩. অ্যাডমিন পপআপ ডিটেইলস সেভ
     await db.ref(`stealth_airdrop_logs/${logRef.key}/details`).set(logsForAdmin);
     
     finishAirdrop();
