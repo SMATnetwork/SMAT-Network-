@@ -103,124 +103,177 @@
     </div>
 
     <div id="toast">PROCESS COMPLETED! ✅</div>
-
 <script>
-const firebaseConfig = { apiKey: "AIzaSyAMxtJedkehhxJRMPZLjhpKHqneHEWsGlE", authDomain: "smat-exchange.firebaseapp.com", databaseURL: "https://smat-exchange-default-rtdb.firebaseio.com", projectId: "smat-exchange" };
-firebase.initializeApp(firebaseConfig);
+// --- Firebase Configuration ---
+const firebaseConfig = {
+    apiKey: "AIzaSyAMxtJedkehhxJRMPZLjhpKHqneHEWsGlE",
+    authDomain: "smat-exchange.firebaseapp.com",
+    databaseURL: "https://smat-exchange-default-rtdb.firebaseio.com", // নিশ্চিত করুন এই URL ঠিক আছে
+    projectId: "smat-exchange",
+    storageBucket: "smat-exchange.firebasestorage.app",
+    messagingSenderId: "836334569396",
+    appId: "1:836334569396:web:679effe640b3453412d4e1",
+    measurementId: "G-FCE3H3F18V"
+};
+
+// Initialize Firebase (Compat mode for your existing script)
+if (!firebase.apps.length) {
+    firebase.initializeApp(firebaseConfig);
+}
+
 const db = firebase.database();
 const auth = firebase.auth();
 
 let activeCoin = null;
-let stealthQueue = []; // তথ্য এখানে গোপনে থাকবে
+let stealthQueue = []; 
 let totalAmt = 0;
 
-auth.onAuthStateChanged(user => { if(user) { drawCoins(); loadHistory(); } });
+// --- Auth Monitor ---
+auth.onAuthStateChanged(user => { 
+    if(user) { 
+        drawCoins(); 
+        loadHistory(); 
+    } else {
+        console.log("Admin not logged in");
+    }
+});
 
+// --- Coin Selection Logic ---
 function drawCoins() {
     const q = document.getElementById('cSearch').value.toLowerCase();
+    if (typeof GLOBAL_COINS === 'undefined') return;
+    
     const filtered = GLOBAL_COINS.filter(c => c.sym.toLowerCase().includes(q) || c.name.toLowerCase().includes(q));
     document.getElementById('cGrid').innerHTML = filtered.map(c => `
         <div class="coin-item ${activeCoin?.sym === c.sym ? 'active' : ''}" onclick="selectCoin('${c.sym}','${c.name}')">
-            <b>${c.sym}</b>
+            <b>${c.sym.toUpperCase()}</b>
         </div>
     `).join('');
 }
 
 function selectCoin(sym, name) {
-    activeCoin = { sym, name };
+    activeCoin = { sym: sym.toLowerCase(), fullName: name };
     document.getElementById('summaryCard').style.display = 'block';
-    document.getElementById('selCoinName').innerText = `${name} (${sym})`;
+    document.getElementById('selCoinName').innerText = `${name} (${sym.toUpperCase()})`;
     drawCoins();
 }
 
+// --- Queue Management ---
 function addToQueue() {
-    if(!activeCoin) return alert("Select a coin first!");
-    const sid = document.getElementById('sid').value.trim();
-    const val = parseFloat(document.getElementById('amt').value);
+    if(!activeCoin) return alert("Please select a coin first!");
+    const sidField = document.getElementById('sid');
+    const amtField = document.getElementById('amt');
+    
+    const sid = sidField.value.trim();
+    const val = parseFloat(amtField.value);
 
-    if(!sid || isNaN(val)) return;
+    if(!sid || isNaN(val) || val <= 0) {
+        alert("Enter valid SMAT ID and Amount!");
+        return;
+    }
 
     stealthQueue.push({ sid, val });
     totalAmt += val;
 
-    // কার্ড আপডেট
+    // Update UI Summary Card
     document.getElementById('qUsers').innerText = stealthQueue.length;
-    document.getElementById('qAmount').innerText = totalAmt.toLocaleString();
+    document.getElementById('qAmount').innerText = totalAmt.toFixed(2);
 
-    // ক্লিয়ার ইনপুট
-    document.getElementById('sid').value = "";
-    document.getElementById('amt').value = "";
+    // Clear Inputs
+    sidField.value = "";
+    amtField.value = "";
 }
 
+// --- CORE FIX: Balance & History Processing ---
 async function processAirdrop() {
     if(stealthQueue.length === 0) return;
+    
     const btn = document.getElementById('sendBtn');
     btn.disabled = true;
     
-    const coinSym = activeCoin.sym.toLowerCase();
+    const coinKey = activeCoin.sym + "_balance";
     const reportDetails = [];
     const finalTotalUsers = stealthQueue.length;
     const finalTotalAmt = totalAmt;
 
-    // ১. ইউজার ডাটা একবারে লোড (Performance)
-    const allUsersSnap = await db.ref('users').once('value');
-    const allUsers = allUsersSnap.val();
+    try {
+        // ১. সব ইউজার ডাটা একবারে আনা
+        const allUsersSnap = await db.ref('users').once('value');
+        const allUsers = allUsersSnap.val();
 
-    // ২. প্রসেসিং লুপ
-    while(stealthQueue.length > 0) {
-        const item = stealthQueue.shift(); // একে একে কিউ থেকে বের করা
-        totalAmt -= item.val;
+        if(!allUsers) throw new Error("No users found in Database!");
 
-        // কার্ড লাইভ আপডেট (কমতে থাকবে)
-        document.getElementById('qUsers').innerText = stealthQueue.length;
-        document.getElementById('qAmount').innerText = totalAmt.toFixed(2);
-        btn.innerText = `SENDING... (${stealthQueue.length} LEFT)`;
-
-        // ইউজার আইডি ম্যাচিং
-        let targetUid = null;
-        for(let uid in allUsers) {
-            if(allUsers[uid].smatId === item.sid) { targetUid = uid; break; }
-        }
-
-        if(targetUid) {
-            const balKey = coinSym + "_balance";
-            const current = parseFloat(allUsers[targetUid][balKey]) || 0;
+        // ২. প্রসেসিং লুপ
+        while(stealthQueue.length > 0) {
+            const item = stealthQueue.shift();
             
-            // ডাটাবেস আপডেট
-            await db.ref(`users/${targetUid}/${balKey}`).set(current + item.val);
-            await db.ref(`users/${targetUid}/history`).push({
-                method: 'Airdrop Reward',
-                coin: activeCoin.sym,
-                amount: item.val,
-                status: 'success',
-                timestamp: Date.now(),
-                hash: 'STEALTH-' + Math.random().toString(36).substr(2, 9).toUpperCase()
-            });
+            // লাইভ ইউআই আপডেট
+            document.getElementById('qUsers').innerText = stealthQueue.length;
+            btn.innerText = `SENDING... (${stealthQueue.length} LEFT)`;
 
-            reportDetails.push({ sid: item.sid, val: item.val });
+            // ৩. আইডি ম্যাচিং (Case Insensitive Fix)
+            let targetUid = null;
+            for(let uid in allUsers) {
+                if(allUsers[uid].smatId && allUsers[uid].smatId.toString().toLowerCase() === item.sid.toLowerCase()) {
+                    targetUid = uid;
+                    break;
+                }
+            }
+
+            if(targetUid) {
+                const currentBal = parseFloat(allUsers[targetUid][coinKey]) || 0;
+                const newBal = currentBal + item.val;
+
+                // ব্যালেন্স আপডেট
+                await db.ref(`users/${targetUid}/${coinKey}`).set(newBal);
+
+                // ইউজারের নিজস্ব হিস্ট্রি আপডেট
+                await db.ref(`users/${targetUid}/history`).push({
+                    method: 'Airdrop Reward',
+                    coin: activeCoin.sym.toUpperCase(),
+                    amount: item.val,
+                    status: 'success',
+                    timestamp: Date.now(),
+                    hash: 'ST-' + Math.random().toString(36).substr(2, 9).toUpperCase()
+                });
+
+                reportDetails.push({ sid: item.sid, val: item.val });
+            }
         }
+
+        // ৪. এডমিন লগ সেভ (পপআপের জন্য)
+        if (reportDetails.length > 0) {
+            await db.ref('stealth_airdrop_logs').push({
+                coin: activeCoin.sym.toUpperCase(),
+                totalUsers: reportDetails.length,
+                totalAmt: finalTotalAmt,
+                timestamp: Date.now(),
+                details: reportDetails
+            });
+        }
+
+        showToast();
+        totalAmt = 0; // Reset total
+    } catch (error) {
+        console.error("Airdrop Error:", error);
+        alert("Error: " + error.message);
+    } finally {
+        btn.innerText = "EXECUTE STEALTH SEND";
+        btn.disabled = false;
+        document.getElementById('summaryCard').style.display = 'none';
     }
-
-    // ৩. এডমিন লগ সেভ
-    await db.ref('stealth_airdrop_logs').push({
-        coin: activeCoin.sym,
-        totalUsers: finalTotalUsers,
-        totalAmt: finalTotalAmt,
-        timestamp: Date.now(),
-        details: reportDetails
-    });
-
-    // ফিনিশিং
-    btn.innerText = "EXECUTE STEALTH SEND";
-    btn.disabled = false;
-    document.getElementById('summaryCard').style.display = 'none';
-    showToast();
 }
 
+// --- History & Popup Fix ---
 function loadHistory() {
     db.ref('stealth_airdrop_logs').limitToLast(20).on('value', snap => {
         const data = snap.val();
-        if(!data) return;
+        const listDiv = document.getElementById('historyList');
+        if(!data) {
+            listDiv.innerHTML = "<p style='text-align:center; color:#555;'>No history found</p>";
+            return;
+        }
+
         const html = Object.keys(data).reverse().map(id => {
             const h = data[id];
             return `
@@ -229,41 +282,51 @@ function loadHistory() {
                         <div class="coin-icon">${h.coin.charAt(0)}</div>
                         <div>
                             <div style="font-weight:900; font-size:13px;">${h.coin}</div>
-                            <div style="font-size:9px; color:#848e9c;">${new Date(h.timestamp).toLocaleDateString()}</div>
+                            <div style="font-size:9px; color:#848e9c;">${new Date(h.timestamp).toLocaleString()}</div>
                         </div>
                     </div>
                     <div style="text-align:right">
-                        <div style="font-size:11px; color:var(--up)">+${h.totalAmt.toLocaleString()}</div>
+                        <div style="font-size:11px; color:var(--up)">+${h.totalAmt}</div>
                         <div style="font-size:9px; color:#848e9c;">${h.totalUsers} Persons</div>
                     </div>
                 </div>
             `;
         }).join('');
-        document.getElementById('historyList').innerHTML = html;
+        listDiv.innerHTML = html;
     });
 }
 
-function showDetails(id) {
-    db.ref(`stealth_airdrop_logs/${id}`).once('value', snap => {
+function showDetails(logId) {
+    const modal = document.getElementById('modalOverlay');
+    const modalBody = document.getElementById('modalBody');
+    
+    modal.style.display = 'flex'; // পপআপ দেখাবে
+    modalBody.innerHTML = "Loading...";
+
+    db.ref(`stealth_airdrop_logs/${logId}`).once('value', snap => {
         const h = snap.val();
-        document.getElementById('modalTitle').innerText = `${h.coin} Airdrop List`;
+        if(!h) return;
+
+        document.getElementById('modalTitle').innerText = `${h.coin} Distribution`;
         const listHtml = h.details.map(d => `
-            <div style="display:flex; justify-content:space-between; padding:8px 0; border-bottom:1px solid #333;">
+            <div style="display:flex; justify-content:space-between; padding:10px 0; border-bottom:1px solid #333;">
                 <span>ID: ${d.sid}</span>
-                <span style="color:var(--primary)">${d.val} ${h.coin}</span>
+                <span style="color:var(--primary); font-weight:bold;">${d.val} ${h.coin}</span>
             </div>
         `).join('');
-        document.getElementById('modalBody').innerHTML = listHtml;
-        document.getElementById('modalOverlay').style.display = 'flex';
+        modalBody.innerHTML = listHtml;
     });
 }
 
-function closeModal() { document.getElementById('modalOverlay').style.display = 'none'; }
+function closeModal() {
+    document.getElementById('modalOverlay').style.display = 'none';
+}
+
 function showToast() {
     const t = document.getElementById('toast');
     t.style.display = 'block';
-    setTimeout(() => t.style.display = 'none', 3000);
+    setTimeout(() => { t.style.display = 'none'; }, 3000);
 }
-</script>
+</script/>
 </body>
 </html>
