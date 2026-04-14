@@ -181,58 +181,9 @@ function toggleFab() {
     fab.classList.toggle('active');
 }
 
-// --- CORE FUNCTIONS (Decimal Logic Fixed) ---
-
-// Coin Amount: সর্বোচ্চ ৮ দশমিক
-function formatAmt(num) {
-    if(!num) return "0.00";
-    return parseFloat(num).toLocaleString(undefined, { 
-        minimumFractionDigits: 2, 
-        maximumFractionDigits: 8 
-    });
-}
-
-// Price & Dollar Value: ফিক্সড ৪ দশমিক
-function formatPrice(num) {
-    if(!num) return "0.0000";
-    return parseFloat(num).toLocaleString(undefined, { 
-        minimumFractionDigits: 4, 
-        maximumFractionDigits: 4 
-    });
-}
-
-// --- CUSTOM GRAPHIC TOAST NOTIFICATION ---
-function showNotify(type, title, message) {
-    let container = document.getElementById('notification-container');
-    if (!container) {
-        container = document.createElement('div');
-        container.id = 'notification-container';
-        container.style = "position:fixed; top:20px; left:50%; transform:translateX(-50%); z-index:10000; display:flex; flex-direction:column; gap:10px; width:90%; max-width:350px;";
-        document.body.appendChild(container);
-    }
-
-    const toast = document.createElement('div');
-    toast.className = 'swap-toast';
-    
-    let icon = 'fa-info-circle', titleColor = 'var(--primary)';
-    if (type === 'success') { icon = 'fa-check-circle'; titleColor = 'var(--up)'; }
-    else if (type === 'error') { icon = 'fa-times-circle'; titleColor = 'var(--down)'; }
-
-    toast.innerHTML = `
-        <div style="font-weight: 800; color: ${titleColor}; margin-bottom: 5px; font-size: 14px; display: flex; align-items: center; gap: 8px; justify-content: center;">
-            <i class="fas ${icon}"></i> ${title.toUpperCase()}
-        </div>
-        <div style="font-size: 11px; color: #ccc; font-weight: 700; text-align: center;">${message}</div>
-    `;
-
-    container.appendChild(toast);
-
-    setTimeout(() => {
-        toast.style.opacity = '0';
-        toast.style.transform = 'translateY(-20px)';
-        toast.style.transition = 'all 0.5s ease';
-        setTimeout(() => toast.remove(), 500);
-    }, 5000);
+// --- CORE FUNCTIONS (আপনার দেওয়া অরিজিনাল লজিক) ---
+function formatNum(num, fixed = 2) {
+    return parseFloat(num).toLocaleString(undefined, { minimumFractionDigits: fixed, maximumFractionDigits: fixed });
 }
 
 // Firebase Initialization
@@ -263,19 +214,13 @@ function updateUI() {
     document.getElementById('assetList').innerHTML = sorted.map(c => `
         <div class="asset-card" onclick="openActionPopup('${c.sym.toLowerCase()}', 'all')">
             <div class="a-logo"><img src="assets/logos/${c.sym.toLowerCase()}.png"></div>
-            <div style="flex:1">
-                <h4>${c.sym.toUpperCase()}</h4>
-                <p style="font-size:11px; color:var(--text-sec)">$${formatPrice(c.price)}</p>
-            </div>
-            <div style="text-align:right">
-                <b>${formatAmt(c.bal)}</b><br>
-                <span style="font-size:11px; color:var(--text-sec)">$${formatPrice(c.val)}</span>
-            </div>
+            <div style="flex:1"><h4>${c.sym.toUpperCase()}</h4><p style="font-size:11px; color:var(--text-sec)">$${formatNum(c.price)}</p></div>
+            <div style="text-align:right"><b>${formatNum(c.bal, 4)}</b><br><span style="font-size:11px; color:var(--text-sec)">$${formatNum(c.val)}</span></div>
         </div>
     `).join('');
     
     let total = sorted.reduce((a, b) => a + b.val, 0);
-    document.getElementById('totalBalance').innerText = formatPrice(total);
+    document.getElementById('totalBalance').innerText = formatNum(total);
 }
 
 function openCoinSelector(mode) {
@@ -298,7 +243,7 @@ function filterCoins() {
         <div class="asset-card" onclick="openActionPopup('${c.sym.toLowerCase()}', '${currentSelectorMode}')">
             <div class="a-logo"><img src="assets/logos/${c.sym.toLowerCase()}.png"></div>
             <div style="flex:1"><h4>${c.sym.toUpperCase()}</h4><p style="font-size:11px; color:var(--text-sec)">${c.name}</p></div>
-            <div style="text-align:right"><b style="color:var(--primary)">${formatAmt(c.bal)}</b></div>
+            <div style="text-align:right"><b style="color:var(--primary)">${formatNum(c.bal, 4)}</b></div>
         </div>
     `).join('');
 }
@@ -313,11 +258,8 @@ function openActionPopup(sym, mode) {
     document.getElementById('qrCoinLogo').src = `assets/logos/${s}.png`;
     document.getElementById('popCoinName').innerText = sym.toUpperCase();
     document.getElementById('depAddr').innerText = userData.depositAddress || "0xLoading...";
-    
-    const fee = 0.25 / price;
-    // Withdraw-এ ব্যালেন্স থেকে ফি বাদ দিয়ে দেখানো (৮ দশমিক)
-    document.getElementById('availWith').innerText = formatAmt(Math.max(0, bal - fee));
-    document.getElementById('availTrans').innerText = formatAmt(bal);
+    document.getElementById('availWith').innerText = formatNum(bal - (0.25/price), 6);
+    document.getElementById('availTrans').innerText = formatNum(bal, 6);
 
     const qr = qrcode(0, 'M');
     qr.addData(userData.depositAddress || "0xLoading...");
@@ -355,7 +297,13 @@ function openHistory() {
     const now = Date.now();
     const sixtyDaysInMs = 60 * 24 * 60 * 60 * 1000;
 
-    let headerHtml = `<div style="background: rgba(240, 185, 11, 0.1); padding: 12px; border-radius: 10px; margin-bottom: 20px; border: 1px solid rgba(240, 185, 11, 0.2);"><p style="font-size: 11px; color: var(--primary); font-weight: bold; text-align: center;"><i class="fas fa-info-circle"></i> Records are kept for a maximum of 60 days.</p></div>`;
+    let headerHtml = `
+        <div style="background: rgba(240, 185, 11, 0.1); padding: 12px; border-radius: 10px; margin-bottom: 20px; border: 1px solid rgba(240, 185, 11, 0.2);">
+            <p style="font-size: 11px; color: var(--primary); font-weight: bold; text-align: center;">
+                <i class="fas fa-info-circle"></i> Records are kept for a maximum of 60 days.
+            </p>
+        </div>
+    `;
 
     db.ref('users/' + auth.currentUser.uid + '/history').on('value', snap => {
         const data = snap.val();
@@ -374,12 +322,26 @@ function openHistory() {
             if (item.method.toLowerCase().includes('deposit')) { typeIcon = 'fa-plus-circle'; typeColor = 'var(--up)'; }
             else if (item.method.toLowerCase().includes('withdraw')) { typeIcon = 'fa-arrow-up-right-from-square'; typeColor = 'var(--down)'; }
 
+            // --- TRX HASH LOGIC START ---
             let hashHtml = '';
             if (item.hash && item.hash !== '...' && item.hash !== 'Null') {
-                hashHtml = `<div style="margin-top:8px;"><p style="font-size:9px; color:var(--text-sec)">Transaction Hash</p><div style="display:flex; justify-content:space-between; align-items:center;"><a href="https://bscscan.com/tx/${item.hash}" target="_blank" style="color:var(--primary); text-decoration:none; font-family:monospace; font-size:10px;">${item.hash.substring(0, 12)}...${item.hash.substring(item.hash.length - 4)} <i class="fas fa-external-link-alt" style="font-size:8px; margin-left:4px;"></i></a><i class="fas fa-copy" onclick="copyValueText('${item.hash}')" style="color:var(--primary); cursor:pointer; font-size:10px;"></i></div></div>`;
+                // এখানে bscscan এর বদলে আপনার নিজস্ব এক্সপ্লোরার লিংকও দিতে পারেন
+                hashHtml = `
+                    <div style="margin-top:8px;">
+                        <p style="font-size:9px; color:var(--text-sec)">Transaction Hash</p>
+                        <div style="display:flex; justify-content:space-between; align-items:center;">
+                            <a href="https://bscscan.com/tx/${item.hash}" target="_blank" style="color:var(--primary); text-decoration:none; font-family:monospace; font-size:10px;">
+                                ${item.hash.substring(0, 12)}...${item.hash.substring(item.hash.length - 4)} 
+                                <i class="fas fa-external-link-alt" style="font-size:8px; margin-left:4px;"></i>
+                            </a>
+                            <i class="fas fa-copy" onclick="copyValueText('${item.hash}')" style="color:var(--primary); cursor:pointer; font-size:10px;"></i>
+                        </div>
+                    </div>
+                `;
             } else if (item.status === 'pending') {
                 hashHtml = `<p style="font-size:9px; color:var(--text-sec); margin-top:8px;">Hash: <span style="color:var(--primary)">Processing...</span></p>`;
             }
+            // --- TRX HASH LOGIC END ---
 
             html += `
                 <div class="hist-card" style="border-left-color: ${typeColor};">
@@ -393,7 +355,7 @@ function openHistory() {
                         </span>
                     </div>
                     <div style="display:grid; grid-template-columns: 1fr 1fr; gap:8px; margin-top:10px; padding-top:8px; border-top:1px solid rgba(255,255,255,0.03);">
-                        <div><p style="font-size:9px; color:var(--text-sec)">Amount</p><b>${formatAmt(item.amount)} ${item.coin}</b></div>
+                        <div><p style="font-size:9px; color:var(--text-sec)">Amount</p><b>${formatNum(item.amount, 4)} ${item.coin}</b></div>
                         <div style="text-align:right"><p style="font-size:9px; color:var(--text-sec)">Network</p><b>${item.network}</b></div>
                         <div style="grid-column: span 2;">
                             <p style="font-size:9px; color:var(--text-sec)">Address/Target</p>
@@ -410,6 +372,7 @@ function openHistory() {
     });
 }
 
+
 // --- PROCESSORS ---
 async function processWithdraw() {
     const amt = parseFloat(document.getElementById('withAmt').value);
@@ -418,18 +381,13 @@ async function processWithdraw() {
     const bal = parseFloat(userData[s + '_balance']) || 0;    
     const price = livePrices[s]?.price || 1, fee = 0.25 / price;
 
-    if(!addr || isNaN(amt) || amt <= 0) return showNotify('error', 'Failed', 'Invalid Details!');
-    if((amt + fee) > bal) return showNotify('error', 'Failed', 'Insufficient Balance!');
+    if(!addr || isNaN(amt) || amt <= 0 || (amt + fee) > bal) return alert("Insufficient Balance!");
 
-    try {
-        const txId = db.ref('transactions').push().key;
-        const data = { method: 'Withdraw', coin: s.toUpperCase(), amount: amt, network: document.getElementById('withNet').value, address: addr, status: 'pending', timestamp: Date.now(), hash: '...' };
-        
-        await db.ref('users/' + auth.currentUser.uid).update({ [s + '_balance']: (bal - (amt + fee)).toFixed(8) });    
-        await db.ref('users/' + auth.currentUser.uid + '/history/' + txId).set(data);
-        showNotify('success', 'Submitted', 'Withdrawal request sent!');
-        hidePopup();
-    } catch(e) { showNotify('error', 'System Error', 'Try again later.'); }
+    const txId = db.ref('transactions').push().key;
+    const data = { method: 'Withdraw', coin: s.toUpperCase(), amount: amt, network: document.getElementById('withNet').value, address: addr, status: 'pending', timestamp: Date.now(), hash: '...' };
+    await db.ref('users/' + auth.currentUser.uid).update({ [s + '_balance']: bal - (amt + fee) });    
+    await db.ref('users/' + auth.currentUser.uid + '/history/' + txId).set(data);
+    alert("Withdrawal Submitted!"); hidePopup();
 }
 
 async function processTransfer() {
@@ -438,28 +396,23 @@ async function processTransfer() {
     const s = document.getElementById('popCoinName').innerText.toLowerCase();
     const bal = parseFloat(userData[s + '_balance']) || 0;    
 
-    if(!target || isNaN(amt) || amt <= 0 || amt > bal) return showNotify('error', 'Failed', 'Check amount or recipient!');
+    if(!target || isNaN(amt) || amt <= 0 || amt > bal) return alert("Check Input!");
 
-    try {
-        const txId = db.ref('transactions').push().key;
-        const data = { method: 'Internal Transfer', coin: s.toUpperCase(), amount: amt, network: 'Internal', address: target, status: 'success', timestamp: Date.now(), hash: 'Null' };
-        
-        await db.ref('users/' + auth.currentUser.uid).update({ [s + '_balance']: (bal - amt).toFixed(8) });    
-        await db.ref('users/' + auth.currentUser.uid + '/history/' + txId).set(data);
-        showNotify('success', 'Sent', 'Transfer successful!'); 
-        hidePopup();
-    } catch(e) { showNotify('error', 'System Error', 'Try again later.'); }
+    const txId = db.ref('transactions').push().key;
+    const data = { method: 'Internal Transfer', coin: s.toUpperCase(), amount: amt, network: 'Internal', address: target, status: 'success', timestamp: Date.now(), hash: 'Null' };
+    await db.ref('users/' + auth.currentUser.uid).update({ [s + '_balance']: bal - amt });    
+    await db.ref('users/' + auth.currentUser.uid + '/history/' + txId).set(data);
+    alert("Sent Successfully!"); hidePopup();
 }
 
 function hidePopup() { document.getElementById('actionOverlay').style.display = 'none'; }
 function closeHistory() { document.getElementById('historyPopup').style.display = 'none'; }
 function closeSelector() { document.getElementById('coinSelector').style.display = 'none'; }
-function copyValueText(t) { navigator.clipboard.writeText(t); showNotify('success', 'Copied', 'Copied to clipboard!'); }
+function copyValueText(t) { navigator.clipboard.writeText(t); alert("Copied!"); }
 function copyValue(id) { copyValueText(document.getElementById(id).innerText); }
 function closePopupOverlay(e) { if(e.target.id === 'actionOverlay') hidePopup(); }
 
 window.onload = init;
 </script>
-
 </body>
 </html>
