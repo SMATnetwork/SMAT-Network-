@@ -181,9 +181,13 @@ function toggleFab() {
 }
 
 // --- CORE FUNCTIONS (আপনার দেওয়া অরিজিনাল লজিক) ---
-function formatNum(num, fixed = 2) {
-    return parseFloat(num).toLocaleString(undefined, { minimumFractionDigits: fixed, maximumFractionDigits: fixed });
+function formatNum(num, fixed = 8) { // ডিফল্ট ৮ ঘর করা হলো
+    return parseFloat(num).toLocaleString(undefined, { 
+        minimumFractionDigits: 2, // কমপক্ষে ২ ঘর দেখাবে
+        maximumFractionDigits: fixed // সর্বোচ্চ ৮ ঘর পর্যন্ত দেখাবে
+    });
 }
+
 
 // Firebase Initialization
 const firebaseConfig = { apiKey: "AIzaSyAMxtJedkehhxJRMPZLjhpKHqneHEWsGlE", authDomain: "smat-exchange.firebaseapp.com", projectId: "smat-exchange", databaseURL: "https://smat-exchange-default-rtdb.firebaseio.com", storageBucket: "smat-exchange.appspot.com", messagingSenderId: "836334569396", appId: "1:836334569396:web:679effe640b3453412d4e1" };
@@ -214,7 +218,7 @@ function updateUI() {
         <div class="asset-card" onclick="openActionPopup('${c.sym.toLowerCase()}', 'all')">
             <div class="a-logo"><img src="assets/logos/${c.sym.toLowerCase()}.png"></div>
             <div style="flex:1"><h4>${c.sym.toUpperCase()}</h4><p style="font-size:11px; color:var(--text-sec)">$${formatNum(c.price)}</p></div>
-            <div style="text-align:right"><b>${formatNum(c.bal, 4)}</b><br><span style="font-size:11px; color:var(--text-sec)">$${formatNum(c.val)}</span></div>
+            <div style="text-align:right"><b>${formatNum(c.bal, 8)}</b><br><span style="font-size:11px; color:var(--text-sec)">$${formatNum(c.val)}</span></div>
         </div>
     `).join('');
     
@@ -242,7 +246,7 @@ function filterCoins() {
         <div class="asset-card" onclick="openActionPopup('${c.sym.toLowerCase()}', '${currentSelectorMode}')">
             <div class="a-logo"><img src="assets/logos/${c.sym.toLowerCase()}.png"></div>
             <div style="flex:1"><h4>${c.sym.toUpperCase()}</h4><p style="font-size:11px; color:var(--text-sec)">${c.name}</p></div>
-            <div style="text-align:right"><b style="color:var(--primary)">${formatNum(c.bal, 4)}</b></div>
+            <div style="text-align:right"><b style="color:var(--primary)">${formatNum(c.bal, 8)}</b></div>
         </div>
     `).join('');
 }
@@ -257,8 +261,8 @@ function openActionPopup(sym, mode) {
     document.getElementById('qrCoinLogo').src = `assets/logos/${s}.png`;
     document.getElementById('popCoinName').innerText = sym.toUpperCase();
     document.getElementById('depAddr').innerText = userData.depositAddress || "0xLoading...";
-    document.getElementById('availWith').innerText = formatNum(bal - (0.25/price), 6);
-    document.getElementById('availTrans').innerText = formatNum(bal, 6);
+    document.getElementById('availWith').innerText = formatNum(bal - (0.25/price), 8);
+    document.getElementById('availTrans').innerText = formatNum(bal, 8);
 
     const qr = qrcode(0, 'M');
     qr.addData(userData.depositAddress || "0xLoading...");
@@ -354,7 +358,7 @@ function openHistory() {
                         </span>
                     </div>
                     <div style="display:grid; grid-template-columns: 1fr 1fr; gap:8px; margin-top:10px; padding-top:8px; border-top:1px solid rgba(255,255,255,0.03);">
-                        <div><p style="font-size:9px; color:var(--text-sec)">Amount</p><b>${formatNum(item.amount, 4)} ${item.coin}</b></div>
+                        <div><p style="font-size:9px; color:var(--text-sec)">Amount</p><b>${formatNum(item.amount, 8)} ${item.coin}</b></div>
                         <div style="text-align:right"><p style="font-size:9px; color:var(--text-sec)">Network</p><b>${item.network}</b></div>
                         <div style="grid-column: span 2;">
                             <p style="font-size:9px; color:var(--text-sec)">Address/Target</p>
@@ -374,20 +378,63 @@ function openHistory() {
 
 // --- PROCESSORS ---
 async function processWithdraw() {
-    const amt = parseFloat(document.getElementById('withAmt').value);
-    const addr = document.getElementById('withAddr').value;
+    const amtInput = document.getElementById('withAmt').value;
+    const addr = document.getElementById('withAddr').value.trim();
+    const amt = parseFloat(amtInput);
+    
+    // কয়েনের সিম্বল (যেমন: btc, eth)
     const s = document.getElementById('popCoinName').innerText.toLowerCase();
+    
+    // বর্তমান ব্যালেন্স
     const bal = parseFloat(userData[s + '_balance']) || 0;    
-    const price = livePrices[s]?.price || 1, fee = 0.25 / price;
+    
+    // ফি ক্যালকুলেশন (০.২৫ ডলার সমপরিমাণ কয়েন)
+    const price = livePrices[s]?.price || 1;
+    const fee = 0.25 / price;
 
-    if(!addr || isNaN(amt) || amt <= 0 || (amt + fee) > bal) return alert("Insufficient Balance!");
+    // ১. ইনপুট ভ্যালিডেশন
+    if (!addr) return alert("Please enter a recipient address!");
+    if (isNaN(amt) || amt <= 0) return alert("Please enter a valid amount!");
+    
+    // ২. ব্যালেন্স চেক (অ্যামাউন্ট + ফি যেন ব্যালেন্সের চেয়ে বেশি না হয়)
+    if ((amt + fee) > bal) {
+        return alert("Insufficient Balance! (Including Fee: " + fee.toFixed(8) + ")");
+    }
 
-    const txId = db.ref('transactions').push().key;
-    const data = { method: 'Withdraw', coin: s.toUpperCase(), amount: amt, network: document.getElementById('withNet').value, address: addr, status: 'pending', timestamp: Date.now(), hash: '...' };
-    await db.ref('users/' + auth.currentUser.uid).update({ [s + '_balance']: bal - (amt + fee) });    
-    await db.ref('users/' + auth.currentUser.uid + '/history/' + txId).set(data);
-    alert("Withdrawal Submitted!"); hidePopup();
+    try {
+        // ৩. নতুন ব্যালেন্স ক্যালকুলেশন (৮ দশমিক পর্যন্ত ফিক্সড করা হয়েছে)
+        const newBalance = parseFloat((bal - (amt + fee)).toFixed(8));
+
+        const txId = db.ref('transactions').push().key;
+        const data = { 
+            method: 'Withdraw', 
+            coin: s.toUpperCase(), 
+            amount: amt, 
+            fee: parseFloat(fee.toFixed(8)), // ফি-ও রেকর্ডে রাখা ভালো
+            network: document.getElementById('withNet').value, 
+            address: addr, 
+            status: 'pending', 
+            timestamp: Date.now(), 
+            hash: '...' 
+        };
+
+        // ৪. ডাটাবেস আপডেট
+        // আগে ব্যালেন্স আপডেট হবে, তারপর হিস্ট্রি সেট হবে
+        await db.ref('users/' + auth.currentUser.uid).update({ 
+            [s + '_balance']: newBalance 
+        });    
+        
+        await db.ref('users/' + auth.currentUser.uid + '/history/' + txId).set(data);
+
+        alert("Withdrawal Submitted Successfully!");
+        hidePopup();
+        
+    } catch (error) {
+        console.error("Withdraw Error:", error);
+        alert("Something went wrong. Please try again.");
+    }
 }
+
 
 async function processTransfer() {
     const amt = parseFloat(document.getElementById('transAmt').value);
