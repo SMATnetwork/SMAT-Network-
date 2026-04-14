@@ -27,7 +27,6 @@
         .loader { width: 20px; height: 20px; border: 3px solid black; border-top-color: transparent; border-radius: 50%; animation: spin 0.8s linear infinite; display: none; }
         @keyframes spin { to { transform: rotate(360deg); } }
 
-        /* Custom Toast Styles */
         #notification-container { position: fixed; top: 20px; right: 20px; z-index: 10000; }
         .swap-toast { background: #1a1a1a; color: #fff; border-left: 4px solid var(--primary); padding: 15px 20px; border-radius: 12px; box-shadow: 0 10px 25px rgba(0,0,0,0.6); margin-bottom: 10px; animation: slideIn 0.4s ease-out forwards; min-width: 250px; }
         .swap-toast.hide { animation: slideOut 0.4s ease-in forwards; }
@@ -109,13 +108,11 @@
     let prices = { USDT: 1, BNB: 0, ETH: 0, oxSMAT: 8 };
     let userBalances = { USDT: 0, BNB: 0, ETH: 0, oxSMAT: 0 };
 
-    // Auth & Persistence Check
     auth.onAuthStateChanged(user => {
         if (user) { 
             userUID = user.uid; 
             syncBalances(); 
         } else {
-            // Logout হলে ০ করে রিডাইরেক্ট
             resetToZero();
             window.location.href = "login.html"; 
         }
@@ -143,10 +140,10 @@
         db.ref(`users/${userUID}`).on('value', snap => {
             const d = snap.val();
             if(d) {
-                userBalances.USDT = d.usdt_balance || 0;
-                userBalances.BNB = d.bnb_balance || 0;
-                userBalances.ETH = d.eth_balance || 0;
-                userBalances.oxSMAT = d.oxsmat_balance || 0;
+                userBalances.USDT = parseFloat(d.usdt_balance) || 0;
+                userBalances.BNB = parseFloat(d.bnb_balance) || 0;
+                userBalances.ETH = parseFloat(d.eth_balance) || 0;
+                userBalances.oxSMAT = parseFloat(d.oxsmat_balance) || 0; // Correctly calling oxsmat_balance
                 updateUIBalances();
             }
         });
@@ -200,7 +197,6 @@
         updateTokens();
     }
 
-    // Custom Toast Function
     function showToast(title, message) {
         const container = document.getElementById('notification-container');
         const toast = document.createElement('div');
@@ -236,21 +232,23 @@
 
             if (userBalances[f] < fAmt) throw new Error("Insufficient Balance");
 
-            up[`users/${userUID}/${fPath}`] = userBalances[f] - fAmt;
-            up[`users/${userUID}/${tPath}`] = (userBalances[t] || 0) + tAmt;
+            up[`users/${userUID}/${fPath}`] = (userBalances[f] - fAmt).toFixed(8);
+            up[`users/${userUID}/${tPath}`] = ((userBalances[t] || 0) + tAmt).toFixed(8);
 
             const logKey = db.ref(`users/${userUID}/history`).push().key;
             up[`users/${userUID}/history/${logKey}`] = {
-                method: `Swap ${f} to ${t}`,
-                amount: tAmt,
+                method: `SWAP ${f} TO ${t}`, // Title for Wallet History
+                amount: tAmt.toFixed(6),
                 coin: t,
                 status: 'success',
-                timestamp: Date.now()
+                timestamp: Date.now(),
+                address: "Internal System", // Fixed Undefined Address
+                network: "DexSwap",         // Fixed Undefined Network
+                hash: "SWAP-" + Math.random().toString(36).substr(2, 9).toUpperCase()
             };
 
             await db.ref().update(up);
             
-            // সুন্দর পপআপ ব্যবহার
             showToast("SWAP SUCCESSFUL", `Received: ${tAmt.toFixed(6)} ${t}`);
             document.getElementById('input-from').value = "";
             calculate();
