@@ -169,7 +169,7 @@
 
 <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-    import { getDatabase, ref, set, onValue, remove, update } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
+    import { getDatabase, ref, set, onValue, remove, runTransaction } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
     import { getAuth, signInWithEmailAndPassword, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
 
     const firebaseConfig = {
@@ -184,10 +184,11 @@
     const db = getDatabase(app);
     const auth = getAuth(app);
 
+    // --- লগইন লজিক ---
     window.handleLogin = () => {
         const e = document.getElementById('loginEmail').value;
         const p = document.getElementById('loginPass').value;
-        signInWithEmailAndPassword(auth, e, p).catch(() => alert("ভুল তথ্য!"));
+        signInWithEmailAndPassword(auth, e, p).catch((err) => alert("ভুল তথ্য: " + err.message));
     };
 
     window.handleLogout = () => signOut(auth);
@@ -197,24 +198,23 @@
         if(u) sync();
     });
 
-// ফাণ্ডিং টাইমার লজিক (প্রতি সেকেন্ডে ১ কমাবে)
-function startFundingTimer() {
-    const timerRef = db.ref('fundingLogic/timeLeft');
-    
-    setInterval(() => {
-        timerRef.transaction((currentValue) => {
-            if (currentValue === null || currentValue <= 0) {
-                return 28800; // ৮ ঘণ্টা (২৮৮০০ সেকেন্ড) পর আবার রিসেট হবে
-            } else {
-                return currentValue - 1;
-            }
-        });
-    }, 1000);
-}
+    // --- ফাণ্ডিং টাইমার লজিক (সংশোধিত) ---
+    function startFundingTimer() {
+        // মডুলার ভার্সনে db.ref().transaction() এভাবে কাজ করে না
+        const timerRef = ref(db, 'fundingLogic/timeLeft');
+        
+        setInterval(() => {
+            runTransaction(timerRef, (currentValue) => {
+                if (currentValue === null || currentValue <= 0) {
+                    return 28800; // ৮ ঘণ্টা
+                } else {
+                    return currentValue - 1;
+                }
+            });
+        }, 1000);
+    }
 
-// অ্যাডমিন প্যানেল ওপেন হলেই টাইমার স্টার্ট হবে
-startFundingTimer();
-
+    // --- ট্যাব সুইচ ---
     window.switchTab = (tab, el) => {
         document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
         document.querySelectorAll('.footer-item').forEach(i => i.classList.remove('active'));
@@ -222,16 +222,34 @@ startFundingTimer();
         el.classList.add('active');
     };
 
+    // --- ডাটা সেভ (সংশোধিত) ---
     window.saveData = (path, pre) => {
-        const id = document.getElementById(pre==='s'?'sSym':pre+'ID').value.toLowerCase().trim();
+        const idInput = document.getElementById(pre === 's' ? 'sSym' : pre + 'ID');
+        const id = idInput.value.toLowerCase().trim();
+        
         if(!id) return alert("ID দিন!");
+
         let data = {};
         if(pre === 's') {
-            data = { sym: id, name: document.getElementById('sName').value, price: document.getElementById('sPrice').value, decimal: document.getElementById('sDec').value, contract: document.getElementById('sCon').value, networks: document.getElementById('sNet').value.split(','), logo: document.getElementById('sLogo').value, key: id+"_balance" };
+            data = { 
+                sym: id, 
+                name: document.getElementById('sName').value, 
+                price: document.getElementById('sPrice').value, 
+                decimal: document.getElementById('sDec').value, 
+                contract: document.getElementById('sCon').value, 
+                networks: document.getElementById('sNet').value.split(','), 
+                logo: document.getElementById('sLogo').value, 
+                key: id + "_balance" 
+            };
         } else if(pre === 'p') {
-            data = { unit: id.toUpperCase(), name: document.getElementById('pName').value, symbol: document.getElementById('pBin').value, logo: document.getElementById('pLogo').value, round: document.getElementById('pRound').value };
-        } else {
-            // শুধুমাত্র ফিউচার পার্টে বাইনান্স সিম্বল এবং লগো লজিক যোগ করা হয়েছে
+            data = { 
+                unit: id.toUpperCase(), 
+                name: document.getElementById('pName').value, 
+                symbol: document.getElementById('pBin').value, 
+                logo: document.getElementById('pLogo').value, 
+                round: document.getElementById('pRound').value 
+            };
+        } else if(pre === 'f') {
             data = { 
                 unit: id.toUpperCase(), 
                 name: document.getElementById('fName').value, 
@@ -240,36 +258,56 @@ startFundingTimer();
                 lev: document.getElementById('fLev').value 
             };
         }
-        set(ref(db, path + '/' + id), data).then(() => alert("সফলভাবে লঞ্চ হয়েছে!"));
+
+        set(ref(db, path + '/' + id), data)
+            .then(() => {
+                alert("সফলভাবে লঞ্চ হয়েছে!");
+                idInput.value = ""; // ক্লিয়ার ইনপুট
+            })
+            .catch(err => alert("Error: " + err.message));
     };
 
-    window.del = (p, i) => { if(confirm("মুছে ফেলবেন?")) remove(ref(db, p+'/'+i)); };
+    // --- ডিলিট ফাংশন ---
+    window.del = (path, id) => { 
+        if(confirm("মুছে ফেলবেন?")) {
+            remove(ref(db, path + '/' + id));
+        }
+    };
 
+    // --- রিয়েল-টাইম সিঙ্ক ---
     function sync() {
         const conf = { spotAssets: 'spotTable', predictionAssets: 'preTable', featureAssets: 'featTable' };
         Object.entries(conf).forEach(([path, tID]) => {
             onValue(ref(db, path), (s) => {
                 const d = s.val();
-                const b = document.getElementById(tID);
-                b.innerHTML = "";
-                if(d) Object.entries(d).forEach(([k, v]) => {
-                    const logo = v.logo ? `assets/logos/${v.logo}` : 'https://via.placeholder.com/30';
-                    b.innerHTML += `
-                    <div class="coin-row">
-                        <div class="coin-info-group">
-                            <img src="${logo}" class="coin-icon" onerror="this.src='https://via.placeholder.com/30'">
-                            <div>
-                                <span>${v.unit || v.sym.toUpperCase()}</span><br>
-                                <small style="color:var(--text-muted)">${v.name || ''}</small>
+                const container = document.getElementById(tID);
+                container.innerHTML = "";
+                if(d) {
+                    Object.entries(d).forEach(([k, v]) => {
+                        const logo = v.logo ? `assets/logos/${v.logo}` : 'https://via.placeholder.com/30';
+                        const displayName = v.unit || (v.sym ? v.sym.toUpperCase() : 'N/A');
+                        
+                        container.innerHTML += `
+                        <div class="coin-row">
+                            <div class="coin-info-group">
+                                <img src="${logo}" class="coin-icon" onerror="this.src='https://via.placeholder.com/30'">
+                                <div>
+                                    <span>${displayName}</span><br>
+                                    <small style="color:var(--text-muted)">${v.name || ''}</small>
+                                </div>
                             </div>
-                        </div>
-                        <div class="status-badge">${v.price ? '$'+v.price : (v.lev ? v.lev+'x' : 'ACTIVE')}</div>
-                        <button class="btn-del" onclick="del('${path}','${k}')">REMOVE</button>
-                    </div>`;
-                });
+                            <div class="status-badge">${v.price ? '$'+v.price : (v.lev ? v.lev+'x' : 'ACTIVE')}</div>
+                            <button class="btn-del" onclick="del('${path}','${k}')">REMOVE</button>
+                        </div>`;
+                    });
+                }
             });
         });
+        
+        // সিঙ্ক হওয়ার পর টাইমার চালু করুন
+        startFundingTimer();
     }
 </script>
+
 </body>
 </html>
