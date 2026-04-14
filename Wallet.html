@@ -180,12 +180,70 @@ function toggleFab() {
     fab.classList.toggle('active');
 }
 
-// --- CORE FUNCTIONS (আপনার দেওয়া অরিজিনাল লজিক) ---
-function formatNum(num, fixed = 2) {
-    return parseFloat(num).toLocaleString(undefined, { minimumFractionDigits: fixed, maximumFractionDigits: fixed });
+// --- CORE FUNCTIONS (Decimal Fixed) ---
+
+// Coin Amount: সর্বোচ্চ ৮ দশমিক
+function formatAmt(num) {
+    if(!num) return "0.00";
+    return parseFloat(num).toLocaleString(undefined, { 
+        minimumFractionDigits: 2, 
+        maximumFractionDigits: 8 
+    });
 }
 
-// Firebase Initialization
+// Price & Dollar Value: ফিক্সড ৪ দশমিক
+function formatPrice(num) {
+    if(!num) return "0.0000";
+    return parseFloat(num).toLocaleString(undefined, { 
+        minimumFractionDigits: 4, 
+        maximumFractionDigits: 4 
+    });
+}
+
+// --- GRAPHIC TOAST NOTIFICATION SYSTEM ---
+function showNotify(type, title, message) {
+    let container = document.getElementById('notification-container');
+    if (!container) {
+        container = document.createElement('div');
+        container.id = 'notification-container';
+        container.style = "position:fixed; top:20px; left:50%; transform:translateX(-50%); z-index:10000; display:flex; flex-direction:column; gap:10px; width:90%; max-width:350px;";
+        document.body.appendChild(container);
+    }
+
+    const toast = document.createElement('div');
+    // গ্রাফিক্স স্টাইল
+    toast.style = `
+        background: #1e2329; border: 1px solid rgba(255,255,255,0.1); border-radius: 12px; padding: 15px; 
+        box-shadow: 0 10px 30px rgba(0,0,0,0.5); display: flex; flex-direction: column; align-items: center; 
+        animation: slideDown 0.4s ease forwards; transition: all 0.5s ease;
+    `;
+    
+    let icon = 'fa-info-circle', titleColor = '#f0b90b';
+    if (type === 'success') { icon = 'fa-check-circle'; titleColor = '#0ecb81'; }
+    else if (type === 'error') { icon = 'fa-times-circle'; titleColor = '#f6465d'; }
+
+    toast.innerHTML = `
+        <div style="font-weight: 800; color: ${titleColor}; margin-bottom: 5px; font-size: 14px; display: flex; align-items: center; gap: 8px;">
+            <i class="fas ${icon}"></i> ${title.toUpperCase()}
+        </div>
+        <div style="font-size: 11px; color: #848e9c; font-weight: 700; text-align: center;">${message}</div>
+    `;
+
+    container.appendChild(toast);
+
+    setTimeout(() => {
+        toast.style.opacity = '0';
+        toast.style.transform = 'translateY(-20px)';
+        setTimeout(() => toast.remove(), 500);
+    }, 4000);
+}
+
+// CSS Animation for Toast
+const style = document.createElement('style');
+style.innerHTML = `@keyframes slideDown { from { transform: translateY(-50px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }`;
+document.head.appendChild(style);
+
+// --- FIREBASE INITIALIZATION ---
 const firebaseConfig = { apiKey: "AIzaSyAMxtJedkehhxJRMPZLjhpKHqneHEWsGlE", authDomain: "smat-exchange.firebaseapp.com", projectId: "smat-exchange", databaseURL: "https://smat-exchange-default-rtdb.firebaseio.com", storageBucket: "smat-exchange.appspot.com", messagingSenderId: "836334569396", appId: "1:836334569396:web:679effe640b3453412d4e1" };
 firebase.initializeApp(firebaseConfig);
 const db = firebase.database();
@@ -213,13 +271,19 @@ function updateUI() {
     document.getElementById('assetList').innerHTML = sorted.map(c => `
         <div class="asset-card" onclick="openActionPopup('${c.sym.toLowerCase()}', 'all')">
             <div class="a-logo"><img src="assets/logos/${c.sym.toLowerCase()}.png"></div>
-            <div style="flex:1"><h4>${c.sym.toUpperCase()}</h4><p style="font-size:11px; color:var(--text-sec)">$${formatNum(c.price)}</p></div>
-            <div style="text-align:right"><b>${formatNum(c.bal, 4)}</b><br><span style="font-size:11px; color:var(--text-sec)">$${formatNum(c.val)}</span></div>
+            <div style="flex:1">
+                <h4>${c.sym.toUpperCase()}</h4>
+                <p style="font-size:11px; color:var(--text-sec)">$${formatPrice(c.price)}</p>
+            </div>
+            <div style="text-align:right">
+                <b>${formatAmt(c.bal)}</b><br>
+                <span style="font-size:11px; color:var(--text-sec)">$${formatPrice(c.val)}</span>
+            </div>
         </div>
     `).join('');
     
     let total = sorted.reduce((a, b) => a + b.val, 0);
-    document.getElementById('totalBalance').innerText = formatNum(total);
+    document.getElementById('totalBalance').innerText = formatPrice(total);
 }
 
 function openCoinSelector(mode) {
@@ -242,7 +306,7 @@ function filterCoins() {
         <div class="asset-card" onclick="openActionPopup('${c.sym.toLowerCase()}', '${currentSelectorMode}')">
             <div class="a-logo"><img src="assets/logos/${c.sym.toLowerCase()}.png"></div>
             <div style="flex:1"><h4>${c.sym.toUpperCase()}</h4><p style="font-size:11px; color:var(--text-sec)">${c.name}</p></div>
-            <div style="text-align:right"><b style="color:var(--primary)">${formatNum(c.bal, 4)}</b></div>
+            <div style="text-align:right"><b style="color:var(--primary)">${formatAmt(c.bal)}</b></div>
         </div>
     `).join('');
 }
@@ -257,8 +321,11 @@ function openActionPopup(sym, mode) {
     document.getElementById('qrCoinLogo').src = `assets/logos/${s}.png`;
     document.getElementById('popCoinName').innerText = sym.toUpperCase();
     document.getElementById('depAddr').innerText = userData.depositAddress || "0xLoading...";
-    document.getElementById('availWith').innerText = formatNum(bal - (0.25/price), 6);
-    document.getElementById('availTrans').innerText = formatNum(bal, 6);
+    
+    // ফি ক্যালকুলেশন এবং ৮ দশমিক এ ডিসপ্লে
+    const fee = 0.25 / price;
+    document.getElementById('availWith').innerText = formatAmt(Math.max(0, bal - fee));
+    document.getElementById('availTrans').innerText = formatAmt(bal);
 
     const qr = qrcode(0, 'M');
     qr.addData(userData.depositAddress || "0xLoading...");
@@ -321,10 +388,8 @@ function openHistory() {
             if (item.method.toLowerCase().includes('deposit')) { typeIcon = 'fa-plus-circle'; typeColor = 'var(--up)'; }
             else if (item.method.toLowerCase().includes('withdraw')) { typeIcon = 'fa-arrow-up-right-from-square'; typeColor = 'var(--down)'; }
 
-            // --- TRX HASH LOGIC START ---
             let hashHtml = '';
             if (item.hash && item.hash !== '...' && item.hash !== 'Null') {
-                // এখানে bscscan এর বদলে আপনার নিজস্ব এক্সপ্লোরার লিংকও দিতে পারেন
                 hashHtml = `
                     <div style="margin-top:8px;">
                         <p style="font-size:9px; color:var(--text-sec)">Transaction Hash</p>
@@ -340,7 +405,6 @@ function openHistory() {
             } else if (item.status === 'pending') {
                 hashHtml = `<p style="font-size:9px; color:var(--text-sec); margin-top:8px;">Hash: <span style="color:var(--primary)">Processing...</span></p>`;
             }
-            // --- TRX HASH LOGIC END ---
 
             html += `
                 <div class="hist-card" style="border-left-color: ${typeColor};">
@@ -354,7 +418,7 @@ function openHistory() {
                         </span>
                     </div>
                     <div style="display:grid; grid-template-columns: 1fr 1fr; gap:8px; margin-top:10px; padding-top:8px; border-top:1px solid rgba(255,255,255,0.03);">
-                        <div><p style="font-size:9px; color:var(--text-sec)">Amount</p><b>${formatNum(item.amount, 4)} ${item.coin}</b></div>
+                        <div><p style="font-size:9px; color:var(--text-sec)">Amount</p><b>${formatAmt(item.amount)} ${item.coin}</b></div>
                         <div style="text-align:right"><p style="font-size:9px; color:var(--text-sec)">Network</p><b>${item.network}</b></div>
                         <div style="grid-column: span 2;">
                             <p style="font-size:9px; color:var(--text-sec)">Address/Target</p>
@@ -371,7 +435,6 @@ function openHistory() {
     });
 }
 
-
 // --- PROCESSORS ---
 async function processWithdraw() {
     const amt = parseFloat(document.getElementById('withAmt').value);
@@ -380,13 +443,21 @@ async function processWithdraw() {
     const bal = parseFloat(userData[s + '_balance']) || 0;    
     const price = livePrices[s]?.price || 1, fee = 0.25 / price;
 
-    if(!addr || isNaN(amt) || amt <= 0 || (amt + fee) > bal) return alert("Insufficient Balance!");
+    if(!addr || isNaN(amt) || amt <= 0) return showNotify('error', 'Failed', 'Please enter valid details.');
+    if((amt + fee) > bal) return showNotify('error', 'Balance', 'Insufficient balance including fee!');
 
-    const txId = db.ref('transactions').push().key;
-    const data = { method: 'Withdraw', coin: s.toUpperCase(), amount: amt, network: document.getElementById('withNet').value, address: addr, status: 'pending', timestamp: Date.now(), hash: '...' };
-    await db.ref('users/' + auth.currentUser.uid).update({ [s + '_balance']: bal - (amt + fee) });    
-    await db.ref('users/' + auth.currentUser.uid + '/history/' + txId).set(data);
-    alert("Withdrawal Submitted!"); hidePopup();
+    try {
+        const txId = db.ref('transactions').push().key;
+        const data = { method: 'Withdraw', coin: s.toUpperCase(), amount: amt, network: document.getElementById('withNet').value, address: addr, status: 'pending', timestamp: Date.now(), hash: '...' };
+        
+        await db.ref('users/' + auth.currentUser.uid).update({ [s + '_balance']: (bal - (amt + fee)).toFixed(8) });    
+        await db.ref('users/' + auth.currentUser.uid + '/history/' + txId).set(data);
+        
+        showNotify('success', 'Submitted', 'Withdrawal request sent successfully!');
+        hidePopup();
+    } catch (e) {
+        showNotify('error', 'Error', 'Transaction failed. Try again.');
+    }
 }
 
 async function processTransfer() {
@@ -395,23 +466,34 @@ async function processTransfer() {
     const s = document.getElementById('popCoinName').innerText.toLowerCase();
     const bal = parseFloat(userData[s + '_balance']) || 0;    
 
-    if(!target || isNaN(amt) || amt <= 0 || amt > bal) return alert("Check Input!");
+    if(!target || isNaN(amt) || amt <= 0 || amt > bal) return showNotify('error', 'Failed', 'Invalid amount or recipient.');
 
-    const txId = db.ref('transactions').push().key;
-    const data = { method: 'Internal Transfer', coin: s.toUpperCase(), amount: amt, network: 'Internal', address: target, status: 'success', timestamp: Date.now(), hash: 'Null' };
-    await db.ref('users/' + auth.currentUser.uid).update({ [s + '_balance']: bal - amt });    
-    await db.ref('users/' + auth.currentUser.uid + '/history/' + txId).set(data);
-    alert("Sent Successfully!"); hidePopup();
+    try {
+        const txId = db.ref('transactions').push().key;
+        const data = { method: 'Internal Transfer', coin: s.toUpperCase(), amount: amt, network: 'Internal', address: target, status: 'success', timestamp: Date.now(), hash: 'Null' };
+        
+        await db.ref('users/' + auth.currentUser.uid).update({ [s + '_balance']: (bal - amt).toFixed(8) });    
+        await db.ref('users/' + auth.currentUser.uid + '/history/' + txId).set(data);
+        
+        showNotify('success', 'Sent', 'Transfer completed successfully!');
+        hidePopup();
+    } catch (e) {
+        showNotify('error', 'Error', 'Transfer failed.');
+    }
 }
 
 function hidePopup() { document.getElementById('actionOverlay').style.display = 'none'; }
 function closeHistory() { document.getElementById('historyPopup').style.display = 'none'; }
 function closeSelector() { document.getElementById('coinSelector').style.display = 'none'; }
-function copyValueText(t) { navigator.clipboard.writeText(t); alert("Copied!"); }
+function copyValueText(t) { 
+    navigator.clipboard.writeText(t); 
+    showNotify('success', 'Copied', 'Information copied to clipboard.');
+}
 function copyValue(id) { copyValueText(document.getElementById(id).innerText); }
 function closePopupOverlay(e) { if(e.target.id === 'actionOverlay') hidePopup(); }
 
 window.onload = init;
 </script>
+
 </body>
 </html>
