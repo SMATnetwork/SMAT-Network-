@@ -8,10 +8,6 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     
-    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-auth-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-database-compat.js"></script>
-
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;900&display=swap');
         body { background-color: #0b0e11; color: white; font-family: 'Inter', sans-serif; transition: 0.3s; overflow-x: hidden; width: 100%; }
@@ -24,275 +20,230 @@
         #multiplier { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); font-size: 5rem; font-weight: 900; color: #f0b90b; z-index: 50; text-shadow: 0 0 40px rgba(240, 185, 11, 0.6), 0 0 10px rgba(0,0,0,1); letter-spacing: -2px; transition: font-size 0.2s ease; }
         #multiplier.crashed-text { font-size: 6vw; letter-spacing: 0; white-space: nowrap; }
         .char-layer { position: absolute; top: 20px; left: 20px; width: 80px; height: 80px; z-index: 80; display: none; pointer-events: none; }
-        @keyframes charFloat { 0% { transform: translateY(0px) rotate(0deg); } 50% { transform: translateY(-10px) rotate(5deg); } 100% { transform: translateY(0px) rotate(0deg); } }
-        .char-layer svg { width: 100%; height: 100%; animation: charFloat 2s ease-in-out infinite; }
         #dots-wrapper { display: flex; gap: 6px; flex-direction: row; justify-content: flex-start; align-items: center; overflow: hidden; width: 100%; }
-        #history-pills { display: flex; flex-wrap: wrap; gap: 4px; width: calc(100% - 32px); margin: 0 16px; justify-content: flex-start; height: auto; min-height: 40px; background: none; }
-        .history-pill-item { width: calc(12.5% - 4px); text-align: center; font-size: 9px; font-weight: 900; padding: 4px 0; border-radius: 4px; flex-shrink: 0; }
         .history-dot { width: 15px; height: 15px; border-radius: 50%; flex-shrink: 0; }
         .dot-white { background-color: #FFFFFF; } .dot-gray { background-color: #808080; } .dot-green { background-color: #008000; } .dot-yellow { background-color: #FFFF00; }
-        .pill-white { color: #FFFFFF; } .pill-gray { color: #808080;  } .pill-green { color: #008000; } .pill-yellow { color: #FFFF00;}
         .grid-lines { position: absolute; inset: -200px; background-image: linear-gradient(#23272c 1px, transparent 1px), linear-gradient(90deg, #23272c 1px, transparent 1px); background-size: 50px 50px; opacity: 0.15; z-index: 2; }
         .plane-anim { position: absolute; bottom: 30px; left: 45px; width: 75px; height: 75px; z-index: 30; transition: 0.05s linear; }
         .flame { position: absolute; bottom: -8px; left: 50%; transform: translateX(-50%); width: 15px; height: 35px; background: linear-gradient(to bottom, #f0b90b, #ff4500, transparent); border-radius: 50%; filter: blur(4px); animation: flicker 0.1s infinite; z-index: -1; }
         @keyframes flicker { 0%, 100% { height: 35px; opacity: 0.8; } 50% { height: 45px; opacity: 1; } }
         #countdown-overlay { position: absolute; inset: 0; background: rgba(11,14,17,0.95); z-index: 100; display: none; flex-direction: column; align-items: center; justify-content: center; }
-        #cashout-popup, #eaten-popup { position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 90%; max-width: 320px; padding: 18px 20px; border-radius: 15px; font-weight: 900; text-align: center; z-index: 10001; display: none; box-shadow: 0 10px 40px rgba(0,0,0,0.5); animation: popIn 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
-        #cashout-popup { background: #22c55e; color: white; }
-        #eaten-popup { background: #ef4444; color: white; }
-        @keyframes popIn { from { transform: translate(-50%, -50%) scale(0.7); opacity: 0; } to { transform: translate(-50%, -50%) scale(1); opacity: 1; } }
-        select { background: #1e2329; color: #f0b90b; border: 1px solid #2d3339; border-radius: 8px; font-weight: 900; outline: none; }
+        #cashout-popup, #eaten-popup { position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 90%; max-width: 320px; padding: 18px 20px; border-radius: 15px; font-weight: 900; text-align: center; z-index: 10001; display: none; box-shadow: 0 10px 40px rgba(0,0,0,0.5); }
+        #cashout-popup { background: #22c55e; color: white; } #eaten-popup { background: #ef4444; color: white; }
+        .history-pill-item { width: calc(10% - 4px); text-align: center; font-size: 9px; font-weight: 900; padding: 4px 0; border-radius: 4px; flex-shrink: 0; }
+        .pill-white { color: #FFFFFF; } .pill-gray { color: #808080; } .pill-green { color: #008000; } .pill-yellow { color: #FFFF00; }
+        #s-bubble { position: fixed; width: 80px; height: 80px; z-index: 9999; cursor: pointer; display: none; }
     </style>
 </head>
 <body>
 
+<div id="s-bubble" onclick="popBubble()"><div class="s-logo-wrapper" style="width: 100%; height: 100%; margin: 0;"><span class="s-logo-inner" style="font-size: 40px;">S</span></div></div>
 <div id="cashout-popup">
     <div class="text-[12px] uppercase tracking-widest opacity-90 mb-1">Successful Cash Out</div>
-    <div id="cashout-msg-amount" class="text-2xl font-black">0.0000 USDT</div>
+    <div id="cashout-msg-amount" class="text-2xl font-black">0.000000 SMAT</div>
 </div>
-
-<div id="eaten-popup">
-    <div class="text-xl font-black italic">Jojo Took All!</div>
-    <div class="text-[10px] mt-1 opacity-80 uppercase tracking-tighter">Yahoooo....</div>
-</div>
+<div id="eaten-popup"><div class="text-xl font-black italic">Jojo Took All!</div></div>
 
 <div class="app-container">
     <div class="p-5 flex justify-between items-center border-b border-gray-800/50 mb-2">
         <div class="flex items-center">
             <div class="s-logo-wrapper"><span class="s-logo-inner">S</span></div>
-            <div>
-                <h1 class="header-title text-white">SMAT EXPLORER</h1>
-                <p class="text-[9px] text-yellow-500 font-black tracking-[2px] -mt-1 uppercase">Crash Arena</p>
-            </div>
+            <div><h1 class="header-title text-white">SMAT EXPLORER</h1><p class="text-[9px] text-yellow-500 font-black tracking-[2px] -mt-1 uppercase">Crash Arena</p></div>
         </div>
-        <div class="flex items-center gap-2">
-            <div id="sound-toggle" onclick="toggleSound()" class="bg-[#1e2329] w-8 h-8 rounded-lg flex items-center justify-center border border-gray-700 cursor-pointer">
-                <i id="sound-icon" class="fas fa-volume-up text-yellow-500 text-xs"></i>
-            </div>
-            <div class="bg-[#1e2329] px-3 py-1 rounded-lg border border-gray-700">
-                <span id="balance-display" class="text-[12px] font-black text-yellow-500">0.0000 USDT</span>
-            </div>
+        <div class="bg-[#1e2329] px-3 py-1 rounded-lg border border-gray-700 shadow-inner">
+            <span id="balance-display" class="text-[12px] font-black text-yellow-500">0.000000 SMAT</span>
         </div>
     </div>
 
-    <div class="dot-container" style="display: flex; align-items: center; padding: 12px; background: #1e2329; border-radius: 8px; margin: 10px 16px; border: 1px solid #2d3339; overflow: hidden;">
-        <div id="dots-wrapper"></div>
-    </div>
-
-    <div class="px-4 mb-3 flex justify-between items-center relative z-10">
-        <div class="bg-black/40 px-3 py-1 rounded-lg border border-gray-800">
-            <span class="text-[9px] text-gray-500 font-bold uppercase">Bank: </span>
-            <span id="bank-display" class="text-[10px] font-black text-blue-400">10000.0000</span>
-        </div>
-        <div class="bg-black/40 px-3 py-1 rounded-lg border border-gray-800 text-right">
-            <span class="text-[9px] text-gray-500 font-bold uppercase">Pool: </span>
-            <span id="total-pool-display" class="text-[10px] font-black text-yellow-500">0.000000</span>
-        </div>
-    </div>
+    <div class="dot-container" style="display: flex; align-items: center; padding: 12px; background: #1e2329; border-radius: 8px; margin: 10px 16px; border: 1px solid #2d3339; overflow: hidden;"><div id="dots-wrapper"></div></div>
 
     <div id="screen" class="game-screen shadow-inner">
         <a href="smatChat.html" class="chat-icon-wrapper"><i class="fas fa-comments text-yellow-500"></i></a>
         <div id="multiplier">1.00x</div>
         <div id="plane" class="plane-anim opacity-0">
             <div class="flame"></div>
-            <svg viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg">
-                <path d="M32,10 L42,30 L42,50 L22,50 L22,30 Z" fill="#f0b90b" />
-                <circle cx="12" cy="37" r="6" stroke="white" stroke-width="1" fill="none" opacity="0.5" />
-            </svg>
+            <svg viewBox="0 0 64 64"><path d="M32,10 L42,30 L42,50 L22,50 L22,30 Z" fill="#f0b90b" /></svg>
         </div>
         <div class="grid-lines"></div>
-        <div id="countdown-overlay">
-            <div class="text-yellow-500 font-black text-xs uppercase mb-2 animate-pulse">Next bet starts in</div>
-            <div id="timer-num" class="text-6xl font-black text-white">10</div>
-        </div>
+        <div id="countdown-overlay"><div id="timer-num" class="text-6xl font-black text-white">10</div></div>
     </div>
 
-    <div id="history-pills" class="mt-2"></div>
+    <div id="history-pills" class="mt-2 px-4 flex flex-wrap gap-1"></div>
 
     <div class="mt-4 px-4 space-y-3">
         <div class="grid grid-cols-2 gap-3">
             <div class="bg-[#1e2329] p-3 rounded-xl border border-[#2d3339]">
-                <label class="text-[8px] text-gray-500 font-bold uppercase block mb-1">Asset & Amount</label>
-                <div class="flex items-center gap-2">
-                    <select id="asset-selector" onchange="switchAsset()" class="p-1 text-xs">
-                        <option value="usdt_balance">USDT</option>
-                        <option value="bnb_balance">BNB</option>
-                        <option value="eth_balance">ETH</option>
-                        <option value="oxsmat_balance">oxSMAT</option>
-                    </select>
-                    <input id="bet-amount" type="number" value="10" class="w-full bg-transparent font-black text-lg outline-none text-yellow-500">
-                </div>
+                <input id="bet-amount" type="number" value="10" step="0.000001" class="w-full bg-transparent font-black text-lg outline-none text-yellow-500">
             </div>
             <div class="bg-[#1e2329] p-3 rounded-xl border border-[#2d3339]">
-                <label class="text-[8px] text-gray-500 font-bold uppercase block mb-1">Auto Exit</label>
-                <input id="auto-cashout" type="number" step="0.1" placeholder="2.00" class="w-full bg-transparent font-black text-lg outline-none text-blue-400">
+                <input id="auto-cashout" type="text" placeholder="∞" class="w-full bg-transparent font-black text-lg outline-none text-blue-400">
             </div>
         </div>
-        <button id="action-btn" onclick="handleActionButton()" class="w-full bg-yellow-500 text-black py-4 rounded-xl font-black text-xl shadow-lg active:scale-95 transition-all">PLACE BET</button>
+        <button id="action-btn" onclick="placeBet()" class="w-full bg-yellow-500 text-black py-4 rounded-xl font-black text-xl">PLACE BET</button>
     </div>
 </div>
 
 <script>
-    // --- Firebase Setup ---
-    const firebaseConfig = {
-        apiKey: "AIzaSyAMxtJedkehhxJRMPZLjhpKHqneHEWsGlE",
-        authDomain: "smat-exchange.firebaseapp.com",
-        projectId: "smat-exchange",
-        databaseURL: "https://smat-exchange-default-rtdb.firebaseio.com",
-        appId: "1:836334569396:web:679effe640b3453412d4e1"
-    };
-    firebase.initializeApp(firebaseConfig);
-    const db = firebase.database();
-    const auth = firebase.auth();
-
-    let currentUser = null;
-    let currentAsset = "usdt_balance";
-    let balances = { usdt_balance: 0, bnb_balance: 0, eth_balance: 0, oxsmat_balance: 0 };
-    let isRunning = false, hasBet = false, hasCashed = false;
-    let betAmt = 0, currentMultiplier = 1.00, gameLoop;
-
-    auth.onAuthStateChanged(user => {
-        currentUser = user;
-        if (user) initGameSync(user);
-        else updateUI(); // লগইন না থাকলে 0 দেখাবে
-    });
-
-    function initGameSync(user) {
-        db.ref('users/' + user.uid).on('value', snap => {
-            const data = snap.val();
-            if (data) {
-                balances = {
-                    usdt_balance: parseFloat(data.usdt_balance || 0),
-                    bnb_balance: parseFloat(data.bnb_balance || 0),
-                    eth_balance: parseFloat(data.eth_balance || 0),
-                    oxsmat_balance: parseFloat(data.oxsmat_balance || 0)
-                };
-                updateUI();
-            }
-        });
-
-        db.ref('game_state/crash').on('value', snap => {
-            const state = snap.val();
-            if (state) syncGameState(state);
-        });
-
-        db.ref('game_history/crash').limitToLast(16).on('value', snap => {
-            const history = Object.values(snap.val() || {});
-            renderHistory(history);
-        });
-    }
-
-    function switchAsset() {
-        currentAsset = document.getElementById('asset-selector').value;
-        updateUI();
-    }
+    // --- AUTH & BALANCE CHECK (আপনার রিকোয়ারমেন্ট অনুযায়ী) ---
+    // ধরি 'isLoggedIn' কি-তে চেক হবে। আপনি চাইলে আপনার আসল চাবি ব্যবহার করতে পারেন।
+    let isLoggedIn = localStorage.getItem('isLoggedIn') === 'true';
+    let smatBalance = isLoggedIn ? (parseFloat(localStorage.getItem('smatBalance')) || 1000.00) : 0.00;
+    
+    let bankBalance = parseFloat(localStorage.getItem('bankBalance')) || 10000.00;
+    let currentMultiplier = 1.00, isRunning = false, hasBet = false, hasCashed = false;
+    let betAmt = 0, crashAt = 0, gameLoop, under2xStreak = 0, over2xStreak = 0;
+    let crashHistoryDots = JSON.parse(localStorage.getItem('crashHistoryDots')) || [];
 
     function updateUI() {
-        const val = balances[currentAsset] || 0;
-        const sym = currentAsset.split('_')[0].toUpperCase();
-        document.getElementById('balance-display').innerText = val.toFixed(4) + " " + sym;
+        document.getElementById('balance-display').innerText = smatBalance.toFixed(6) + " SMAT";
+        if(isLoggedIn) localStorage.setItem('smatBalance', smatBalance);
+        renderDots();
     }
 
-    function syncGameState(state) {
-        window.serverMultiplier = state.current_multiplier;
-        if (state.status === 'running') { if (!isRunning) startFlight(); }
-        else if (state.status === 'crashed') { if (isRunning) doCrash(state.last_crash); }
-        else if (state.status === 'waiting') showCountdown(state.timer);
+    // --- আপনার সেই ১৬টি প্রোবাবিলিটি লজিক ---
+    function calculateCrashPoint() {
+        let r = Math.random() * 100;
+        let cp = 1.00;
+        if (under2xStreak >= 8) r = 52.5 + Math.random() * 47.5; 
+        if (over2xStreak >= 7) r = Math.random() * 52.5; 
+        
+        if (r <= 5.0) cp = 1.00;
+        else if (r <= 10.0) cp = 1.01 + Math.random() * 0.08;
+        else if (r <= 15.0) cp = 1.10 + Math.random() * 0.09;
+        else if (r <= 20.0) cp = 1.20 + Math.random() * 0.09;
+        else if (r <= 25.0) cp = 1.30 + Math.random() * 0.09;
+        else if (r <= 30.0) cp = 1.40 + Math.random() * 0.09;
+        else if (r <= 34.5) cp = 1.50 + Math.random() * 0.09;
+        else if (r <= 39.0) cp = 1.60 + Math.random() * 0.09;
+        else if (r <= 43.5) cp = 1.70 + Math.random() * 0.09;
+        else if (r <= 48.0) cp = 1.80 + Math.random() * 0.09;
+        else if (r <= 52.5) cp = 1.90 + Math.random() * 0.09;
+        else if (r <= 62.5) cp = 2.00 + Math.random() * 0.49;
+        else if (r <= 69.5) cp = 2.50 + Math.random() * 0.24;
+        else if (r <= 76.5) cp = 2.75 + Math.random() * 0.24;
+        else if (r <= 81.5) cp = 3.00 + Math.random() * 0.49;
+        else if (r <= 83.7) cp = 3.50 + Math.random() * 0.49;
+        else if (r <= 85.9) cp = 4.00 + Math.random() * 0.49;
+        else if (r <= 88.1) cp = 4.50 + Math.random() * 0.49;
+        else if (r <= 90.1) cp = 5.00 + Math.random() * 0.49;
+        else if (r <= 91.6) cp = 5.50 + Math.random() * 0.49;
+        else if (r <= 93.1) cp = 6.00 + Math.random() * 0.99;
+        else if (r <= 94.6) cp = 7.00 + Math.random() * 2.99;
+        else if (r <= 95.6) cp = 10.00 + Math.random() * 4.99;
+        else if (r <= 96.6) cp = 15.00 + Math.random() * 4.99;
+        else if (r <= 97.1) cp = 20.00 + Math.random() * 4.99;
+        else if (r <= 97.6) cp = 25.00 + Math.random() * 24.99;
+        else if (r <= 98.1) cp = 50.00 + Math.random() * 24.99;
+        else if (r <= 98.35) cp = 75.00 + Math.random() * 24.99;
+        else if (r <= 98.60) cp = 100.00 + Math.random() * 49.99;
+        else if (r <= 98.85) cp = 150.00 + Math.random() * 99.99;
+        else if (r <= 99.10) cp = 250.00 + Math.random() * 249.99;
+        else if (r <= 99.225) cp = 500.00 + Math.random() * 249.99;
+        else if (r <= 99.35) cp = 750.00 + Math.random() * 249.99;
+        else if (r <= 99.475) cp = 1000.00 + Math.random() * 499.99;
+        else if (r <= 99.60) cp = 1500.00 + Math.random() * 499.99;
+        else if (r <= 99.70) cp = 2000.00 + Math.random() * 499.99;
+        else if (r <= 99.80) cp = 2500.00 + Math.random() * 2499.99;
+        else if (r <= 99.85) cp = 5000.00 + Math.random() * 4999.99;
+        else if (r <= 99.90) cp = 10000.00 + Math.random() * 14999.99;
+        else if (r <= 99.93) cp = 25000.00 + Math.random() * 24999.99;
+        else if (r <= 99.96) cp = 50000.00 + Math.random() * 49999.99;
+        else if (r <= 99.98) cp = 100000.00 + Math.random() * 99999.99;
+        else cp = 200000.00 + Math.random() * 799999.99;
+
+        if (cp >= 2) { over2xStreak++; under2xStreak = 0; }
+        else { under2xStreak++; over2xStreak = 0; }
+        return parseFloat(cp.toFixed(2));
     }
 
-    function showCountdown(t) {
-        isRunning = false; hasCashed = false;
-        document.getElementById('countdown-overlay').style.display = 'flex';
-        document.getElementById('timer-num').innerText = t;
-        if (!hasBet) {
-            const btn = document.getElementById('action-btn');
-            btn.disabled = false; btn.innerText = "PLACE BET";
-            btn.className = "w-full bg-yellow-500 text-black py-4 rounded-xl font-black text-xl shadow-lg";
-        }
-    }
-
-    function startFlight() {
-        isRunning = true;
-        document.getElementById('countdown-overlay').style.display = 'none';
-        document.getElementById('plane').style.opacity = "1";
-        document.getElementById('multiplier').classList.remove('crashed-text');
-        if (hasBet) {
-            const btn = document.getElementById('action-btn');
-            btn.innerText = "CASH OUT";
-            btn.className = "w-full bg-green-500 text-white py-4 rounded-xl font-black text-xl";
-        }
-        clearInterval(gameLoop);
-        gameLoop = setInterval(() => {
-            currentMultiplier = window.serverMultiplier || 1.00;
-            document.getElementById('multiplier').innerText = currentMultiplier.toFixed(2) + "x";
-            let x = Math.min((currentMultiplier - 1) * 30, 250), y = Math.min((currentMultiplier - 1) * 50, 180);
-            document.getElementById('plane').style.transform = `translate(${x}px, -${y}px)`;
-            let auto = parseFloat(document.getElementById('auto-cashout').value);
-            if (hasBet && !hasCashed && auto > 1 && currentMultiplier >= auto) manualCashOut();
-        }, 100);
-    }
-
-    function doCrash(val) {
-        clearInterval(gameLoop); isRunning = false;
-        const m = document.getElementById('multiplier');
-        m.innerText = val.toFixed(2) + "x CRASHED";
-        m.classList.add('crashed-text');
-        document.getElementById('plane').style.opacity = "0";
-        if (hasBet && !hasCashed) {
-            document.getElementById('eaten-popup').style.display = 'block';
-            setTimeout(() => document.getElementById('eaten-popup').style.display = 'none', 2000);
-        }
-        hasBet = false;
-        const btn = document.getElementById('action-btn');
-        btn.disabled = true; btn.innerText = "CRASHED";
-        btn.className = "w-full bg-gray-800 text-red-500 py-4 rounded-xl font-black text-xl";
-    }
-
-    function handleActionButton() {
-        if (!currentUser) return window.location.href = "logIn.html";
-        if (!isRunning && !hasBet) placeBet();
-        else if (isRunning && hasBet && !hasCashed) manualCashOut();
-    }
-
-    async function placeBet() {
+    function placeBet() {
+        // লগইন না থাকলে রিডাইরেক্ট
+        if (!isLoggedIn) { window.location.href = "logIn.html"; return; }
+        
+        if(isRunning || hasBet) return;
         const val = parseFloat(document.getElementById('bet-amount').value);
-        if (val <= 0 || val > balances[currentAsset]) return alert("Check Balance!");
-        await db.ref(`users/${currentUser.uid}/${currentAsset}`).transaction(c => (c || 0) - val);
-        hasBet = true; betAmt = val; window.activeCoin = currentAsset;
-        const btn = document.getElementById('action-btn');
-        btn.disabled = true; btn.innerText = "WAITING...";
-    }
-
-    async function manualCashOut() {
-        if (!hasBet || hasCashed || !isRunning) return;
-        hasCashed = true;
-        const win = betAmt * currentMultiplier;
-        await db.ref(`users/${currentUser.uid}/${window.activeCoin}`).transaction(c => (c || 0) + win);
-        document.getElementById('cashout-msg-amount').innerText = win.toFixed(4) + " " + window.activeCoin.split('_')[0].toUpperCase();
-        document.getElementById('cashout-popup').style.display = 'block';
-        setTimeout(() => document.getElementById('cashout-popup').style.display = 'none', 3000);
-        document.getElementById('action-btn').innerText = "SUCCESS!";
+        if(smatBalance < val || val <= 0) return alert("Check Balance");
+        
+        betAmt = val; smatBalance -= val; hasBet = true;
+        updateUI();
+        document.getElementById('action-btn').innerText = "WAITING...";
         document.getElementById('action-btn').disabled = true;
     }
 
-    function renderHistory(history) {
-        const dWrap = document.getElementById('dots-wrapper');
-        const pWrap = document.getElementById('history-pills');
-        dWrap.innerHTML = ""; pWrap.innerHTML = "";
-        history.forEach(v => {
-            let cls = v <= 1.2 ? 'white' : (v < 2 ? 'gray' : (v < 10 ? 'green' : 'yellow'));
-            dWrap.innerHTML += `<div class="history-dot dot-${cls}"></div>`;
-        });
-        [...history].reverse().forEach(v => {
-            let cls = v <= 1.2 ? 'white' : (v < 2 ? 'gray' : (v < 10 ? 'green' : 'yellow'));
-            pWrap.innerHTML += `<div class="history-pill-item pill-${cls}">${v.toFixed(2)}x</div>`;
+    function startFlight() {
+        isRunning = true; currentMultiplier = 1.00; crashAt = calculateCrashPoint();
+        document.getElementById('plane').style.opacity = "1";
+        const btn = document.getElementById('action-btn');
+        if(hasBet) { btn.innerText = "CASH OUT"; btn.disabled = false; btn.onclick = manualCashOut; btn.style.background = "#22c55e"; }
+        
+        gameLoop = setInterval(() => {
+            currentMultiplier += (currentMultiplier < 10 ? 0.01 : currentMultiplier * 0.005);
+            if(currentMultiplier >= crashAt) { doCrash(); return; }
+            document.getElementById('multiplier').innerText = currentMultiplier.toFixed(2) + "x";
+            
+            let moveX = Math.min((currentMultiplier-1)*30, 250);
+            let moveY = Math.min((currentMultiplier-1)*50, 180);
+            document.getElementById('plane').style.transform = `translate(${moveX}px, -${moveY}px)`;
+            
+            let auto = parseFloat(document.getElementById('auto-cashout').value);
+            if(hasBet && !hasCashed && currentMultiplier >= auto) manualCashOut();
+        }, 60);
+    }
+
+    function manualCashOut() {
+        if(!hasBet || hasCashed) return;
+        hasCashed = true; 
+        let win = betAmt * currentMultiplier; smatBalance += win; updateUI();
+        document.getElementById('cashout-popup').style.display = "block";
+        document.getElementById('cashout-msg-amount').innerText = win.toFixed(6) + " SMAT";
+        setTimeout(() => document.getElementById('cashout-popup').style.display = "none", 2000);
+        document.getElementById('action-btn').innerText = "WON!";
+        document.getElementById('action-btn').disabled = true;
+    }
+
+    function doCrash() {
+        clearInterval(gameLoop); isRunning = false;
+        const m = document.getElementById('multiplier');
+        m.innerText = crashAt.toFixed(2) + "x CRASHED"; m.classList.add('crashed-text');
+        document.getElementById('plane').style.opacity = "0";
+        if(hasBet && !hasCashed) document.getElementById('eaten-popup').style.display = "block";
+        setTimeout(() => document.getElementById('eaten-popup').style.display = "none", 2000);
+        
+        crashHistoryDots.push(crashAt);
+        if(crashHistoryDots.length > 20) crashHistoryDots.shift();
+        localStorage.setItem('crashHistoryDots', JSON.stringify(crashHistoryDots));
+        
+        setTimeout(prepareRound, 2000);
+    }
+
+    function prepareRound() {
+        isRunning = false; hasBet = false; hasCashed = false;
+        document.getElementById('multiplier').innerText = "1.00x";
+        document.getElementById('multiplier').classList.remove('crashed-text');
+        document.getElementById('countdown-overlay').style.display = "flex";
+        document.getElementById('action-btn').innerText = "PLACE BET";
+        document.getElementById('action-btn').disabled = false;
+        document.getElementById('action-btn').onclick = placeBet;
+        document.getElementById('action-btn').style.background = "#f0b90b";
+        
+        let t = 10;
+        let timer = setInterval(() => {
+            t--; document.getElementById('timer-num').innerText = t;
+            if(t <= 0) { clearInterval(timer); document.getElementById('countdown-overlay').style.display = "none"; startFlight(); }
+        }, 1000);
+        updateUI();
+    }
+
+    function renderDots() {
+        const wrap = document.getElementById('dots-wrapper');
+        wrap.innerHTML = "";
+        [...crashHistoryDots].reverse().forEach(v => {
+            let cls = v <= 1.2 ? 'dot-white' : (v < 2 ? 'dot-gray' : (v < 10 ? 'dot-green' : 'dot-yellow'));
+            wrap.innerHTML += `<div class="history-dot ${cls}"></div>`;
         });
     }
 
-    function toggleSound() {
-        let icon = document.getElementById('sound-icon');
-        icon.className = icon.className.includes('up') ? 'fas fa-volume-mute text-red-500 text-xs' : 'fas fa-volume-up text-yellow-500 text-xs';
-    }
+    window.onload = () => { updateUI(); prepareRound(); };
 </script>
 </body>
 </html>
