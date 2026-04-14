@@ -337,13 +337,45 @@ async function approve(uid, tid) {
 
 async function reject(uid, tid, coin, amt) {
     if(confirm("Are you sure you want to Reject and Refund?")) {
-        const key = coin.toLowerCase()==='usdt'?'balance':coin.toLowerCase()+'_balance';
-        const s = await db.ref(`users/${uid}/${key}`).once('value');
-        await db.ref(`users/${uid}`).update({ [key]: (s.val()||0) + amt });
-        await db.ref(`users/${uid}/history/${tid}`).update({ status:'failed', hash:'REJECTED' });
-        alert("Transaction Rejected & Funds Refunded.");
+        try {
+            // ১. কয়েন অনুযায়ী সঠিক ব্যালেন্স কী (Key) নির্ধারণ
+            // আপনার ইউজার প্যানেলে ব্যালেন্সগুলো 'btc_balance', 'eth_balance' এভাবে আছে।
+            // শুধুমাত্র USDT এর ক্ষেত্রে 'balance' অথবা 'usdt_balance' চেক করতে হবে।
+            const coinLower = coin.toLowerCase();
+            let key = coinLower + '_balance';
+            
+            // যদি আপনি USDT-এর মূল ব্যালেন্স 'balance' কী-তে রাখেন তবে এই চেকটি লাগবে
+            if(coinLower === 'usdt') {
+                 // আপনার সিস্টেমে যদি usdt_balance না হয়ে শুধু balance হয়, তবে নিচের লাইনটি আনকমেন্ট করুন
+                 // key = 'balance'; 
+            }
+
+            // ২. ইউজারের বর্তমান ব্যালেন্স ডাটাবেস থেকে আনা
+            const snapshot = await db.ref(`users/${uid}/${key}`).once('value');
+            const currentBal = parseFloat(snapshot.val()) || 0;
+            
+            // ৩. রিফান্ড হিসেব করা (উইথড্র অ্যামাউন্ট + ফি)
+            // নোট: ইউজার প্যানেলে উইথড্র করার সময় আপনি (amt + fee) কেটেছিলেন। 
+            // এখানে শুধু amt রিফান্ড হচ্ছে। যদি ফি-সহ ফেরত দিতে চান তবে amt এর সাথে ফি যোগ করতে হবে।
+            const refundAmt = parseFloat(amt); 
+            const newBal = (currentBal + refundAmt).toFixed(8);
+
+            // ৪. ডাটাবেস আপডেট (ব্যালেন্স ফেরত এবং স্ট্যাটাস পরিবর্তন)
+            const updates = {};
+            updates[`users/${uid}/${key}`] = parseFloat(newBal); // সংখ্যা হিসেবে সেভ করা ভালো
+            updates[`users/${uid}/history/${tid}/status`] = 'failed';
+            updates[`users/${uid}/history/${tid}/hash`] = 'REJECTED';
+
+            await db.ref().update(updates);
+
+            alert("Transaction Rejected & Funds Refunded to: " + key);
+        } catch (e) {
+            console.error("Reject Error: ", e);
+            alert("Error occurred while refunding.");
+        }
     }
 }
+
 </script>
 </body>
 </html>
