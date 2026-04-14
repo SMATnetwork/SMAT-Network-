@@ -255,6 +255,7 @@ function init() {
 }
 
 function updateUI() {
+    // ১. ডাটা প্রসেসিং এবং সর্টিং
     const sorted = GLOBAL_COINS.map(c => {
         const s = c.sym.toLowerCase();
         const price = livePrices[s]?.price || c.price;
@@ -262,17 +263,34 @@ function updateUI() {
         return { ...c, price, bal, val: bal * price };
     }).sort((a,b) => b.val - a.val);
 
+    // ২. অ্যাসেট লিস্ট রেন্ডারিং
     document.getElementById('assetList').innerHTML = sorted.map(c => `
         <div class="asset-card" onclick="openActionPopup('${c.sym.toLowerCase()}', 'all')">
-            <div class="a-logo"><img src="assets/logos/${c.sym.toLowerCase()}.png"></div>
-            <div style="flex:1"><h4>${c.sym.toUpperCase()}</h4><p style="font-size:11px; color:var(--text-sec)">$${formatPrice(c.price)}</p></div>
-            <div style="text-align:right"><b>${formatAmt(c.bal)}</b><br><span style="font-size:11px; color:var(--text-sec)">$${formatAmt(c.val)}</span></div>
+            <div class="a-logo">
+                <img src="assets/logos/${c.sym.toLowerCase()}.png">
+            </div>
+            <div style="flex:1">
+                <h4>${c.sym.toUpperCase()}</h4>
+                <p style="font-size:11px; color:var(--text-sec)">
+                    $${formatPrice(c.price)}
+                </p>
+            </div>
+            <div style="text-align:right">
+                <b>${formatAmt(c.bal)}</b><br>
+                <span style="font-size:11px; color:var(--text-sec)">
+                    $${formatPrice(c.val.toFixed(4))} 
+                </span>
+            </div>
         </div>
     `).join('');
     
+    // ৩. টোটাল ব্যালেন্স ক্যালকুলেশন এবং ৪ দশমিকে ডিসপ্লে
     let total = sorted.reduce((a, b) => a + b.val, 0);
-    document.getElementById('totalBalance').innerText = formatAmt(total);
+    
+    // Total Assets Value এর জন্য ৪ দশমিক ফিক্স করা হলো
+    document.getElementById('totalBalance').innerText = formatPrice(total.toFixed(4));
 }
+
 
 function openCoinSelector(mode) {
     currentSelectorMode = mode;
