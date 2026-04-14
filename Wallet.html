@@ -181,7 +181,9 @@ function toggleFab() {
     fab.classList.toggle('active');
 }
 
-// --- CORE FUNCTIONS ---
+// --- CORE FUNCTIONS (Decimal Logic Fixed) ---
+
+// Coin Amount: সর্বোচ্চ ৮ দশমিক
 function formatAmt(num) {
     if(!num) return "0.00";
     return parseFloat(num).toLocaleString(undefined, { 
@@ -190,15 +192,16 @@ function formatAmt(num) {
     });
 }
 
+// Price & Dollar Value: ফিক্সড ৪ দশমিক
 function formatPrice(num) {
-    if(!num) return "0.00";
+    if(!num) return "0.0000";
     return parseFloat(num).toLocaleString(undefined, { 
-        minimumFractionDigits: 2, 
+        minimumFractionDigits: 4, 
         maximumFractionDigits: 4 
     });
 }
 
-// --- FIXED GRAPHIC TOAST NOTIFICATION (TOP-CENTER) ---
+// --- CUSTOM GRAPHIC TOAST NOTIFICATION ---
 function showNotify(type, title, message) {
     let container = document.getElementById('notification-container');
     if (!container) {
@@ -209,50 +212,28 @@ function showNotify(type, title, message) {
     }
 
     const toast = document.createElement('div');
-    toast.style = `
-        background: rgba(15, 15, 15, 0.98);
-        border: 1px solid var(--primary);
-        border-radius: 12px;
-        padding: 15px;
-        text-align: center;
-        box-shadow: 0 10px 30px rgba(0,0,0,0.6);
-        cursor: pointer;
-        animation: toastSlideDown 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
-    `;
-    
-    toast.onclick = function() {
-        this.style.animation = "toastSlideUp 0.3s ease forwards";
-        setTimeout(() => this.remove(), 300);
-    };
+    toast.className = 'swap-toast';
     
     let icon = 'fa-info-circle', titleColor = 'var(--primary)';
     if (type === 'success') { icon = 'fa-check-circle'; titleColor = 'var(--up)'; }
     else if (type === 'error') { icon = 'fa-times-circle'; titleColor = 'var(--down)'; }
 
     toast.innerHTML = `
-        <div style="font-weight: 800; color: ${titleColor}; margin-bottom: 5px; font-size: 14px; display: flex; align-items: center; justify-content: center; gap: 8px;">
+        <div style="font-weight: 800; color: ${titleColor}; margin-bottom: 5px; font-size: 14px; display: flex; align-items: center; gap: 8px; justify-content: center;">
             <i class="fas ${icon}"></i> ${title.toUpperCase()}
         </div>
-        <div style="font-size: 11px; color: #ccc; font-weight: 700;">${message}</div>
+        <div style="font-size: 11px; color: #ccc; font-weight: 700; text-align: center;">${message}</div>
     `;
 
     container.appendChild(toast);
 
     setTimeout(() => {
-        if(toast.parentElement) {
-            toast.style.animation = "toastSlideUp 0.4s ease forwards";
-            setTimeout(() => toast.remove(), 400);
-        }
+        toast.style.opacity = '0';
+        toast.style.transform = 'translateY(-20px)';
+        toast.style.transition = 'all 0.5s ease';
+        setTimeout(() => toast.remove(), 500);
     }, 5000);
 }
-
-// Inject Toast Animations
-const toastStyle = document.createElement('style');
-toastStyle.innerHTML = `
-    @keyframes toastSlideDown { from { opacity:0; transform:translateY(-40px); } to { opacity:1; transform:translateY(0); } }
-    @keyframes toastSlideUp { from { opacity:1; transform:translateY(0); } to { opacity:0; transform:translateY(-40px); } }
-`;
-document.head.appendChild(toastStyle);
 
 // Firebase Initialization
 const firebaseConfig = { apiKey: "AIzaSyAMxtJedkehhxJRMPZLjhpKHqneHEWsGlE", authDomain: "smat-exchange.firebaseapp.com", projectId: "smat-exchange", databaseURL: "https://smat-exchange-default-rtdb.firebaseio.com", storageBucket: "smat-exchange.appspot.com", messagingSenderId: "836334569396", appId: "1:836334569396:web:679effe640b3453412d4e1" };
@@ -288,13 +269,13 @@ function updateUI() {
             </div>
             <div style="text-align:right">
                 <b>${formatAmt(c.bal)}</b><br>
-                <span style="font-size:11px; color:var(--text-sec)">$${formatPrice(c.val.toFixed(4))}</span>
+                <span style="font-size:11px; color:var(--text-sec)">$${formatPrice(c.val)}</span>
             </div>
         </div>
     `).join('');
     
     let total = sorted.reduce((a, b) => a + b.val, 0);
-    document.getElementById('totalBalance').innerText = formatPrice(total.toFixed(4));
+    document.getElementById('totalBalance').innerText = formatPrice(total);
 }
 
 function openCoinSelector(mode) {
@@ -334,6 +315,7 @@ function openActionPopup(sym, mode) {
     document.getElementById('depAddr').innerText = userData.depositAddress || "0xLoading...";
     
     const fee = 0.25 / price;
+    // Withdraw-এ ব্যালেন্স থেকে ফি বাদ দিয়ে দেখানো (৮ দশমিক)
     document.getElementById('availWith').innerText = formatAmt(Math.max(0, bal - fee));
     document.getElementById('availTrans').innerText = formatAmt(bal);
 
@@ -389,18 +371,8 @@ function openHistory() {
             }
 
             let typeIcon = 'fa-exchange-alt', typeColor = 'var(--primary)';
-            let methodTitle = item.method ? item.method.toUpperCase() : "TRANSACTION";
-            
-            if (item.method && item.method.toLowerCase().includes('deposit')) { typeIcon = 'fa-plus-circle'; typeColor = 'var(--up)'; }
-            else if (item.method && item.method.toLowerCase().includes('withdraw')) { typeIcon = 'fa-arrow-up-right-from-square'; typeColor = 'var(--down)'; }
-
-            let displayNet = item.network;
-            if(!displayNet) {
-                if(item.method === 'Internal Transfer') displayNet = 'Internal';
-                else if(item.method === 'Swap') displayNet = 'Internal Swap';
-                else displayNet = 'Blockchain';
-            }
-            const displayAddr = item.address || 'N/A';
+            if (item.method.toLowerCase().includes('deposit')) { typeIcon = 'fa-plus-circle'; typeColor = 'var(--up)'; }
+            else if (item.method.toLowerCase().includes('withdraw')) { typeIcon = 'fa-arrow-up-right-from-square'; typeColor = 'var(--down)'; }
 
             let hashHtml = '';
             if (item.hash && item.hash !== '...' && item.hash !== 'Null') {
@@ -413,21 +385,21 @@ function openHistory() {
                 <div class="hist-card" style="border-left-color: ${typeColor};">
                     <div style="display:flex; justify-content:space-between; align-items:flex-start;">
                         <div>
-                            <span style="color:${typeColor}; font-weight:bold; font-size:12px;"><i class="fas ${typeIcon}"></i> ${methodTitle}</span>
+                            <span style="color:${typeColor}; font-weight:bold; font-size:12px;"><i class="fas ${typeIcon}"></i> ${item.method.toUpperCase()}</span>
                             <div style="font-size:9px; color:var(--text-sec); margin-top:2px;">${new Date(item.timestamp).toLocaleString()}</div>
                         </div>
                         <span style="font-size:10px; padding:2px 6px; border-radius:4px; background:rgba(255,255,255,0.05); color:${item.status==='success'?'var(--up)':'var(--primary)'}">
-                            ${item.status==='pending'?'<i class="fas fa-spinner status-spin"></i>':''} ${item.status ? item.status.toUpperCase() : 'UNKNOWN'}
+                            ${item.status==='pending'?'<i class="fas fa-spinner status-spin"></i>':''} ${item.status.toUpperCase()}
                         </span>
                     </div>
                     <div style="display:grid; grid-template-columns: 1fr 1fr; gap:8px; margin-top:10px; padding-top:8px; border-top:1px solid rgba(255,255,255,0.03);">
-                        <div><p style="font-size:9px; color:var(--text-sec)">Amount</p><b>${formatAmt(item.amount)} ${item.coin || ''}</b></div>
-                        <div style="text-align:right"><p style="font-size:9px; color:var(--text-sec)">Network</p><b>${displayNet}</b></div>
+                        <div><p style="font-size:9px; color:var(--text-sec)">Amount</p><b>${formatAmt(item.amount)} ${item.coin}</b></div>
+                        <div style="text-align:right"><p style="font-size:9px; color:var(--text-sec)">Network</p><b>${item.network}</b></div>
                         <div style="grid-column: span 2;">
                             <p style="font-size:9px; color:var(--text-sec)">Address/Target</p>
                             <div style="display:flex; justify-content:space-between; font-size:10px;">
-                                <span style="font-family:monospace;">${displayAddr}</span>
-                                <i class="fas fa-copy" onclick="copyValueText('${displayAddr}')" style="color:var(--primary); cursor:pointer;"></i>
+                                <span style="font-family:monospace;">${item.address}</span>
+                                <i class="fas fa-copy" onclick="copyValueText('${item.address}')" style="color:var(--primary); cursor:pointer;"></i>
                             </div>
                             ${hashHtml} 
                         </div>
@@ -438,60 +410,56 @@ function openHistory() {
     });
 }
 
+// --- PROCESSORS ---
 async function processWithdraw() {
-    const amtInput = document.getElementById('withAmt').value;
-    const addr = document.getElementById('withAddr').value.trim();
-    const amt = parseFloat(amtInput);
+    const amt = parseFloat(document.getElementById('withAmt').value);
+    const addr = document.getElementById('withAddr').value;
     const s = document.getElementById('popCoinName').innerText.toLowerCase();
     const bal = parseFloat(userData[s + '_balance']) || 0;    
-    const price = livePrices[s]?.price || 1;
-    const fee = 0.25 / price;
+    const price = livePrices[s]?.price || 1, fee = 0.25 / price;
 
-    if (!addr) return showNotify('error', 'Withdrawal Failed', 'Please enter a recipient address!');
-    if (isNaN(amt) || amt <= 0) return showNotify('error', 'Withdrawal Failed', 'Please enter a valid amount!');
-    if ((amt + fee) > bal) return showNotify('error', 'Withdrawal Failed', 'Insufficient Balance! (You need to cover the fee: ' + fee.toFixed(8) + ')');
+    if(!addr || isNaN(amt) || amt <= 0) return showNotify('error', 'Failed', 'Invalid Details!');
+    if((amt + fee) > bal) return showNotify('error', 'Failed', 'Insufficient Balance!');
 
     try {
-        const newBalance = parseFloat((bal - (amt + fee)).toFixed(8));
         const txId = db.ref('transactions').push().key;
         const data = { method: 'Withdraw', coin: s.toUpperCase(), amount: amt, network: document.getElementById('withNet').value, address: addr, status: 'pending', timestamp: Date.now(), hash: '...' };
-        await db.ref('users/' + auth.currentUser.uid).update({ [s + '_balance']: newBalance });    
+        
+        await db.ref('users/' + auth.currentUser.uid).update({ [s + '_balance']: (bal - (amt + fee)).toFixed(8) });    
         await db.ref('users/' + auth.currentUser.uid + '/history/' + txId).set(data);
-        showNotify('success', 'Submitted', 'Your withdrawal request has been submitted successfully!');
+        showNotify('success', 'Submitted', 'Withdrawal request sent!');
         hidePopup();
-    } catch (e) { showNotify('error', 'System Error', 'Error processing withdrawal.'); }
+    } catch(e) { showNotify('error', 'System Error', 'Try again later.'); }
 }
 
 async function processTransfer() {
     const amt = parseFloat(document.getElementById('transAmt').value);
-    const target = document.getElementById('transTarget').value.trim();
+    const target = document.getElementById('transTarget').value;
     const s = document.getElementById('popCoinName').innerText.toLowerCase();
     const bal = parseFloat(userData[s + '_balance']) || 0;    
 
-    if(!target || isNaN(amt) || amt <= 0 || amt > bal) return showNotify('error', 'Transfer Failed', 'Check recipient or amount!');
+    if(!target || isNaN(amt) || amt <= 0 || amt > bal) return showNotify('error', 'Failed', 'Check amount or recipient!');
 
     try {
-        const newBalance = parseFloat((bal - amt).toFixed(8));
         const txId = db.ref('transactions').push().key;
         const data = { method: 'Internal Transfer', coin: s.toUpperCase(), amount: amt, network: 'Internal', address: target, status: 'success', timestamp: Date.now(), hash: 'Null' };
-        await db.ref('users/' + auth.currentUser.uid).update({ [s + '_balance']: newBalance });    
+        
+        await db.ref('users/' + auth.currentUser.uid).update({ [s + '_balance']: (bal - amt).toFixed(8) });    
         await db.ref('users/' + auth.currentUser.uid + '/history/' + txId).set(data);
-        showNotify('success', 'Transfer Successful', 'Sent ' + amt + ' ' + s.toUpperCase() + ' successfully!'); 
+        showNotify('success', 'Sent', 'Transfer successful!'); 
         hidePopup();
-    } catch (e) { showNotify('error', 'System Error', 'Error processing transfer.'); }
+    } catch(e) { showNotify('error', 'System Error', 'Try again later.'); }
 }
 
 function hidePopup() { document.getElementById('actionOverlay').style.display = 'none'; }
 function closeHistory() { document.getElementById('historyPopup').style.display = 'none'; }
 function closeSelector() { document.getElementById('coinSelector').style.display = 'none'; }
-function copyValueText(t) { navigator.clipboard.writeText(t); showNotify('success', 'Copied', 'Address copied to clipboard.'); }
+function copyValueText(t) { navigator.clipboard.writeText(t); showNotify('success', 'Copied', 'Copied to clipboard!'); }
 function copyValue(id) { copyValueText(document.getElementById(id).innerText); }
 function closePopupOverlay(e) { if(e.target.id === 'actionOverlay') hidePopup(); }
 
 window.onload = init;
 </script>
-
-
 
 </body>
 </html>
