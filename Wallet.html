@@ -26,58 +26,90 @@
 
        
 
-/* Short History Table Styles */
+/* --- Optimized Responsive History Table --- */
 .hist-table-header {
     display: grid;
-    grid-template-columns: 45px 1fr 1fr 1fr 80px;
-    padding: 12px 15px;
+    /* ৫টি কলাম: লোগো+নাম (১.২ অংশ), এমাউন্ট (১ অংশ), মেথড (১ অংশ), সময় (০.৮ অংশ), অ্যাকশন (৮০ পিক্সেল ফিক্সড) */
+    grid-template-columns: 1.2fr 1fr 1fr 0.8fr 80px;
+    padding: 12px 10px;
     background: #181a20;
-    font-size: 11px;
+    font-size: 10px; /* ছোট স্ক্রিনের জন্য ফন্ট সাইজ সামান্য কমানো */
     color: var(--text-sec);
     border-bottom: 1px solid var(--border);
     position: sticky;
     top: 0;
     z-index: 10;
+    text-transform: uppercase;
+    font-weight: 800;
 }
 
 .hist-row {
     display: grid;
-    grid-template-columns: 45px 1fr 1fr 1fr 80px;
-    padding: 12px 15px;
+    grid-template-columns: 1.2fr 1fr 1fr 0.8fr 80px;
+    padding: 12px 10px;
     align-items: center;
     border-bottom: 1px solid rgba(255,255,255,0.03);
-    font-size: 12px;
+    font-size: 11px;
     cursor: pointer;
+    transition: background 0.2s;
 }
 
-.hist-row:active { background: rgba(255,255,255,0.05); }
+.hist-row:active { background: rgba(255,255,255,0.08); }
 
+/* লোগো এবং নাম একসাথে দেখানোর জন্য */
+.name-col {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    overflow: hidden; /* নাম বড় হলে যেন ভেঙে না যায় */
+}
+
+.small-logo {
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    min-width: 20px; /* লোগো যেন চ্যাপ্টা না হয় */
+}
+
+/* স্ট্যাটাস ব্যাজ ফিক্স */
 .status-badge {
-    font-size: 10px;
-    padding: 4px 8px;
-    border-radius: 6px;
+    font-size: 9px;
+    padding: 3px 6px;
+    border-radius: 5px;
     text-align: center;
-    font-weight: 800;
+    font-weight: 900;
+    display: inline-block;
+    width: 100%; /* কলামের পুরো জায়গা নেবে */
 }
 
-.status-success { background: rgba(14, 203, 129, 0.1); color: var(--up); }
-.status-pending { background: rgba(240, 185, 11, 0.1); color: var(--primary); }
-.status-failed { background: rgba(246, 70, 93, 0.1); color: var(--down); }
+.status-success { background: rgba(14, 203, 129, 0.15); color: var(--up); }
+.status-pending { background: rgba(240, 185, 11, 0.15); color: var(--primary); }
+.status-failed { background: rgba(246, 70, 93, 0.15); color: var(--down); }
 
-/* Details Popup inside History */
+/* Details Popup (Responsive) */
 .details-overlay {
     position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-    background: rgba(0,0,0,0.8); z-index: 8000;
-    display: none; align-items: center; justify-content: center; padding: 20px;
+    background: rgba(0,0,0,0.85); z-index: 8000;
+    display: none; align-items: center; justify-content: center; padding: 15px;
 }
 .details-card {
-    background: #1e2329; width: 100%; max-width: 350px;
-    border-radius: 20px; padding: 20px; border: 1px solid var(--border);
+    background: #1e2329; width: 100%; max-width: 360px;
+    border-radius: 24px; padding: 25px; border: 1px solid var(--border);
+    box-shadow: 0 20px 40px rgba(0,0,0,0.6);
 }
 .detail-item {
-    display: flex; justify-content: space-between; margin-bottom: 12px;
-    font-size: 12px; border-bottom: 1px border dashed rgba(255,255,255,0.05);
-    padding-bottom: 5px;
+    display: flex; justify-content: space-between; margin-bottom: 14px;
+    font-size: 12px; border-bottom: 1px dashed rgba(255,255,255,0.05);
+    padding-bottom: 6px;
+}
+
+/* অত্যন্ত ছোট স্ক্রিনের জন্য (যেমন: iPhone SE বা ছোট ফোন) */
+@media (max-width: 360px) {
+    .hist-table-header, .hist-row {
+        grid-template-columns: 1fr 0.8fr 0.8fr 60px; /* ছোট স্ক্রিনে টাইম কলাম হাইড করতে পারেন বা মেথড ছোট করতে পারেন */
+        font-size: 9px;
+    }
+    .hist-time-col { display: none; } /* একদম ছোট ফোনে সময় হাইড করা ভালো */
 }
 
 
@@ -435,20 +467,23 @@ function openHistory() {
     document.getElementById('historyPopup').style.display = 'flex';
     const cont = document.getElementById('histContent');
     
-    // Table Header
+    // ৫টি কলাম বিশিষ্ট রেসপনসিভ হেডার (CSS এর grid-template-columns এর সাথে মিল রেখে)
     let html = `
         <div class="hist-table-header">
-            <span>LOGO</span>
-            <span>NAME</span>
-            <span>AMOUNT</span>
-            <span>METHOD</span>
-            <span style="text-align:right">ACTION</span>
+            <span>Name</span>
+            <span>Amount</span>
+            <span>Method</span>
+            <span class="hist-time-col">Time</span>
+            <span style="text-align:right">Action</span>
         </div>
     `;
 
     db.ref('users/' + auth.currentUser.uid + '/history').on('value', snap => {
         const data = snap.val();
-        if(!data) { cont.innerHTML = html + "<p style='text-align:center; color:var(--text-sec); padding:40px;'>No history found.</p>"; return; }
+        if(!data) { 
+            cont.innerHTML = html + "<p style='text-align:center; color:var(--text-sec); padding:40px;'>No history found.</p>"; 
+            return; 
+        }
 
         const items = Object.keys(data).map(key => ({ id: key, ...data[key] })).sort((a,b) => b.timestamp - a.timestamp);
         
@@ -457,13 +492,23 @@ function openHistory() {
             const coinSym = (item.coin || 'SMAT').toLowerCase();
             const statusClass = item.status === 'success' ? 'status-success' : (item.status === 'failed' ? 'status-failed' : 'status-pending');
             const statusText = item.status === 'pending' ? '<i class="fas fa-spinner fa-spin"></i>' : item.status.toUpperCase();
+            
+            // শর্ট টাইম ফরম্যাট (যেমন: 11:09 PM)
+            const shortTime = new Date(item.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
 
             rows += `
                 <div class="hist-row" onclick='showFullDetails(${JSON.stringify(item)})'>
-                    <div class="a-logo" style="width:25px; height:25px;"><img src="assets/logos/${coinSym}.png"></div>
-                    <b style="font-size:11px;">${item.coin}</b>
-                    <b style="font-size:11px;">${parseFloat(item.amount).toFixed(4)}</b>
-                    <span style="font-size:10px; color:var(--text-sec)">${item.method}</span>
+                    <div class="name-col">
+                        <img src="assets/logos/${coinSym}.png" class="small-logo" onerror="this.src='data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjAiIGhlaWdodD0iMjAiIHZpZXdCb3g9IjAgMCAyMCAyMCIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48Y2lyY2xlIGN4PSIxMCIgY3k9IjEwIiByPSI5IiBmaWxsPSIjMzMzIi8+PC9zdmc+'">
+                        <b style="white-space: nowrap; overflow: hidden; text-overflow: ellipsis; font-size: 10px;">${item.coin}</b>
+                    </div>
+                    
+                    <b style="font-family: monospace; font-size: 11px;">${parseFloat(item.amount).toFixed(2)}</b>
+                    
+                    <span style="color: var(--text-sec); font-size: 10px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">${item.method}</span>
+                    
+                    <span class="hist-time-col" style="color: var(--text-sec); font-size: 10px;">${shortTime}</span>
+                    
                     <div style="text-align:right">
                         <span class="status-badge ${statusClass}">${statusText}</span>
                     </div>
@@ -474,23 +519,30 @@ function openHistory() {
     });
 }
 
-// বিস্তারিত পপআপ দেখানোর ফাংশন
+// বিস্তারিত পপআপ (যেখানে তারিখ এবং সময় দুটিই আলাদাভাবে থাকবে)
 function showFullDetails(item) {
     const overlay = document.getElementById('detailsOverlay');
     const cont = document.getElementById('detailsContent');
     
+    const dateObj = new Date(item.timestamp);
+    const fullDate = dateObj.toLocaleDateString(); 
+    const fullTime = dateObj.toLocaleTimeString();
+
     cont.innerHTML = `
-        <div class="detail-item"><span>Status</span><b style="color:${item.status==='success'?'#0ecb81':'#f0b90b'}">${item.status.toUpperCase()}</b></div>
+        <div class="detail-item"><span>Status</span><b style="color:${item.status==='success'?'#0ecb81': (item.status === 'failed' ? '#f6465d' : '#f0b90b')}">${item.status.toUpperCase()}</b></div>
         <div class="detail-item"><span>Method</span><b>${item.method}</b></div>
         <div class="detail-item"><span>Amount</span><b>${item.amount} ${item.coin}</b></div>
         <div class="detail-item"><span>Network</span><b>${item.network || 'Internal'}</b></div>
         <div class="detail-item"><span>Target</span><span style="font-size:10px; word-break:break-all; text-align:right; max-width:60%">${item.address || 'N/A'}</span></div>
-        <div class="detail-item"><span>Time</span><b>${new Date(item.timestamp).toLocaleString()}</b></div>
-        <div class="detail-item"><span>Transaction ID</span><b style="font-size:9px;">${item.hash || item.id}</b></div>
+        <hr style="border:0; border-top:1px dashed rgba(255,255,255,0.1); margin:12px 0;">
+        <div class="detail-item"><span>Date</span><b>${fullDate}</b></div>
+        <div class="detail-item"><span>Time</span><b>${fullTime}</b></div>
+        <div class="detail-item"><span>ID / Hash</span><b style="font-size:9px; color:var(--text-sec);">${item.hash || item.id}</b></div>
     `;
     
     overlay.style.display = 'flex';
 }
+
 
 
 // --- PROCESSORS ---
