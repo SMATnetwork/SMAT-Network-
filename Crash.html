@@ -8,93 +8,11 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     
-    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ccircle cx='50' cy='50' r='48' fill='%23F3BA2F'/%3E%3Cpath d='M30 35 C 30 25, 70 25, 70 35 L 70 45 C 70 50, 30 50, 30 55 L 30 65 C 30 75, 70 75, 70 65' stroke='white' stroke-width='10' fill='none' stroke-linecap='round'/%3E%3C/svg%3E">
-    
-    <script type="module">
-    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-    import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
-    import { getDatabase, ref, onValue, set, update, increment, push, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
-    
-    const firebaseConfig = {
-        apiKey: "AIzaSyAMxtJedkehhxJRMPZLjhpKHqneHEWsGlE",
-        authDomain: "smat-exchange.firebaseapp.com",
-        projectId: "smat-exchange",
-        databaseURL: "https://smat-exchange-default-rtdb.firebaseio.com",
-        storageBucket: "smat-exchange.firebasestorage.app",
-        messagingSenderId: "836334569396",
-        appId: "1:836334569396:web:679effe640b3453412d4e1"
-    };
-    
-    const app = initializeApp(firebaseConfig);
-    const auth = getAuth(app);
-    const db = getDatabase(app);
-
-    // Global Firebase Refs
-    window.db = db;
-    window.ref = ref;
-    window.update = update;
-    window.increment = increment;
-    window.push = push;
-    window.onValue = onValue;
-
-    onAuthStateChanged(auth, (user) => {
-        if (!user) {
-            window.location.href = "login.html";
-        } else {
-            window.currentUser = user;
-            initGameSync(user);
-        }
-    });
-
-    function initGameSync(user) {
-        // ১. ব্যালেন্স এবং প্রোফাইল সিঙ্ক
-        const userRef = ref(db, 'users/' + user.uid);
-        onValue(userRef, (snapshot) => {
-            const data = snapshot.val();
-            if (data) {
-                window.smatBalance = parseFloat(data.balance || 0);
-                document.getElementById('balance-display').innerText = window.smatBalance.toFixed(6) + " SMAT";
-            }
-        });
-
-        // ২. গ্লোবাল গেম স্টেট সিঙ্ক (গেম রান হচ্ছে কি না)
-        const gameRef = ref(db, 'game_state/crash');
-        onValue(gameRef, (snapshot) => {
-            const state = snapshot.val();
-            if (state) {
-                syncGameState(state);
-            }
-        });
-
-        // ৩. গেম হিস্ট্রি সিঙ্ক (Pills)
-        const historyRef = ref(db, 'game_history/crash');
-        onValue(historyRef, (snapshot) => {
-            const historyData = snapshot.val();
-            if (historyData) {
-                window.crashHistoryDots = Object.values(historyData).slice(-20);
-                renderDots();
-                renderHistoryPills();
-            }
-        });
-    }
-
-    function syncGameState(state) {
-        // সার্ভার থেকে আসা স্ট্যাটাস অনুযায়ী UI আপডেট
-        window.serverStatus = state.status;
-        window.serverMultiplier = state.current_multiplier;
-        
-        if(state.status === 'running') {
-            if(!window.isRunning) startFlightVisuals(state.current_multiplier);
-        } else if(state.status === 'crashed') {
-            if(window.isRunning) doCrashVisuals(state.last_crash);
-        } else if(state.status === 'waiting') {
-            showCountdown(state.timer);
-        }
-    }
-    </script>
+    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-database-compat.js"></script>
 
     <style>
-        /* আপনার দেওয়া CSS এখানে হুবহু থাকবে */
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;900&display=swap');
         body { background-color: #0b0e11; color: white; font-family: 'Inter', sans-serif; transition: 0.3s; overflow-x: hidden; width: 100%; }
         .app-container { width: 100%; min-height: 100vh; background: #0b0e11; padding-bottom: 50px; margin: 0; box-sizing: border-box; }
@@ -103,7 +21,6 @@
         .header-title { font-size: 20px; font-weight: 900; letter-spacing: -0.5px; line-height: 1; text-transform: uppercase;}
         .game-screen { height: 40vh; min-height: 280px; background: #161a1e; border: 1px solid #2d3339; border-radius: 12px; position: relative; overflow: hidden; margin: 0 16px; transition: all 0.5s ease; }
         .chat-icon-wrapper { position: absolute; top: 15px; right: 15px; z-index: 110; background: rgba(30, 35, 41, 0.8); width: 35px; height: 35px; border-radius: 8px; display: flex; align-items: center; justify-content: center; border: 1px solid rgba(240, 185, 11, 0.3); cursor: pointer; transition: 0.3s; text-decoration: none; }
-        .chat-icon-wrapper:hover { background: #f0b90b; } .chat-icon-wrapper:hover i { color: black; } .chat-icon-wrapper i { color: #f0b90b; font-size: 16px; }
         #multiplier { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); font-size: 5rem; font-weight: 900; color: #f0b90b; z-index: 50; text-shadow: 0 0 40px rgba(240, 185, 11, 0.6), 0 0 10px rgba(0,0,0,1); letter-spacing: -2px; transition: font-size 0.2s ease; }
         #multiplier.crashed-text { font-size: 6vw; letter-spacing: 0; white-space: nowrap; }
         .char-layer { position: absolute; top: 20px; left: 20px; width: 80px; height: 80px; z-index: 80; display: none; pointer-events: none; }
@@ -111,56 +28,27 @@
         .char-layer svg { width: 100%; height: 100%; animation: charFloat 2s ease-in-out infinite; }
         #dots-wrapper { display: flex; gap: 6px; flex-direction: row; justify-content: flex-start; align-items: center; overflow: hidden; width: 100%; }
         #history-pills { display: flex; flex-wrap: wrap; gap: 4px; width: calc(100% - 32px); margin: 0 16px; justify-content: flex-start; height: auto; min-height: 40px; background: none; }
-        .history-pill-item { width: calc(10% - 4px); text-align: center; font-size: 9px; font-weight: 900; padding: 4px 0; border-radius: 4px; flex-shrink: 0; }
+        .history-pill-item { width: calc(12.5% - 4px); text-align: center; font-size: 9px; font-weight: 900; padding: 4px 0; border-radius: 4px; flex-shrink: 0; }
         .history-dot { width: 15px; height: 15px; border-radius: 50%; flex-shrink: 0; }
         .dot-white { background-color: #FFFFFF; } .dot-gray { background-color: #808080; } .dot-green { background-color: #008000; } .dot-yellow { background-color: #FFFF00; }
         .pill-white { color: #FFFFFF; } .pill-gray { color: #808080;  } .pill-green { color: #008000; } .pill-yellow { color: #FFFF00;}
-        .dot-live { background: rgba(255, 255, 255, 0.2); border: 1px dashed rgba(255, 255, 255, 0.4); animation: dotPulse 1s infinite alternate; filter: blur(1px); order: -1; }
-        @keyframes dotPulse { from { opacity: 0.3; transform: scale(0.8); } to { opacity: 0.7; transform: scale(1.1); } }
-        .vfx-layer { position: absolute; inset: 0; pointer-events: none; opacity: 0; transition: opacity 1s; }
-        .rainbow-bg { background: linear-gradient(45deg, rgba(255,0,0,0.1), rgba(0,255,0,0.1), rgba(0,0,255,0.1)); animation: rotateBg 5s linear infinite; }
-        .blackhole { background: radial-gradient(circle, transparent 30%, #000 70%); animation: spin 3s linear infinite; scale: 2; }
-        @keyframes rotateBg { 0% { filter: hue-rotate(0deg); } 100% { filter: hue-rotate(360deg); } }
-        @keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
-        #cloud-layer { position: absolute; inset: -100px; background: url('https://www.transparenttextures.com/patterns/clouds.png'); opacity: 0; z-index: 5; transition: opacity 1s; }
-        .moving-clouds { animation: cloudMove 3s linear infinite; }
-        @keyframes cloudMove { from { transform: translate(0, 0); } to { transform: translate(-150px, 150px); } }
-        .y-axis, .x-axis { font-size: 10px; color: #474d57; font-weight: 900; z-index: 45; position: absolute; }
-        .y-axis { left: 8px; top: 10px; bottom: 35px; display: flex; flex-direction: column-reverse; justify-content: space-between; height: 260px; }
-        .x-axis { left: 50px; bottom: 8px; right: 15px; display: flex; justify-content: space-between; }
         .grid-lines { position: absolute; inset: -200px; background-image: linear-gradient(#23272c 1px, transparent 1px), linear-gradient(90deg, #23272c 1px, transparent 1px); background-size: 50px 50px; opacity: 0.15; z-index: 2; }
-        .moving-bg { animation: bgScroll 1s linear infinite; }
-        @keyframes bgScroll { from { transform: translate(0, 0); } to { transform: translate(-50px, 50px); } }
         .plane-anim { position: absolute; bottom: 30px; left: 45px; width: 75px; height: 75px; z-index: 30; transition: 0.05s linear; }
-        .rotor { transform-origin: center; animation: spinRotor 0.1s linear infinite; }
-        @keyframes spinRotor { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
         .flame { position: absolute; bottom: -8px; left: 50%; transform: translateX(-50%); width: 15px; height: 35px; background: linear-gradient(to bottom, #f0b90b, #ff4500, transparent); border-radius: 50%; filter: blur(4px); animation: flicker 0.1s infinite; z-index: -1; }
         @keyframes flicker { 0%, 100% { height: 35px; opacity: 0.8; } 50% { height: 45px; opacity: 1; } }
-        #origin-light { position: absolute; bottom: 35px; left: 50px; width: 12px; height: 12px; background: #f0b90b; border-radius: 50%; box-shadow: 0 0 20px #f0b90b; z-index: 40; display: none; animation: lightSpin 1s linear infinite; }
-        @keyframes lightSpin { 0% { transform: scale(1); opacity: 0.7; } 50% { transform: scale(1.8); opacity: 1; } 100% { transform: scale(1); opacity: 0.7; } }
-        .bet-container { margin-top: 20px; padding: 0 16px; }
-        .bet-header { display: grid; grid-template-columns: 1.5fr 1fr 1fr 1fr; padding: 10px 14px; background: #161a1e; border-radius: 8px 8px 0 0; border: 1px solid #2d3339; border-bottom: none; font-size: 10px; font-weight: 800; color: #5d6670; text-transform: uppercase; letter-spacing: 1px; }
-        .bet-grid-box { background: #161a1e; border: 1px solid #2d3339; border-radius: 0 0 8px 8px; overflow: hidden; }
-        .bet-row { display: grid; grid-template-columns: 1.5fr 1fr 1fr 1fr; padding: 14px; border-bottom: 1px solid rgba(45, 51, 57, 0.5); align-items: center; transition: all 0.2s ease; }
-        .player-name { font-size: 11px; font-weight: 700; color: #e1e1e1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-        .bet-value { font-size: 11px; font-weight: 800; color: #f0b90b; text-align: center; }
-        .mult-value { font-size: 11px; font-weight: 900; text-align: center; }
-        .profit-value { font-size: 11px; font-weight: 900; text-align: right; }
-        .text-win { color: #22c55e !important; } .text-loss { color: #ef4444 !important; } .text-wait { color: #5d6670; }
         #countdown-overlay { position: absolute; inset: 0; background: rgba(11,14,17,0.95); z-index: 100; display: none; flex-direction: column; align-items: center; justify-content: center; }
         #cashout-popup, #eaten-popup { position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 90%; max-width: 320px; padding: 18px 20px; border-radius: 15px; font-weight: 900; text-align: center; z-index: 10001; display: none; box-shadow: 0 10px 40px rgba(0,0,0,0.5); animation: popIn 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
         #cashout-popup { background: #22c55e; color: white; }
-        #eaten-popup { background: #ef4444; color: white; max-width: 280px; box-shadow: 0 0 30px rgba(239, 68, 68, 0.6); }
+        #eaten-popup { background: #ef4444; color: white; }
         @keyframes popIn { from { transform: translate(-50%, -50%) scale(0.7); opacity: 0; } to { transform: translate(-50%, -50%) scale(1); opacity: 1; } }
-        #sound-toggle { background: #1e2329; width: 35px; height: 35px; border-radius: 8px; border: 1px solid #2d3339; display: flex; align-items: center; justify-content: center; cursor: pointer; margin-right: 10px; }
-        #sound-toggle i { color: #f0b90b; font-size: 14px; }
+        select { background: #1e2329; color: #f0b90b; border: 1px solid #2d3339; border-radius: 8px; font-weight: 900; outline: none; }
     </style>
 </head>
 <body>
 
 <div id="cashout-popup">
     <div class="text-[12px] uppercase tracking-widest opacity-90 mb-1">Successful Cash Out</div>
-    <div id="cashout-msg-amount" class="text-2xl font-black">0.000000 SMAT</div>
+    <div id="cashout-msg-amount" class="text-2xl font-black">0.0000 USDT</div>
 </div>
 
 <div id="eaten-popup">
@@ -177,12 +65,12 @@
                 <p class="text-[9px] text-yellow-500 font-black tracking-[2px] -mt-1 uppercase">Crash Arena</p>
             </div>
         </div>
-        <div class="flex items-center">
-            <div id="sound-toggle" onclick="toggleSound()">
-                <i id="sound-icon" class="fas fa-volume-up"></i>
+        <div class="flex items-center gap-2">
+            <div id="sound-toggle" onclick="toggleSound()" class="bg-[#1e2329] w-8 h-8 rounded-lg flex items-center justify-center border border-gray-700 cursor-pointer">
+                <i id="sound-icon" class="fas fa-volume-up text-yellow-500 text-xs"></i>
             </div>
-            <div class="bg-[#1e2329] px-3 py-1 rounded-lg border border-gray-700 shadow-inner">
-                <span id="balance-display" class="text-[12px] font-black text-yellow-500">0.000000 SMAT</span>
+            <div class="bg-[#1e2329] px-3 py-1 rounded-lg border border-gray-700">
+                <span id="balance-display" class="text-[12px] font-black text-yellow-500">0.0000 USDT</span>
             </div>
         </div>
     </div>
@@ -203,224 +91,208 @@
     </div>
 
     <div id="screen" class="game-screen shadow-inner">
-        <a href="smatChat.html" class="chat-icon-wrapper"><i class="fas fa-comments"></i></a>
-        
-        <div id="char-cat" class="char-layer"><svg viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg"><rect x="10" y="25" width="44" height="22" rx="4" fill="#3B82F6"/> <rect x="12" y="28" width="10" height="8" rx="1" fill="#93C5FD"/> <rect x="24" y="28" width="10" height="8" rx="1" fill="#93C5FD"/> <rect x="36" y="28" width="10" height="8" rx="1" fill="#93C5FD"/> <rect x="48" y="30" width="6" height="12" fill="#1E3A8A"/> <circle cx="18" cy="48" r="5" fill="#111"/> <circle cx="46" cy="48" r="5" fill="#111"/> <rect x="52" y="40" width="3" height="4" fill="#FBBF24"/> </svg></div>
-        
+        <a href="smatChat.html" class="chat-icon-wrapper"><i class="fas fa-comments text-yellow-500"></i></a>
         <div id="multiplier">1.00x</div>
-        
         <div id="plane" class="plane-anim opacity-0">
             <div class="flame"></div>
             <svg viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg">
                 <path d="M32,10 L42,30 L42,50 L22,50 L22,30 Z" fill="#f0b90b" />
-                <circle class="rotor" cx="12" cy="37" r="6" stroke="#ffffff" stroke-width="1" fill="none" opacity="0.5" />
-                <circle class="rotor" cx="52" cy="37" r="6" stroke="#ffffff" stroke-width="1" fill="none" opacity="0.5" />
+                <circle cx="12" cy="37" r="6" stroke="white" stroke-width="1" fill="none" opacity="0.5" />
             </svg>
         </div>
-
-        <div id="grid-bg" class="grid-lines"></div>
-
+        <div class="grid-lines"></div>
         <div id="countdown-overlay">
-            <div class="text-yellow-500 font-black text-xs uppercase mb-2 tracking-widest animate-pulse">Next bet starts in</div>
+            <div class="text-yellow-500 font-black text-xs uppercase mb-2 animate-pulse">Next bet starts in</div>
             <div id="timer-num" class="text-6xl font-black text-white">10</div>
         </div>
     </div>
 
     <div id="history-pills" class="mt-2"></div>
 
-    <div class="mt-2 px-4 space-y-3">
+    <div class="mt-4 px-4 space-y-3">
         <div class="grid grid-cols-2 gap-3">
             <div class="bg-[#1e2329] p-3 rounded-xl border border-[#2d3339]">
-                <label class="text-[8px] text-gray-500 font-bold uppercase block mb-1">Bet SMAT</label>
+                <label class="text-[8px] text-gray-500 font-bold uppercase block mb-1">Asset & Amount</label>
                 <div class="flex items-center gap-2">
-                    <input id="bet-amount" type="number" value="10" step="0.000001" class="w-full bg-transparent font-black text-lg outline-none text-yellow-500">
+                    <select id="asset-selector" onchange="switchAsset()" class="p-1 text-xs">
+                        <option value="usdt_balance">USDT</option>
+                        <option value="bnb_balance">BNB</option>
+                        <option value="eth_balance">ETH</option>
+                        <option value="oxsmat_balance">oxSMAT</option>
+                    </select>
+                    <input id="bet-amount" type="number" value="10" class="w-full bg-transparent font-black text-lg outline-none text-yellow-500">
                 </div>
             </div>
             <div class="bg-[#1e2329] p-3 rounded-xl border border-[#2d3339]">
                 <label class="text-[8px] text-gray-500 font-bold uppercase block mb-1">Auto Exit</label>
-                <input id="auto-cashout" type="text" placeholder="∞" class="w-full bg-transparent font-black text-lg outline-none text-blue-400">
+                <input id="auto-cashout" type="number" step="0.1" placeholder="2.00" class="w-full bg-transparent font-black text-lg outline-none text-blue-400">
             </div>
         </div>
         <button id="action-btn" onclick="handleActionButton()" class="w-full bg-yellow-500 text-black py-4 rounded-xl font-black text-xl shadow-lg active:scale-95 transition-all">PLACE BET</button>
     </div>
-
-    <div class="bet-container">
-        <div id="live-bet-list" class="bet-grid-box"></div>
-    </div>
 </div>
 
 <script>
-    // --- গ্লোবাল ভেরিয়েবল ---
-    let smatBalance = 0;
-    let isRunning = false;
-    let hasBet = false;
-    let hasCashed = false;
-    let betAmt = 0;
-    let crashHistoryDots = [];
-    let currentMultiplier = 1.00;
-    let gameLoop;
-    let isMuted = localStorage.getItem('isMuted') === 'true';
+    // --- Firebase Setup ---
+    const firebaseConfig = {
+        apiKey: "AIzaSyAMxtJedkehhxJRMPZLjhpKHqneHEWsGlE",
+        authDomain: "smat-exchange.firebaseapp.com",
+        projectId: "smat-exchange",
+        databaseURL: "https://smat-exchange-default-rtdb.firebaseio.com",
+        appId: "1:836334569396:web:679effe640b3453412d4e1"
+    };
+    firebase.initializeApp(firebaseConfig);
+    const db = firebase.database();
+    const auth = firebase.auth();
 
-    // --- সাউন্ড ফাংশন ---
-    const audioContext = new (window.AudioContext || window.webkitAudioContext)();
-    function toggleSound() {
-        isMuted = !isMuted;
-        localStorage.setItem('isMuted', isMuted);
-        document.getElementById('sound-icon').className = isMuted ? 'fas fa-volume-mute' : 'fas fa-volume-up';
+    let currentUser = null;
+    let currentAsset = "usdt_balance";
+    let balances = { usdt_balance: 0, bnb_balance: 0, eth_balance: 0, oxsmat_balance: 0 };
+    let isRunning = false, hasBet = false, hasCashed = false;
+    let betAmt = 0, currentMultiplier = 1.00, gameLoop;
+
+    auth.onAuthStateChanged(user => {
+        currentUser = user;
+        if (user) initGameSync(user);
+        else updateUI(); // লগইন না থাকলে 0 দেখাবে
+    });
+
+    function initGameSync(user) {
+        db.ref('users/' + user.uid).on('value', snap => {
+            const data = snap.val();
+            if (data) {
+                balances = {
+                    usdt_balance: parseFloat(data.usdt_balance || 0),
+                    bnb_balance: parseFloat(data.bnb_balance || 0),
+                    eth_balance: parseFloat(data.eth_balance || 0),
+                    oxsmat_balance: parseFloat(data.oxsmat_balance || 0)
+                };
+                updateUI();
+            }
+        });
+
+        db.ref('game_state/crash').on('value', snap => {
+            const state = snap.val();
+            if (state) syncGameState(state);
+        });
+
+        db.ref('game_history/crash').limitToLast(16).on('value', snap => {
+            const history = Object.values(snap.val() || {});
+            renderHistory(history);
+        });
     }
 
-    // --- গেম সিঙ্ক্রোনাইজেশন লজিক ---
-    function showCountdown(seconds) {
-        isRunning = false;
+    function switchAsset() {
+        currentAsset = document.getElementById('asset-selector').value;
+        updateUI();
+    }
+
+    function updateUI() {
+        const val = balances[currentAsset] || 0;
+        const sym = currentAsset.split('_')[0].toUpperCase();
+        document.getElementById('balance-display').innerText = val.toFixed(4) + " " + sym;
+    }
+
+    function syncGameState(state) {
+        window.serverMultiplier = state.current_multiplier;
+        if (state.status === 'running') { if (!isRunning) startFlight(); }
+        else if (state.status === 'crashed') { if (isRunning) doCrash(state.last_crash); }
+        else if (state.status === 'waiting') showCountdown(state.timer);
+    }
+
+    function showCountdown(t) {
+        isRunning = false; hasCashed = false;
         document.getElementById('countdown-overlay').style.display = 'flex';
-        document.getElementById('timer-num').innerText = seconds;
-        
-        // রিফ্রেশ করার পর বাটন রিসেট
-        if(!hasBet) {
+        document.getElementById('timer-num').innerText = t;
+        if (!hasBet) {
             const btn = document.getElementById('action-btn');
-            btn.innerText = "PLACE BET";
-            btn.disabled = false;
+            btn.disabled = false; btn.innerText = "PLACE BET";
             btn.className = "w-full bg-yellow-500 text-black py-4 rounded-xl font-black text-xl shadow-lg";
         }
     }
 
-    function startFlightVisuals(serverMult) {
+    function startFlight() {
         isRunning = true;
         document.getElementById('countdown-overlay').style.display = 'none';
         document.getElementById('plane').style.opacity = "1";
         document.getElementById('multiplier').classList.remove('crashed-text');
-        
-        if(hasBet && !hasCashed) {
+        if (hasBet) {
             const btn = document.getElementById('action-btn');
             btn.innerText = "CASH OUT";
-            btn.className = "w-full bg-green-500 text-black py-4 rounded-xl font-black text-xl";
+            btn.className = "w-full bg-green-500 text-white py-4 rounded-xl font-black text-xl";
         }
-
-        // রিয়েলটাইম আপডেট লুপ
         clearInterval(gameLoop);
         gameLoop = setInterval(() => {
-            // সার্ভার মাল্টিপ্লায়ার অনুযায়ী UI আপডেট
-            currentMultiplier = window.serverMultiplier;
+            currentMultiplier = window.serverMultiplier || 1.00;
             document.getElementById('multiplier').innerText = currentMultiplier.toFixed(2) + "x";
-            
-            // প্লেন এনিমেশন
-            let moveX = Math.min((currentMultiplier - 1) * 20, 200);
-            let moveY = Math.min((currentMultiplier - 1) * 40, 150);
-            document.getElementById('plane').style.transform = `translate(${moveX}px, -${moveY}px)`;
-
-            // অটো ক্যাশ আউট চেক
-            let autoVal = parseFloat(document.getElementById('auto-cashout').value);
-            if(hasBet && !hasCashed && currentMultiplier >= autoVal) {
-                manualCashOut();
-            }
+            let x = Math.min((currentMultiplier - 1) * 30, 250), y = Math.min((currentMultiplier - 1) * 50, 180);
+            document.getElementById('plane').style.transform = `translate(${x}px, -${y}px)`;
+            let auto = parseFloat(document.getElementById('auto-cashout').value);
+            if (hasBet && !hasCashed && auto > 1 && currentMultiplier >= auto) manualCashOut();
         }, 100);
     }
 
-    function doCrashVisuals(crashVal) {
-        clearInterval(gameLoop);
-        isRunning = false;
+    function doCrash(val) {
+        clearInterval(gameLoop); isRunning = false;
         const m = document.getElementById('multiplier');
-        m.innerText = "CRASHED";
-        m.style.color = "#ef4444";
+        m.innerText = val.toFixed(2) + "x CRASHED";
         m.classList.add('crashed-text');
         document.getElementById('plane').style.opacity = "0";
-
-        if(hasBet && !hasCashed) {
-            const eaten = document.getElementById('eaten-popup');
-            eaten.style.display = 'block';
-            setTimeout(() => eaten.style.display = 'none', 2000);
-            hasBet = false;
+        if (hasBet && !hasCashed) {
+            document.getElementById('eaten-popup').style.display = 'block';
+            setTimeout(() => document.getElementById('eaten-popup').style.display = 'none', 2000);
         }
-
+        hasBet = false;
         const btn = document.getElementById('action-btn');
-        btn.innerText = "CRASHED AT " + crashVal.toFixed(2) + "x";
-        btn.disabled = true;
+        btn.disabled = true; btn.innerText = "CRASHED";
         btn.className = "w-full bg-gray-800 text-red-500 py-4 rounded-xl font-black text-xl";
     }
 
-    // --- অ্যাকশন হ্যান্ডলার ---
     function handleActionButton() {
-        if(!isRunning && !hasBet) {
-            placeBet();
-        } else if(isRunning && hasBet && !hasCashed) {
-            manualCashOut();
-        }
+        if (!currentUser) return window.location.href = "logIn.html";
+        if (!isRunning && !hasBet) placeBet();
+        else if (isRunning && hasBet && !hasCashed) manualCashOut();
     }
 
     async function placeBet() {
         const val = parseFloat(document.getElementById('bet-amount').value);
-        if(isNaN(val) || val <= 0 || val > smatBalance) return alert("Invalid Balance!");
-
+        if (val <= 0 || val > balances[currentAsset]) return alert("Check Balance!");
+        await db.ref(`users/${currentUser.uid}/${currentAsset}`).transaction(c => (c || 0) - val);
+        hasBet = true; betAmt = val; window.activeCoin = currentAsset;
         const btn = document.getElementById('action-btn');
-        btn.innerText = "WAITING...";
-        btn.disabled = true;
-
-        // Firebase এ ব্যালেন্স কমানো
-        const userRef = window.ref(window.db, 'users/' + window.currentUser.uid);
-        await window.update(userRef, { balance: window.increment(-val) });
-
-        hasBet = true;
-        betAmt = val;
+        btn.disabled = true; btn.innerText = "WAITING...";
     }
 
     async function manualCashOut() {
-        if(!hasBet || hasCashed || !isRunning) return;
+        if (!hasBet || hasCashed || !isRunning) return;
         hasCashed = true;
-        
-        const winAmount = betAmt * currentMultiplier;
-        
-        // Firebase এ উইন অ্যামাউন্ট পাঠানো
-        const userRef = window.ref(window.db, 'users/' + window.currentUser.uid);
-        await window.update(userRef, { balance: window.increment(winAmount) });
-
-        document.getElementById('cashout-msg-amount').innerText = winAmount.toFixed(6) + " SMAT";
+        const win = betAmt * currentMultiplier;
+        await db.ref(`users/${currentUser.uid}/${window.activeCoin}`).transaction(c => (c || 0) + win);
+        document.getElementById('cashout-msg-amount').innerText = win.toFixed(4) + " " + window.activeCoin.split('_')[0].toUpperCase();
         document.getElementById('cashout-popup').style.display = 'block';
         setTimeout(() => document.getElementById('cashout-popup').style.display = 'none', 3000);
-
-        const btn = document.getElementById('action-btn');
-        btn.innerText = "WINNER!";
-        btn.disabled = true;
+        document.getElementById('action-btn').innerText = "SUCCESS!";
+        document.getElementById('action-btn').disabled = true;
     }
 
-    // --- UI রেন্ডারিং ---
-    function renderDots() {
-        const wrapper = document.getElementById('dots-wrapper');
-        wrapper.innerHTML = "";
-        crashHistoryDots.forEach(val => {
-            const dot = document.createElement('div');
-            dot.className = `history-dot ${getDotColor(val)}`;
-            wrapper.appendChild(dot);
+    function renderHistory(history) {
+        const dWrap = document.getElementById('dots-wrapper');
+        const pWrap = document.getElementById('history-pills');
+        dWrap.innerHTML = ""; pWrap.innerHTML = "";
+        history.forEach(v => {
+            let cls = v <= 1.2 ? 'white' : (v < 2 ? 'gray' : (v < 10 ? 'green' : 'yellow'));
+            dWrap.innerHTML += `<div class="history-dot dot-${cls}"></div>`;
+        });
+        [...history].reverse().forEach(v => {
+            let cls = v <= 1.2 ? 'white' : (v < 2 ? 'gray' : (v < 10 ? 'green' : 'yellow'));
+            pWrap.innerHTML += `<div class="history-pill-item pill-${cls}">${v.toFixed(2)}x</div>`;
         });
     }
 
-    function renderHistoryPills() {
-        const pillContainer = document.getElementById('history-pills');
-        pillContainer.innerHTML = "";
-        [...crashHistoryDots].reverse().forEach(result => {
-            const pill = document.createElement('div');
-            pill.className = `history-pill-item ${getPillColor(result)}`;
-            pill.innerText = result.toFixed(2) + "x";
-            pillContainer.appendChild(pill);
-        });
+    function toggleSound() {
+        let icon = document.getElementById('sound-icon');
+        icon.className = icon.className.includes('up') ? 'fas fa-volume-mute text-red-500 text-xs' : 'fas fa-volume-up text-yellow-500 text-xs';
     }
-
-    function getDotColor(val) {
-        if (val <= 1.20) return 'dot-white';
-        if (val < 2.00) return 'dot-gray';
-        if (val < 10.00) return 'dot-green';
-        return 'dot-yellow';
-    }
-
-    function getPillColor(val) {
-        if (val <= 1.20) return 'pill-white';
-        if (val < 2.00) return 'pill-gray';
-        if (val < 10.00) return 'pill-green';
-        return 'pill-yellow';
-    }
-
-    window.onload = () => {
-        document.getElementById('sound-icon').className = isMuted ? 'fas fa-volume-mute' : 'fas fa-volume-up';
-    };
 </script>
 </body>
 </html>
