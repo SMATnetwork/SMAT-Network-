@@ -24,7 +24,69 @@
         * {font-weight: 900; box-sizing: border-box; margin: 0; padding: 0; font-family: 'Inter', sans-serif; -webkit-tap-highlight-color: transparent; }
         body { background: var(--bg); color: white; padding-bottom: 90px; overflow-x: hidden; }
 
-        .wallet-header { padding: 40px 20px 20px; text-align: center; background: linear-gradient(180deg, rgba(240, 185, 11, 0.1) 0%, var(--bg) 100%); }
+       
+
+/* Short History Table Styles */
+.hist-table-header {
+    display: grid;
+    grid-template-columns: 45px 1fr 1fr 1fr 80px;
+    padding: 12px 15px;
+    background: #181a20;
+    font-size: 11px;
+    color: var(--text-sec);
+    border-bottom: 1px solid var(--border);
+    position: sticky;
+    top: 0;
+    z-index: 10;
+}
+
+.hist-row {
+    display: grid;
+    grid-template-columns: 45px 1fr 1fr 1fr 80px;
+    padding: 12px 15px;
+    align-items: center;
+    border-bottom: 1px solid rgba(255,255,255,0.03);
+    font-size: 12px;
+    cursor: pointer;
+}
+
+.hist-row:active { background: rgba(255,255,255,0.05); }
+
+.status-badge {
+    font-size: 10px;
+    padding: 4px 8px;
+    border-radius: 6px;
+    text-align: center;
+    font-weight: 800;
+}
+
+.status-success { background: rgba(14, 203, 129, 0.1); color: var(--up); }
+.status-pending { background: rgba(240, 185, 11, 0.1); color: var(--primary); }
+.status-failed { background: rgba(246, 70, 93, 0.1); color: var(--down); }
+
+/* Details Popup inside History */
+.details-overlay {
+    position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+    background: rgba(0,0,0,0.8); z-index: 8000;
+    display: none; align-items: center; justify-content: center; padding: 20px;
+}
+.details-card {
+    background: #1e2329; width: 100%; max-width: 350px;
+    border-radius: 20px; padding: 20px; border: 1px solid var(--border);
+}
+.detail-item {
+    display: flex; justify-content: space-between; margin-bottom: 12px;
+    font-size: 12px; border-bottom: 1px border dashed rgba(255,255,255,0.05);
+    padding-bottom: 5px;
+}
+
+
+
+
+
+
+
+ .wallet-header { padding: 40px 20px 20px; text-align: center; background: linear-gradient(180deg, rgba(240, 185, 11, 0.1) 0%, var(--bg) 100%); }
         .total-balance { font-family: var(--font-bold); font-size: 38px; font-weight: 900; }
         .quick-actions { font-weight: 900;display: grid; grid-template-columns: repeat(3, 1fr); gap: 15px; padding: 0 20px 25px; }
         .q-btn { font-weight: 900;background: var(--card); border: 1px solid var(--border); border-radius: 16px; padding: 15px; text-align: center; cursor: pointer; }
@@ -147,7 +209,19 @@
         <div id="histContent" style="padding:15px; overflow-y:auto"></div>
     </div>
 
-    <footer class="footer">
+   
+<div class="details-overlay" id="detailsOverlay" onclick="this.style.display='none'">
+    <div class="details-card" onclick="event.stopPropagation()">
+        <h3 style="text-align:center; color:var(--primary); margin-bottom:15px; font-size:16px;">Transaction Details</h3>
+        <div id="detailsContent"></div>
+        <button class="btn-main" onclick="document.getElementById('detailsOverlay').style.display='none'">CLOSE</button>
+    </div>
+</div>
+
+
+
+
+ <footer class="footer">
     <a href="home.html" class="f-nav active"><i class="fas fa-home"></i>Home</a>
     
     <a href="market.html" class="f-nav active"><i class="fas fa-chart-bar"></i>Market</a>
@@ -360,80 +434,64 @@ function switchMode(m) {
 function openHistory() {
     document.getElementById('historyPopup').style.display = 'flex';
     const cont = document.getElementById('histContent');
-    const now = Date.now();
-    const sixtyDaysInMs = 60 * 24 * 60 * 60 * 1000;
-
-    let headerHtml = `
-        <div style="background: rgba(240, 185, 11, 0.1); padding: 12px; border-radius: 10px; margin-bottom: 20px; border: 1px solid rgba(240, 185, 11, 0.2);">
-            <p style="font-size: 11px; color: var(--primary); font-weight: bold; text-align: center;">
-                <i class="fas fa-info-circle"></i> Records are kept for a maximum of 60 days.
-            </p>
+    
+    // Table Header
+    let html = `
+        <div class="hist-table-header">
+            <span>LOGO</span>
+            <span>NAME</span>
+            <span>AMOUNT</span>
+            <span>METHOD</span>
+            <span style="text-align:right">ACTION</span>
         </div>
     `;
 
     db.ref('users/' + auth.currentUser.uid + '/history').on('value', snap => {
         const data = snap.val();
-        if(!data) { cont.innerHTML = headerHtml + "<p style='text-align:center; color:var(--text-sec); margin-top:30px;'>No history found.</p>"; return; }
+        if(!data) { cont.innerHTML = html + "<p style='text-align:center; color:var(--text-sec); padding:40px;'>No history found.</p>"; return; }
 
-        let html = headerHtml;
         const items = Object.keys(data).map(key => ({ id: key, ...data[key] })).sort((a,b) => b.timestamp - a.timestamp);
-
+        
+        let rows = "";
         items.forEach(item => {
-            if (now - item.timestamp > sixtyDaysInMs) {
-                db.ref('users/' + auth.currentUser.uid + '/history/' + item.id).remove();
-                return;
-            }
+            const coinSym = (item.coin || 'SMAT').toLowerCase();
+            const statusClass = item.status === 'success' ? 'status-success' : (item.status === 'failed' ? 'status-failed' : 'status-pending');
+            const statusText = item.status === 'pending' ? '<i class="fas fa-spinner fa-spin"></i>' : item.status.toUpperCase();
 
-            let typeIcon = 'fa-exchange-alt', typeColor = 'var(--primary)';
-            if (item.method.toLowerCase().includes('deposit')) { typeIcon = 'fa-plus-circle'; typeColor = 'var(--up)'; }
-            else if (item.method.toLowerCase().includes('withdraw')) { typeIcon = 'fa-arrow-up-right-from-square'; typeColor = 'var(--down)'; }
-
-            let hashHtml = '';
-            if (item.hash && item.hash !== '...' && item.hash !== 'Null') {
-                hashHtml = `
-                    <div style="margin-top:8px;">
-                        <p style="font-size:9px; color:var(--text-sec)">Transaction Hash</p>
-                        <div style="display:flex; justify-content:space-between; align-items:center;">
-                            <a href="https://bscscan.com/tx/${item.hash}" target="_blank" style="color:var(--primary); text-decoration:none; font-family:monospace; font-size:10px;">
-                                ${item.hash.substring(0, 12)}...${item.hash.substring(item.hash.length - 4)} 
-                                <i class="fas fa-external-link-alt" style="font-size:8px; margin-left:4px;"></i>
-                            </a>
-                            <i class="fas fa-copy" onclick="copyValueText('${item.hash}')" style="color:var(--primary); cursor:pointer; font-size:10px;"></i>
-                        </div>
+            rows += `
+                <div class="hist-row" onclick='showFullDetails(${JSON.stringify(item)})'>
+                    <div class="a-logo" style="width:25px; height:25px;"><img src="assets/logos/${coinSym}.png"></div>
+                    <b style="font-size:11px;">${item.coin}</b>
+                    <b style="font-size:11px;">${parseFloat(item.amount).toFixed(4)}</b>
+                    <span style="font-size:10px; color:var(--text-sec)">${item.method}</span>
+                    <div style="text-align:right">
+                        <span class="status-badge ${statusClass}">${statusText}</span>
                     </div>
-                `;
-            } else if (item.status === 'pending') {
-                hashHtml = `<p style="font-size:9px; color:var(--text-sec); margin-top:8px;">Hash: <span style="color:var(--primary)">Processing...</span></p>`;
-            }
-
-            html += `
-                <div class="hist-card" style="border-left-color: ${typeColor};">
-                    <div style="display:flex; justify-content:space-between; align-items:flex-start;">
-                        <div>
-                            <span style="color:${typeColor}; font-weight:bold; font-size:12px;"><i class="fas ${typeIcon}"></i> ${item.method.toUpperCase()}</span>
-                            <div style="font-size:9px; color:var(--text-sec); margin-top:2px;">${new Date(item.timestamp).toLocaleString()}</div>
-                        </div>
-                        <span style="font-size:10px; padding:2px 6px; border-radius:4px; background:rgba(255,255,255,0.05); color:${item.status==='success'?'var(--up)':'var(--primary)'}">
-                            ${item.status==='pending'?'<i class="fas fa-spinner status-spin"></i>':''} ${item.status.toUpperCase()}
-                        </span>
-                    </div>
-                    <div style="display:grid; grid-template-columns: 1fr 1fr; gap:8px; margin-top:10px; padding-top:8px; border-top:1px solid rgba(255,255,255,0.03);">
-                        <div><p style="font-size:9px; color:var(--text-sec)">Amount</p><b>${formatAmt(item.amount)} ${item.coin}</b></div>
-                        <div style="text-align:right"><p style="font-size:9px; color:var(--text-sec)">Network</p><b>${item.network}</b></div>
-                        <div style="grid-column: span 2;">
-                            <p style="font-size:9px; color:var(--text-sec)">Address/Target</p>
-                            <div style="display:flex; justify-content:space-between; font-size:10px;">
-                                <span style="font-family:monospace;">${item.address}</span>
-                                <i class="fas fa-copy" onclick="copyValueText('${item.address}')" style="color:var(--primary); cursor:pointer;"></i>
-                            </div>
-                            ${hashHtml} 
-                        </div>
-                    </div>
-                </div>`;
+                </div>
+            `;
         });
-        cont.innerHTML = html;
+        cont.innerHTML = html + rows;
     });
 }
+
+// বিস্তারিত পপআপ দেখানোর ফাংশন
+function showFullDetails(item) {
+    const overlay = document.getElementById('detailsOverlay');
+    const cont = document.getElementById('detailsContent');
+    
+    cont.innerHTML = `
+        <div class="detail-item"><span>Status</span><b style="color:${item.status==='success'?'#0ecb81':'#f0b90b'}">${item.status.toUpperCase()}</b></div>
+        <div class="detail-item"><span>Method</span><b>${item.method}</b></div>
+        <div class="detail-item"><span>Amount</span><b>${item.amount} ${item.coin}</b></div>
+        <div class="detail-item"><span>Network</span><b>${item.network || 'Internal'}</b></div>
+        <div class="detail-item"><span>Target</span><span style="font-size:10px; word-break:break-all; text-align:right; max-width:60%">${item.address || 'N/A'}</span></div>
+        <div class="detail-item"><span>Time</span><b>${new Date(item.timestamp).toLocaleString()}</b></div>
+        <div class="detail-item"><span>Transaction ID</span><b style="font-size:9px;">${item.hash || item.id}</b></div>
+    `;
+    
+    overlay.style.display = 'flex';
+}
+
 
 // --- PROCESSORS ---
 async function processWithdraw() {
