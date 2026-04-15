@@ -422,16 +422,46 @@ th:nth-child(6), td:nth-child(6) { width: 20%; }
     };
 
     function syncUser() {
-        if(!user) return;
-        // শুধুমাত্র USDT ব্যালেন্স সিঙ্ক হবে
-        const balRef = ref(db, `users/${user.uid}/balances/usdt_balance`);
-        onValue(balRef, (s) => {
-            const currentBal = parseFloat(s.val() || 0).toFixed(8);
-            const balanceDisplay = document.getElementById('headerBalance');
-            if(balanceDisplay) balanceDisplay.innerText = currentBal;
-        });
-        syncHistory();
-    }
+    if(!user) return;
+    
+    // ইউজারের সম্পূর্ণ ব্যালেন্স লিস্টের রেফারেন্স
+    const balRef = ref(db, `users/${user.uid}/balances`);
+    
+    onValue(balRef, (snapshot) => {
+        const allBalances = snapshot.val();
+        let usdtAmount = 0;
+
+        if (allBalances) {
+            // যদি ব্যালেন্স অবজেক্ট হয় (যেমন: {usdt: 50, btc: 0})
+            if (allBalances.usdt_balance) {
+                usdtAmount = allBalances.usdt_balance;
+            } 
+            // যদি আপনার ডাটাবেস অন্য কোনো ডায়নামিক নামে থাকে (যেমন শুধু 'usdt')
+            else if (allBalances.usdt) {
+                usdtAmount = allBalances.usdt;
+            }
+            // যদি ডাটাবেস কোনো লিস্ট বা অ্যারে ফরম্যাটে থাকে
+            else {
+                Object.keys(allBalances).forEach(key => {
+                    if (key.toLowerCase().includes('usdt')) {
+                        usdtAmount = allBalances[key];
+                    }
+                });
+            }
+        }
+
+        const currentBal = parseFloat(usdtAmount || 0).toFixed(8);
+        const balanceDisplay = document.getElementById('headerBalance');
+        if(balanceDisplay) balanceDisplay.innerText = currentBal;
+        
+        // মোডাল ওপেন থাকলে সেখানেও আপডেট হবে
+        const modalAvbl = document.getElementById('modalAvbl');
+        if(modalAvbl) modalAvbl.innerText = currentBal;
+    });
+    
+    syncHistory();
+}
+
 
     function initWS() {
         if (Object.keys(assets).length === 0) return;
