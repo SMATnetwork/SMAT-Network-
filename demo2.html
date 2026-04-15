@@ -154,11 +154,6 @@ th:nth-child(6), td:nth-child(6) { width: 20%; }
     import { getDatabase, ref, onValue, set, update, get, push } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
     import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
 
-    <script type="module">
-    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-    import { getDatabase, ref, onValue, set, update, get, push } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
-    import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
-
     const firebaseConfig = {
         apiKey: "AIzaSyAMxtJedkehhxJRMPZLjhpKHqneHEWsGlE",
         authDomain: "smat-exchange.firebaseapp.com",
@@ -177,39 +172,10 @@ th:nth-child(6), td:nth-child(6) { width: 20%; }
     let globalState = "TRADING";
 
     const ctx = document.getElementById('liveChart').getContext('2d');
-    const gradient = ctx.createLinearGradient(0, 0, 0, 200);
-    gradient.addColorStop(0, 'rgba(14, 203, 129, 0.3)');
-    gradient.addColorStop(1, 'rgba(14, 203, 129, 0)');
-
     const chart = new Chart(ctx, {
         type: 'line',
-        data: { 
-            labels: Array(50).fill(''), 
-            datasets: [{ 
-                data: Array(50).fill(0), 
-                borderColor: '#0ecb81', 
-                borderWidth: 2, 
-                pointRadius: 0, 
-                tension: 0.1, 
-                fill: true, 
-                backgroundColor: gradient
-            }] 
-        },
-        options: { 
-            responsive: true, 
-            maintainAspectRatio: false, 
-            animation: false, 
-            scales: { 
-                x: { display: false }, 
-                y: { 
-                    display: true, 
-                    position: 'right',
-                    grid: { color: 'rgba(255, 255, 255, 0.03)' },
-                    ticks: { color: '#848e9c', font: { size: 10 } }
-                } 
-            }, 
-            plugins: { legend: { display: false } } 
-        }
+        data: { labels: Array(50).fill(''), datasets: [{ data: Array(50).fill(0), borderColor: '#0ecb81', borderWidth: 2, pointRadius: 0, tension: 0.1, fill: true }] },
+        options: { responsive: true, maintainAspectRatio: false, animation: false, scales: { x: { display: false }, y: { display: true, position: 'right' } }, plugins: { legend: { display: false } } }
     });
 
     onValue(ref(db, 'predictionAssets'), (snapshot) => {
@@ -220,15 +186,10 @@ th:nth-child(6), td:nth-child(6) { width: 20%; }
             select.innerHTML = ""; 
             Object.keys(assets).forEach(key => {
                 const option = document.createElement('option');
-                option.value = key;
-                option.innerText = assets[key].name;
+                option.value = key; option.innerText = assets[key].name;
                 select.appendChild(option);
             });
-            if (!activeKey) {
-                activeKey = Object.keys(assets)[0];
-                window.switchAsset(activeKey);
-                initWS(); 
-            } else { select.value = activeKey; }
+            if (!activeKey) { activeKey = Object.keys(assets)[0]; window.switchAsset(activeKey); initWS(); }
         }
     });
 
@@ -253,7 +214,7 @@ th:nth-child(6), td:nth-child(6) { width: 20%; }
         });
     }
 
-    // --- মূল টাইমার লজিক (এটি কোনোভাবেই বাদ দেওয়া যাবে না) ---
+    // টাইম এবং রেজাল্ট ইঞ্জিন
     setInterval(async () => {
         const timerRef = ref(db, 'timerLogic');
         const snap = await get(timerRef);
@@ -265,8 +226,7 @@ th:nth-child(6), td:nth-child(6) { width: 20%; }
             if (s === "TRADING") { 
                 s = "CLOSED"; t = 3; 
                 Object.keys(assets).forEach(key => lockAndSaveRound(key)); 
-            }
-            else if (s === "CLOSED") { s = "WAITING"; t = 180; }
+            } else if (s === "CLOSED") { s = "WAITING"; t = 180; }
             else { 
                 s = "TRADING"; t = 60; 
                 Object.keys(assets).forEach(key => finalizeAndReset(key));
@@ -280,87 +240,54 @@ th:nth-child(6), td:nth-child(6) { width: 20%; }
         assets[key].lockedPrice = assets[key].currentPrice; 
         const rid = assets[key].round;
         const bet = assets[key].pending;
-        const entry = {
-            rid: rid,
-            time: new Date().toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'}),
-            lockedPrice: assets[key].currentPrice,
-            action: bet ? bet.side : "No Trade",
-            betAmt: bet ? bet.amount : 0,
-            isPending: true,
-            logo: assets[key].logo,
-            coinPath: "usdt_balance"
-        };
-        await set(ref(db, `history/${user.uid}/${key}/${rid}`), entry);
+        await set(ref(db, `history/${user.uid}/${key}/${rid}`), {
+            rid: rid, time: new Date().toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'}),
+            lockedPrice: assets[key].currentPrice, action: bet ? bet.side : "No Trade",
+            betAmt: bet ? bet.amount : 0, isPending: true, logo: assets[key].logo
+        });
     }
 
     async function finalizeAndReset(key) {
         if (!user || !assets[key]) return;
+        const resPrice = assets[key].currentPrice;
         const snap = await get(ref(db, `history/${user.uid}/${key}`));
         const history = snap.val() || {};
-        const resPrice = assets[key].currentPrice;
 
         for (let rid in history) {
             if (history[rid].isPending) {
                 const rec = history[rid];
-                let status = "LOSS";
-                let winAmt = 0;
-
+                let status = "LOSS"; let winAmt = 0;
                 if (rec.action !== "No Trade") {
-                    if (resPrice === rec.lockedPrice) {
-                        status = "DRAW"; 
-                        winAmt = rec.betAmt * 0.5;
-                    } else {
+                    if (resPrice === rec.lockedPrice) { status = "DRAW"; winAmt = rec.betAmt * 0.5; }
+                    else {
                         const win = (rec.action === "UP" && resPrice > rec.lockedPrice) || (rec.action === "DOWN" && resPrice < rec.lockedPrice);
-                        if (win) {
-                            status = "WIN";
-                            winAmt = rec.betAmt + (rec.betAmt * 0.96);
-                        }
+                        if (win) { status = "WIN"; winAmt = rec.betAmt + (rec.betAmt * 0.96); }
                     }
                 }
-
                 if (winAmt > 0) {
                     const bRef = ref(db, `users/${user.uid}/usdt_balance`);
                     const bSnap = await get(bRef);
                     const newTotal = (parseFloat(bSnap.val() || 0) + winAmt).toFixed(8);
                     await set(bRef, newTotal);
                     
-                    // Wallet History Update
-                    const hRef = ref(db, `users/${user.uid}/history`);
-                    const hKey = push(hRef).key;
-                    await set(ref(db, `users/${user.uid}/history/${hKey}`), {
-                        method: "Win Prediction",
-                        amount: winAmt.toFixed(4),
-                        coin: "USDT",
-                        status: 'success',
-                        timestamp: Date.now(),
-                        address: "Market",
-                        network: assets[key].name,
-                        hash: "WIN-"+Math.random().toString(36).substr(2,9).toUpperCase()
+                    const hRef = push(ref(db, `users/${user.uid}/history`));
+                    await set(hRef, {
+                        method: "Win Prediction", amount: winAmt.toFixed(4), coin: "USDT",
+                        status: 'success', timestamp: Date.now(), address: "Market", network: assets[key].name,
+                        hash: "WIN-" + Math.random().toString(36).substr(2,9).toUpperCase()
                     });
                 }
-
-                await update(ref(db, `history/${user.uid}/${key}/${rid}`), {
-                    isPending: false,
-                    resultPrice: resPrice,
-                    status: status,
-                    finalWin: winAmt
-                });
+                await update(ref(db, `history/${user.uid}/${key}/${rid}`), { isPending: false, resultPrice: resPrice, status: status, finalWin: winAmt });
             }
         }
-
         const currentRid = assets[key].round;
         await set(ref(db, `marketHistory/${key}/${currentRid}`), {
-            rid: currentRid,
-            time: new Date().toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'}),
-            lockedPrice: assets[key].lockedPrice || assets[key].currentPrice,
-            resultPrice: resPrice,
-            logo: assets[key].logo
+            rid: currentRid, time: new Date().toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'}),
+            lockedPrice: assets[key].lockedPrice || assets[key].currentPrice, resultPrice: resPrice, logo: assets[key].logo
         });
-
         assets[key].round++;
         await update(ref(db, 'roundLogic'), { [key]: assets[key].round });
         assets[key].pending = null;
-        if (key === activeKey) document.getElementById('dynamicLockedInfo').innerText = "";
     }
 
     function updateEngineUI(t, s) {
@@ -368,19 +295,9 @@ th:nth-child(6), td:nth-child(6) { width: 20%; }
         const min = Math.floor(t / 60); const sec = t % 60;
         document.getElementById('timerClock').innerText = `${min.toString().padStart(2,'0')}:${sec.toString().padStart(2,'0')}`;
         const lbl = document.getElementById('statusLabel');
-        const lockedDiv = document.getElementById('dynamicLockedInfo');
-        
-        if (s === "TRADING") { lbl.innerHTML = `TRADING TIME`; lbl.style.color = "var(--up)"; lockedDiv.innerText = ""; }
-        else if (s === "CLOSED") { lbl.innerHTML = `TRADING CLOSED`; lbl.style.color = "var(--down)"; lockedDiv.innerText = ""; }
-        else {
-            lbl.innerHTML = `<div class="spinner-sm"></div> WAITING RESULT`; lbl.style.color = "var(--warn)";
-            if (user && assets[activeKey]) {
-                onValue(ref(db, `history/${user.uid}/${activeKey}/${assets[activeKey].round}`), (snapshot) => {
-                    const rec = snapshot.val();
-                    if (rec && rec.isPending) lockedDiv.innerText = `Locked Price: $${parseFloat(rec.lockedPrice).toFixed(4)}`;
-                });
-            }
-        }
+        if (s === "TRADING") { lbl.innerHTML = `TRADING TIME`; lbl.style.color = "var(--up)"; }
+        else if (s === "CLOSED") { lbl.innerHTML = `TRADING CLOSED`; lbl.style.color = "var(--down)"; }
+        else { lbl.innerHTML = `<div class="spinner-sm"></div> WAITING RESULT`; lbl.style.color = "var(--warn)"; }
         document.getElementById('upBtn').disabled = (s !== "TRADING");
         document.getElementById('downBtn').disabled = (s !== "TRADING");
         if (user) syncHistory();
@@ -395,12 +312,9 @@ th:nth-child(6), td:nth-child(6) { width: 20%; }
         const mergedData = { ...globalData, ...data };
         const body = document.getElementById('historyBody');
         body.innerHTML = "";
-
         Object.values(mergedData).reverse().slice(0, 15).forEach(item => {
             const isWaiting = item.isPending && globalState === "WAITING";
-            // My Win column ফিক্সড ৪ ডেসিম্যাল
-            let winHtml = item.isPending ? '<div class="spinner-sm"></div>' : (item.status === "WIN" ? `<div style="color:var(--up)">$${parseFloat(item.finalWin).toFixed(4)}</div>` : (item.status === "LOSS" ? `<div style="color:var(--down)">$0.0000</div>` : (item.status === "DRAW" ? `<div style="color:var(--warn)">$${parseFloat(item.finalWin).toFixed(4)}</div>` : '<span style="color:#848e9c">--</span>')));
-            
+            let winHtml = item.isPending ? '<div class="spinner-sm"></div>' : (item.status === "WIN" ? `<div style="color:var(--up)">$${parseFloat(item.finalWin).toFixed(4)}</div>` : (item.status === "LOSS" ? `<div style="color:var(--down)">$0.0000</div>` : (item.status === "DRAW" ? `<div style="color:var(--warn)">$${parseFloat(item.finalWin).toFixed(4)}</div>` : '--')));
             body.innerHTML += `<tr class="${isWaiting ? 'blink' : ''}">
                 <td><img src="assets/logos/${item.logo}" class="hist-logo"> ${item.rid}</td>
                 <td>${item.time}</td>
@@ -413,7 +327,6 @@ th:nth-child(6), td:nth-child(6) { width: 20%; }
     }
 
     window.openBetModal = (side) => {
-        if (!user) { window.location.href = "logIn.html"; return; }
         if (globalState !== "TRADING") return;
         document.getElementById('modalTitle').innerText = "Bet " + side;
         document.getElementById('modalAvbl').innerText = document.getElementById('headerBalance').innerText;
@@ -424,80 +337,49 @@ th:nth-child(6), td:nth-child(6) { width: 20%; }
     window.closeBetModal = () => document.getElementById('betModal').style.display = 'none';
 
     window.confirmBet = async () => {
-        if (!user) { window.location.href = "logIn.html"; return; }
         const amtInput = document.getElementById('betAmount'); const amt = parseFloat(amtInput.value);
         if (isNaN(amt) || amt <= 0) return alert("Input Amount");
-
         const balRef = ref(db, `users/${user.uid}/usdt_balance`);
         const bSnap = await get(balRef); const curBal = parseFloat(bSnap.val() || 0);
         if (amt > curBal) return alert("Insufficient USDT Balance");
         
         await set(balRef, (curBal - amt).toFixed(8));
-
-        // Wallet History for Bet
         const hKey = push(ref(db, `users/${user.uid}/history`)).key;
         await set(ref(db, `users/${user.uid}/history/${hKey}`), {
-            method: "Prediction Cost",
-            amount: amt.toFixed(4),
-            coin: "USDT",
-            status: 'success',
-            timestamp: Date.now(),
-            address: "Market",
-            network: assets[activeKey].name,
-            hash: "BET-"+Math.random().toString(36).substr(2,9).toUpperCase()
+            method: "Prediction Cost", amount: amt.toFixed(4), coin: "USDT",
+            status: 'success', timestamp: Date.now(), address: "Market", network: assets[activeKey].name,
+            hash: "BET-" + Math.random().toString(36).substr(2,9).toUpperCase()
         });
-
         assets[activeKey].pending = { side: document.getElementById('betModal').dataset.side, amount: amt };
-        window.closeBetModal();
-        amtInput.value = "";
+        window.closeBetModal(); amtInput.value = "";
     };
 
     function syncUser() {
-        if(!user) return;
-        const balRef = ref(db, `users/${user.uid}/usdt_balance`);
-        onValue(balRef, (snapshot) => {
-            const currentBal = parseFloat(snapshot.val() || 0).toFixed(4);
-            const balanceDisplay = document.getElementById('headerBalance');
-            if(balanceDisplay) balanceDisplay.innerText = currentBal;
-            const modalAvbl = document.getElementById('modalAvbl');
-            if(modalAvbl) modalAvbl.innerText = currentBal;
+        onValue(ref(db, `users/${user.uid}/usdt_balance`), (s) => {
+            document.getElementById('headerBalance').innerText = parseFloat(s.val() || 0).toFixed(4);
         });
         syncHistory();
     }
 
     function initWS() {
-        if (Object.keys(assets).length === 0) return;
         const streams = Object.values(assets).map(a => `${a.symbol}@trade`).join('/');
         const ws = new WebSocket(`wss://stream.binance.com:9443/stream?streams=${streams}`);
         ws.onmessage = (e) => {
             const d = JSON.parse(e.data);
-            const symbol = d.data.s.toLowerCase();
-            const key = Object.keys(assets).find(k => assets[k].symbol === symbol);
+            const key = Object.keys(assets).find(k => assets[k].symbol === d.data.s.toLowerCase());
             if (key) {
                 const price = parseFloat(d.data.p); assets[key].currentPrice = price; 
                 if (key === activeKey) {
                     document.getElementById('priceDisplay').innerText = '$' + price.toFixed(4);
-                    chart.data.datasets[0].data.shift(); 
-                    chart.data.datasets[0].data.push(price);
+                    chart.data.datasets[0].data.shift(); chart.data.datasets[0].data.push(price);
                     chart.update('none');
                 }
             }
         };
-        ws.onclose = () => setTimeout(initWS, 1000);
     }
 
-    onAuthStateChanged(auth, (u) => { 
-        if (u) { 
-            user = u; 
-            syncUser(); 
-            initWS(); 
-            initTimer(); 
-        } else {
-            window.location.href = "logIn.html";
-        }
-    });
+    onAuthStateChanged(auth, (u) => { if (u) { user = u; syncUser(); initWS(); initTimer(); } else { window.location.href = "logIn.html"; } });
 </script>
-
 
 </body>
 </html>
