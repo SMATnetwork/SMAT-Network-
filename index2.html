@@ -3,99 +3,89 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>SMAT EXCHANGE | Digital Future</title>
+    <title>SMAT EXCHANGE | Next-Gen Trading</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
         :root {
             --primary: #00ff88;
-            --bg-black: #000000;
-            --card-glass: rgba(12, 12, 12, 0.95);
+            --glass: rgba(10, 10, 10, 0.85);
+            --input: rgba(255, 255, 255, 0.08);
             --text-main: #ffffff;
-            --text-dim: #888888;
+            --text-dim: rgba(255, 255, 255, 0.6);
         }
 
-        /* ক্লিক গ্লিচ বন্ধ এবং সিলেকশন প্রিভেনশন */
+        /* ক্লিক গ্লিচ এবং সিলেকশন বন্ধ করার মাস্টার ফিক্স */
         * { 
             margin: 0; padding: 0; box-sizing: border-box; 
-            font-family: 'Inter', -apple-system, sans-serif;
-            -webkit-tap-highlight-color: transparent; 
+            font-family: 'Inter', sans-serif;
+            -webkit-tap-highlight-color: transparent;
             outline: none !important;
         }
 
-        body {
-            background-color: var(--bg-black);
-            height: 100vh; display: flex;
-            justify-content: center; align-items: center;
-            overflow: hidden; position: relative;
+        body, html {
+            height: 100%; width: 100%;
+            background: #000;
+            display: flex; justify-content: center; align-items: center;
+            overflow: hidden;
         }
 
-        /* --- OKX Matrix & Particle Logic --- */
-        #matrixCanvas {
+        /* --- ভিডিও ব্যাকগ্রাউন্ড লেয়ার --- */
+        .video-background {
+            position: fixed; top: 0; left: 0;
+            width: 100%; height: 100%;
+            z-index: 1; overflow: hidden;
+        }
+
+        .video-background video {
+            width: 100%; height: 100%;
+            object-fit: cover; /* পুরো স্ক্রিন কভার করবে */
+            filter: brightness(0.5); /* ভিডিওটি একটু ডার্ক রাখা হয়েছে যেন টেক্সট বোঝা যায় */
+        }
+
+        /* ভিডিওর ওপর হালকা গ্রিড ইফেক্ট (ঐচ্ছিক) */
+        .video-overlay {
             position: absolute; top: 0; left: 0;
             width: 100%; height: 100%;
-            z-index: 1; filter: blur(1px);
+            background: radial-gradient(circle, transparent 20%, #000 100%);
+            z-index: 2;
         }
 
-        .market-overlay {
-            position: absolute; width: 100%; height: 100%;
-            z-index: 2; pointer-events: none;
-        }
-
-        .floating-coin {
-            position: absolute;
-            font-family: 'monospace';
-            font-weight: 900;
-            font-size: 1.1rem;
-            color: rgba(255, 255, 255, 0.9);
-            white-space: nowrap;
-            animation: drift linear infinite;
-            text-shadow: 0 0 10px rgba(0, 255, 136, 0.3);
-        }
-
-        @keyframes drift {
-            from { transform: translate(-100px, 0); opacity: 0; }
-            10% { opacity: 1; }
-            90% { opacity: 1; }
-            to { transform: translate(110vw, -50px); opacity: 0; }
-        }
-
-        /* --- Auth Card (OKX Premium Design) --- */
-        .auth-container {
+        /* --- অথেনটিকেশন কার্ড --- */
+        .auth-card {
             position: relative; z-index: 10;
             width: 90%; max-width: 420px;
-            background: var(--card-glass);
-            padding: 45px 30px;
+            background: var(--glass);
+            padding: 40px 30px;
             border-radius: 35px;
-            border: 1px solid rgba(0, 255, 136, 0.15);
-            box-shadow: 0 0 50px rgba(0, 0, 0, 0.8), inset 0 0 20px rgba(0, 255, 136, 0.05);
-            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(20px); /* গ্লাস ইফেক্ট */
+            box-shadow: 0 25px 50px rgba(0,0,0,0.5);
             text-align: center;
         }
 
-        .logo-frame {
-            width: 95px; height: 95px; margin: 0 auto 20px;
+        .logo-box {
+            width: 85px; height: 85px; margin: 0 auto 20px;
             background: #fff; border-radius: 50%; padding: 4px;
-            border: 2px solid var(--primary); overflow: hidden;
-            box-shadow: 0 0 20px rgba(0, 255, 136, 0.3);
+            border: 2.5px solid var(--primary); overflow: hidden;
         }
-        .logo-frame img { width: 100%; height: 100%; object-fit: cover; border-radius: 50%; }
+        .logo-box img { width: 100%; height: 100%; object-fit: cover; border-radius: 50%; }
 
-        .brand { font-size: 30px; font-weight: 900; color: #fff; letter-spacing: -1px; margin-bottom: 5px; }
-        .brand span { color: var(--primary); }
-        .subtitle { color: var(--text-dim); font-size: 14px; margin-bottom: 35px; }
+        .brand-title { font-size: 28px; font-weight: 900; color: #fff; margin-bottom: 5px; }
+        .brand-title span { color: var(--primary); }
+        .sub-title { color: var(--text-dim); font-size: 14px; margin-bottom: 30px; }
 
-        .input-group { text-align: left; margin-bottom: 22px; }
-        label { display: block; font-size: 11px; color: var(--text-dim); margin-bottom: 10px; font-weight: 800; text-transform: uppercase; }
+        .form-group { text-align: left; margin-bottom: 22px; }
+        label { display: block; font-size: 11px; color: var(--text-dim); margin-bottom: 8px; font-weight: 800; text-transform: uppercase; }
 
         input {
             width: 100%; padding: 18px;
-            background: #1a1a1a; border: 1px solid rgba(255,255,255,0.05);
+            background: var(--input); border: 1px solid transparent;
             border-radius: 16px; color: #fff; font-size: 16px; transition: 0.3s;
         }
-        input:focus { border-color: var(--primary); background: #000; }
+        input:focus { border-color: var(--primary); background: rgba(0, 0, 0, 0.5); }
 
-        .pass-wrapper { position: relative; }
-        .eye-icon { position: absolute; right: 18px; top: 50%; transform: translateY(-50%); color: var(--text-dim); cursor: pointer; padding: 5px; }
+        .pass-container { position: relative; }
+        .eye-btn { position: absolute; right: 18px; top: 50%; transform: translateY(-50%); color: var(--text-dim); cursor: pointer; padding: 5px; }
 
         #actionBtn {
             width: 100%; padding: 18px;
@@ -106,56 +96,60 @@
         }
         #actionBtn:disabled { background: #333; color: #666; cursor: not-allowed; }
 
-        /* লিঙ্ক গ্লিচ বন্ধ */
-        .footer-nav { margin-top: 30px; padding-top: 20px; border-top: 1px solid rgba(255,255,255,0.05); }
-        .link-pri { color: var(--primary); cursor: pointer; font-weight: 800; font-size: 15px; background: none !important; }
-        .link-sec { color: var(--text-dim); cursor: pointer; font-size: 14px; display: block; margin-top: 15px; background: none !important; }
+        /* লিঙ্ক গ্লিচ ফিক্স */
+        .footer-links { margin-top: 25px; padding-top: 20px; border-top: 1px solid rgba(255,255,255,0.1); }
+        .switch-btn { color: var(--primary); cursor: pointer; font-weight: 800; font-size: 15px; background: none !important; }
+        .forgot-btn { color: var(--text-dim); cursor: pointer; font-size: 13px; display: block; margin-top: 15px; background: none !important; }
 
-        /* টোস্ট নোটিফিকেশন */
-        #customToast {
+        /* টোস্ট */
+        #toast {
             position: fixed; top: -100px; left: 50%; transform: translateX(-50%);
-            background: #151515; color: #fff; padding: 18px 30px; border-radius: 16px;
-            z-index: 1000; border: 1px solid var(--primary); transition: 0.6s cubic-bezier(0.68, -0.55, 0.27, 1.55);
-            display: flex; align-items: center; gap: 15px; box-shadow: 0 20px 40px rgba(0,0,0,0.5);
+            background: #111; color: #fff; padding: 16px 25px; border-radius: 15px;
+            z-index: 1000; border: 1px solid var(--primary); transition: 0.5s;
+            display: flex; align-items: center; gap: 12px; box-shadow: 0 10px 30px rgba(0,0,0,0.5);
         }
-        #customToast.show { top: 30px; }
+        #toast.active { top: 30px; }
     </style>
 </head>
 <body>
 
-<div id="customToast">
-    <i class="fa-solid fa-bolt" style="color: var(--primary);"></i>
-    <span id="toastMsg">Ready to Trade</span>
+<div class="video-background">
+    <video autoplay muted loop playsinline poster="assets/bg-fallback.jpg">
+        <source src="assets/bg_video.mp4" type="video/mp4">
+        </video>
+    <div class="video-overlay"></div>
 </div>
 
-<canvas id="matrixCanvas"></canvas>
-<div class="market-overlay" id="coinStream"></div>
+<div id="toast">
+    <i class="fa-solid fa-circle-check" style="color: var(--primary);"></i>
+    <span id="tMsg">Welcome back</span>
+</div>
 
-<div class="auth-container">
-    <div class="logo-frame">
+<div class="auth-card">
+    <div class="logo-box">
         <img src="assets/logos/smat.png" alt="SMAT">
     </div>
-    <h1 class="brand">SMAT <span>EXCHANGE</span></h1>
-    <p class="subtitle" id="tagline">Sign in to manage your decentralized assets</p>
+    <h1 class="brand-title">SMAT <span>EXCHANGE</span></h1>
+    <p class="sub-title" id="tagline">The most secure way to trade crypto</p>
 
-    <div class="input-group">
+    <div class="form-group">
         <label>Email Address</label>
         <input type="email" id="email" placeholder="example@gmail.com">
     </div>
 
-    <div class="input-group">
+    <div class="form-group">
         <label>Password <span id="passValidator" style="float: right; text-transform: none;"></span></label>
-        <div class="pass-wrapper">
-            <input type="password" id="password" placeholder="••••••••" oninput="checkPass()">
-            <i class="fa-solid fa-eye eye-icon" onclick="togglePass()"></i>
+        <div class="pass-container">
+            <input type="password" id="password" placeholder="••••••••" oninput="validatePassword()">
+            <i class="fa-solid fa-eye eye-btn" onclick="togglePassword()"></i>
         </div>
     </div>
 
-    <button id="actionBtn" onclick="runAuth()">LOGIN</button>
+    <button id="actionBtn" onclick="handleAuth()">LOGIN</button>
 
-    <div class="footer-nav">
-        <span class="link-pri" id="modeSwitch" onclick="switchUI()">Create Account</span>
-        <span class="link-sec" onclick="triggerReset()">Forgot Password?</span>
+    <div class="footer-links">
+        <span class="switch-btn" id="modeBtn" onclick="toggleUI()">Create new account</span>
+        <span class="forgot-btn" onclick="sendReset()">Lost your password?</span>
     </div>
 </div>
 
@@ -177,94 +171,24 @@
     const auth = getAuth(app);
     const db = getDatabase(app);
 
-    // --- ১. OKX Matrix Animation Logic ---
-    const canvas = document.getElementById('matrixCanvas');
-    const ctx = canvas.getContext('2d');
-    let particles = [];
-
-    function resize() {
-        canvas.width = window.innerWidth;
-        canvas.height = window.innerHeight;
-    }
-    window.addEventListener('resize', resize);
-    resize();
-
-    class Particle {
-        constructor() {
-            this.x = Math.random() * canvas.width;
-            this.y = Math.random() * canvas.height;
-            this.size = Math.random() * 2;
-            this.speedX = Math.random() * 0.5 - 0.25;
-            this.speedY = Math.random() * 0.5 - 0.25;
-        }
-        update() {
-            this.x += this.speedX;
-            this.y += this.speedY;
-            if (this.x > canvas.width) this.x = 0;
-            if (this.x < 0) this.x = canvas.width;
-            if (this.y > canvas.height) this.y = 0;
-            if (this.y < 0) this.y = canvas.height;
-        }
-        draw() {
-            ctx.fillStyle = 'rgba(0, 255, 136, 0.2)';
-            ctx.beginPath();
-            ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
-            ctx.fill();
-        }
-    }
-
-    function initMatrix() {
-        for (let i = 0; i < 100; i++) particles.push(new Particle());
-    }
-
-    function animate() {
-        ctx.clearRect(0, 0, canvas.width, canvas.height);
-        particles.forEach(p => { p.update(); p.draw(); });
-        requestAnimationFrame(animate);
-    }
-    initMatrix();
-    animate();
-
-    // --- ২. Floating Coin Prices ---
-    const coinStream = document.getElementById('coinStream');
-    const crypto = [
-        {n: 'BTC/USDT', p: '64,210', u: true}, {n: 'ETH/USDT', p: '3,452', u: false},
-        {n: 'SMAT/USDT', p: '1.4500', u: true}, {n: 'BNB/USDT', p: '592', u: false}
-    ];
-
-    function spawnCoins() {
-        setInterval(() => {
-            const div = document.createElement('div');
-            div.className = 'floating-coin';
-            const d = crypto[Math.floor(Math.random()*crypto.length)];
-            div.innerHTML = `${d.n} <span style="color:${d.u?'#00ff88':'#ff4d4d'}">${d.p} ${d.u?'↑':'↓'}</span>`;
-            div.style.top = Math.random() * 80 + 'vh';
-            div.style.duration = (Math.random() * 10 + 10) + 's';
-            coinStream.appendChild(div);
-            setTimeout(() => div.remove(), 20000);
-        }, 3000);
-    }
-    spawnCoins();
-
-    // --- ৩. SMAT ID & Referral Logic (Original) ---
-    let isLogin = true;
+    let isLoginMode = true;
     const urlParams = new URLSearchParams(window.location.search);
     const referralID = urlParams.get('ref') || null;
 
-    window.pop = (msg, isErr = false) => {
-        const t = document.getElementById('customToast');
-        document.getElementById('toastMsg').innerText = msg;
-        t.style.borderColor = isErr ? "#ff4d4d" : "#00ff88";
-        t.classList.add('show');
-        setTimeout(() => t.classList.remove('show'), 3000);
+    window.notify = (msg, err = false) => {
+        const t = document.getElementById('toast');
+        document.getElementById('tMsg').innerText = msg;
+        t.style.borderColor = err ? "#ff4d4d" : "#00ff88";
+        t.classList.add('active');
+        setTimeout(() => t.classList.remove('active'), 3000);
     };
 
-    window.togglePass = () => {
+    window.togglePassword = () => {
         const p = document.getElementById('password');
         p.type = p.type === 'password' ? 'text' : 'password';
     };
 
-    window.checkPass = () => {
+    window.validatePassword = () => {
         const val = document.getElementById('password').value;
         const status = document.getElementById('passValidator');
         const btn = document.getElementById('actionBtn');
@@ -276,60 +200,60 @@
             status.style.color = "#00ff88";
             btn.disabled = false;
         } else {
-            status.innerText = "Letter+Num (Min 8)";
+            status.innerText = "Letter + Num (Min 8)";
             status.style.color = "#ff4d4d";
-            if(!isLogin) btn.disabled = true;
+            if(!isLoginMode) btn.disabled = true;
         }
     };
 
-    window.switchUI = () => {
-        isLogin = !isLogin;
-        document.getElementById('tagline').innerText = isLogin ? "Sign in to manage your decentralized assets" : "Join the SMAT ecosystem and start mining";
-        document.getElementById('actionBtn').innerText = isLogin ? "LOGIN" : "REGISTER";
-        document.getElementById('modeSwitch').innerText = isLogin ? "Create Account" : "Sign In Instead";
+    window.toggleUI = () => {
+        isLoginMode = !isLoginMode;
+        document.getElementById('tagline').innerText = isLoginMode ? "The most secure way to trade crypto" : "Start your blockchain journey with SMAT";
+        document.getElementById('actionBtn').innerText = isLoginMode ? "LOGIN" : "REGISTER";
+        document.getElementById('modeBtn').innerText = isLoginMode ? "Create new account" : "Already have an account? Sign In";
         document.getElementById('passValidator').innerText = "";
     };
 
-    const getNewSmatID = async () => {
+    const generateSmatID = async () => {
         const counterRef = ref(db, 'counters/lastSmatId');
-        const res = await runTransaction(counterRef, (v) => (v || 100000) + 1);
-        return "SMAT" + res.snapshot.val();
+        const result = await runTransaction(counterRef, (v) => (v || 100000) + 1);
+        return "SMAT" + result.snapshot.val();
     };
 
-    window.runAuth = async () => {
+    window.handleAuth = async () => {
         const email = document.getElementById('email').value;
         const pass = document.getElementById('password').value;
-        if(!email || !pass) return pop("Enter credentials!", true);
+        if(!email || !pass) return notify("All fields required!", true);
 
-        pop("Authenticating...");
+        notify("Authenticating...");
         try {
-            if (isLogin) {
-                const cred = await signInWithEmailAndPassword(auth, email, pass);
-                if (cred.user.emailVerified) {
-                    const snap = await get(ref(db, 'users/' + cred.user.uid));
+            if (isLoginMode) {
+                const res = await signInWithEmailAndPassword(auth, email, pass);
+                if (res.user.emailVerified) {
+                    const snap = await get(ref(db, 'users/' + res.user.uid));
                     if(snap.exists()) localStorage.setItem('smatID', snap.val().smatID);
                     localStorage.setItem('isLoggedIn', 'true');
                     window.location.href = "home.html"; 
-                } else pop("Verify your email first!", true);
+                } else notify("Verify email before logging in!", true);
             } else {
-                const cred = await createUserWithEmailAndPassword(auth, email, pass);
-                const sID = await getNewSmatID();
-                await set(ref(db, 'users/' + cred.user.uid), {
+                const res = await createUserWithEmailAndPassword(auth, email, pass);
+                const sID = await generateSmatID();
+                await set(ref(db, 'users/' + res.user.uid), {
                     email, smatID: sID, kycStatus: 'unverified', referredBy: referralID, createdAt: new Date().toISOString()
                 });
-                await sendEmailVerification(cred.user);
-                pop("Check Gmail for verification link!");
+                await sendEmailVerification(res.user);
+                notify("Verification link sent to your email!");
             }
-        } catch (e) { pop(e.message, true); }
+        } catch (e) { notify(e.message, true); }
     };
 
-    window.triggerReset = async () => {
+    window.sendReset = async () => {
         const email = document.getElementById('email').value;
-        if(!email) return pop("Email required for reset!", true);
+        if(!email) return notify("Please enter your email first!", true);
         try {
             await sendPasswordResetEmail(auth, email);
-            pop("Reset link sent to your email!");
-        } catch (e) { pop(e.message, true); }
+            notify("Password reset email sent!");
+        } catch (e) { notify(e.message, true); }
     };
 </script>
 </body>
