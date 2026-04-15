@@ -29,13 +29,12 @@
         .history-section { flex: 1; background: var(--card); display: flex; flex-direction: column; overflow: hidden; padding-bottom: 85px; }
         .history-header { text-align: center; padding: 10px; font-size: 15px; font-weight: 900; border-bottom: 1px solid var(--border); background: #12161c; }
         .table-container { flex: 1; overflow-y: auto; overflow-x: auto; }
-        /* টেবিল ছোট স্ক্রিনে ফিট করার জন্য অপ্টিমাইজড সিএসএস */
 table { 
     width: 100%; 
     border-collapse: collapse; 
-    font-size: 10px; /* ফন্ট ১ পিক্সেল কমানো হয়েছে */
+    font-size: 10px; 
     text-align: center; 
-    table-layout: fixed; /* কলামগুলোর উইথ নির্দিষ্ট রাখার জন্য */
+    table-layout: fixed; 
 }
 
 th { 
@@ -54,19 +53,18 @@ td {
     border-bottom: 1px solid #23272e; 
     font-weight: 600; 
     vertical-align: middle; 
-    word-break: break-all; /* বড় সংখ্যা ভেঙে নিচে নামার জন্য */
+    word-break: break-all; 
 }
 
-/* কলামগুলোর উইথ ডিস্ট্রিবিউশন */
-th:nth-child(1), td:nth-child(1) { width: 16%; } /* Round */
-th:nth-child(2), td:nth-child(2) { width: 14%; } /* Time */
-th:nth-child(3), td:nth-child(3) { width: 20%; } /* Locked Price */
-th:nth-child(4), td:nth-child(4) { width: 12%; } /* Action (UP/DOWN) */
-th:nth-child(5), td:nth-child(5) { width: 18%; } /* Result */
-th:nth-child(6), td:nth-child(6) { width: 20%; } /* My Win */
+th:nth-child(1), td:nth-child(1) { width: 16%; } 
+th:nth-child(2), td:nth-child(2) { width: 14%; } 
+th:nth-child(3), td:nth-child(3) { width: 20%; } 
+th:nth-child(4), td:nth-child(4) { width: 12%; } 
+th:nth-child(5), td:nth-child(5) { width: 18%; } 
+th:nth-child(6), td:nth-child(6) { width: 20%; } 
 
 .hist-logo { 
-    width: 12px; /* লোগো একটু ছোট করা হয়েছে */
+    width: 12px; 
     height: 12px; 
     border-radius: 50%; 
     vertical-align: middle; 
@@ -75,7 +73,7 @@ th:nth-child(6), td:nth-child(6) { width: 20%; } /* My Win */
 
 .sub-text { 
     display: block; 
-    font-size: 7px; /* সাব-টেক্সট আরও ছোট করা হয়েছে */
+    font-size: 7px; 
     color: #848e9c; 
     margin-top: 1px; 
 }
@@ -104,7 +102,7 @@ th:nth-child(6), td:nth-child(6) { width: 20%; } /* My Win */
         </div>
         <div class="bal-box"> Balance
             <span id="headerBalance" class="bal-amount">0.00000000</span>
-            <span id="headerAssetUnit" style="font-size:10px; color:#848e9c;">...</span>
+            <span id="headerAssetUnit" style="font-size:10px; color:#848e9c;">USDT</span>
         </div>
         <div id="priceDisplay" style="justify-self: end; color: var(--up); font-weight: 900; font-size: 17px;">$0.00</div>
     </header>
@@ -142,7 +140,7 @@ th:nth-child(6), td:nth-child(6) { width: 20%; } /* My Win */
     <div id="betModal" class="modal-overlay">
         <div class="modal-box">
             <h3 id="modalTitle" style="color:var(--primary)">Bet UP</h3>
-            <p style="font-size: 11px; color: #848e9c; margin-top: 8px;">Available Balance: <span id="modalAvbl">0.00</span></p>
+            <p style="font-size: 11px; color: #848e9c; margin-top: 8px;">Available Balance: <span id="modalAvbl">0.00</span> USDT</p>
             <input type="number" id="betAmount" step="0.00000001" placeholder="0.00000000">
             <div style="display: flex; gap: 10px;">
                 <button class="t-btn" style="background:#2b3139;" onclick="window.closeBetModal()">Cancel</button>
@@ -233,7 +231,8 @@ th:nth-child(6), td:nth-child(6) { width: 20%; } /* My Win */
         if (!assets[val]) return;
         activeKey = val;
         document.getElementById('assetLogo').src = `assets/logos/${assets[val].logo}`;
-        document.getElementById('headerAssetUnit').innerText = assets[val].unit || val.toUpperCase();
+        // Header Unit সবসময় USDT থাকবে
+        document.getElementById('headerAssetUnit').innerText = "USDT";
         chart.data.datasets[0].data = Array(50).fill(assets[val].currentPrice || 0);
         chart.update('none');
         if (user) syncUser();
@@ -284,7 +283,7 @@ th:nth-child(6), td:nth-child(6) { width: 20%; } /* My Win */
             betAmt: bet ? bet.amount : 0,
             isPending: true,
             logo: assets[key].logo,
-            coinPath: (assets[key].unit || key).toLowerCase() + "_balance"
+            coinPath: "usdt_balance" // পাথ ফিক্সড USDT
         };
         await set(ref(db, `history/${user.uid}/${key}/${rid}`), entry);
     }
@@ -315,7 +314,7 @@ th:nth-child(6), td:nth-child(6) { width: 20%; } /* My Win */
                 }
 
                 if (winAmt > 0) {
-                    const balancePath = `users/${user.uid}/balances/${rec.coinPath}`;
+                    const balancePath = `users/${user.uid}/balances/usdt_balance`; // শুধুমাত্র USDT তে প্রফিট যাবে
                     const bRef = ref(db, balancePath);
                     const bSnap = await get(bRef);
                     await set(bRef, (parseFloat(bSnap.val() || 0) + winAmt).toFixed(8));
@@ -380,7 +379,8 @@ th:nth-child(6), td:nth-child(6) { width: 20%; } /* My Win */
 
         Object.values(mergedData).reverse().slice(0, 15).forEach(item => {
             const isWaiting = item.isPending && globalState === "WAITING";
-            let winHtml = item.isPending ? '<div class="spinner-sm"></div>' : (item.status === "WIN" ? `<div style="color:var(--up)"><img src="assets/logos/${item.logo}" class="hist-logo">${parseFloat(item.finalWin).toFixed(8)}</div>` : (item.status === "LOSS" ? `<div style="color:var(--down)"><img src="assets/logos/${item.logo}" class="hist-logo">0.00000000</div>` : (item.status === "DRAW" ? `<div style="color:var(--warn)"><img src="assets/logos/${item.logo}" class="hist-logo">${parseFloat(item.finalWin).toFixed(6)}</div>` : '<span style="color:#848e9c">--</span>')));
+            // হিস্ট্রিতে লোগো সবসময় বর্তমান অ্যাসেটের হবে, কিন্তু উইন অ্যামাউন্ট USDT র হবে
+            let winHtml = item.isPending ? '<div class="spinner-sm"></div>' : (item.status === "WIN" ? `<div style="color:var(--up)">$${parseFloat(item.finalWin).toFixed(2)}</div>` : (item.status === "LOSS" ? `<div style="color:var(--down)">$0.00</div>` : (item.status === "DRAW" ? `<div style="color:var(--warn)">$${parseFloat(item.finalWin).toFixed(2)}</div>` : '<span style="color:#848e9c">--</span>')));
             
             body.innerHTML += `<tr class="${isWaiting ? 'blink' : ''}">
                 <td><img src="assets/logos/${item.logo}" class="hist-logo"> ${item.rid}</td>
@@ -409,11 +409,11 @@ th:nth-child(6), td:nth-child(6) { width: 20%; } /* My Win */
         const amtInput = document.getElementById('betAmount'); const amt = parseFloat(amtInput.value);
         if (isNaN(amt) || amt <= 0) return alert("Input Amount");
 
-        const coinPath = (assets[activeKey].unit || activeKey).toLowerCase() + "_balance";
-        const balRef = ref(db, `users/${user.uid}/balances/${coinPath}`);
+        // ব্যালেন্স পাথ সবসময় usdt_balance
+        const balRef = ref(db, `users/${user.uid}/balances/usdt_balance`);
         
         const bSnap = await get(balRef); const curBal = parseFloat(bSnap.val() || 0);
-        if (amt > curBal) return alert("Insufficient Balance");
+        if (amt > curBal) return alert("Insufficient USDT Balance");
         
         await set(balRef, (curBal - amt).toFixed(8));
         assets[activeKey].pending = { side: document.getElementById('betModal').dataset.side, amount: amt };
@@ -422,27 +422,16 @@ th:nth-child(6), td:nth-child(6) { width: 20%; } /* My Win */
     };
 
     function syncUser() {
-    if(!user || !activeKey) return;
-    
-    // আপনার ওয়ালেট স্ট্রাকচার অনুযায়ী সঠিক পাথ
-    const coinUnit = assets[activeKey].unit.toLowerCase(); // উদা: sol
-    const coinPath = coinUnit + "_balance"; // উদা: sol_balance
-    
-    const balRef = ref(db, `users/${user.uid}/balances/${coinPath}`);
-    
-    onValue(balRef, (s) => {
-        const currentBal = parseFloat(s.val() || 0).toFixed(8);
-        // মেইন ডিসপ্লে ব্যালেন্স আপডেট
-        const balanceDisplay = document.getElementById('headerBalance');
-        if(balanceDisplay) balanceDisplay.innerText = currentBal;
-        
-        // প্রেডিকশন পেজের ভেতরের ছোট ব্যালেন্স টেক্সট আপডেট
-        const innerBal = document.querySelector('.prediction-balance-text'); 
-        if(innerBal) innerBal.innerText = currentBal;
-    });
-    syncHistory();
-}
-
+        if(!user) return;
+        // শুধুমাত্র USDT ব্যালেন্স সিঙ্ক হবে
+        const balRef = ref(db, `users/${user.uid}/balances/usdt_balance`);
+        onValue(balRef, (s) => {
+            const currentBal = parseFloat(s.val() || 0).toFixed(8);
+            const balanceDisplay = document.getElementById('headerBalance');
+            if(balanceDisplay) balanceDisplay.innerText = currentBal;
+        });
+        syncHistory();
+    }
 
     function initWS() {
         if (Object.keys(assets).length === 0) return;
@@ -476,7 +465,6 @@ th:nth-child(6), td:nth-child(6) { width: 20%; } /* My Win */
         }
     });
 </script>
-
 
 </body>
 </html>
