@@ -437,29 +437,21 @@ const chart = new Chart(ctx, {
     }
 
     function initWS() {
-    // @trade এর বদলে @ticker ব্যবহার করলে আপডেট আরো নিয়মিত আসবে
-    const streams = Object.values(assets).map(a => `${a.symbol}@ticker`).join('/');
-    const ws = new WebSocket(`wss://stream.binance.com:9443/stream?streams=${streams}`);
-    
-    ws.onmessage = (e) => {
-        const d = JSON.parse(e.data);
-        // ticker স্ট্রিমে সিম্বল বড় হাতের থাকে, তাই toLowerCase() করে ম্যাচ করা হচ্ছে
-        const key = Object.keys(assets).find(k => assets[k].symbol === d.data.s.toLowerCase());
-        
-        if (key) {
-            const price = parseFloat(d.data.c); // 'c' মানে বর্তমান ক্লোজিং প্রাইস
-            assets[key].currentPrice = price; 
-            
-            if (key === activeKey) {
-                // সরাসরি DOM আপডেট
-                document.getElementById('priceDisplay').innerText = '$' + price.toFixed(4);
-                chart.data.datasets[0].data.shift(); 
-                chart.data.datasets[0].data.push(price);
-                chart.update('none'); // অ্যানিমেশন অফ রাখা হয়েছে দ্রুত পারফরম্যান্সের জন্য
+        const streams = Object.values(assets).map(a => `${a.symbol}@trade`).join('/');
+        const ws = new WebSocket(`wss://stream.binance.com:9443/stream?streams=${streams}`);
+        ws.onmessage = (e) => {
+            const d = JSON.parse(e.data);
+            const key = Object.keys(assets).find(k => assets[k].symbol === d.data.s.toLowerCase());
+            if (key) {
+                const price = parseFloat(d.data.p); assets[key].currentPrice = price; 
+                if (key === activeKey) {
+                    document.getElementById('priceDisplay').innerText = '$' + price.toFixed(4);
+                    chart.data.datasets[0].data.shift(); chart.data.datasets[0].data.push(price);
+                    chart.update('none');
+                }
             }
-        }
-    };
-}
+        };
+    }
 
 
     onAuthStateChanged(auth, (u) => { if (u) { user = u; syncUser(); initWS(); initTimer(); } else { window.location.href = "logIn.html"; } });
