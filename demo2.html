@@ -269,7 +269,7 @@ const chart = new Chart(ctx, {
         let t = data.timeLeft; let s = data.state;
         if (t > 0) { t--; } else {
             if (s === "TRADING") { s = "CLOSED"; t = 10; Object.keys(assets).forEach(key => lockAndSaveRound(key)); }
-            else if (s === "CLOSED") { s = "WAITING"; t = 890; }
+            else if (s === "CLOSED") { s = "WAITING"; t = 830; }
             else { s = "TRADING"; t = 60; Object.keys(assets).forEach(key => finalizeAndReset(key)); }
         }
         await update(timerRef, { timeLeft: t, state: s });
