@@ -8,6 +8,7 @@
     <style>
         :root {
             --primary: #00ff88;
+            --primary-dark: #00cc6d;
             --bg: #0b0e11;
             --card: #161a1e;
             --input: #1e2329;
@@ -15,56 +16,68 @@
             --muted: #848e9c;
         }
 
-        * { box-sizing: border-box; transition: 0.3s cubic-bezier(0.4, 0, 0.2, 1); }
+        * { box-sizing: border-box; font-family: 'Segoe UI', system-ui, sans-serif; }
 
         body {
             margin: 0;
-            font-family: 'Segoe UI', Roboto, sans-serif;
             background: var(--bg);
             display: flex;
             justify-content: center;
             align-items: center;
             min-height: 100vh;
             color: var(--text);
+            overflow: hidden;
         }
 
+        /* --- Auth Card Design --- */
         .auth-container {
-            width: 92%;
+            width: 90%;
             max-width: 400px;
             background: var(--card);
-            padding: 40px 30px;
-            border-radius: 24px;
+            padding: 40px 25px;
+            border-radius: 30px;
             text-align: center;
             border: 1px solid rgba(255,255,255,0.05);
-            box-shadow: 0 20px 40px rgba(0,0,0,0.4);
+            box-shadow: 0 25px 50px rgba(0,0,0,0.5);
+            z-index: 10;
         }
 
         .brand {
-            font-size: 28px;
-            font-weight: 800;
+            font-size: 32px;
+            font-weight: 900;
             color: var(--primary);
-            margin-bottom: 5px;
+            letter-spacing: 1px;
+            margin-bottom: 8px;
             text-transform: uppercase;
         }
 
-        .subtitle { color: var(--muted); font-size: 14px; margin-bottom: 30px; }
+        .subtitle { color: var(--muted); font-size: 14px; margin-bottom: 35px; }
 
-        .group { text-align: left; margin-bottom: 20px; }
-        label { display: block; font-size: 13px; margin-bottom: 8px; color: var(--muted); }
+        .group { text-align: left; margin-bottom: 22px; position: relative; }
+        
+        label { 
+            display: flex; 
+            justify-content: space-between;
+            font-size: 13px; 
+            margin-bottom: 8px; 
+            color: var(--muted); 
+            padding-left: 5px;
+        }
 
         .field-wrapper { position: relative; }
 
         input {
             width: 100%;
-            padding: 15px;
+            padding: 16px 18px;
             background: var(--input);
-            border: 2px solid transparent;
-            border-radius: 12px;
+            border: 1.5px solid transparent;
+            border-radius: 14px;
             color: white;
             font-size: 15px;
+            transition: 0.2s;
         }
 
-        input:focus { border-color: var(--primary); outline: none; }
+        input:focus { border-color: var(--primary); outline: none; background: #1a1f24; }
 
         .eye-btn {
             position: absolute;
@@ -73,40 +86,76 @@
             transform: translateY(-50%);
             cursor: pointer;
             color: var(--muted);
+            padding: 5px;
         }
 
-        .pass-hint { font-size: 11px; margin-top: 5px; display: block; }
-
-        button {
+        /* --- Premium Button --- */
+        #btn {
             width: 100%;
             padding: 16px;
             background: var(--primary);
             color: #000;
             border: none;
-            border-radius: 12px;
+            border-radius: 14px;
             font-size: 16px;
-            font-weight: 700;
+            font-weight: 800;
             cursor: pointer;
             margin-top: 10px;
+            box-shadow: 0 8px 20px rgba(0, 255, 136, 0.15);
         }
 
-        button:disabled { background: #474d57; color: #848e9c; cursor: not-allowed; }
+        #btn:active { transform: scale(0.98); }
+        #btn:disabled { background: #2b3139; color: #5e6673; cursor: not-allowed; box-shadow: none; }
 
-        .footer { margin-top: 25px; display: flex; flex-direction: column; gap: 12px; }
-        .toggle-link { color: var(--primary); cursor: pointer; font-weight: 600; font-size: 14px; }
-        .forgot { color: var(--muted); font-size: 13px; cursor: pointer; }
+        .footer { margin-top: 30px; }
+        
+        .toggle-link { 
+            color: var(--primary); 
+            cursor: pointer; 
+            font-weight: 600; 
+            font-size: 15px;
+            display: inline-block;
+        }
 
-        .msg {
+        .forgot { 
+            color: var(--muted); 
+            font-size: 13px; 
+            cursor: pointer; 
             margin-top: 20px;
-            padding: 12px;
-            border-radius: 10px;
-            font-size: 13px;
-            display: none;
-            background: rgba(255,255,255,0.03);
+            display: block;
+            text-decoration: none;
         }
+
+        /* --- Custom Toast Notification --- */
+        #toast {
+            position: fixed;
+            top: -100px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: #1e2329;
+            color: white;
+            padding: 15px 25px;
+            border-radius: 12px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+            border-left: 4px solid var(--primary);
+            z-index: 1000;
+            transition: top 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            min-width: 280px;
+        }
+
+        #toast.show { top: 30px; }
+        #toast.error { border-left-color: #ff4d4d; }
     </style>
 </head>
 <body>
+
+<div id="toast">
+    <i id="toastIcon" class="fa-solid fa-circle-info"></i>
+    <span id="toastMsg">Notification message</span>
+</div>
 
 <div class="auth-container">
     <div class="brand">SMAT HUB</div>
@@ -118,7 +167,10 @@
     </div>
 
     <div class="group">
-        <label>Password <span id="passStatus" class="pass-hint"></span></label>
+        <label>
+            Password 
+            <span id="passStatus" style="font-size: 11px;"></span>
+        </label>
         <div class="field-wrapper">
             <input type="password" id="password" placeholder="••••••••" oninput="validatePassword()">
             <i class="fa-solid fa-eye eye-btn" id="eyeIcon" onclick="togglePasswordVisibility()"></i>
@@ -127,15 +179,14 @@
 
     <button id="btn" onclick="handleAuth()">Login</button>
 
-    <div id="message" class="msg"></div>
-
     <div class="footer">
         <div class="toggle-link" id="toggleLink" onclick="toggleForm()">Create account</div>
-        <div class="forgot" onclick="resetPass()">Forgot password?</div>
+        <a class="forgot" onclick="resetPass()">Forgot password?</a>
     </div>
 </div>
 
 <script type="module">
+  // --- Firebase Config & Imports ---
   import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
   import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, sendEmailVerification, sendPasswordResetEmail } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
   import { getDatabase, ref, set, get, runTransaction } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
@@ -158,69 +209,64 @@
   const urlParams = new URLSearchParams(window.location.search);
   const referralID = urlParams.get('ref') || null;
 
-  // --- পাসওয়ার্ড দেখা/লুকানোর ফাংশন ---
+  // --- Premium Toast Function ---
+  window.showToast = (message, type = "success") => {
+    const toast = document.getElementById('toast');
+    const msg = document.getElementById('toastMsg');
+    const icon = document.getElementById('toastIcon');
+    
+    msg.innerText = message;
+    toast.className = type === "error" ? "show error" : "show";
+    icon.className = type === "error" ? "fa-solid fa-triangle-exclamation" : "fa-solid fa-circle-check";
+    icon.style.color = type === "error" ? "#ff4d4d" : "#00ff88";
+
+    setTimeout(() => { toast.classList.remove('show'); }, 3000);
+  };
+
   window.togglePasswordVisibility = () => {
     const passInput = document.getElementById('password');
     const eyeIcon = document.getElementById('eyeIcon');
-    if (passInput.type === 'password') {
-        passInput.type = 'text';
-        eyeIcon.classList.replace('fa-eye', 'fa-eye-slash');
-    } else {
-        passInput.type = 'password';
-        eyeIcon.classList.replace('fa-eye-slash', 'fa-eye');
-    }
+    const isPass = passInput.type === 'password';
+    passInput.type = isPass ? 'text' : 'password';
+    eyeIcon.classList.toggle('fa-eye', !isPass);
+    eyeIcon.classList.toggle('fa-eye-slash', isPass);
   };
 
-  // --- ভ্যালিডেশন ---
   window.validatePassword = () => {
     const pass = document.getElementById('password').value;
     const status = document.getElementById('passStatus');
     const submitBtn = document.getElementById('btn');
     const regex = /^(?=.*[A-Za-z])(?=.*\d)[A-Za-z\d]{8,}$/;
 
-    if (pass === "") { status.innerText = ""; submitBtn.disabled = false; return; }
+    if (pass === "") { status.innerText = ""; return; }
 
     if (regex.test(pass)) {
         status.innerText = "✓ Strong";
         status.style.color = "#00ff88";
         submitBtn.disabled = false;
     } else {
-        status.innerText = "Min 8 chars, Letter & Number";
+        status.innerText = "Min 8 chars (Letter+Num)";
         status.style.color = "#ff4d4d";
         if(!isLogin) submitBtn.disabled = true;
     }
   };
 
-  // --- ফর্ম টগল (Login/Register) ---
   window.toggleForm = () => {
     isLogin = !isLogin;
     document.getElementById('subtitle').innerText = isLogin ? "Log in to your SMAT account" : "Join the SMAT ecosystem today";
     document.getElementById('btn').innerText = isLogin ? "Login" : "Create Account";
     document.getElementById('toggleLink').innerText = isLogin ? "Create account" : "Already have an account? Sign In";
-    document.getElementById('message').style.display = "none";
     document.getElementById('passStatus').innerText = "";
     document.getElementById('btn').disabled = false;
   };
 
-  const generateSmatID = async () => {
-    const counterRef = ref(db, 'counters/lastSmatId');
-    const result = await runTransaction(counterRef, (currentValue) => {
-      return (currentValue || 100000) + 1;
-    });
-    return "SMAT" + result.snapshot.val();
-  };
-
-  // --- মেইন অথেনটিকেশন ফাংশন ---
   window.handleAuth = async () => {
     const email = document.getElementById('email').value;
     const pass = document.getElementById('password').value;
-    const msgBox = document.getElementById('message');
     
-    if(!email || !pass) return alert("Please fill all fields");
+    if(!email || !pass) return showToast("Fields cannot be empty!", "error");
 
-    msgBox.style.display = "block";
-    msgBox.style.color = "white";
-    msgBox.innerText = "Processing...";
+    showToast("Processing request...");
 
     try {
       if (isLogin) {
@@ -228,44 +274,32 @@
         if (userCredential.user.emailVerified) {
           const userSnapshot = await get(ref(db, 'users/' + userCredential.user.uid));
           if(userSnapshot.exists()) localStorage.setItem('smatID', userSnapshot.val().smatID);
-          
           localStorage.setItem('isLoggedIn', 'true');
-          localStorage.setItem('userEmail', email);
           window.location.href = "home.html"; 
         } else {
-          msgBox.style.color = "#f3ba2f";
-          msgBox.innerText = "Please verify your email first!";
+            showToast("Verify email first!", "error");
         }
       } else {
         const userCredential = await createUserWithEmailAndPassword(auth, email, pass);
-        const newUser = userCredential.user;
-        const newSmatID = await generateSmatID();
-
-        await set(ref(db, 'users/' + newUser.uid), {
-          email: email,
-          smatID: newSmatID,
-          kycStatus: 'unverified',
-          referredBy: referralID,
-          createdAt: new Date().toISOString()
+        const newSmatID = "SMAT" + Math.floor(100000 + Math.random() * 900000); // Simple ID for now
+        await set(ref(db, 'users/' + userCredential.user.uid), {
+          email, smatID: newSmatID, kycStatus: 'unverified', referredBy: referralID, createdAt: new Date().toISOString()
         });
-
-        await sendEmailVerification(newUser);
-        msgBox.style.color = "#00ff88";
-        msgBox.innerText = "Verification link sent! Check Gmail.";
+        await sendEmailVerification(userCredential.user);
+        showToast("Verification link sent!");
       }
     } catch (e) {
-      msgBox.style.color = "#ff4d4d";
-      msgBox.innerText = e.message;
+      showToast(e.message, "error");
     }
   };
 
   window.resetPass = async () => {
     const email = document.getElementById('email').value;
-    if(!email) return alert("Enter email first.");
+    if(!email) return showToast("Enter email first!", "error");
     try {
         await sendPasswordResetEmail(auth, email);
-        alert("Password reset link sent to your email!");
-    } catch (e) { alert(e.message); }
+        showToast("Password reset link sent!");
+    } catch (e) { showToast(e.message, "error"); }
   };
 </script>
 
