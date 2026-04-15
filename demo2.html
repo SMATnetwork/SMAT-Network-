@@ -247,7 +247,7 @@ th:nth-child(6), td:nth-child(6) { width: 20%; } /* My Win */
         });
     }
 
-    // ব্যাকএন্ড টাইমার ও রেজাল্ট প্রসেসিং লজিক (আপনার সব কন্ডিশন এখানে যুক্ত করা হয়েছে)
+    // ব্যাকএন্ড টাইমার লজিক
     setInterval(async () => {
         const timerRef = ref(db, 'timerLogic');
         const snap = await get(timerRef);
@@ -260,7 +260,7 @@ th:nth-child(6), td:nth-child(6) { width: 20%; } /* My Win */
                 s = "CLOSED"; t = 3; 
                 Object.keys(assets).forEach(key => lockAndSaveRound(key)); 
             }
-            else if (s === "CLOSED") { s = "WAITING"; t = 180; }
+            else if (s === "CLOSED") { s = "WAITING"; t = 10; }
             else { 
                 s = "TRADING"; t = 60; 
                 Object.keys(assets).forEach(key => finalizeAndReset(key));
@@ -270,11 +270,10 @@ th:nth-child(6), td:nth-child(6) { width: 20%; } /* My Win */
     }, 1000);
 
     async function lockAndSaveRound(key) {
-        if (!assets[key]) return;
-        assets[key].lockedPrice = assets[key].currentPrice; 
-        if (!user) return;
+        if (!assets[key] || !user) return;
         const rid = assets[key].round;
         const bet = assets[key].pending;
+        
         const entry = {
             rid: rid,
             time: new Date().toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'}),
@@ -282,15 +281,17 @@ th:nth-child(6), td:nth-child(6) { width: 20%; } /* My Win */
             action: bet ? bet.side : "No Trade",
             betAmt: bet ? bet.amount : 0,
             isPending: true,
-            logo: assets[key].logo
+            logo: assets[key].logo,
+            coinPath: (assets[key].unit || key).toLowerCase() + "_balance" // উদা: usdt_balance
         };
-        await set(ref(db, `history/${user.uid}/${key}/${rid}`), entry);
+        await set(ref(db, `predictionHistory/${user.uid}/${key}/${rid}`), entry);
+        assets[key].lockedPrice = assets[key].currentPrice;
     }
 
-    // ১০০% অরিজিনাল শর্ত অনুযায়ী রেজাল্ট লজিক
     async function finalizeAndReset(key) {
         if (!user || !assets[key]) return;
-        const snap = await get(ref(db, `history/${user.uid}/${key}`));
+        const historyRef = ref(db, `predictionHistory/${user.uid}/${key}`);
+        const snap = await get(historyRef);
         const history = snap.val() || {};
         const resPrice = assets[key].currentPrice;
 
@@ -304,22 +305,24 @@ th:nth-child(6), td:nth-child(6) { width: 20%; } /* My Win */
                     status = "No Trade";
                 } else if (resPrice === rec.lockedPrice) {
                     status = "DRAW"; 
-                    winAmt = rec.betAmt * 0.5; // অরিজিনাল শর্ত: ড্র হলে ৫০% ফেরত
+                    winAmt = rec.betAmt * 0.5; // ৫০% রিফান্ড
                 } else {
                     const win = (rec.action === "UP" && resPrice > rec.lockedPrice) || (rec.action === "DOWN" && resPrice < rec.lockedPrice);
                     if (win) {
                         status = "WIN";
-                        winAmt = rec.betAmt + (rec.betAmt * 0.96); // অরিজিনাল শর্ত: ৯৬% প্রফিট
+                        winAmt = rec.betAmt + (rec.betAmt * 0.96); // ৯৬% প্রফিট
                     }
                 }
 
                 if (winAmt > 0) {
-                    const bRef = ref(db, `users/${user.uid}/balances/${key}`);
+                    const balancePath = `users/${user.uid}/balances/${rec.coinPath}`;
+                    const bRef = ref(db, balancePath);
                     const bSnap = await get(bRef);
-                    await set(bRef, (parseFloat(bSnap.val() || 0) + winAmt).toFixed(6));
+                    const newBal = (parseFloat(bSnap.val() || 0) + winAmt).toFixed(8);
+                    await set(bRef, newBal);
                 }
 
-                await update(ref(db, `history/${user.uid}/${key}/${rid}`), {
+                await update(ref(db, `predictionHistory/${user.uid}/${key}/${rid}`), {
                     isPending: false,
                     resultPrice: resPrice,
                     status: status,
@@ -328,9 +331,8 @@ th:nth-child(6), td:nth-child(6) { width: 20%; } /* My Win */
             }
         }
 
-        // গ্লোবাল হিস্ট্রি সেভ
         const currentRid = assets[key].round;
-        await set(ref(db, `marketHistory/${key}/${currentRid}`), {
+        await set(ref(db, `predictionMarketHistory/${key}/${currentRid}`), {
             rid: currentRid,
             time: new Date().toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'}),
             lockedPrice: assets[key].lockedPrice || assets[key].currentPrice,
@@ -338,10 +340,10 @@ th:nth-child(6), td:nth-child(6) { width: 20%; } /* My Win */
             logo: assets[key].logo
         });
 
-        assets[key].round++;
-        await update(ref(db, 'roundLogic'), { [key]: assets[key].round });
+        const nextRid = parseInt(currentRid) + 1;
+        await update(ref(db, 'roundLogic'), { [key]: nextRid });
+        assets[key].round = nextRid;
         assets[key].pending = null;
-        if (key === activeKey) document.getElementById('dynamicLockedInfo').innerText = "";
     }
 
     function updateEngineUI(t, s) {
@@ -351,14 +353,17 @@ th:nth-child(6), td:nth-child(6) { width: 20%; } /* My Win */
         const lbl = document.getElementById('statusLabel');
         const lockedDiv = document.getElementById('dynamicLockedInfo');
         
-        if (s === "TRADING") { lbl.innerHTML = `TRADING TIME`; lbl.style.color = "var(--up)"; lockedDiv.innerText = ""; }
-        else if (s === "CLOSED") { lbl.innerHTML = `TRADING CLOSED`; lbl.style.color = "var(--down)"; lockedDiv.innerText = ""; }
-        else {
-            lbl.innerHTML = `<div class="spinner-sm"></div> WAITING RESULT`; lbl.style.color = "var(--warn)";
+        if (s === "TRADING") { 
+            lbl.innerHTML = `TRADING TIME`; lbl.style.color = "var(--up)"; 
+            lockedDiv.innerText = ""; 
+        } else if (s === "CLOSED") { 
+            lbl.innerHTML = `TRADING CLOSED`; lbl.style.color = "var(--down)"; 
+        } else {
+            lbl.innerHTML = `<div class="spinner-sm"></div> WAITING RESULT`; lbl.style.color = "var(--primary)";
             if (user && assets[activeKey]) {
-                onValue(ref(db, `history/${user.uid}/${activeKey}/${assets[activeKey].round}`), (snapshot) => {
+                get(ref(db, `predictionHistory/${user.uid}/${activeKey}/${assets[activeKey].round}`)).then(snapshot => {
                     const rec = snapshot.val();
-                    if (rec && rec.isPending) lockedDiv.innerText = `Locked Price: $${parseFloat(rec.lockedPrice).toFixed(4)}`;
+                    if (rec && rec.isPending) lockedDiv.innerText = `Locked: $${parseFloat(rec.lockedPrice).toFixed(4)} (${rec.action})`;
                 });
             }
         }
@@ -369,32 +374,32 @@ th:nth-child(6), td:nth-child(6) { width: 20%; } /* My Win */
 
     async function syncHistory() {
         if (!user || !activeKey) return;
-        const gSnap = await get(ref(db, `marketHistory/${activeKey}`));
+        const gSnap = await get(ref(db, `predictionMarketHistory/${activeKey}`));
         const globalData = gSnap.val() || {};
-        const snap = await get(ref(db, `history/${user.uid}/${activeKey}`));
-        const data = snap.val() || {};
-        const mergedData = { ...globalData, ...data };
+        const snap = await get(ref(db, `predictionHistory/${user.uid}/${activeKey}`));
+        const userData = snap.val() || {};
+        const mergedData = { ...globalData, ...userData };
         const body = document.getElementById('historyBody');
         body.innerHTML = "";
 
-        Object.values(mergedData).reverse().slice(0, 15).forEach(item => {
+        Object.values(mergedData).sort((a,b) => b.rid - a.rid).slice(0, 15).forEach(item => {
             const isWaiting = item.isPending && globalState === "WAITING";
-            let winHtml = item.isPending ? '<div class="spinner-sm"></div>' : (item.status === "WIN" ? `<div style="color:var(--up)"><img src="assets/logos/${item.logo}" class="hist-logo">${parseFloat(item.finalWin).toFixed(8)}</div>` : (item.status === "LOSS" ? `<div style="color:var(--down)"><img src="assets/logos/${item.logo}" class="hist-logo">0.00000000</div>` : (item.status === "DRAW" ? `<div style="color:var(--warn)"><img src="assets/logos/${item.logo}" class="hist-logo">${parseFloat(item.finalWin).toFixed(6)}</div>` : '<span style="color:#848e9c">--</span>')));
+            let statusHtml = item.isPending ? '<div class="spinner-sm"></div>' : (item.status === "WIN" ? `<span style="color:var(--up)">+${parseFloat(item.finalWin).toFixed(6)}</span>` : (item.status === "LOSS" ? '<span style="color:var(--down)">0.000000</span>' : '<span style="color:var(--text-sec)">DRAW</span>'));
             
             body.innerHTML += `<tr class="${isWaiting ? 'blink' : ''}">
-                <td><img src="assets/logos/${item.logo}" class="hist-logo"> ${item.rid}</td>
+                <td>#${item.rid}</td>
                 <td>${item.time}</td>
-                <td>$${parseFloat(item.lockedPrice || 0).toFixed(4)}<span class="sub-text">Locked Price</span></td>
+                <td>$${parseFloat(item.lockedPrice || 0).toFixed(4)}</td>
                 <td style="color:${item.action==='UP'?'var(--up)':(item.action==='DOWN'?'var(--down)':'#848e9c')}">${item.action || '--'}</td>
-                <td>${(item.isPending || !item.resultPrice) ? '<div class="spinner-sm"></div>' : '$'+parseFloat(item.resultPrice).toFixed(4)}</td>
-                <td>${winHtml}</td>
+                <td>${(!item.resultPrice) ? '--' : '$'+parseFloat(item.resultPrice).toFixed(4)}</td>
+                <td>${statusHtml}</td>
             </tr>`;
         });
     }
 
     window.openBetModal = (side) => {
         if (globalState !== "TRADING") return;
-        document.getElementById('modalTitle').innerText = "Bet " + side;
+        document.getElementById('modalTitle').innerText = "Predict " + side;
         document.getElementById('modalAvbl').innerText = document.getElementById('headerBalance').innerText;
         document.getElementById('betModal').style.display = 'flex';
         document.getElementById('betModal').dataset.side = side;
@@ -403,11 +408,22 @@ th:nth-child(6), td:nth-child(6) { width: 20%; } /* My Win */
     window.closeBetModal = () => document.getElementById('betModal').style.display = 'none';
 
     window.confirmBet = async () => {
-        const amtInput = document.getElementById('betAmount'); const amt = parseFloat(amtInput.value);
-        if (isNaN(amt) || amt <= 0) return alert("Input Amount");
-        const balRef = ref(db, `users/${user.uid}/balances/${activeKey}`);
-        const bSnap = await get(balRef); const curBal = parseFloat(bSnap.val() || 0);
-        if (amt > curBal) return alert("Insufficient Balance");
+        const amtInput = document.getElementById('betAmount'); 
+        const amt = parseFloat(amtInput.value);
+        if (isNaN(amt) || amt <= 0) return;
+
+        // ডাইনামিক ব্যালেন্স পাথ (উদা: usdt_balance)
+        const coinPath = (assets[activeKey].unit || activeKey).toLowerCase() + "_balance";
+        const balRef = ref(db, `users/${user.uid}/balances/${coinPath}`);
+        
+        const bSnap = await get(balRef); 
+        const curBal = parseFloat(bSnap.val() || 0);
+        
+        if (amt > curBal) {
+            alert("Insufficient Balance");
+            return;
+        }
+
         await set(balRef, (curBal - amt).toFixed(8));
         assets[activeKey].pending = { side: document.getElementById('betModal').dataset.side, amount: amt };
         window.closeBetModal();
@@ -415,7 +431,9 @@ th:nth-child(6), td:nth-child(6) { width: 20%; } /* My Win */
     };
 
     function syncUser() {
-        onValue(ref(db, `users/${user.uid}/balances/${activeKey}`), (s) => {
+        if(!user || !activeKey) return;
+        const coinPath = (assets[activeKey].unit || activeKey).toLowerCase() + "_balance";
+        onValue(ref(db, `users/${user.uid}/balances/${coinPath}`), (s) => {
             document.getElementById('headerBalance').innerText = parseFloat(s.val() || 0).toFixed(8);
         });
         syncHistory();
@@ -433,8 +451,7 @@ th:nth-child(6), td:nth-child(6) { width: 20%; } /* My Win */
                 const price = parseFloat(d.data.p); assets[key].currentPrice = price; 
                 if (key === activeKey) {
                     document.getElementById('priceDisplay').innerText = '$' + price.toFixed(4);
-                    chart.data.datasets[0].data.shift(); 
-                    chart.data.datasets[0].data.push(price);
+                    chart.data.datasets[0].data.shift(); chart.data.datasets[0].data.push(price);
                     chart.update('none');
                 }
             }
@@ -442,7 +459,8 @@ th:nth-child(6), td:nth-child(6) { width: 20%; } /* My Win */
         ws.onclose = () => setTimeout(initWS, 1000);
     }
 
-    onAuthStateChanged(auth, (u) => { if (u) { user = u; syncUser(); initWS(); initTimer(); } });
+    onAuthStateChanged(auth, (u) => { if (u) { user = u; initTimer(); } });
 </script>
+
 </body>
 </html>
