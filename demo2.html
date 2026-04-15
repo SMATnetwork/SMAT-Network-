@@ -151,7 +151,7 @@ th:nth-child(6), td:nth-child(6) { width: 20%; }
 
 <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-    import { getDatabase, ref, onValue, set, update, get } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
+    import { getDatabase, ref, onValue, set, update, get, push } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
     import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
 
     const firebaseConfig = {
@@ -171,6 +171,26 @@ th:nth-child(6), td:nth-child(6) { width: 20%; }
     let user = null;
     let globalState = "TRADING";
 
+    // --- Professional Toast System ---
+    function showToast(title, message) {
+        let container = document.getElementById('toast-container');
+        if (!container) {
+            container = document.createElement('div');
+            container.id = 'toast-container';
+            container.style.cssText = "position:fixed; top:20px; right:20px; z-index:9999;";
+            document.body.appendChild(container);
+        }
+        const toast = document.createElement('div');
+        toast.style.cssText = `background:#1e2329; color:white; border-left:4px solid #f0b90b; padding:15px; border-radius:8px; margin-bottom:10px; box-shadow:0 5px 15px rgba(0,0,0,0.3); min-width:250px; animation:slideIn 0.3s ease-out;`;
+        toast.innerHTML = `<div style="color:#f0b90b; font-weight:bold; font-size:14px;">${title}</div><div style="font-size:12px; color:#848e9c; margin-top:2px;">${message}</div>`;
+        container.appendChild(toast);
+        setTimeout(() => { toast.style.opacity = '0'; toast.style.transition = '0.5s'; setTimeout(() => toast.remove(), 500); }, 3000);
+    }
+    const style = document.createElement('style');
+    style.innerHTML = `@keyframes slideIn { from { transform: translateX(100%); opacity: 0; } to { transform: translateX(0); opacity: 1; } }`;
+    document.head.appendChild(style);
+
+    // --- Chart Config ---
     const ctx = document.getElementById('liveChart').getContext('2d');
     const gradient = ctx.createLinearGradient(0, 0, 0, 200);
     gradient.addColorStop(0, 'rgba(14, 203, 129, 0.3)');
@@ -178,35 +198,11 @@ th:nth-child(6), td:nth-child(6) { width: 20%; }
 
     const chart = new Chart(ctx, {
         type: 'line',
-        data: { 
-            labels: Array(50).fill(''), 
-            datasets: [{ 
-                data: Array(50).fill(0), 
-                borderColor: '#0ecb81', 
-                borderWidth: 2, 
-                pointRadius: 0, 
-                tension: 0.1, 
-                fill: true, 
-                backgroundColor: gradient
-            }] 
-        },
-        options: { 
-            responsive: true, 
-            maintainAspectRatio: false, 
-            animation: false, 
-            scales: { 
-                x: { display: false }, 
-                y: { 
-                    display: true, 
-                    position: 'right',
-                    grid: { color: 'rgba(255, 255, 255, 0.03)' },
-                    ticks: { color: '#848e9c', font: { size: 10 } }
-                } 
-            }, 
-            plugins: { legend: { display: false } } 
-        }
+        data: { labels: Array(50).fill(''), datasets: [{ data: Array(50).fill(0), borderColor: '#0ecb81', borderWidth: 2, pointRadius: 0, tension: 0.1, fill: true, backgroundColor: gradient }] },
+        options: { responsive: true, maintainAspectRatio: false, animation: false, scales: { x: { display: false }, y: { display: true, position: 'right', grid: { color: 'rgba(255, 255, 255, 0.03)' }, ticks: { color: '#848e9c', font: { size: 10 } } } }, plugins: { legend: { display: false } } }
     });
 
+    // --- Logic & Database ---
     onValue(ref(db, 'predictionAssets'), (snapshot) => {
         const data = snapshot.val();
         if (data) {
@@ -215,15 +211,11 @@ th:nth-child(6), td:nth-child(6) { width: 20%; }
             select.innerHTML = ""; 
             Object.keys(assets).forEach(key => {
                 const option = document.createElement('option');
-                option.value = key;
-                option.innerText = assets[key].name;
+                option.value = key; option.innerText = assets[key].name;
                 select.appendChild(option);
             });
-            if (!activeKey) {
-                activeKey = Object.keys(assets)[0];
-                window.switchAsset(activeKey);
-                initWS(); 
-            } else { select.value = activeKey; }
+            if (!activeKey) { activeKey = Object.keys(assets)[0]; window.switchAsset(activeKey); initWS(); } 
+            else { select.value = activeKey; }
         }
     });
 
@@ -231,7 +223,6 @@ th:nth-child(6), td:nth-child(6) { width: 20%; }
         if (!assets[val]) return;
         activeKey = val;
         document.getElementById('assetLogo').src = `assets/logos/${assets[val].logo}`;
-        // Header Unit সবসময় USDT থাকবে
         document.getElementById('headerAssetUnit').innerText = "USDT";
         chart.data.datasets[0].data = Array(50).fill(assets[val].currentPrice || 0);
         chart.update('none');
@@ -249,42 +240,12 @@ th:nth-child(6), td:nth-child(6) { width: 20%; }
         });
     }
 
-    setInterval(async () => {
-        const timerRef = ref(db, 'timerLogic');
-        const snap = await get(timerRef);
-        const data = snap.val();
-        if (!data) return;
-
-        let t = data.timeLeft; let s = data.state;
-        if (t > 0) { t--; } else {
-            if (s === "TRADING") { 
-                s = "CLOSED"; t = 3; 
-                Object.keys(assets).forEach(key => lockAndSaveRound(key)); 
-            }
-            else if (s === "CLOSED") { s = "WAITING"; t = 180; }
-            else { 
-                s = "TRADING"; t = 60; 
-                Object.keys(assets).forEach(key => finalizeAndReset(key));
-            }
-        }
-        await update(timerRef, { timeLeft: t, state: s });
-    }, 1000);
-
     async function lockAndSaveRound(key) {
         if (!assets[key] || !user) return;
         assets[key].lockedPrice = assets[key].currentPrice; 
         const rid = assets[key].round;
         const bet = assets[key].pending;
-        const entry = {
-            rid: rid,
-            time: new Date().toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'}),
-            lockedPrice: assets[key].currentPrice,
-            action: bet ? bet.side : "No Trade",
-            betAmt: bet ? bet.amount : 0,
-            isPending: true,
-            logo: assets[key].logo,
-            coinPath: "usdt_balance" // পাথ ফিক্সড USDT
-        };
+        const entry = { rid: rid, time: new Date().toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'}), lockedPrice: assets[key].currentPrice, action: bet ? bet.side : "No Trade", betAmt: bet ? bet.amount : 0, isPending: true, logo: assets[key].logo };
         await set(ref(db, `history/${user.uid}/${key}/${rid}`), entry);
     }
 
@@ -297,51 +258,31 @@ th:nth-child(6), td:nth-child(6) { width: 20%; }
         for (let rid in history) {
             if (history[rid].isPending) {
                 const rec = history[rid];
-                let status = "LOSS";
-                let winAmt = 0;
-
-                if (rec.action === "No Trade") {
-                    status = "No Trade";
-                } else if (resPrice === rec.lockedPrice) {
-                    status = "DRAW"; 
-                    winAmt = rec.betAmt * 0.5;
-                } else {
-                    const win = (rec.action === "UP" && resPrice > rec.lockedPrice) || (rec.action === "DOWN" && resPrice < rec.lockedPrice);
-                    if (win) {
-                        status = "WIN";
-                        winAmt = rec.betAmt + (rec.betAmt * 0.96);
+                let status = "LOSS"; let winAmt = 0;
+                if (rec.action !== "No Trade") {
+                    if (resPrice === rec.lockedPrice) { status = "DRAW"; winAmt = rec.betAmt * 0.5; } 
+                    else if ((rec.action === "UP" && resPrice > rec.lockedPrice) || (rec.action === "DOWN" && resPrice < rec.lockedPrice)) {
+                        status = "WIN"; winAmt = rec.betAmt + (rec.betAmt * 0.96);
                     }
                 }
-
                 if (winAmt > 0) {
-                    const balancePath = `users/${user.uid}/balances/usdt_balance`; // শুধুমাত্র USDT তে প্রফিট যাবে
-                    const bRef = ref(db, balancePath);
+                    const bRef = ref(db, `users/${user.uid}/usdt_balance`);
                     const bSnap = await get(bRef);
-                    await set(bRef, (parseFloat(bSnap.val() || 0) + winAmt).toFixed(8));
-                }
+                    const newBal = (parseFloat(bSnap.val() || 0) + winAmt).toFixed(8);
+                    await set(bRef, newBal);
 
-                await update(ref(db, `history/${user.uid}/${key}/${rid}`), {
-                    isPending: false,
-                    resultPrice: resPrice,
-                    status: status,
-                    finalWin: winAmt
-                });
+                    const hRef = ref(db, `users/${user.uid}/history`);
+                    const hKey = push(hRef).key;
+                    await set(ref(db, `users/${user.uid}/history/${hKey}`), { method: "Win Prediction", amount: winAmt.toFixed(4), coin: "USDT", status: 'success', timestamp: Date.now(), address: "Market", network: assets[key].name, hash: "WIN-"+Math.random().toString(36).substr(2,9).toUpperCase() });
+                }
+                await update(ref(db, `history/${user.uid}/${key}/${rid}`), { isPending: false, resultPrice: resPrice, status: status, finalWin: winAmt });
             }
         }
-
         const currentRid = assets[key].round;
-        await set(ref(db, `marketHistory/${key}/${currentRid}`), {
-            rid: currentRid,
-            time: new Date().toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'}),
-            lockedPrice: assets[key].lockedPrice || assets[key].currentPrice,
-            resultPrice: resPrice,
-            logo: assets[key].logo
-        });
-
+        await set(ref(db, `marketHistory/${key}/${currentRid}`), { rid: currentRid, time: new Date().toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'}), lockedPrice: assets[key].lockedPrice || assets[key].currentPrice, resultPrice: resPrice, logo: assets[key].logo });
         assets[key].round++;
         await update(ref(db, 'roundLogic'), { [key]: assets[key].round });
         assets[key].pending = null;
-        if (key === activeKey) document.getElementById('dynamicLockedInfo').innerText = "";
     }
 
     function updateEngineUI(t, s) {
@@ -350,15 +291,13 @@ th:nth-child(6), td:nth-child(6) { width: 20%; }
         document.getElementById('timerClock').innerText = `${min.toString().padStart(2,'0')}:${sec.toString().padStart(2,'0')}`;
         const lbl = document.getElementById('statusLabel');
         const lockedDiv = document.getElementById('dynamicLockedInfo');
-        
         if (s === "TRADING") { lbl.innerHTML = `TRADING TIME`; lbl.style.color = "var(--up)"; lockedDiv.innerText = ""; }
         else if (s === "CLOSED") { lbl.innerHTML = `TRADING CLOSED`; lbl.style.color = "var(--down)"; lockedDiv.innerText = ""; }
         else {
             lbl.innerHTML = `<div class="spinner-sm"></div> WAITING RESULT`; lbl.style.color = "var(--warn)";
             if (user && assets[activeKey]) {
                 onValue(ref(db, `history/${user.uid}/${activeKey}/${assets[activeKey].round}`), (snapshot) => {
-                    const rec = snapshot.val();
-                    if (rec && rec.isPending) lockedDiv.innerText = `Locked Price: $${parseFloat(rec.lockedPrice).toFixed(4)}`;
+                    const rec = snapshot.val(); if (rec && rec.isPending) lockedDiv.innerText = `Locked Price: $${parseFloat(rec.lockedPrice).toFixed(4)}`;
                 });
             }
         }
@@ -376,20 +315,10 @@ th:nth-child(6), td:nth-child(6) { width: 20%; }
         const mergedData = { ...globalData, ...data };
         const body = document.getElementById('historyBody');
         body.innerHTML = "";
-
         Object.values(mergedData).reverse().slice(0, 15).forEach(item => {
             const isWaiting = item.isPending && globalState === "WAITING";
-            // হিস্ট্রিতে লোগো সবসময় বর্তমান অ্যাসেটের হবে, কিন্তু উইন অ্যামাউন্ট USDT র হবে
-            let winHtml = item.isPending ? '<div class="spinner-sm"></div>' : (item.status === "WIN" ? `<div style="color:var(--up)">$${parseFloat(item.finalWin).toFixed(2)}</div>` : (item.status === "LOSS" ? `<div style="color:var(--down)">$0.00</div>` : (item.status === "DRAW" ? `<div style="color:var(--warn)">$${parseFloat(item.finalWin).toFixed(2)}</div>` : '<span style="color:#848e9c">--</span>')));
-            
-            body.innerHTML += `<tr class="${isWaiting ? 'blink' : ''}">
-                <td><img src="assets/logos/${item.logo}" class="hist-logo"> ${item.rid}</td>
-                <td>${item.time}</td>
-                <td>$${parseFloat(item.lockedPrice || 0).toFixed(4)}<span class="sub-text">Locked Price</span></td>
-                <td style="color:${item.action==='UP'?'var(--up)':(item.action==='DOWN'?'var(--down)':'#848e9c')}">${item.action || '--'}</td>
-                <td>${(item.isPending || !item.resultPrice) ? '<div class="spinner-sm"></div>' : '$'+parseFloat(item.resultPrice).toFixed(4)}</td>
-                <td>${winHtml}</td>
-            </tr>`;
+            let winHtml = item.isPending ? '<div class="spinner-sm"></div>' : (item.status === "WIN" ? `<div style="color:var(--up)">$${parseFloat(item.finalWin).toFixed(4)}</div>` : (item.status === "LOSS" ? `<div style="color:var(--down)">$0.0000</div>` : (item.status === "DRAW" ? `<div style="color:var(--warn)">$${parseFloat(item.finalWin).toFixed(4)}</div>` : '<span style="color:#848e9c">--</span>')));
+            body.innerHTML += `<tr class="${isWaiting ? 'blink' : ''}"><td><img src="assets/logos/${item.logo}" class="hist-logo"> ${item.rid}</td><td>${item.time}</td><td>$${parseFloat(item.lockedPrice || 0).toFixed(4)}</td><td style="color:${item.action==='UP'?'var(--up)':(item.action==='DOWN'?'var(--down)':'#848e9c')}">${item.action || '--'}</td><td>${(item.isPending || !item.resultPrice) ? '<div class="spinner-sm"></div>' : '$'+parseFloat(item.resultPrice).toFixed(4)}</td><td>${winHtml}</td></tr>`;
         });
     }
 
@@ -407,43 +336,30 @@ th:nth-child(6), td:nth-child(6) { width: 20%; }
     window.confirmBet = async () => {
         if (!user) { window.location.href = "logIn.html"; return; }
         const amtInput = document.getElementById('betAmount'); const amt = parseFloat(amtInput.value);
-        if (isNaN(amt) || amt <= 0) return alert("Input Amount");
+        if (isNaN(amt) || amt <= 0) return showToast("ERROR", "Invalid Amount");
+        const bRef = ref(db, `users/${user.uid}/usdt_balance`);
+        const bSnap = await get(bRef); const curBal = parseFloat(bSnap.val() || 0);
+        if (amt > curBal) return showToast("FAILED", "Insufficient USDT Balance");
+        
+        await set(bRef, (curBal - amt).toFixed(8));
+        const hKey = push(ref(db, `users/${user.uid}/history`)).key;
+        await set(ref(db, `users/${user.uid}/history/${hKey}`), { method: "Prediction Cost", amount: amt.toFixed(4), coin: "USDT", status: 'success', timestamp: Date.now(), address: "Market", network: assets[activeKey].name, hash: "BET-"+Math.random().toString(36).substr(2,9).toUpperCase() });
 
-        // ব্যালেন্স পাথ সবসময় usdt_balance
-        const balRef = ref(db, `users/${user.uid}/balances/usdt_balance`);
-        
-        const bSnap = await get(balRef); const curBal = parseFloat(bSnap.val() || 0);
-        if (amt > curBal) return alert("Insufficient USDT Balance");
-        
-        await set(balRef, (curBal - amt).toFixed(8));
         assets[activeKey].pending = { side: document.getElementById('betModal').dataset.side, amount: amt };
+        showToast("SUCCESS", "Bet Placed Successfully");
         window.closeBetModal();
         amtInput.value = "";
     };
 
     function syncUser() {
-    if(!user) return;
-    
-    // Swap পেজের লজিক অনুযায়ী সঠিক পাথ কল করা হয়েছে
-    const balRef = ref(db, `users/${user.uid}/usdt_balance`);
-    
-    onValue(balRef, (snapshot) => {
-        const val = snapshot.val();
-        const currentBal = parseFloat(val || 0).toFixed(8);
-        
-        // মেইন ডিসপ্লে আপডেট
-        const balanceDisplay = document.getElementById('headerBalance');
-        if(balanceDisplay) balanceDisplay.innerText = currentBal;
-        
-        // মোডাল ব্যালেন্স আপডেট
-        const modalAvbl = document.getElementById('modalAvbl');
-        if(modalAvbl) modalAvbl.innerText = currentBal;
-    });
-    
-    syncHistory();
-}
-
-
+        if(!user) return;
+        onValue(ref(db, `users/${user.uid}/usdt_balance`), (snapshot) => {
+            const currentBal = parseFloat(snapshot.val() || 0).toFixed(4);
+            document.getElementById('headerBalance').innerText = currentBal;
+            if(document.getElementById('modalAvbl')) document.getElementById('modalAvbl').innerText = currentBal;
+        });
+        syncHistory();
+    }
 
     function initWS() {
         if (Object.keys(assets).length === 0) return;
@@ -457,26 +373,16 @@ th:nth-child(6), td:nth-child(6) { width: 20%; }
                 const price = parseFloat(d.data.p); assets[key].currentPrice = price; 
                 if (key === activeKey) {
                     document.getElementById('priceDisplay').innerText = '$' + price.toFixed(4);
-                    chart.data.datasets[0].data.shift(); 
-                    chart.data.datasets[0].data.push(price);
-                    chart.update('none');
+                    chart.data.datasets[0].data.shift(); chart.data.datasets[0].data.push(price); chart.update('none');
                 }
             }
         };
         ws.onclose = () => setTimeout(initWS, 1000);
     }
 
-    onAuthStateChanged(auth, (u) => { 
-        if (u) { 
-            user = u; 
-            syncUser(); 
-            initWS(); 
-            initTimer(); 
-        } else {
-            window.location.href = "logIn.html";
-        }
-    });
+    onAuthStateChanged(auth, (u) => { if (u) { user = u; syncUser(); initWS(); initTimer(); } else { window.location.href = "logIn.html"; } });
 </script>
+
 
 </body>
 </html>
