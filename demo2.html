@@ -78,6 +78,10 @@ th:nth-child(6), td:nth-child(6) { width: 18%; }
     margin-top: 1px; 
 }
 
+/* গ্রাফের ভিতরের কালার গাঢ় এবং স্মুথ করার জন্য CSS */
+canvas#liveChart {
+    background-color: transparent !important; /* চার্টের ব্যাকগ্রাউন্ড স্বচ্ছ */
+}
 
         .action-area { position: fixed; bottom: 0; width: 100%; padding: 15px; background: #12161c; border-top: 1px solid var(--border); z-index: 2000; }
         .t-btn { flex: 1; padding: 16px; border: none; border-radius: 10px; font-weight: 900; font-size: 16px; color: white; cursor: pointer; text-transform: uppercase; }
@@ -177,12 +181,49 @@ th:nth-child(6), td:nth-child(6) { width: 18%; }
         setTimeout(() => { toast.style.opacity = '0'; setTimeout(() => toast.remove(), 500); }, 3000);
     }
 
-    const ctx = document.getElementById('liveChart').getContext('2d');
-    const chart = new Chart(ctx, {
-        type: 'line',
-        data: { labels: Array(50).fill(''), datasets: [{ data: Array(50).fill(0), borderColor: '#0ecb81', borderWidth: 2, pointRadius: 0, tension: 0.1, fill: true }] },
-        options: { responsive: true, maintainAspectRatio: false, animation: false, scales: { x: { display: false }, y: { display: true, position: 'right' } }, plugins: { legend: { display: false } } }
-    });
+    // চার্টের জন্য গ্রাফিক্স এবং শ্যাডো এফেক্ট সেটআপ
+const ctx = document.getElementById('liveChart').getContext('2d');
+
+// ১. একটি সুন্দর গ্রেডিয়েন্ট তৈরি করুন
+const gradient = ctx.createLinearGradient(0, 0, 0, 300); // 300 হচ্ছে চার্টের আনুমানিক উচ্চতা
+gradient.addColorStop(0, 'rgba(14, 203, 129, 0.4)'); // উপরে একটু গাঢ় সবুজের হালকা আবছায়া (০.৪)
+gradient.addColorStop(1, 'rgba(14, 203, 129, 0)');   // নিচে পুরোপুরি স্বচ্ছ (০)
+
+const chart = new Chart(ctx, {
+    type: 'line',
+    data: { 
+        labels: Array(50).fill(''), 
+        datasets: [{ 
+            data: Array(50).fill(0), 
+            borderColor: '#0ecb81', // রেখার কালার (গাঢ় সবুজ)
+            borderWidth: 2, // রেখার পুরুত্ব
+            pointRadius: 0, 
+            tension: 0.1, // রেখা স্মুথ করার জন্য
+            
+            // --- এই অংশটি Shadow Effect এবং Fill যুক্ত করে ---
+            fill: true, // ফিল অন করুন
+            backgroundColor: gradient, // গ্রেডিয়েন্ট কালার সেট করুন
+        }] 
+    },
+    options: { 
+        responsive: true, 
+        maintainAspectRatio: false, 
+        animation: false, 
+        scales: { 
+            x: { display: false }, 
+            y: { 
+                display: true, 
+                position: 'right',
+                grid: { color: 'rgba(255, 255, 255, 0.03)' }, // হালকা গ্রিড লাইন
+                ticks: { color: '#848e9c', font: { size: 10 } }
+            } 
+        }, 
+        plugins: { 
+            legend: { display: false } // লিজেন্ড অফ করুন
+        } 
+    }
+});
+
 
     onValue(ref(db, 'predictionAssets'), (snapshot) => {
         const data = snapshot.val();
