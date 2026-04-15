@@ -422,13 +422,27 @@ th:nth-child(6), td:nth-child(6) { width: 20%; } /* My Win */
     };
 
     function syncUser() {
-        if (!user) return;
-        const coinPath = (assets[activeKey].unit || activeKey).toLowerCase() + "_balance";
-        onValue(ref(db, `users/${user.uid}/balances/${coinPath}`), (s) => {
-            document.getElementById('headerBalance').innerText = parseFloat(s.val() || 0).toFixed(8);
-        });
-        syncHistory();
-    }
+    if(!user || !activeKey) return;
+    
+    // আপনার ওয়ালেট স্ট্রাকচার অনুযায়ী সঠিক পাথ
+    const coinUnit = assets[activeKey].unit.toLowerCase(); // উদা: sol
+    const coinPath = coinUnit + "_balance"; // উদা: sol_balance
+    
+    const balRef = ref(db, `users/${user.uid}/balances/${coinPath}`);
+    
+    onValue(balRef, (s) => {
+        const currentBal = parseFloat(s.val() || 0).toFixed(8);
+        // মেইন ডিসপ্লে ব্যালেন্স আপডেট
+        const balanceDisplay = document.getElementById('headerBalance');
+        if(balanceDisplay) balanceDisplay.innerText = currentBal;
+        
+        // প্রেডিকশন পেজের ভেতরের ছোট ব্যালেন্স টেক্সট আপডেট
+        const innerBal = document.querySelector('.prediction-balance-text'); 
+        if(innerBal) innerBal.innerText = currentBal;
+    });
+    syncHistory();
+}
+
 
     function initWS() {
         if (Object.keys(assets).length === 0) return;
