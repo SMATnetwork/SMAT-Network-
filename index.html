@@ -3,14 +3,14 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>SMAT EXCHANGE | Secure Access</title>
+    <title>SMAT EXCHANGE | Secure Portal</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
         :root {
             --primary: #00ff88;
-            --bg-deep: #050708;
-            --card-glass: rgba(18, 22, 28, 0.9);
-            --input-fill: #1a1f24;
+            --bg: #05070a;
+            --card: rgba(17, 21, 26, 0.95);
+            --input: #1a1f24;
             --text-main: #ffffff;
             --text-dim: #848e9c;
         }
@@ -18,7 +18,7 @@
         * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Inter', sans-serif; }
 
         body {
-            background-color: var(--bg-deep);
+            background-color: var(--bg);
             height: 100vh;
             display: flex;
             justify-content: center;
@@ -27,68 +27,62 @@
             position: relative;
         }
 
-        /* --- জীবন্ত কয়েন গ্রাফিক্স (Blurred Floating Data) --- */
-        .live-data-bg {
+        /* --- স্পষ্ট কয়েন গ্রাফিক্স এনিমেশন --- */
+        .market-overlay {
             position: absolute;
             top: 0; left: 0; width: 100%; height: 100%;
-            z-index: 0;
-            overflow: hidden;
+            z-index: 1;
+            pointer-events: none;
         }
 
         .ticker-item {
             position: absolute;
             white-space: nowrap;
-            font-family: monospace;
-            font-weight: bold;
-            font-size: 1.2rem;
-            opacity: 0.3;
-            filter: blur(2px);
-            animation: moveUp 12s infinite linear;
-            pointer-events: none;
+            font-family: 'Roboto Mono', monospace;
+            font-weight: 700;
+            font-size: 1.1rem;
+            opacity: 0.8; /* দাম এখন একদম স্পষ্ট */
+            animation: moveUp 15s infinite linear;
+            text-shadow: 0 0 10px rgba(0,0,0,0.5);
         }
 
         @keyframes moveUp {
-            0% { transform: translateY(110vh); }
-            100% { transform: translateY(-20vh); }
+            0% { transform: translateY(110vh); opacity: 0; }
+            10% { opacity: 0.8; }
+            90% { opacity: 0.8; }
+            100% { transform: translateY(-20vh); opacity: 0; }
         }
 
-        /* --- Auth Card --- */
+        /* --- Auth Card Design --- */
         .auth-card {
             position: relative;
             z-index: 10;
             width: 90%;
-            max-width: 420px;
-            background: var(--card-glass);
-            padding: 40px 30px;
-            border-radius: 28px;
-            border: 1px solid rgba(255, 255, 255, 0.08);
-            box-shadow: 0 30px 60px rgba(0,0,0,0.6), 0 0 20px rgba(0, 255, 136, 0.05);
-            backdrop-filter: blur(15px);
+            max-width: 400px;
+            background: var(--card);
+            padding: 35px 25px;
+            border-radius: 24px;
+            border: 1px solid rgba(0, 255, 136, 0.15);
+            box-shadow: 0 20px 50px rgba(0,0,0,0.7);
+            backdrop-filter: blur(10px);
             text-align: center;
         }
 
-        /* Logo Border Radius Fix */
-        .logo-box {
-            width: 85px;
-            height: 85px;
-            margin: 0 auto 20px;
+        .logo-wrapper {
+            width: 80px;
+            height: 80px;
+            margin: 0 auto 15px;
             background: #fff;
-            border-radius: 50%; /* লগো গোল করার জন্য */
-            overflow: hidden;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            box-shadow: 0 0 20px rgba(0, 255, 136, 0.2);
+            border-radius: 50%;
+            padding: 2px;
             border: 2px solid var(--primary);
+            overflow: hidden;
+            box-shadow: 0 0 15px rgba(0, 255, 136, 0.3);
         }
 
-        .logo-box img {
-            width: 100%;
-            height: 100%;
-            object-fit: cover;
-        }
+        .logo-wrapper img { width: 100%; height: 100%; object-fit: cover; border-radius: 50%; }
 
-        .brand-name {
+        .brand-title {
             font-size: 24px;
             font-weight: 800;
             color: #fff;
@@ -96,196 +90,225 @@
             letter-spacing: 1px;
         }
 
-        .brand-name span { color: var(--primary); }
+        .brand-title span { color: var(--primary); }
 
-        .subtitle { color: var(--text-dim); font-size: 14px; margin-bottom: 35px; }
+        .subtitle { color: var(--text-dim); font-size: 13px; margin-bottom: 30px; }
 
-        /* Input Styles */
-        .input-group { text-align: left; margin-bottom: 22px; }
-        label { display: block; font-size: 12px; color: var(--text-dim); margin-bottom: 8px; text-transform: uppercase; font-weight: 600; }
+        .input-group { text-align: left; margin-bottom: 20px; }
+        label { display: block; font-size: 11px; color: var(--text-dim); margin-bottom: 6px; text-transform: uppercase; font-weight: bold; }
 
-        .input-wrapper { position: relative; }
+        .field-container { position: relative; }
         
         input {
             width: 100%;
-            padding: 16px;
-            background: var(--input-fill);
-            border: 1px solid rgba(255,255,255,0.1);
-            border-radius: 14px;
+            padding: 15px;
+            background: var(--input);
+            border: 1px solid rgba(255,255,255,0.08);
+            border-radius: 12px;
             color: #fff;
             font-size: 15px;
-            transition: 0.3s ease;
+            transition: 0.3s;
         }
 
-        input:focus { border-color: var(--primary); outline: none; background: #22282e; box-shadow: 0 0 10px rgba(0, 255, 136, 0.1); }
+        input:focus { border-color: var(--primary); outline: none; background: #1f252b; }
 
         .eye-icon {
             position: absolute; right: 15px; top: 50%; transform: translateY(-50%);
             color: var(--text-dim); cursor: pointer; padding: 5px;
         }
 
-        /* Button */
-        #mainBtn {
+        #authBtn {
             width: 100%;
             padding: 16px;
             background: var(--primary);
-            color: #050708;
+            color: #000;
             border: none;
-            border-radius: 14px;
+            border-radius: 12px;
             font-size: 16px;
             font-weight: 800;
             cursor: pointer;
-            text-transform: uppercase;
-            margin-top: 10px;
+            margin-top: 5px;
             transition: 0.3s;
         }
 
-        #mainBtn:hover { filter: brightness(1.1); transform: translateY(-2px); box-shadow: 0 10px 20px rgba(0, 255, 136, 0.2); }
+        #authBtn:disabled { background: #2b3139; color: #5e6673; cursor: not-allowed; }
 
-        .form-footer { margin-top: 30px; border-top: 1px solid rgba(255,255,255,0.05); padding-top: 20px; }
+        .footer { margin-top: 25px; padding-top: 15px; border-top: 1px solid rgba(255,255,255,0.05); }
         .toggle-btn { color: var(--primary); cursor: pointer; font-weight: 600; font-size: 14px; }
-        .forgot-link { color: var(--text-dim); font-size: 13px; cursor: pointer; display: block; margin-top: 12px; text-decoration: none; }
+        .forgot-pass { color: var(--text-dim); font-size: 12px; cursor: pointer; display: block; margin-top: 15px; }
 
-        /* Custom Toast */
+        /* --- Toast Notification --- */
         #customToast {
             position: fixed; top: -100px; left: 50%; transform: translateX(-50%);
-            background: #1e2329; color: white; padding: 15px 25px; border-radius: 12px;
-            z-index: 9999; transition: 0.5s cubic-bezier(0.18, 0.89, 0.32, 1.28);
-            border-bottom: 3px solid var(--primary); display: flex; align-items: center; gap: 10px;
+            background: #1e2329; color: white; padding: 15px 25px; border-radius: 10px;
+            z-index: 1000; transition: 0.5s; display: flex; align-items: center; gap: 10px;
+            border-left: 4px solid var(--primary); box-shadow: 0 10px 30px rgba(0,0,0,0.5);
         }
-        #customToast.show { top: 25px; }
+        #customToast.show { top: 20px; }
 
-        /* Responsive Adjustments */
-        @media (max-width: 480px) {
-            .auth-card { padding: 30px 20px; }
-            .brand-name { font-size: 20px; }
-        }
+        @media (max-width: 400px) { .auth-card { padding: 25px 15px; } }
     </style>
 </head>
 <body>
 
 <div id="customToast">
-    <i class="fa-solid fa-circle-info"></i>
-    <span id="toastText">Message here</span>
+    <i class="fa-solid fa-circle-info" id="tIcon"></i>
+    <span id="tText">Message</span>
 </div>
 
-<div class="live-data-bg" id="dataStream"></div>
+<div class="market-overlay" id="marketTicker"></div>
 
 <div class="auth-card">
-    <div class="logo-box">
-        <img src="assets/logos/smat.png" alt="SMAT LOGO">
+    <div class="logo-wrapper">
+        <img src="assets/logos/smat.png" alt="Logo">
     </div>
-    <div class="brand-name">SMAT <span>EXCHANGE</span></div>
-    <p class="subtitle" id="subText">Secure access to your digital assets</p>
+    <h2 class="brand-title">SMAT <span>EXCHANGE</span></h2>
+    <p class="subtitle" id="subtitle">Log in to your SMAT account</p>
 
     <div class="input-group">
         <label>Email Address</label>
-        <input type="email" id="email" placeholder="example@gmail.com">
+        <input type="email" id="email" placeholder="email@example.com">
     </div>
 
     <div class="input-group">
-        <label>Password</label>
-        <div class="input-wrapper">
-            <input type="password" id="password" placeholder="••••••••" oninput="validatePass()">
-            <i class="fa-solid fa-eye eye-icon" id="toggleEye" onclick="togglePassView()"></i>
+        <label>Password <span id="passStatus" style="float: right; text-transform: none;"></span></label>
+        <div class="field-container">
+            <input type="password" id="password" placeholder="••••••••" oninput="validatePassword()">
+            <i class="fa-solid fa-eye eye-icon" id="eyeIcon" onclick="togglePass()"></i>
         </div>
     </div>
 
-    <button id="mainBtn" onclick="handleAuth()">LOGIN</button>
+    <button id="authBtn" onclick="handleAuth()">Login</button>
 
-    <div class="form-footer">
-        <span style="color: var(--text-dim); font-size: 14px;">Not a member?</span>
-        <span class="toggle-btn" id="toggleLink" onclick="switchForm()">Create Account</span>
-        <a class="forgot-link" onclick="triggerReset()">Forgot Password?</a>
+    <div class="footer">
+        <span class="toggle-btn" id="toggleLink" onclick="toggleForm()">Create account</span>
+        <span class="forgot-pass" onclick="resetPass()">Forgot password?</span>
     </div>
 </div>
 
 <script type="module">
-    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-    import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, sendEmailVerification, sendPasswordResetEmail } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
-    import { getDatabase, ref, set, get, runTransaction } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+  import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, sendEmailVerification, sendPasswordResetEmail } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+  import { getDatabase, ref, set, get, runTransaction } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
 
-    const firebaseConfig = {
-        apiKey: "AIzaSyAMxtJedkehhxJRMPZLjhpKHqneHEWsGlE",
-        authDomain: "smat-exchange.firebaseapp.com",
-        projectId: "smat-exchange",
-        storageBucket: "smat-exchange.firebasestorage.app",
-        messagingSenderId: "836334569396",
-        appId: "1:836334569396:web:679effe640b3453412d4e1"
-    };
+  const firebaseConfig = {
+    apiKey: "AIzaSyAMxtJedkehhxJRMPZLjhpKHqneHEWsGlE",
+    authDomain: "smat-exchange.firebaseapp.com",
+    projectId: "smat-exchange",
+    storageBucket: "smat-exchange.firebasestorage.app",
+    messagingSenderId: "836334569396",
+    appId: "1:836334569396:web:679effe640b3453412d4e1"
+  };
 
-    const app = initializeApp(firebaseConfig);
-    const auth = getAuth(app);
-    const db = getDatabase(app);
+  const app = initializeApp(firebaseConfig);
+  const auth = getAuth(app);
+  const db = getDatabase(app);
 
-    // --- Live Ticker Graphics Logic ---
-    const stream = document.getElementById('dataStream');
-    const coins = ['BTC $64,302 ↑', 'ETH $3,420 ↓', 'SMAT $1.42 ↑', 'BNB $590 ↓', 'SOL $145 ↑', 'XRP $0.62 ↓'];
-    
-    function initTicker() {
-        for(let i=0; i<15; i++) {
-            let el = document.createElement('div');
-            el.className = 'ticker-item';
-            let coin = coins[Math.floor(Math.random()*coins.length)];
-            el.innerText = coin;
-            el.style.left = Math.random() * 90 + '%';
-            el.style.animationDelay = (Math.random() * 10) + 's';
-            el.style.color = coin.includes('↑') ? '#00ff88' : '#ff4d4d';
-            stream.appendChild(el);
-        }
+  // --- স্পষ্ট কয়েন গ্রাফিক্স জেনারেটর ---
+  const ticker = document.getElementById('marketTicker');
+  const marketData = [
+    {n: 'BTC/USDT', p: '64,210.50', c: '↑'},
+    {n: 'ETH/USDT', p: '3,452.12', c: '↓'},
+    {n: 'SMAT/USDT', p: '1.4500', c: '↑'},
+    {n: 'SOL/USDT', p: '145.20', c: '↑'},
+    {n: 'BNB/USDT', p: '592.10', c: '↓'}
+  ];
+
+  function spawnTicker() {
+    for(let i=0; i<12; i++) {
+        let div = document.createElement('div');
+        div.className = 'ticker-item';
+        let data = marketData[Math.floor(Math.random()*marketData.length)];
+        div.innerHTML = `${data.n} <span style="color:${data.c === '↑' ? '#00ff88' : '#ff4d4d'}">${data.p} ${data.c}</span>`;
+        div.style.left = Math.random() * 85 + '%';
+        div.style.animationDelay = (Math.random() * 12) + 's';
+        ticker.appendChild(div);
     }
-    initTicker();
+  }
+  spawnTicker();
 
-    // --- Logic Functions ---
-    window.alertToast = (msg) => {
-        const t = document.getElementById('customToast');
-        document.getElementById('toastText').innerText = msg;
-        t.classList.add('show');
-        setTimeout(() => t.classList.remove('show'), 3000);
-    };
+  // --- আগের সব লজিক ---
+  let isLogin = true;
+  const urlParams = new URLSearchParams(window.location.search);
+  const referralID = urlParams.get('ref') || null;
 
-    window.togglePassView = () => {
-        const p = document.getElementById('password');
-        const e = document.getElementById('toggleEye');
-        p.type = p.type === 'password' ? 'text' : 'password';
-        e.classList.toggle('fa-eye-slash');
-    };
+  window.showToast = (msg, isErr = false) => {
+    const t = document.getElementById('customToast');
+    document.getElementById('tText').innerText = msg;
+    t.style.borderLeftColor = isErr ? "#ff4d4d" : "#00ff88";
+    t.classList.add('show');
+    setTimeout(() => t.classList.remove('show'), 3000);
+  };
 
-    let isLogin = true;
-    window.switchForm = () => {
-        isLogin = !isLogin;
-        document.getElementById('mainBtn').innerText = isLogin ? "LOGIN" : "REGISTER";
-        document.getElementById('subText').innerText = isLogin ? "Secure access to your digital assets" : "Join the future of exchange";
-        document.getElementById('toggleLink').innerText = isLogin ? "Create Account" : "Already have an account? Login";
-    };
+  window.togglePass = () => {
+    const p = document.getElementById('password');
+    const e = document.getElementById('eyeIcon');
+    p.type = p.type === 'password' ? 'text' : 'password';
+    e.classList.toggle('fa-eye-slash');
+  };
 
-    window.handleAuth = async () => {
-        const email = document.getElementById('email').value;
-        const pass = document.getElementById('password').value;
-        if(!email || !pass) return alertToast("Please fill all fields!");
+  window.validatePassword = () => {
+    const pass = document.getElementById('password').value;
+    const status = document.getElementById('passStatus');
+    const btn = document.getElementById('authBtn');
+    const regex = /^(?=.*[A-Za-z])(?=.*\d)[A-Za-z\d]{8,}$/;
+    if (pass === "") { status.innerText = ""; btn.disabled = false; return; }
+    if (regex.test(pass)) {
+        status.innerText = "✓ Strong"; status.style.color = "#00ff88"; btn.disabled = false;
+    } else {
+        status.innerText = "Min 8, Letter+Num"; status.style.color = "#ff4d4d";
+        if(!isLogin) btn.disabled = true;
+    }
+  };
 
-        alertToast("Processing...");
-        try {
-            if(isLogin) {
-                const res = await signInWithEmailAndPassword(auth, email, pass);
-                if(res.user.emailVerified) window.location.href = "home.html";
-                else alertToast("Verify your email first!");
-            } else {
-                const res = await createUserWithEmailAndPassword(auth, email, pass);
-                await sendEmailVerification(res.user);
-                alertToast("Verification link sent!");
-            }
-        } catch(e) { alertToast(e.message); }
-    };
+  window.toggleForm = () => {
+    isLogin = !isLogin;
+    document.getElementById('subtitle').innerText = isLogin ? "Log in to your SMAT account" : "Join the SMAT ecosystem today";
+    document.getElementById('authBtn').innerText = isLogin ? "Login" : "Create Account";
+    document.getElementById('toggleLink').innerText = isLogin ? "Create account" : "Already have an account? Sign In";
+  };
 
-    window.triggerReset = async () => {
-        const email = document.getElementById('email').value;
-        if(!email) return alertToast("Enter email first!");
-        try {
-            await sendPasswordResetEmail(auth, email);
-            alertToast("Reset link sent!");
-        } catch(e) { alertToast(e.message); }
-    };
+  const generateSmatID = async () => {
+    const counterRef = ref(db, 'counters/lastSmatId');
+    const result = await runTransaction(counterRef, (v) => (v || 100000) + 1);
+    return "SMAT" + result.snapshot.val();
+  };
+
+  window.handleAuth = async () => {
+    const email = document.getElementById('email').value;
+    const pass = document.getElementById('password').value;
+    if(!email || !pass) return showToast("Fields required!", true);
+
+    showToast("Processing...");
+    try {
+      if (isLogin) {
+        const cred = await signInWithEmailAndPassword(auth, email, pass);
+        if (cred.user.emailVerified) {
+          const snap = await get(ref(db, 'users/' + cred.user.uid));
+          if(snap.exists()) localStorage.setItem('smatID', snap.val().smatID);
+          localStorage.setItem('isLoggedIn', 'true');
+          window.location.href = "home.html"; 
+        } else showToast("Verify email first!", true);
+      } else {
+        const cred = await createUserWithEmailAndPassword(auth, email, pass);
+        const smatID = await generateSmatID();
+        await set(ref(db, 'users/' + cred.user.uid), {
+          email, smatID, kycStatus: 'unverified', referredBy: referralID, createdAt: new Date().toISOString()
+        });
+        await sendEmailVerification(cred.user);
+        showToast("Verification link sent!");
+      }
+    } catch (e) { showToast(e.message, true); }
+  };
+
+  window.resetPass = async () => {
+    const email = document.getElementById('email').value;
+    if(!email) return showToast("Enter email first!", true);
+    try {
+        await sendPasswordResetEmail(auth, email);
+        showToast("Reset link sent to Gmail!");
+    } catch (e) { showToast(e.message, true); }
+  };
 </script>
 </body>
 </html>
