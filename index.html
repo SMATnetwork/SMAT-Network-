@@ -3,305 +3,282 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>SMAT HUB | Access</title>
+    <title>SMAT EXCHANGE | Access</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
         :root {
             --primary: #00ff88;
-            --primary-dark: #00cc6d;
-            --bg: #0b0e11;
-            --card: #161a1e;
+            --bg: #07090b;
+            --card: rgba(22, 26, 30, 0.95);
             --input: #1e2329;
             --text: #eaecef;
             --muted: #848e9c;
         }
 
-        * { box-sizing: border-box; font-family: 'Segoe UI', system-ui, sans-serif; }
+        * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
 
         body {
             margin: 0;
+            font-family: 'Segoe UI', Roboto, sans-serif;
             background: var(--bg);
+            height: 100vh;
             display: flex;
             justify-content: center;
             align-items: center;
-            min-height: 100vh;
-            color: var(--text);
             overflow: hidden;
+            position: relative;
         }
 
-        /* --- Auth Card Design --- */
+        /* --- Live Animated Background (Blurry Coins) --- */
+        .live-bg {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            z-index: 1;
+            filter: blur(60px);
+            opacity: 0.4;
+            pointer-events: none;
+        }
+
+        .coin-float {
+            position: absolute;
+            font-weight: bold;
+            font-size: 20px;
+            animation: float 15s infinite linear;
+        }
+
+        @keyframes float {
+            0% { transform: translateY(100vh) translateX(0); }
+            100% { transform: translateY(-100px) translateX(50px); }
+        }
+
+        /* --- Auth Card --- */
         .auth-container {
+            position: relative;
             width: 90%;
-            max-width: 400px;
+            max-width: 420px;
             background: var(--card);
-            padding: 40px 25px;
-            border-radius: 30px;
+            padding: 40px 30px;
+            border-radius: 32px;
             text-align: center;
-            border: 1px solid rgba(255,255,255,0.05);
-            box-shadow: 0 25px 50px rgba(0,0,0,0.5);
+            border: 1px solid rgba(0, 255, 136, 0.1);
+            box-shadow: 0 0 40px rgba(0, 255, 136, 0.05);
             z-index: 10;
+            backdrop-filter: blur(10px);
         }
 
-        .brand {
-            font-size: 32px;
-            font-weight: 900;
-            color: var(--primary);
-            letter-spacing: 1px;
-            margin-bottom: 8px;
-            text-transform: uppercase;
+        .logo { width: 70px; margin-bottom: 15px; }
+
+        .brand-header {
+            font-size: 26px;
+            font-weight: 800;
+            color: white;
+            letter-spacing: 1.5px;
+            margin-bottom: 5px;
         }
 
-        .subtitle { color: var(--muted); font-size: 14px; margin-bottom: 35px; }
+        .brand-header span { color: var(--primary); }
 
-        .group { text-align: left; margin-bottom: 22px; position: relative; }
-        
-        label { 
-            display: flex; 
-            justify-content: space-between;
-            font-size: 13px; 
-            margin-bottom: 8px; 
-            color: var(--muted); 
-            padding-left: 5px;
-        }
+        .subtitle { color: var(--muted); font-size: 13px; margin-bottom: 35px; }
+
+        .group { text-align: left; margin-bottom: 22px; }
+        label { display: block; font-size: 12px; margin-bottom: 8px; color: var(--muted); text-transform: uppercase; letter-spacing: 1px; }
 
         .field-wrapper { position: relative; }
 
         input {
             width: 100%;
-            padding: 16px 18px;
+            padding: 16px;
             background: var(--input);
             border: 1.5px solid transparent;
-            border-radius: 14px;
+            border-radius: 16px;
             color: white;
             font-size: 15px;
-            transition: 0.2s;
+            transition: all 0.3s;
         }
 
-        input:focus { border-color: var(--primary); outline: none; background: #1a1f24; }
+        input:focus { border-color: var(--primary); background: #161a1e; outline: none; }
 
         .eye-btn {
-            position: absolute;
-            right: 15px;
-            top: 50%;
-            transform: translateY(-50%);
-            cursor: pointer;
-            color: var(--muted);
-            padding: 5px;
+            position: absolute; right: 15px; top: 50%; transform: translateY(-50%);
+            cursor: pointer; color: var(--muted); padding: 5px;
         }
 
-        /* --- Premium Button --- */
+        /* --- Premium Authenticate Button --- */
         #btn {
             width: 100%;
-            padding: 16px;
+            padding: 18px;
             background: var(--primary);
             color: #000;
             border: none;
-            border-radius: 14px;
+            border-radius: 16px;
             font-size: 16px;
             font-weight: 800;
             cursor: pointer;
             margin-top: 10px;
-            box-shadow: 0 8px 20px rgba(0, 255, 136, 0.15);
+            box-shadow: 0 10px 25px rgba(0, 255, 136, 0.2);
+            transition: 0.3s;
         }
 
-        #btn:active { transform: scale(0.98); }
-        #btn:disabled { background: #2b3139; color: #5e6673; cursor: not-allowed; box-shadow: none; }
+        #btn:hover { transform: translateY(-2px); filter: brightness(1.1); }
 
-        .footer { margin-top: 30px; }
-        
-        .toggle-link { 
-            color: var(--primary); 
-            cursor: pointer; 
-            font-weight: 600; 
-            font-size: 15px;
-            display: inline-block;
-        }
+        .footer { margin-top: 30px; border-top: 1px solid rgba(255,255,255,0.05); padding-top: 20px; }
+        .toggle-link { color: var(--primary); cursor: pointer; font-weight: 600; font-size: 14px; }
+        .forgot { color: var(--muted); font-size: 13px; cursor: pointer; display: block; margin-top: 15px; }
 
-        .forgot { 
-            color: var(--muted); 
-            font-size: 13px; 
-            cursor: pointer; 
-            margin-top: 20px;
-            display: block;
-            text-decoration: none;
-        }
-
-        /* --- Custom Toast Notification --- */
+        /* --- Toast Notification --- */
         #toast {
-            position: fixed;
-            top: -100px;
-            left: 50%;
-            transform: translateX(-50%);
-            background: #1e2329;
-            color: white;
-            padding: 15px 25px;
-            border-radius: 12px;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
-            border-left: 4px solid var(--primary);
-            z-index: 1000;
-            transition: top 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            min-width: 280px;
+            position: fixed; top: -100px; left: 50%; transform: translateX(-50%);
+            background: #1e2329; color: white; padding: 15px 30px; border-radius: 14px;
+            box-shadow: 0 15px 35px rgba(0,0,0,0.6); z-index: 1000; transition: 0.5s;
+            display: flex; align-items: center; gap: 12px; border: 1px solid rgba(255,255,255,0.1);
         }
-
-        #toast.show { top: 30px; }
-        #toast.error { border-left-color: #ff4d4d; }
+        #toast.active { top: 30px; }
     </style>
 </head>
 <body>
 
-<div id="toast">
-    <i id="toastIcon" class="fa-solid fa-circle-info"></i>
-    <span id="toastMsg">Notification message</span>
-</div>
+    <div class="live-bg" id="liveBg"></div>
 
-<div class="auth-container">
-    <div class="brand">SMAT HUB</div>
-    <p class="subtitle" id="subtitle">Log in to your SMAT account</p>
-
-    <div class="group">
-        <label>Email Address</label>
-        <input type="email" id="email" placeholder="email@example.com">
+    <div id="toast">
+        <i id="toastIcon" class="fa-solid fa-circle-check" style="color: var(--primary);"></i>
+        <span id="toastMsg">Success message</span>
     </div>
 
-    <div class="group">
-        <label>
-            Password 
-            <span id="passStatus" style="font-size: 11px;"></span>
-        </label>
-        <div class="field-wrapper">
-            <input type="password" id="password" placeholder="••••••••" oninput="validatePassword()">
-            <i class="fa-solid fa-eye eye-btn" id="eyeIcon" onclick="togglePasswordVisibility()"></i>
+    <div class="auth-container">
+        <img src="assets/logos/smat.png" alt="SMAT" class="logo">
+        <div class="brand-header">SMAT <span>EXCHANGE</span></div>
+        <p class="subtitle" id="subtitle">Securely log in to your trading account</p>
+
+        <div class="group">
+            <label>Email Address</label>
+            <input type="email" id="email" placeholder="email@example.com">
+        </div>
+
+        <div class="group">
+            <label>Password <span id="passStatus" style="float: right;"></span></label>
+            <div class="field-wrapper">
+                <input type="password" id="password" placeholder="••••••••" oninput="validatePassword()">
+                <i class="fa-solid fa-eye eye-btn" id="eyeIcon" onclick="togglePass()"></i>
+            </div>
+        </div>
+
+        <button id="btn" onclick="handleAuth()">LOGIN</button>
+
+        <div class="footer">
+            <span style="color: var(--muted); font-size: 14px;">New to SMAT?</span> 
+            <span class="toggle-link" id="toggleLink" onclick="toggleForm()">Create account</span>
+            <span class="forgot" onclick="resetPass()">Lost your password?</span>
         </div>
     </div>
 
-    <button id="btn" onclick="handleAuth()">Login</button>
-
-    <div class="footer">
-        <div class="toggle-link" id="toggleLink" onclick="toggleForm()">Create account</div>
-        <a class="forgot" onclick="resetPass()">Forgot password?</a>
-    </div>
-</div>
-
 <script type="module">
-  // --- Firebase Config & Imports ---
-  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-  import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, sendEmailVerification, sendPasswordResetEmail } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
-  import { getDatabase, ref, set, get, runTransaction } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+    import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, sendEmailVerification, sendPasswordResetEmail } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+    import { getDatabase, ref, set, get, runTransaction } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
 
-  const firebaseConfig = {
-    apiKey: "AIzaSyAMxtJedkehhxJRMPZLjhpKHqneHEWsGlE",
-    authDomain: "smat-exchange.firebaseapp.com",
-    projectId: "smat-exchange",
-    storageBucket: "smat-exchange.firebasestorage.app",
-    messagingSenderId: "836334569396",
-    appId: "1:836334569396:web:679effe640b3453412d4e1",
-    measurementId: "G-FCE3H3F18V"
-  };
+    const firebaseConfig = {
+        apiKey: "AIzaSyAMxtJedkehhxJRMPZLjhpKHqneHEWsGlE",
+        authDomain: "smat-exchange.firebaseapp.com",
+        projectId: "smat-exchange",
+        storageBucket: "smat-exchange.firebasestorage.app",
+        messagingSenderId: "836334569396",
+        appId: "1:836334569396:web:679effe640b3453412d4e1"
+    };
 
-  const app = initializeApp(firebaseConfig);
-  const auth = getAuth(app);
-  const db = getDatabase(app);
+    const app = initializeApp(firebaseConfig);
+    const auth = getAuth(app);
+    const db = getDatabase(app);
 
-  let isLogin = true;
-  const urlParams = new URLSearchParams(window.location.search);
-  const referralID = urlParams.get('ref') || null;
+    let isLogin = true;
 
-  // --- Premium Toast Function ---
-  window.showToast = (message, type = "success") => {
-    const toast = document.getElementById('toast');
-    const msg = document.getElementById('toastMsg');
-    const icon = document.getElementById('toastIcon');
+    // --- Create Live Coin Graphics ---
+    const liveBg = document.getElementById('liveBg');
+    const coins = ['BTC $64,231.20 ↑', 'ETH $3,452.11 ↓', 'SMAT $1.42 ↑', 'BNB $592.40 ↑', 'SOL $145.22 ↓'];
     
-    msg.innerText = message;
-    toast.className = type === "error" ? "show error" : "show";
-    icon.className = type === "error" ? "fa-solid fa-triangle-exclamation" : "fa-solid fa-circle-check";
-    icon.style.color = type === "error" ? "#ff4d4d" : "#00ff88";
-
-    setTimeout(() => { toast.classList.remove('show'); }, 3000);
-  };
-
-  window.togglePasswordVisibility = () => {
-    const passInput = document.getElementById('password');
-    const eyeIcon = document.getElementById('eyeIcon');
-    const isPass = passInput.type === 'password';
-    passInput.type = isPass ? 'text' : 'password';
-    eyeIcon.classList.toggle('fa-eye', !isPass);
-    eyeIcon.classList.toggle('fa-eye-slash', isPass);
-  };
-
-  window.validatePassword = () => {
-    const pass = document.getElementById('password').value;
-    const status = document.getElementById('passStatus');
-    const submitBtn = document.getElementById('btn');
-    const regex = /^(?=.*[A-Za-z])(?=.*\d)[A-Za-z\d]{8,}$/;
-
-    if (pass === "") { status.innerText = ""; return; }
-
-    if (regex.test(pass)) {
-        status.innerText = "✓ Strong";
-        status.style.color = "#00ff88";
-        submitBtn.disabled = false;
-    } else {
-        status.innerText = "Min 8 chars (Letter+Num)";
-        status.style.color = "#ff4d4d";
-        if(!isLogin) submitBtn.disabled = true;
-    }
-  };
-
-  window.toggleForm = () => {
-    isLogin = !isLogin;
-    document.getElementById('subtitle').innerText = isLogin ? "Log in to your SMAT account" : "Join the SMAT ecosystem today";
-    document.getElementById('btn').innerText = isLogin ? "Login" : "Create Account";
-    document.getElementById('toggleLink').innerText = isLogin ? "Create account" : "Already have an account? Sign In";
-    document.getElementById('passStatus').innerText = "";
-    document.getElementById('btn').disabled = false;
-  };
-
-  window.handleAuth = async () => {
-    const email = document.getElementById('email').value;
-    const pass = document.getElementById('password').value;
-    
-    if(!email || !pass) return showToast("Fields cannot be empty!", "error");
-
-    showToast("Processing request...");
-
-    try {
-      if (isLogin) {
-        const userCredential = await signInWithEmailAndPassword(auth, email, pass);
-        if (userCredential.user.emailVerified) {
-          const userSnapshot = await get(ref(db, 'users/' + userCredential.user.uid));
-          if(userSnapshot.exists()) localStorage.setItem('smatID', userSnapshot.val().smatID);
-          localStorage.setItem('isLoggedIn', 'true');
-          window.location.href = "home.html"; 
-        } else {
-            showToast("Verify email first!", "error");
-        }
-      } else {
-        const userCredential = await createUserWithEmailAndPassword(auth, email, pass);
-        const newSmatID = "SMAT" + Math.floor(100000 + Math.random() * 900000); // Simple ID for now
-        await set(ref(db, 'users/' + userCredential.user.uid), {
-          email, smatID: newSmatID, kycStatus: 'unverified', referredBy: referralID, createdAt: new Date().toISOString()
+    function createLiveCoins() {
+        coins.forEach((text, i) => {
+            let div = document.createElement('div');
+            div.className = 'coin-float';
+            div.innerText = text;
+            div.style.left = Math.random() * 80 + '%';
+            div.style.top = Math.random() * 100 + '%';
+            div.style.color = text.includes('↑') ? '#00ff88' : '#ff4d4d';
+            div.style.animationDelay = (i * 2) + 's';
+            liveBg.appendChild(div);
         });
-        await sendEmailVerification(userCredential.user);
-        showToast("Verification link sent!");
-      }
-    } catch (e) {
-      showToast(e.message, "error");
     }
-  };
+    createLiveCoins();
 
-  window.resetPass = async () => {
-    const email = document.getElementById('email').value;
-    if(!email) return showToast("Enter email first!", "error");
-    try {
-        await sendPasswordResetEmail(auth, email);
-        showToast("Password reset link sent!");
-    } catch (e) { showToast(e.message, "error"); }
-  };
+    // --- Functional Logics ---
+    window.showToast = (msg, type="success") => {
+        const toast = document.getElementById('toast');
+        document.getElementById('toastMsg').innerText = msg;
+        document.getElementById('toastIcon').className = type === "error" ? "fa-solid fa-circle-xmark" : "fa-solid fa-circle-check";
+        document.getElementById('toastIcon').style.color = type === "error" ? "#ff4d4d" : "#00ff88";
+        toast.classList.add('active');
+        setTimeout(() => toast.classList.remove('active'), 3000);
+    };
+
+    window.togglePass = () => {
+        const p = document.getElementById('password');
+        const i = document.getElementById('eyeIcon');
+        p.type = p.type === 'password' ? 'text' : 'password';
+        i.classList.toggle('fa-eye-slash');
+    };
+
+    window.validatePassword = () => {
+        const pass = document.getElementById('password').value;
+        const status = document.getElementById('passStatus');
+        const regex = /^(?=.*[A-Za-z])(?=.*\d)[A-Za-z\d]{8,}$/;
+        if(!isLogin) {
+            status.innerText = regex.test(pass) ? "✓ Strong" : "Invalid";
+            status.style.color = regex.test(pass) ? "#00ff88" : "#ff4d4d";
+            document.getElementById('btn').disabled = !regex.test(pass);
+        }
+    };
+
+    window.toggleForm = () => {
+        isLogin = !isLogin;
+        document.getElementById('subtitle').innerText = isLogin ? "Securely log in to your trading account" : "Join the world's most secure exchange";
+        document.getElementById('btn').innerText = isLogin ? "LOGIN" : "REGISTER";
+        document.getElementById('toggleLink').innerText = isLogin ? "Create account" : "Sign In";
+        document.getElementById('passStatus').innerText = "";
+    };
+
+    window.handleAuth = async () => {
+        const email = document.getElementById('email').value;
+        const pass = document.getElementById('password').value;
+        if(!email || !pass) return showToast("Enter all details!", "error");
+
+        showToast("Processing...");
+
+        try {
+            if (isLogin) {
+                const res = await signInWithEmailAndPassword(auth, email, pass);
+                if (res.user.emailVerified) {
+                    window.location.href = "home.html";
+                } else {
+                    showToast("Please verify email!", "error");
+                }
+            } else {
+                const res = await createUserWithEmailAndPassword(auth, email, pass);
+                await sendEmailVerification(res.user);
+                showToast("Verification link sent!");
+            }
+        } catch (e) {
+            showToast(e.message, "error");
+        }
+    };
+
+    window.resetPass = async () => {
+        const email = document.getElementById('email').value;
+        if(!email) return showToast("Enter email first!", "error");
+        try {
+            await sendPasswordResetEmail(auth, email);
+            showToast("Reset link sent to Gmail!");
+        } catch (e) { showToast(e.message, "error"); }
+    };
 </script>
-
 </body>
 </html>
