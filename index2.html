@@ -3,18 +3,17 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>SMAT EXCHANGE | Next-Gen Trading</title>
+    <title>SMAT EXCHANGE | Pure Code Graphics</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
         :root {
             --primary: #00ff88;
-            --glass: rgba(10, 10, 10, 0.85);
-            --input: rgba(255, 255, 255, 0.08);
-            --text-main: #ffffff;
-            --text-dim: rgba(255, 255, 255, 0.6);
+            --bg: #000000;
+            --card: rgba(15, 18, 22, 0.96);
+            --text-muted: #848e9c;
         }
 
-        /* ক্লিক গ্লিচ এবং সিলেকশন বন্ধ করার মাস্টার ফিক্স */
+        /* ক্লিক গ্লিচ বন্ধ এবং ইন্টারফেস রিসেট */
         * { 
             margin: 0; padding: 0; box-sizing: border-box; 
             font-family: 'Inter', sans-serif;
@@ -22,134 +21,125 @@
             outline: none !important;
         }
 
-        body, html {
-            height: 100%; width: 100%;
-            background: #000;
-            display: flex; justify-content: center; align-items: center;
-            overflow: hidden;
+        body {
+            background-color: var(--bg);
+            height: 100vh; display: flex;
+            justify-content: center; align-items: center;
+            overflow: hidden; position: relative;
         }
 
-        /* --- ভিডিও ব্যাকগ্রাউন্ড লেয়ার --- */
-        .video-background {
-            position: fixed; top: 0; left: 0;
-            width: 100%; height: 100%;
-            z-index: 1; overflow: hidden;
-        }
-
-        .video-background video {
-            width: 100%; height: 100%;
-            object-fit: cover; /* পুরো স্ক্রিন কভার করবে */
-            filter: brightness(0.5); /* ভিডিওটি একটু ডার্ক রাখা হয়েছে যেন টেক্সট বোঝা যায় */
-        }
-
-        /* ভিডিওর ওপর হালকা গ্রিড ইফেক্ট (ঐচ্ছিক) */
-        .video-overlay {
+        /* --- Pure Code Digital Graphics --- */
+        #graphicsCanvas {
             position: absolute; top: 0; left: 0;
             width: 100%; height: 100%;
-            background: radial-gradient(circle, transparent 20%, #000 100%);
-            z-index: 2;
+            z-index: 1;
         }
 
-        /* --- অথেনটিকেশন কার্ড --- */
-        .auth-card {
+        /* ওল্ড স্কুল ডিজিটাল ফিল্টার */
+        .scanlines {
+            position: absolute; width: 100%; height: 100%;
+            background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.25) 50%), 
+                        linear-gradient(90deg, rgba(255, 0, 0, 0.06), rgba(0, 255, 0, 0.02), rgba(0, 0, 255, 0.06));
+            background-size: 100% 4px, 3px 100%;
+            z-index: 2; pointer-events: none;
+        }
+
+        /* --- Auth Card --- */
+        .auth-container {
             position: relative; z-index: 10;
             width: 90%; max-width: 420px;
-            background: var(--glass);
-            padding: 40px 30px;
-            border-radius: 35px;
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            backdrop-filter: blur(20px); /* গ্লাস ইফেক্ট */
-            box-shadow: 0 25px 50px rgba(0,0,0,0.5);
+            background: var(--card);
+            padding: 45px 30px;
+            border-radius: 32px;
+            border: 1px solid rgba(0, 255, 136, 0.2);
+            box-shadow: 0 0 40px rgba(0, 0, 0, 0.8);
             text-align: center;
+            backdrop-filter: blur(10px);
         }
 
-        .logo-box {
-            width: 85px; height: 85px; margin: 0 auto 20px;
-            background: #fff; border-radius: 50%; padding: 4px;
-            border: 2.5px solid var(--primary); overflow: hidden;
+        .logo-circle {
+            width: 90px; height: 90px; margin: 0 auto 20px;
+            background: #fff; border-radius: 50%; padding: 3px;
+            border: 2px solid var(--primary); overflow: hidden;
         }
-        .logo-box img { width: 100%; height: 100%; object-fit: cover; border-radius: 50%; }
+        .logo-circle img { width: 100%; height: 100%; object-fit: cover; border-radius: 50%; }
 
-        .brand-title { font-size: 28px; font-weight: 900; color: #fff; margin-bottom: 5px; }
-        .brand-title span { color: var(--primary); }
-        .sub-title { color: var(--text-dim); font-size: 14px; margin-bottom: 30px; }
+        .brand-name { font-size: 28px; font-weight: 900; color: #fff; margin-bottom: 8px; }
+        .brand-name span { color: var(--primary); }
+        .sub-desc { color: var(--text-muted); font-size: 14px; margin-bottom: 35px; }
 
-        .form-group { text-align: left; margin-bottom: 22px; }
-        label { display: block; font-size: 11px; color: var(--text-dim); margin-bottom: 8px; font-weight: 800; text-transform: uppercase; }
+        .form-group { text-align: left; margin-bottom: 25px; }
+        label { display: block; font-size: 11px; color: var(--text-muted); margin-bottom: 8px; font-weight: 800; text-transform: uppercase; letter-spacing: 1px; }
 
         input {
             width: 100%; padding: 18px;
-            background: var(--input); border: 1px solid transparent;
-            border-radius: 16px; color: #fff; font-size: 16px; transition: 0.3s;
+            background: #1e2329; border: 1px solid transparent;
+            border-radius: 14px; color: #fff; font-size: 16px;
         }
-        input:focus { border-color: var(--primary); background: rgba(0, 0, 0, 0.5); }
+        input:focus { border-color: var(--primary); background: #000; }
 
-        .pass-container { position: relative; }
-        .eye-btn { position: absolute; right: 18px; top: 50%; transform: translateY(-50%); color: var(--text-dim); cursor: pointer; padding: 5px; }
+        .pass-box { position: relative; }
+        .eye-icon { position: absolute; right: 18px; top: 50%; transform: translateY(-50%); color: var(--text-muted); cursor: pointer; padding: 5px; }
 
         #actionBtn {
             width: 100%; padding: 18px;
             background: var(--primary); color: #000;
-            border: none; border-radius: 16px;
+            border: none; border-radius: 14px;
             font-size: 18px; font-weight: 900;
             cursor: pointer; margin-top: 10px; transition: 0.3s;
         }
-        #actionBtn:disabled { background: #333; color: #666; cursor: not-allowed; }
+        #actionBtn:disabled { background: #2b3139; color: #5e6673; cursor: not-allowed; }
 
-        /* লিঙ্ক গ্লিচ ফিক্স */
-        .footer-links { margin-top: 25px; padding-top: 20px; border-top: 1px solid rgba(255,255,255,0.1); }
-        .switch-btn { color: var(--primary); cursor: pointer; font-weight: 800; font-size: 15px; background: none !important; }
-        .forgot-btn { color: var(--text-dim); cursor: pointer; font-size: 13px; display: block; margin-top: 15px; background: none !important; }
+        /* লিঙ্ক গ্লিচ বন্ধ করার মাস্টার ফিক্স */
+        .auth-footer { margin-top: 25px; padding-top: 20px; border-top: 1px solid rgba(255, 255, 255, 0.05); }
+        .link-primary { color: var(--primary); cursor: pointer; font-weight: 800; font-size: 14px; background: none !important; }
+        .link-secondary { color: var(--text-muted); cursor: pointer; font-size: 13px; display: block; margin-top: 15px; background: none !important; }
 
         /* টোস্ট */
-        #toast {
+        #customToast {
             position: fixed; top: -100px; left: 50%; transform: translateX(-50%);
-            background: #111; color: #fff; padding: 16px 25px; border-radius: 15px;
-            z-index: 1000; border: 1px solid var(--primary); transition: 0.5s;
+            background: #1e2329; color: #fff; padding: 16px 25px; border-radius: 12px;
+            z-index: 1000; border-left: 5px solid var(--primary); transition: 0.5s;
             display: flex; align-items: center; gap: 12px; box-shadow: 0 10px 30px rgba(0,0,0,0.5);
         }
-        #toast.active { top: 30px; }
+        #customToast.active { top: 30px; }
     </style>
 </head>
 <body>
 
-<div class="video-background">
-    <video autoplay muted loop playsinline poster="assets/bg-fallback.jpg">
-        <source src="assets/bg_video.mp4" type="video/mp4">
-        </video>
-    <div class="video-overlay"></div>
+<div class="scanlines"></div>
+<canvas id="graphicsCanvas"></canvas>
+
+<div id="customToast">
+    <i class="fa-solid fa-shield-halved" style="color: var(--primary);"></i>
+    <span id="toastMsg">Securing connection...</span>
 </div>
 
-<div id="toast">
-    <i class="fa-solid fa-circle-check" style="color: var(--primary);"></i>
-    <span id="tMsg">Welcome back</span>
-</div>
-
-<div class="auth-card">
-    <div class="logo-box">
+<div class="auth-container">
+    <div class="logo-circle">
         <img src="assets/logos/smat.png" alt="SMAT">
     </div>
-    <h1 class="brand-title">SMAT <span>EXCHANGE</span></h1>
-    <p class="sub-title" id="tagline">The most secure way to trade crypto</p>
+    <h1 class="brand-name">SMAT <span>EXCHANGE</span></h1>
+    <p class="sub-desc" id="uiLabel">Access the decentralized world</p>
 
     <div class="form-group">
-        <label>Email Address</label>
+        <label>Account Email</label>
         <input type="email" id="email" placeholder="example@gmail.com">
     </div>
 
     <div class="form-group">
-        <label>Password <span id="passValidator" style="float: right; text-transform: none;"></span></label>
-        <div class="pass-container">
-            <input type="password" id="password" placeholder="••••••••" oninput="validatePassword()">
-            <i class="fa-solid fa-eye eye-btn" onclick="togglePassword()"></i>
+        <label>Security Key <span id="passState" style="float: right; text-transform: none;"></span></label>
+        <div class="pass-box">
+            <input type="password" id="password" placeholder="••••••••" oninput="liveCheck()">
+            <i class="fa-solid fa-eye eye-icon" onclick="togglePass()"></i>
         </div>
     </div>
 
-    <button id="actionBtn" onclick="handleAuth()">LOGIN</button>
+    <button id="actionBtn" onclick="executeAuth()">LOGIN</button>
 
-    <div class="footer-links">
-        <span class="switch-btn" id="modeBtn" onclick="toggleUI()">Create new account</span>
-        <span class="forgot-btn" onclick="sendReset()">Lost your password?</span>
+    <div class="auth-footer">
+        <span class="link-primary" id="uiSwitch" onclick="switchUI()">Register new account</span>
+        <span class="link-secondary" onclick="forgotPass()">Recover password?</span>
     </div>
 </div>
 
@@ -171,89 +161,143 @@
     const auth = getAuth(app);
     const db = getDatabase(app);
 
-    let isLoginMode = true;
+    // --- ১. Pure Code Graphics (Moving Matrix Grid) ---
+    const canvas = document.getElementById('graphicsCanvas');
+    const ctx = canvas.getContext('2d');
+    let w, h;
+
+    function resize() {
+        w = canvas.width = window.innerWidth;
+        h = canvas.height = window.innerHeight;
+    }
+    window.addEventListener('resize', resize);
+    resize();
+
+    const dots = [];
+    for(let i=0; i<60; i++) {
+        dots.push({
+            x: Math.random() * w,
+            y: Math.random() * h,
+            vx: (Math.random() - 0.5) * 0.5,
+            vy: (Math.random() - 0.5) * 0.5
+        });
+    }
+
+    function draw() {
+        ctx.fillStyle = "rgba(0, 0, 0, 0.1)";
+        ctx.fillRect(0, 0, w, h);
+        ctx.strokeStyle = "rgba(0, 255, 136, 0.15)";
+        ctx.lineWidth = 0.5;
+
+        dots.forEach(d => {
+            d.x += d.vx;
+            d.y += d.vy;
+            if(d.x < 0 || d.x > w) d.vx *= -1;
+            if(d.y < 0 || d.y > h) d.vy *= -1;
+
+            ctx.beginPath();
+            ctx.arc(d.x, d.y, 1, 0, Math.PI * 2);
+            ctx.fillStyle = "rgba(0, 255, 136, 0.5)";
+            ctx.fill();
+
+            dots.forEach(d2 => {
+                let dist = Math.hypot(d.x - d2.x, d.y - d2.y);
+                if(dist < 150) {
+                    ctx.beginPath();
+                    ctx.moveTo(d.x, d.y);
+                    ctx.lineTo(d2.x, d2.y);
+                    ctx.stroke();
+                }
+            });
+        });
+        requestAnimationFrame(draw);
+    }
+    draw();
+
+    // --- ২. আপনার অরিজিনাল লজিক (SMAT ID, Referral, Firebase) ---
+    let loginMode = true;
     const urlParams = new URLSearchParams(window.location.search);
     const referralID = urlParams.get('ref') || null;
 
-    window.notify = (msg, err = false) => {
-        const t = document.getElementById('toast');
-        document.getElementById('tMsg').innerText = msg;
-        t.style.borderColor = err ? "#ff4d4d" : "#00ff88";
+    window.popToast = (msg, err = false) => {
+        const t = document.getElementById('customToast');
+        document.getElementById('toastMsg').innerText = msg;
+        t.style.borderLeftColor = err ? "#ff4d4d" : "#00ff88";
         t.classList.add('active');
         setTimeout(() => t.classList.remove('active'), 3000);
     };
 
-    window.togglePassword = () => {
+    window.togglePass = () => {
         const p = document.getElementById('password');
         p.type = p.type === 'password' ? 'text' : 'password';
     };
 
-    window.validatePassword = () => {
+    window.liveCheck = () => {
         const val = document.getElementById('password').value;
-        const status = document.getElementById('passValidator');
+        const state = document.getElementById('passState');
         const btn = document.getElementById('actionBtn');
         const regex = /^(?=.*[A-Za-z])(?=.*\d)[A-Za-z\d]{8,}$/;
 
-        if(val === "") { status.innerText = ""; return; }
+        if(val === "") { state.innerText = ""; return; }
         if(regex.test(val)) {
-            status.innerHTML = '<i class="fa-solid fa-circle-check"></i> Strong';
-            status.style.color = "#00ff88";
+            state.innerHTML = '<i class="fa-solid fa-circle-check"></i> Strong';
+            state.style.color = "#00ff88";
             btn.disabled = false;
         } else {
-            status.innerText = "Letter + Num (Min 8)";
-            status.style.color = "#ff4d4d";
-            if(!isLoginMode) btn.disabled = true;
+            state.innerText = "Min 8 Chars (Letter + Number)";
+            state.style.color = "#ff4d4d";
+            if(!loginMode) btn.disabled = true;
         }
     };
 
-    window.toggleUI = () => {
-        isLoginMode = !isLoginMode;
-        document.getElementById('tagline').innerText = isLoginMode ? "The most secure way to trade crypto" : "Start your blockchain journey with SMAT";
-        document.getElementById('actionBtn').innerText = isLoginMode ? "LOGIN" : "REGISTER";
-        document.getElementById('modeBtn').innerText = isLoginMode ? "Create new account" : "Already have an account? Sign In";
-        document.getElementById('passValidator').innerText = "";
+    window.switchUI = () => {
+        loginMode = !loginMode;
+        document.getElementById('uiLabel').innerText = loginMode ? "Access the decentralized world" : "Start your 12-month SMAT mining phase";
+        document.getElementById('actionBtn').innerText = loginMode ? "LOGIN" : "REGISTER";
+        document.getElementById('uiSwitch').innerText = loginMode ? "Register new account" : "Sign in instead";
+        document.getElementById('passState').innerText = "";
     };
 
-    const generateSmatID = async () => {
+    const getSmatID = async () => {
         const counterRef = ref(db, 'counters/lastSmatId');
         const result = await runTransaction(counterRef, (v) => (v || 100000) + 1);
         return "SMAT" + result.snapshot.val();
     };
 
-    window.handleAuth = async () => {
+    window.executeAuth = async () => {
         const email = document.getElementById('email').value;
         const pass = document.getElementById('password').value;
-        if(!email || !pass) return notify("All fields required!", true);
+        if(!email || !pass) return popToast("Details missing!", true);
 
-        notify("Authenticating...");
+        popToast("Connecting to SMAT Node...");
         try {
-            if (isLoginMode) {
+            if (loginMode) {
                 const res = await signInWithEmailAndPassword(auth, email, pass);
                 if (res.user.emailVerified) {
                     const snap = await get(ref(db, 'users/' + res.user.uid));
                     if(snap.exists()) localStorage.setItem('smatID', snap.val().smatID);
                     localStorage.setItem('isLoggedIn', 'true');
                     window.location.href = "home.html"; 
-                } else notify("Verify email before logging in!", true);
+                } else popToast("Please verify your email address!", true);
             } else {
                 const res = await createUserWithEmailAndPassword(auth, email, pass);
-                const sID = await generateSmatID();
+                const sID = await getSmatID();
                 await set(ref(db, 'users/' + res.user.uid), {
                     email, smatID: sID, kycStatus: 'unverified', referredBy: referralID, createdAt: new Date().toISOString()
                 });
                 await sendEmailVerification(res.user);
-                notify("Verification link sent to your email!");
+                popToast("Verification link dispatched to Gmail!");
             }
-        } catch (e) { notify(e.message, true); }
+        } catch (e) { popToast(e.message, true); }
     };
 
-    window.sendReset = async () => {
+    window.forgotPass = async () => {
         const email = document.getElementById('email').value;
-        if(!email) return notify("Please enter your email first!", true);
+        if(!email) return popToast("Enter email first!", true);
         try {
             await sendPasswordResetEmail(auth, email);
-            notify("Password reset email sent!");
-        } catch (e) { notify(e.message, true); }
+            popToast("Recovery instructions sent!");
+        } catch (e) { popToast(e.message, true); }
     };
 </script>
 </body>
