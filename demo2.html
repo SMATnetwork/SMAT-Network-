@@ -437,43 +437,25 @@ const chart = new Chart(ctx, {
     }
 
     function initWS() {
-    // trade এর বদলে ticker ব্যবহার করলে আপডেট সুপার ফাস্ট হবে
-    const streams = Object.values(assets).map(a => `${a.symbol}@ticker`).join('/');
-    const ws = new WebSocket(`wss://stream.binance.com:9443/stream?streams=${streams}`);
-    
-    ws.onmessage = (e) => {
-        const d = JSON.parse(e.data);
-        const key = Object.keys(assets).find(k => assets[k].symbol === d.data.s.toLowerCase());
-        
-        if (key) {
-            // 'c' হলো বর্তমান রিয়েল-টাইম প্রাইস
-            const price = parseFloat(d.data.c); 
-            assets[key].currentPrice = price; 
-            
-            if (key === activeKey) {
-                // সরাসরি টেক্সট এবং চার্ট আপডেট
-                const priceEl = document.getElementById('priceDisplay');
-                if (priceEl) {
-                    priceEl.innerText = '$' + price.toFixed(4);
-                    // আগের প্রাইসের সাথে তুলনা করে কালার চেঞ্জ (ঐচ্ছিক)
-                    const oldP = parseFloat(priceEl.dataset.old || 0);
-                    priceEl.style.color = price >= oldP ? "#0ecb81" : "#f6465d";
-                    priceEl.dataset.old = price;
+        if (Object.keys(assets).length === 0) return;
+        const streams = Object.values(assets).map(a => `${a.symbol}@trade`).join('/');
+        const ws = new WebSocket(`wss://stream.binance.com:9443/stream?streams=${streams}`);
+        ws.onmessage = (e) => {
+            const d = JSON.parse(e.data);
+            const symbol = d.data.s.toLowerCase();
+            const key = Object.keys(assets).find(k => assets[k].symbol === symbol);
+            if (key) {
+                const price = parseFloat(d.data.p); assets[key].currentPrice = price; 
+                if (key === activeKey) {
+                    document.getElementById('priceDisplay').innerText = '$' + price.toFixed(4);
+                    chart.data.datasets[0].data.shift(); 
+                    chart.data.datasets[0].data.push(price);
+                    chart.update('none');
                 }
-
-                // চার্ট আপডেট - এনিমেশন অফ রাখা হয়েছে ল্যাগ কমানোর জন্য
-                chart.data.datasets[0].data.shift(); 
-                chart.data.datasets[0].data.push(price);
-                chart.update('none'); 
             }
-        }
-    };
-
-    // কানেকশন লস্ট হলে অটো-রানেক্ট লজিক
-    ws.onclose = () => setTimeout(initWS, 2000);
-}
-
-
+        };
+        ws.onclose = () => setTimeout(initWS, 1000);
+    }
 
     onAuthStateChanged(auth, (u) => { if (u) { user = u; syncUser(); initWS(); initTimer(); } else { window.location.href = "logIn.html"; } });
 </script>
