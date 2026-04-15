@@ -243,7 +243,7 @@ th:nth-child(6), td:nth-child(6) { width: 18%; }
         const bet = assets[key].pending;
         await set(ref(db, `history/${user.uid}/${key}/${rid}`), {
             rid: rid, time: new Date().toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'}),
-            lockedPrice: assets[key].currentPrice, action: bet ? bet.side : "No Trade",
+            lockedPrice: assets[key].currentPrice, action: bet ? bet.side : " 🔆",
             betAmt: bet ? bet.amount : 0, isPending: true, logo: assets[key].logo
         });
     }
@@ -258,16 +258,16 @@ th:nth-child(6), td:nth-child(6) { width: 18%; }
             if (history[rid].isPending) {
                 const rec = history[rid];
                 let status = "LOSS"; let winAmt = 0;
-                if (rec.action !== "No Trade") {
+                if (rec.action !== " 🔆") {
                     if (resPrice === rec.lockedPrice) { status = "DRAW"; winAmt = rec.betAmt * 0.5; }
                     else {
                         const win = (rec.action === "UP" && resPrice > rec.lockedPrice) || (rec.action === "DOWN" && resPrice < rec.lockedPrice);
-                        if (win) { status = "WIN"; winAmt = rec.betAmt + (rec.betAmt * 0.96); }
+                        if (win) { status = "WIN"; winAmt = rec.betAmt + (rec.betAmt * 0.85); }
                     }
                 }
 
                 // রেজাল্ট টোস্ট (শুধুমাত্র একটিভ পেয়ারের জন্য)
-                if (key === activeKey && rec.action !== "No Trade") {
+                if (key === activeKey && rec.action !== " 🔆") {
                     if (status === "WIN") showToast(`${key.toUpperCase()} Won! +$${winAmt.toFixed(4)}`, 'success');
                     else if (status === "LOSS") showToast(`${key.toUpperCase()} Lost!`, 'error');
                 }
@@ -278,7 +278,7 @@ th:nth-child(6), td:nth-child(6) { width: 18%; }
                     const newTotal = (parseFloat(bSnap.val() || 0) + winAmt).toFixed(8);
                     await set(bRef, newTotal);
                     const hRef = push(ref(db, `users/${user.uid}/history`));
-                    await set(hRef, { method: "Win Prediction", amount: winAmt.toFixed(4), coin: "USDT", status: 'success', timestamp: Date.now(), address: "Market", network: assets[key].name, hash: "WIN-" + Math.random().toString(36).substr(2,9).toUpperCase() });
+                    await set(hRef, { method: "WinPrediction", amount: winAmt.toFixed(4), coin: "USDT", status: 'success', timestamp: Date.now(), address: "Market", network: assets[key].name, hash: "WinPrediction" + Math.random().toString(36).substr(2,9).toUpperCase() });
                 }
                 await update(ref(db, `history/${user.uid}/${key}/${rid}`), { isPending: false, resultPrice: resPrice, status: status, finalWin: winAmt });
             }
@@ -344,7 +344,7 @@ th:nth-child(6), td:nth-child(6) { width: 18%; }
         
         await set(balRef, (curBal - amt).toFixed(8));
         const hKey = push(ref(db, `users/${user.uid}/history`)).key;
-        await set(ref(db, `users/${user.uid}/history/${hKey}`), { method: "Prediction Cost", amount: amt.toFixed(4), coin: "USDT", status: 'success', timestamp: Date.now(), address: "Market", network: assets[activeKey].name, hash: "BET-" + Math.random().toString(36).substr(2,9).toUpperCase() });
+        await set(ref(db, `users/${user.uid}/history/${hKey}`), { method: "PredictionCost", amount: amt.toFixed(4), coin: "USDT", status: 'success', timestamp: Date.now(), address: "Market", network: assets[activeKey].name, hash: "PredictionCost" + Math.random().toString(36).substr(2,9).toUpperCase() });
 
         // শুধুমাত্র এই পেয়ারের জন্য পেন্ডিং বেট সেট করা হলো
         assets[activeKey].pending = { side: document.getElementById('betModal').dataset.side, amount: amt };
