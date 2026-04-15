@@ -9,14 +9,19 @@
         :root {
             --primary: #00ff88;
             --bg: #05070a;
-            --card: rgba(17, 21, 26, 0.98);
+            --card: #11151a;
             --input: #1a1f24;
             --text-main: #ffffff;
             --text-dim: #848e9c;
         }
 
-        /* রিসেট এবং গ্লিচ প্রিভেনশন */
-        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', sans-serif; }
+        /* --- ক্লিক গ্লিচ বন্ধ করার জন্য বিশেষ ফিক্স --- */
+        * { 
+            margin: 0; padding: 0; box-sizing: border-box; 
+            font-family: 'Segoe UI', sans-serif;
+            -webkit-tap-highlight-color: transparent; /* মোবাইলে ক্লিকের বিশ্রী ব্যাকগ্রাউন্ড বন্ধ */
+            outline: none !important; /* ক্লিকের নীল/সাদা বর্ডার বন্ধ */
+        }
         
         body {
             background: var(--bg);
@@ -28,7 +33,7 @@
             position: relative;
         }
 
-        /* --- ডায়নামিক বাজার দর (স্পষ্ট ও আলাদা এনিমেশন) --- */
+        /* --- ডায়নামিক বাজার দর (স্পষ্ট ও সুশৃঙ্খল) --- */
         .market-stream {
             position: absolute;
             width: 100%;
@@ -39,55 +44,58 @@
 
         .ticker {
             position: absolute;
-            font-family: 'Courier New', Courier, monospace;
-            font-weight: 900;
+            font-family: 'Roboto Mono', monospace;
+            font-weight: 800;
             font-size: 1.1rem;
             white-space: nowrap;
             opacity: 0;
-            animation: moveSmooth 18s infinite linear;
+            animation: moveSmooth 20s infinite linear;
         }
 
         @keyframes moveSmooth {
-            0% { transform: translateY(105vh); opacity: 0; }
-            5% { opacity: 0.8; }
-            95% { opacity: 0.8; }
-            100% { transform: translateY(-15vh); opacity: 0; }
+            0% { transform: translateY(110vh); opacity: 0; }
+            10% { opacity: 0.9; }
+            90% { opacity: 0.9; }
+            100% { transform: translateY(-20vh); opacity: 0; }
         }
 
-        /* --- মেইন কার্ড ডিজাইন --- */
+        /* --- কার্ড ডিজাইন --- */
         .auth-card {
             position: relative;
             z-index: 10;
-            width: 92%;
+            width: 90%;
             max-width: 400px;
             background: var(--card);
             padding: 40px 25px;
-            border-radius: 28px;
+            border-radius: 30px;
             border: 1px solid rgba(0, 255, 136, 0.2);
-            box-shadow: 0 25px 50px rgba(0,0,0,0.8);
+            box-shadow: 0 30px 60px rgba(0,0,0,0.8);
             text-align: center;
         }
 
-        .logo-circle {
+        .logo-box {
             width: 85px;
             height: 85px;
             margin: 0 auto 20px;
             background: #fff;
-            border-radius: 50%; /* লগো গোল করার ফিক্স */
-            padding: 3px;
-            border: 2.5px solid var(--primary);
+            border-radius: 50%;
+            padding: 4px;
+            border: 2px solid var(--primary);
             overflow: hidden;
+            display: flex;
+            align-items: center;
+            justify-content: center;
         }
 
-        .logo-circle img { width: 100%; height: 100%; object-fit: cover; border-radius: 50%; }
+        .logo-box img { width: 100%; height: 100%; object-fit: cover; border-radius: 50%; }
 
-        .brand-name { font-size: 26px; font-weight: 800; color: #fff; margin-bottom: 5px; }
+        .brand-name { font-size: 26px; font-weight: 900; color: #fff; margin-bottom: 5px; }
         .brand-name span { color: var(--primary); }
 
         .sub-desc { color: var(--text-dim); font-size: 13px; margin-bottom: 30px; }
 
         .form-group { text-align: left; margin-bottom: 22px; }
-        label { display: block; font-size: 11px; color: var(--text-dim); margin-bottom: 8px; text-transform: uppercase; letter-spacing: 1px; }
+        label { display: block; font-size: 11px; color: var(--text-dim); margin-bottom: 8px; text-transform: uppercase; font-weight: bold; }
 
         .input-box { position: relative; }
         
@@ -95,22 +103,18 @@
             width: 100%;
             padding: 16px;
             background: var(--input);
-            border: 1.5px solid rgba(255,255,255,0.05);
+            border: 1px solid rgba(255,255,255,0.05);
             border-radius: 14px;
             color: #fff;
             font-size: 15px;
-            outline: none;
         }
 
-        input:focus { border-color: var(--primary); background: #1f252b; }
+        input:focus { border-color: var(--primary); background: #1c2229; }
 
         .eye-toggle {
             position: absolute; right: 15px; top: 50%; transform: translateY(-50%);
             color: var(--text-dim); cursor: pointer; padding: 5px;
         }
-
-        /* পাসওয়ার্ড স্ট্যাটাস */
-        #passStatus { font-weight: bold; font-size: 11px; transition: 0.3s; }
 
         #actionBtn {
             width: 100%;
@@ -123,14 +127,34 @@
             font-weight: 800;
             cursor: pointer;
             margin-top: 10px;
-            transition: 0.2s;
+            transition: 0.3s;
         }
 
         #actionBtn:disabled { background: #2b3139; color: #5e6673; cursor: not-allowed; }
 
-        .auth-footer { margin-top: 25px; padding-top: 15px; border-top: 1px solid rgba(255,255,255,0.05); }
-        .switch-link { color: var(--primary); cursor: pointer; font-weight: 700; font-size: 14px; }
-        .forgot-link { color: var(--text-dim); font-size: 13px; cursor: pointer; display: block; margin-top: 15px; }
+        /* --- ফুটার লিংক (গ্লিচ ফ্রি) --- */
+        .auth-footer { 
+            margin-top: 25px; padding-top: 15px; 
+            border-top: 1px solid rgba(255,255,255,0.05); 
+        }
+
+        .switch-link { 
+            color: var(--primary); 
+            cursor: pointer; 
+            font-weight: 700; 
+            font-size: 14px;
+            background: transparent !important; /* ব্যাকগ্রাউন্ড গ্লিচ রোধ */
+            display: inline-block;
+        }
+
+        .forgot-link { 
+            color: var(--text-dim); 
+            font-size: 13px; 
+            cursor: pointer; 
+            display: block; 
+            margin-top: 15px;
+            background: transparent !important;
+        }
 
         /* পপআপ টোস্ট */
         #toast {
@@ -152,10 +176,10 @@
 <div class="market-stream" id="tickerContainer"></div>
 
 <div class="auth-card">
-    <div class="logo-circle">
+    <div class="logo-box">
         <img src="assets/logos/smat.png" alt="SMAT">
     </div>
-    <h2 class="brand-name">SMAT <span>EXCHANGE</span></h2>
+    <h1 class="brand-name">SMAT <span>EXCHANGE</span></h1>
     <p class="sub-desc" id="subHeader">Log in to your SMAT account</p>
 
     <div class="form-group">
@@ -167,14 +191,14 @@
         <label>Password <span id="passStatus" style="float: right;"></span></label>
         <div class="input-box">
             <input type="password" id="password" placeholder="••••••••" oninput="validatePass()">
-            <i class="fa-solid fa-eye eye-toggle" onclick="toggleVisibility()"></i>
+            <i class="fa-solid fa-eye eye-toggle" id="eyeIcon" onclick="toggleVisibility()"></i>
         </div>
     </div>
 
     <button id="actionBtn" onclick="processAuth()">LOGIN</button>
 
     <div class="auth-footer">
-        <span class="switch-link" id="switchText" onclick="toggleMode()">Create new account</span>
+        <span class="switch-link" id="switchText" onclick="toggleMode()">Create account</span>
         <span class="forgot-link" onclick="handleReset()">Lost your password?</span>
     </div>
 </div>
@@ -197,7 +221,7 @@
     const auth = getAuth(app);
     const db = getDatabase(app);
 
-    // --- ১. স্পষ্ট ও জটলাহীন কয়েন এনিমেশন ---
+    // --- সুশৃঙ্খল কয়েন এনিমেশন (Grid based spacing) ---
     const container = document.getElementById('tickerContainer');
     const coins = [
         {t: 'BTC/USDT', p: '64,205.10', u: true},
@@ -209,19 +233,19 @@
     ];
 
     function createTickers() {
-        for(let i=0; i<10; i++) {
+        for(let i=0; i<8; i++) {
             let div = document.createElement('div');
             div.className = 'ticker';
             let data = coins[i % coins.length];
             div.innerHTML = `${data.t} <span style="color:${data.u ? '#00ff88' : '#ff4d4d'}">${data.p} ${data.u ? '↑' : '↓'}</span>`;
-            div.style.left = (i * 10) + '%'; // জটলা পাকাবে না, আলাদা আলাদা জায়গায় থাকবে
-            div.style.animationDelay = (i * 2.5) + 's';
+            div.style.left = (15 + (i * 10)) + '%'; // কয়েনগুলোর মাঝে ১০% দূরত্ব নিশ্চিত করা হয়েছে
+            div.style.animationDelay = (i * 3) + 's';
             container.appendChild(div);
         }
     }
     createTickers();
 
-    // --- ২. আপনার দেওয়া অরিজিনাল লজিক ---
+    // --- অরিজিনাল লজিক (SMAT ID, Referral সিস্টেম সহ) ---
     let isLogin = true;
     const urlParams = new URLSearchParams(window.location.search);
     const referralID = urlParams.get('ref') || null;
@@ -236,10 +260,17 @@
 
     window.toggleVisibility = () => {
         const p = document.getElementById('password');
-        p.type = p.type === 'password' ? 'text' : 'password';
+        const eye = document.getElementById('eyeIcon');
+        if(p.type === 'password') {
+            p.type = 'text';
+            eye.classList.replace('fa-eye', 'fa-eye-slash');
+        } else {
+            p.type = 'password';
+            eye.classList.replace('fa-eye-slash', 'fa-eye');
+        }
     };
 
-    // পাসওয়ার্ড ভ্যালিডেশন (সবুজ টিক সহ)
+    // পাসওয়ার্ড ভ্যালিডেশন (সবুজ টিক ✓)
     window.validatePass = () => {
         const val = document.getElementById('password').value;
         const status = document.getElementById('passStatus');
@@ -253,7 +284,7 @@
             status.style.color = "#00ff88";
             btn.disabled = false;
         } else {
-            status.innerText = "Letter + Number (Min 8)";
+            status.innerText = "Min 8 Chars (Letter+Num)";
             status.style.color = "#ff4d4d";
             if(!isLogin) btn.disabled = true;
         }
@@ -263,11 +294,12 @@
         isLogin = !isLogin;
         document.getElementById('subHeader').innerText = isLogin ? "Log in to your SMAT account" : "Join the SMAT ecosystem today";
         document.getElementById('actionBtn').innerText = isLogin ? "LOGIN" : "REGISTER";
-        document.getElementById('switchText').innerText = isLogin ? "Create new account" : "Already have an account? Sign In";
+        document.getElementById('switchText').innerText = isLogin ? "Create account" : "Already have an account? Sign In";
         document.getElementById('passStatus').innerText = "";
+        document.getElementById('password').value = "";
     };
 
-    // SMAT ID জেনারেটর (Transaction Logic)
+    // SMAT ID জেনারেটর (আপনার আগের Transaction লজিক)
     const generateSmatID = async () => {
         const counterRef = ref(db, 'counters/lastSmatId');
         const result = await runTransaction(counterRef, (v) => (v || 100000) + 1);
@@ -277,9 +309,9 @@
     window.processAuth = async () => {
         const email = document.getElementById('email').value;
         const pass = document.getElementById('password').value;
-        if(!email || !pass) return notify("Enter all details!", true);
+        if(!email || !pass) return notify("Fields required!", true);
 
-        notify("Authenticating...");
+        notify("Processing...");
         try {
             if (isLogin) {
                 const res = await signInWithEmailAndPassword(auth, email, pass);
@@ -288,7 +320,7 @@
                     if(snap.exists()) localStorage.setItem('smatID', snap.val().smatID);
                     localStorage.setItem('isLoggedIn', 'true');
                     window.location.href = "home.html"; 
-                } else notify("Verify email in your inbox!", true);
+                } else notify("Verify email first!", true);
             } else {
                 const res = await createUserWithEmailAndPassword(auth, email, pass);
                 const sID = await generateSmatID();
@@ -296,7 +328,7 @@
                     email, smatID: sID, kycStatus: 'unverified', referredBy: referralID, createdAt: new Date().toISOString()
                 });
                 await sendEmailVerification(res.user);
-                notify("Verification link sent to Gmail!");
+                notify("Verification link sent!");
             }
         } catch (e) { notify(e.message, true); }
     };
@@ -306,7 +338,7 @@
         if(!email) return notify("Input email first!", true);
         try {
             await sendPasswordResetEmail(auth, email);
-            notify("Reset link sent!");
+            notify("Password reset email sent!");
         } catch (e) { notify(e.message, true); }
     };
 </script>
