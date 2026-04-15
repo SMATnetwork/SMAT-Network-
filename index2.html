@@ -252,7 +252,7 @@
 
     window.switchUI = () => {
         loginMode = !loginMode;
-        document.getElementById('uiLabel').innerText = loginMode ? "Access the decentralized world" : "Start your 12-month SMAT mining phase";
+        document.getElementById('uiLabel').innerText = loginMode ? "Wait For Processing....";
         document.getElementById('actionBtn').innerText = loginMode ? "LOGIN" : "REGISTER";
         document.getElementById('uiSwitch').innerText = loginMode ? "Register new account" : "Sign in instead";
         document.getElementById('passState').innerText = "";
@@ -286,7 +286,7 @@
                     email, smatID: sID, kycStatus: 'unverified', referredBy: referralID, createdAt: new Date().toISOString()
                 });
                 await sendEmailVerification(res.user);
-                popToast("Verification link dispatched to Gmail!");
+                popToast("Verification link Send to Your Mail!");
             }
         } catch (e) { popToast(e.message, true); }
     };
