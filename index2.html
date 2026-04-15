@@ -1,0 +1,335 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>SMAT EXCHANGE | Secure Login</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --primary: #00ff88;
+            --bg-black: #000000;
+            --card-gray: #111111;
+            --input-gray: #1a1a1a;
+            --text-white: #ffffff;
+            --text-muted: #888888;
+        }
+
+        /* --- ক্লিক গ্লিচ এবং সিলেকশন বন্ধ করার মাস্টার ফিক্স --- */
+        * { 
+            margin: 0; padding: 0; box-sizing: border-box; 
+            font-family: 'Inter', -apple-system, sans-serif;
+            -webkit-tap-highlight-color: transparent; 
+            -webkit-user-select: none;
+            user-select: none;
+            outline: none !important;
+        }
+
+        input { -webkit-user-select: text; user-select: text; }
+
+        body {
+            background-color: var(--bg-black);
+            height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            overflow: hidden;
+            position: relative;
+        }
+
+        /* --- OKX Style Grid & Market Animation --- */
+        .okx-bg-layers {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            z-index: 1;
+            background: radial-gradient(circle at 50% 50%, #0a110d 0%, #000 100%);
+        }
+
+        .grid-lines {
+            position: absolute;
+            width: 200%; height: 200%;
+            background-image: linear-gradient(rgba(0, 255, 136, 0.05) 1px, transparent 1px),
+                              linear-gradient(90deg, rgba(0, 255, 136, 0.05) 1px, transparent 1px);
+            background-size: 50px 50px;
+            transform: perspective(500px) rotateX(60deg) translateY(-100px);
+            animation: gridMove 20s infinite linear;
+        }
+
+        @keyframes gridMove {
+            0% { background-position: 0 0; }
+            100% { background-position: 0 500px; }
+        }
+
+        .price-ticker {
+            position: absolute;
+            font-family: 'monospace';
+            font-weight: 900;
+            font-size: 1.2rem;
+            color: var(--text-white);
+            opacity: 0.9;
+            white-space: nowrap;
+            animation: floatPrice 15s infinite linear;
+        }
+
+        @keyframes floatPrice {
+            0% { transform: translateY(110vh); opacity: 0; }
+            10% { opacity: 1; }
+            90% { opacity: 1; }
+            100% { transform: translateY(-20vh); opacity: 0; }
+        }
+
+        /* --- Auth Card --- */
+        .auth-container {
+            position: relative;
+            z-index: 10;
+            width: 90%;
+            max-width: 420px;
+            background: var(--card-gray);
+            padding: 45px 30px;
+            border-radius: 32px;
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            box-shadow: 0 40px 100px rgba(0,0,0,0.9);
+            text-align: center;
+        }
+
+        .logo-box {
+            width: 90px; height: 90px;
+            margin: 0 auto 20px;
+            background: #fff;
+            border-radius: 50%; /* গোল বর্ডার ফিক্স */
+            padding: 2px;
+            border: 2px solid var(--primary);
+            overflow: hidden;
+            display: flex; align-items: center; justify-content: center;
+        }
+
+        .logo-box img { width: 100%; height: 100%; object-fit: cover; border-radius: 50%; }
+
+        .brand-text { font-size: 28px; font-weight: 900; color: #fff; letter-spacing: -1px; margin-bottom: 8px; }
+        .brand-text span { color: var(--primary); }
+        .subtitle { color: var(--text-muted); font-size: 14px; margin-bottom: 40px; }
+
+        .input-group { text-align: left; margin-bottom: 25px; }
+        label { display: block; font-size: 12px; color: var(--text-muted); margin-bottom: 10px; font-weight: 700; text-transform: uppercase; }
+
+        .field { position: relative; }
+        input {
+            width: 100%;
+            padding: 18px;
+            background: var(--input-gray);
+            border: 1px solid transparent;
+            border-radius: 16px;
+            color: #fff;
+            font-size: 16px;
+            transition: 0.3s;
+        }
+        input:focus { border-color: var(--primary); background: #000; }
+
+        .toggle-eye {
+            position: absolute; right: 18px; top: 50%; transform: translateY(-50%);
+            color: var(--text-muted); cursor: pointer; padding: 5px;
+        }
+
+        #submitBtn {
+            width: 100%;
+            padding: 18px;
+            background: var(--primary);
+            color: #000;
+            border: none;
+            border-radius: 16px;
+            font-size: 18px;
+            font-weight: 900;
+            cursor: pointer;
+            margin-top: 10px;
+            transition: 0.3s;
+        }
+        #submitBtn:disabled { background: #333; color: #666; cursor: not-allowed; }
+
+        /* ফুটার লিংক - নো গ্লিচ */
+        .footer-actions { 
+            margin-top: 30px; padding-top: 20px; 
+            border-top: 1px solid rgba(255,255,255,0.05); 
+        }
+        .link-main { color: var(--primary); cursor: pointer; font-weight: 800; font-size: 15px; background: none; }
+        .link-sub { color: var(--text-muted); cursor: pointer; font-size: 14px; display: block; margin-top: 15px; background: none; }
+
+        /* টোস্ট */
+        #toast {
+            position: fixed; top: -100px; left: 50%; transform: translateX(-50%);
+            background: #1a1a1a; color: #fff; padding: 18px 30px; border-radius: 15px;
+            z-index: 1000; border-left: 5px solid var(--primary); transition: 0.5s;
+            display: flex; align-items: center; gap: 15px; min-width: 320px;
+        }
+        #toast.active { top: 30px; }
+    </style>
+</head>
+<body>
+
+<div id="toast">
+    <i class="fa-solid fa-circle-check" id="tIcon" style="color: var(--primary); font-size: 20px;"></i>
+    <span id="tMsg" style="font-weight: 600;">Message</span>
+</div>
+
+<div class="okx-bg-layers">
+    <div class="grid-lines"></div>
+    <div id="priceStream"></div>
+</div>
+
+<div class="auth-container">
+    <div class="logo-box">
+        <img src="assets/logos/smat.png" alt="SMAT">
+    </div>
+    <h1 class="brand-text">SMAT <span>EXCHANGE</span></h1>
+    <p class="subtitle" id="subText">Welcome to the future of trading</p>
+
+    <div class="input-group">
+        <label>Email</label>
+        <input type="email" id="email" placeholder="Enter your email">
+    </div>
+
+    <div class="input-group">
+        <label>Password <span id="passStatus" style="float: right; text-transform: none;"></span></label>
+        <div class="field">
+            <input type="password" id="password" placeholder="Enter password" oninput="verifyPassword()">
+            <i class="fa-solid fa-eye toggle-eye" id="eye" onclick="togglePass()"></i>
+        </div>
+    </div>
+
+    <button id="submitBtn" onclick="mainAuth()">LOGIN</button>
+
+    <div class="footer-actions">
+        <span class="link-main" id="modeBtn" onclick="switchMode()">Create account</span>
+        <span class="link-sub" onclick="resetPass()">Forgot your password?</span>
+    </div>
+</div>
+
+<script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+    import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, sendEmailVerification, sendPasswordResetEmail } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+    import { getDatabase, ref, set, get, runTransaction } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
+
+    const firebaseConfig = {
+        apiKey: "AIzaSyAMxtJedkehhxJRMPZLjhpKHqneHEWsGlE",
+        authDomain: "smat-exchange.firebaseapp.com",
+        projectId: "smat-exchange",
+        storageBucket: "smat-exchange.firebasestorage.app",
+        messagingSenderId: "836334569396",
+        appId: "1:836334569396:web:679effe640b3453412d4e1"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const auth = getAuth(app);
+    const db = getDatabase(app);
+
+    // --- Price Stream Animation (OKX Style) ---
+    const stream = document.getElementById('priceStream');
+    const cryptoData = [
+        {s: 'BTC/USDT', p: '64,502.10', u: true},
+        {s: 'ETH/USDT', p: '3,480.55', u: false},
+        {s: 'SMAT/USDT', p: '1.4500', u: true},
+        {s: 'SOL/USDT', p: '142.10', u: true},
+        {s: 'BNB/USDT', p: '592.30', u: false}
+    ];
+
+    function initPrices() {
+        for(let i=0; i<8; i++) {
+            let div = document.createElement('div');
+            div.className = 'price-ticker';
+            let d = cryptoData[i % cryptoData.length];
+            div.innerHTML = `${d.s} <span style="color:${d.u?'#00ff88':'#ff4d4d'}">${d.p} ${d.u?'↑':'↓'}</span>`;
+            div.style.left = (10 + (i * 12)) + '%';
+            div.style.animationDelay = (i * 2) + 's';
+            stream.appendChild(div);
+        }
+    }
+    initPrices();
+
+    // --- Original Logic (SMAT ID, Referral, etc.) ---
+    let isLogin = true;
+    const urlParams = new URLSearchParams(window.location.search);
+    const referralID = urlParams.get('ref') || null;
+
+    window.popToast = (msg, isErr = false) => {
+        const t = document.getElementById('toast');
+        document.getElementById('tMsg').innerText = msg;
+        t.style.borderLeftColor = isErr ? "#ff4d4d" : "#00ff88";
+        t.classList.add('active');
+        setTimeout(() => t.classList.remove('active'), 3000);
+    };
+
+    window.togglePass = () => {
+        const p = document.getElementById('password');
+        p.type = p.type === 'password' ? 'text' : 'password';
+    };
+
+    window.verifyPassword = () => {
+        const val = document.getElementById('password').value;
+        const status = document.getElementById('passStatus');
+        const btn = document.getElementById('submitBtn');
+        const regex = /^(?=.*[A-Za-z])(?=.*\d)[A-Za-z\d]{8,}$/;
+
+        if(val === "") { status.innerText = ""; return; }
+        if(regex.test(val)) {
+            status.innerHTML = '<i class="fa-solid fa-circle-check"></i> Strong';
+            status.style.color = "#00ff88";
+            btn.disabled = false;
+        } else {
+            status.innerText = "Letter + Num (Min 8)";
+            status.style.color = "#ff4d4d";
+            if(!isLogin) btn.disabled = true;
+        }
+    };
+
+    window.switchMode = () => {
+        isLogin = !isLogin;
+        document.getElementById('subText').innerText = isLogin ? "Welcome to the future of trading" : "Create a new SMAT account";
+        document.getElementById('submitBtn').innerText = isLogin ? "LOGIN" : "REGISTER";
+        document.getElementById('modeBtn').innerText = isLogin ? "Create account" : "Sign in instead";
+        document.getElementById('passStatus').innerText = "";
+    };
+
+    const generateSmatID = async () => {
+        const counterRef = ref(db, 'counters/lastSmatId');
+        const res = await runTransaction(counterRef, (v) => (v || 100000) + 1);
+        return "SMAT" + res.snapshot.val();
+    };
+
+    window.mainAuth = async () => {
+        const email = document.getElementById('email').value;
+        const pass = document.getElementById('password').value;
+        if(!email || !pass) return popToast("All fields are required!", true);
+
+        popToast("Processing request...");
+        try {
+            if (isLogin) {
+                const cred = await signInWithEmailAndPassword(auth, email, pass);
+                if (cred.user.emailVerified) {
+                    const snap = await get(ref(db, 'users/' + cred.user.uid));
+                    if(snap.exists()) localStorage.setItem('smatID', snap.val().smatID);
+                    localStorage.setItem('isLoggedIn', 'true');
+                    window.location.href = "home.html"; 
+                } else popToast("Verify email before login!", true);
+            } else {
+                const cred = await createUserWithEmailAndPassword(auth, email, pass);
+                const sID = await generateSmatID();
+                await set(ref(db, 'users/' + cred.user.uid), {
+                    email, smatID: sID, kycStatus: 'unverified', referredBy: referralID, createdAt: new Date().toISOString()
+                });
+                await sendEmailVerification(cred.user);
+                popToast("Verification link sent!");
+            }
+        } catch (e) { popToast(e.message, true); }
+    };
+
+    window.resetPass = async () => {
+        const email = document.getElementById('email').value;
+        if(!email) return popToast("Enter email first!", true);
+        try {
+            await sendPasswordResetEmail(auth, email);
+            popToast("Reset link sent!");
+        } catch (e) { popToast(e.message, true); }
+    };
+</script>
+</body>
+</html>
