@@ -373,7 +373,7 @@ const chart = new Chart(ctx, {
         if (user) syncHistory();
     }
 
-    async function syncHistory() {
+        async function syncHistory() {
         if (!user || !activeKey) return;
         const gSnap = await get(ref(db, `marketHistory/${activeKey}`));
         const snap = await get(ref(db, `history/${user.uid}/${activeKey}`));
@@ -400,7 +400,8 @@ const chart = new Chart(ctx, {
                 else if (item.status === "DRAW") winHtml = `<div style="color:#f0b90b">$${parseFloat(item.finalWin).toFixed(4)}</div>`;
             }
 
-                        body.innerHTML += `<tr class="${isWaiting ? 'blink-row' : ''}">
+            // টেবিল রো জেনারেশন (হলুদ টেক্সট এবং আবছা সবুজ ব্লিংক ক্লাস সহ)
+            body.innerHTML += `<tr class="${isWaiting ? 'blink-row' : ''}">
                 <td><img src="assets/logos/${item.logo}" class="hist-logo"> ${item.rid}</td>
                 <td>${item.time}</td>
                 <td>$${parseFloat(item.lockedPrice || 0).toFixed(4)}</td>
@@ -408,6 +409,9 @@ const chart = new Chart(ctx, {
                 <td>${(item.isPending || !item.resultPrice) ? '...' : '$'+parseFloat(item.resultPrice).toFixed(4)}</td>
                 <td>${winHtml}</td>
             </tr>`;
+        });
+    }
+
 
 
     window.openBetModal = (side) => {
