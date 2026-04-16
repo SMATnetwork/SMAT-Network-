@@ -133,7 +133,7 @@ async function getLiveBalance(coinKey) {
     } else {
         // টেস্টিং মোড: লোকাল মেমোরি থেকে ডাটা নিবে
         let stored = localStorage.getItem(coinKey);
-        return stored ? stored : "500.0000"; 
+        return stored ? stored : "0.00000000"; 
     }
 }
 
