@@ -39,24 +39,26 @@
  .search-box { background: var(--card); border-radius: 8px; padding: 10px 15px; display: flex; align-items: center; gap: 10px; }
  .search-box input { background: none; border: none; color: white; width: 100%; outline: none; font-size: 16px; }
  
- /* Market Tabs - ডট (.) যোগ করা হয়েছে */
+ /* Market Tabs - মোবাইল ফ্রেন্ডলি এবং গ্লসি লুক */
 .market-tabs { 
     display: flex; 
     gap: 20px; 
     padding: 10px 20px; 
     border-bottom: 1px solid #2b3139; 
-    overflow-x: auto; /* মোবাইল স্ক্রিনের জন্য স্ক্রলিং সুবিধা */
+    overflow-x: auto; 
     scrollbar-width: none;
+    background: var(--bg-card);
 }
 
 .market-tabs::-webkit-scrollbar { display: none; }
 
 .m-tab { 
     padding: 10px 0; 
-    color: var(--text-sec); 
+    color: var(--text-secondary); 
     font-size: 15px; 
     cursor: pointer; 
-    font-weight: 600; 
+    font-weight: 900; /* বোল্ড লুকের জন্য */
+    font-family: var(--font-bold);
     position: relative; 
     display: flex; 
     align-items: center; 
@@ -64,7 +66,7 @@
     white-space: nowrap; 
 }
 
-.m-tab.active { color: var(--primary); }
+.m-tab.active { color: var(--primary-gold); }
 
 .m-tab.active::after { 
     content: ''; 
@@ -73,7 +75,7 @@
     left: 0; 
     width: 100%; 
     height: 2px; 
-    background: var(--primary); 
+    background: var(--primary-gold); 
 }
 
 .tab-logo { 
@@ -84,22 +86,23 @@
     display: flex; 
     align-items: center; 
     justify-content: center; 
-    background: var(--primary); 
+    background: var(--primary-gold); 
     color: black; 
     font-size: 10px; 
-    font-weight: bold; 
+    font-weight: 900; 
 }
 
 .tab-logo img { width: 100%; height: 100%; object-fit: cover; }
 
-/* পপআপের ভেতরের পেয়ার স্টাইল */
+/* পপআপের ভেতরের পেয়ার স্টাইল - মার্কেট পেজের রেশিও অনুযায়ী */
 .pair-row {
     display: grid;
-    grid-template-columns: 1.4fr 1.1fr 0.9fr; /* Market layout ratio */
+    grid-template-columns: 1.4fr 1.1fr 0.9fr; 
     padding: 14px 18px;
     align-items: center;
     border-bottom: 1px solid rgba(255, 255, 255, 0.05);
     transition: background 0.2s;
+    cursor: pointer;
 }
 
 .pair-row:active { background: #2b3139; }
@@ -120,6 +123,7 @@
     font-size: 11px; 
     color: var(--text-secondary); 
     margin-top: 2px;
+    font-weight: 400; /* ভলিউম হালকা রাখার জন্য */
 }
 
 .pair-price-col { 
@@ -129,7 +133,7 @@
     text-align: left;
 }
 
-/* Change Badge - মার্কেটের মতো গ্লসি লুক */
+/* Change Badge - গ্লসি শ্যাডো ইফেক্ট যুক্ত */
 .change-badge {
     justify-self: end;
     padding: 7px 0;
@@ -141,9 +145,17 @@
     font-size: 11px;
 }
 
-.up-bg { background: var(--up-color); color: #000; box-shadow: 0 4px 10px rgba(14, 203, 129, 0.15); }
-.down-bg { background: var(--down-color); color: #fff; box-shadow: 0 4px 10px rgba(246, 70, 93, 0.15); }
+.up-bg { 
+    background: var(--up-color); 
+    color: #000; 
+    box-shadow: 0 4px 10px rgba(14, 203, 129, 0.15); 
+}
 
+.down-bg { 
+    background: var(--down-color); 
+    color: #fff; 
+    box-shadow: 0 4px 10px rgba(246, 70, 93, 0.15); 
+}
  
  /* Trade Layout */
  .trade-grid { display: grid; grid-template-columns: 1.1fr 0.9fr; gap: 12px; padding: 12px; }
