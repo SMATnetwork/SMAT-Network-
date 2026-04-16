@@ -364,46 +364,64 @@ const FEE_RATE = 0.0025;
 let orderBoard = JSON.parse(localStorage.getItem('orderBoard')) || {};
 
 // --- ১. ওয়ালেট ব্যালেন্স রিয়েল-টাইম সিঙ্ক ---
-// --- ১. ওয়ালেট ব্যালেন্স রিয়েল-টাইম সিঙ্ক ---
+// Trade.html এর জন্য সংশোধিত রিয়েল-টাইম ব্যালেন্স লজিক
 function syncWalletBalances() {
     auth.onAuthStateChanged(user => {
         if (user) {
             userUID = user.uid;
+            // সরাসরি ফায়ারবেস থেকে ইউজারের ব্যালেন্স লিসেন করা
             db.ref(`users/${userUID}`).on('value', snap => {
-                const d = snap.val() || {}; // ডাটা না থাকলে খালি অবজেক্ট
+                const d = snap.val() || {};
                 
-                // ১. মেইন কারেন্সিগুলো সিঙ্ক (এগুলো ম্যানুয়ালি হ্যান্ডেল করা ভালো)
+                // ১. গ্লোবাল কারেন্সি আপডেট
                 localStorage.setItem('usdt_balance', d.usdt_balance || 0);
                 localStorage.setItem('usdc_balance', d.usdc_balance || 0);
                 localStorage.setItem('smat_balance', d.smat_balance || 0);
-                localStorage.setItem('oxsmat_balance', d.oxsmat_balance || 0);
 
-                // ২. ডাইনামিক কয়েন সিঙ্ক (এটিই সবচেয়ে নিরাপদ উপায়)
-                // আপনার coin.js এ থাকা সব কয়েন (BTC, ETH, XRP ইত্যাদি) অটোমেটিক লুপ হবে
-                if (typeof GLOBAL_COINS !== 'undefined') {
-                    GLOBAL_COINS.forEach(c => {
-                        let sym = c.sym.toLowerCase();
-                        let key = sym + '_balance';
-                        // ডাটাবেসে যা আছে তাই সেট হবে, ডাটাবেসে না থাকলে ০
-                        localStorage.setItem(key, d[key] || 0);
-                    });
-                }
-                
-                // ব্যালেন্স আপডেট দেখানো
-                updateBalanceDisplay();
+                // ২. UI তে সরাসরি ডাটা সেট করা (এটিই ব্যালেন্স মেলাবে)
+                updateBalanceDisplayFromData(d);
             });
         }
     });
 }
 
+// এই নতুন ফাংশনটি ডাটা সরাসরি UI-তে পাঠাবে
+function updateBalanceDisplayFromData(data) {
+    if (tradeSide === 'buy') {
+        const bal = parseFloat(data[activeMarket.toLowerCase() + '_balance']) || 0;
+        document.getElementById('avblVal').innerText = bal.toFixed(4);
+        document.getElementById('avblUnit').innerText = activeMarket;
+    } else {
+        const s = activeCoin.sym.toLowerCase();
+        const bal = parseFloat(data[s + '_balance']) || 0;
+        document.getElementById('avblVal').innerText = bal.toFixed(4);
+        document.getElementById('avblUnit').innerText = activeCoin.sym.toUpperCase();
+    }
+}
+
+
 
 // --- ২. ট্রেড হওয়ার পর Firebase আপডেট করা ---
+// সংশোধিত ও নিরাপদ ভার্সন
 function updateFirebaseBalance(coinKey, amount) {
     if (!userUID) return;
+    
+    // নিশ্চিত হওয়া যে amount একটি নম্বর
+    const finalAmount = parseFloat(amount);
+    if (isNaN(finalAmount)) return;
+
     let up = {};
-    up[`users/${userUID}/${coinKey.toLowerCase()}_balance`] = parseFloat(amount).toFixed(8);
-    db.ref().update(up);
+    // ডাইনামিক কি (Key) তৈরি করে আপডেট করা
+    up[`users/${userUID}/${coinKey.toLowerCase()}_balance`] = finalAmount.toFixed(8);
+    
+    // ডাটাবেস আপডেট
+    db.ref().update(up).then(() => {
+        console.log(`${coinKey} balance updated in Firebase.`);
+    }).catch(err => {
+        console.error("Firebase update failed:", err);
+    });
 }
+
 
 function checkAuth() {
     if (localStorage.getItem('isLoggedIn') !== 'true') {
