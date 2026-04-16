@@ -550,8 +550,6 @@ function selectCoin(sym) {
     refreshUI();
 }
 
-// পেজ লোড হওয়ার সময় init কল করা
-window.onload = init;
 
  // --- ৪. UI এবং ব্যালেন্স লজিক ---
  function refreshUI() {
@@ -917,7 +915,9 @@ window.onload = init;
         
         // ৩. লোকাল হিস্টোরি আপডেট (আনসাকসেসফুল লিস্ট থেকে মুছে ফেলা)
         localStorage.setItem('orderBoard', JSON.stringify(orderBoard));
-        localStorage.setItem('unOrders', JSON.stringify(history.filter(o => o.id !== id)));
+        const newHistory = history.filter(o => o.id !== id);
+localStorage.setItem('unOrders', JSON.stringify(newHistory));
+
         
         // ৪. UI আপডেট এবং কনফার্মেশন
         refreshUI();
