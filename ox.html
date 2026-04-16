@@ -508,21 +508,6 @@ function init() {
     renderMarketTabs();
     refreshUI();
 
-   // --- চার্ট রিডাইরেক্ট লজিক (সংশোধিত) ---
-const chartBtn = document.getElementById('chartRedirect');
-if (chartBtn) {
-    chartBtn.onclick = () => {
-        if (!checkAuth()) return;
-        
-        // বর্তমান পেয়ারের নাম তৈরি করা (যেমন: BTC_USDT)
-        const pairSymbol = `${activeCoin.sym.toUpperCase()}_${activeMarket.toUpperCase()}`;
-        
-        // রিডাইরেক্ট করার সময় সঠিক সিম্বল পাঠানো
-        location.href = `market_chat.html?symbol=${pairSymbol}`;
-    };
-}
-
-
     // অটো ম্যাচিং এবং বুক রেন্ডার
     setInterval(() => {
         if (activeCoin) {
@@ -620,16 +605,26 @@ function selectCoin(sym) {
  if(!activeCoin) return;
  const sym = activeCoin.sym.toLowerCase();
 
-// ১. চার্ট রিডাইরেক্ট লজিক আপডেট (নতুন যোগ করা হয়েছে)
+// --- চার্ট রিডাইরেক্ট লজিক (১০০% ফিক্স) ---
      const chartBtn = document.getElementById('chartRedirect');
      if (chartBtn) {
-         chartBtn.onclick = () => {
+         // আগের কোনো ইভেন্ট থাকলে তা সরিয়ে নতুন করে সেট করা
+         chartBtn.onclick = null; 
+         chartBtn.onclick = function() {
              if (!checkAuth()) return;
-             // বর্তমানে যে কয়েন এবং যে মার্কেটে (USDT/USDC/SMAT) আছেন সেটি নিয়ে লিঙ্ক তৈরি
-             const pairSymbol = `${activeCoin.sym.toUpperCase()}_${activeMarket.toUpperCase()}`;
-             location.href = `market_chat.html?symbol=${pairSymbol}`;
+             
+             // ক্লিক করার সময় যে কয়েন এবং মার্কেট সিলেক্ট করা আছে
+             const currentSym = activeCoin.sym.toUpperCase();
+             const currentMkt = activeMarket.toUpperCase();
+             
+             // সঠিক লিঙ্ক তৈরি (BTC_USDT ফরম্যাটে)
+             const url = `market_chat.html?symbol=${currentSym}_${currentMkt}`;
+             
+             console.log("Navigating to:", url);
+             window.location.href = url;
          };
      }
+     // ---------------------------------------
  
  // ১. প্রথমে localStorage থেকে লেটেস্ট প্রাইস লোড করে মেমোরিতে সেভ করা
  const savedPrice = localStorage.getItem(sym + "_latest_price");
@@ -649,13 +644,7 @@ function selectCoin(sym) {
  const displayPrice = activeMarket === 'SMAT' ? (currentPrice / smatVal) : currentPrice;
  document.getElementById('priceInp').value = displayPrice.toFixed(4);
  
- // ৪. ভলিউম (USDT Value তে) লোড এবং আপডেট
- const volKey = sym + "_volume";
- const savedVol = localStorage.getItem(volKey) || "0.00";
- const volEl = document.getElementById('curVol');
- if(volEl) {
- volEl.innerText = savedVol;
- }
+ 
  
  // ৫. বাকি ফাংশনগুলো কল করা
  updateBalanceDisplay();
