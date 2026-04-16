@@ -14,7 +14,7 @@
  :root {
  --bg: #0b0e11; --card: #1e2329; --primary: #f0b90b;
  --up: #0ecb81; --down: #f6465d; --text-sec: #848e9c;
- --border: #2b3139;
+ --border: #2b3139;--font-bold: 'Montserrat', sans-serif;
  }
  * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Inter', sans-serif; -webkit-tap-highlight-color: transparent; }
  body { background: var(--bg); color: white; overflow-x: hidden; padding-bottom: 80px; }
@@ -32,93 +32,51 @@
  .search-box { background: var(--card); border-radius: 8px; padding: 10px 15px; display: flex; align-items: center; gap: 10px; }
  .search-box input { background: none; border: none; color: white; width: 100%; outline: none; font-size: 16px; }
  
- /* Market Tabs - ডট (.) যোগ করা হয়েছে */
-.market-tabs { 
-    display: flex; 
-    gap: 20px; 
-    padding: 10px 20px; 
-    border-bottom: 1px solid #2b3139; 
-    overflow-x: auto; /* মোবাইল স্ক্রিনের জন্য স্ক্রলিং সুবিধা */
-    scrollbar-width: none;
-}
+  /* Market Tabs */
+        .market-tabs { display: flex; gap: 10px; padding: 15px; overflow-x: auto; scrollbar-width: none; }
+        .market-tabs::-webkit-scrollbar { display: none; }
+        
+        .m-tab { 
+            display: flex; align-items: center; gap: 8px; padding: 8px 16px; 
+            background: var(--card); border-radius: 50px; color: var(--text-sec); 
+            font-size: 13px; cursor: pointer; white-space: nowrap; 
+            transition: 0.3s; font-weight: 700; border: 1px solid transparent;
+        }
+        .m-tab.active { background: rgba(240, 185, 11, 0.1); color: var(--primary); border-color: var(--primary); }
+        .m-tab-icon { width: 16px; height: 16px; border-radius: 50%; }
 
-.market-tabs::-webkit-scrollbar { display: none; }
+        /* Market List Section */
+        .market-header { 
+            display: grid; grid-template-columns: 1.5fr 1.1fr 0.9fr; 
+            padding: 10px 20px; color: var(--text-sec); font-size: 11px; 
+            font-weight: 600; text-transform: uppercase;
+        }
+        
+        .pair-row { 
+            display: grid; grid-template-columns: 1.5fr 1.1fr 0.9fr; 
+            padding: 16px 20px; align-items: center; border-bottom: 1px solid var(--border); 
+            cursor: pointer; transition: 0.2s;
+        }
+        .pair-row:active { background: #1e2329; }
+        
+        .p-info { display: flex; align-items: center; gap: 12px; }
+        .p-logo { width: 36px; height: 36px; border-radius: 50%; background: #2b3139; display: flex; align-items: center; justify-content: center; position: relative; }
+        .p-logo img { width: 100%; height: 100%; object-fit: cover; border-radius: 50%; }
+        
+        .p-name-box { display: flex; flex-direction: column; }
+        .p-name { font-family: var(--font-bold); font-weight: 900; font-size: 16px; color: #ffffff; letter-spacing: -0.5px; }
+        .p-vol { font-size: 11px; color: var(--text-sec); margin-top: 2px; }
 
-.m-tab { 
-    padding: 10px 0; 
-    color: var(--text-sec); 
-    font-size: 15px; 
-    cursor: pointer; 
-    font-weight: 600; 
-    position: relative; 
-    display: flex; 
-    align-items: center; 
-    gap: 6px; 
-    white-space: nowrap; 
-}
-
-.m-tab.active { color: var(--primary); }
-
-.m-tab.active::after { 
-    content: ''; 
-    position: absolute; 
-    bottom: 0; 
-    left: 0; 
-    width: 100%; 
-    height: 2px; 
-    background: var(--primary); 
-}
-
-.tab-logo { 
-    width: 18px; 
-    height: 18px; 
-    border-radius: 50%; 
-    overflow: hidden; 
-    display: flex; 
-    align-items: center; 
-    justify-content: center; 
-    background: var(--primary); 
-    color: black; 
-    font-size: 10px; 
-    font-weight: bold; 
-}
-
-.tab-logo img { width: 100%; height: 100%; object-fit: cover; }
-
-/* পপআপের ভেতরের পেয়ার স্টাইল */
-.pair-row {
-    display: grid;
-    grid-template-columns: 1.5fr 1.1fr 0.9fr; 
-    padding: 12px 15px;
-    align-items: center;
-    border-bottom: 1px solid var(--border);
-}
-
-.pair-row:active { background: rgba(255, 255, 255, 0.05); } /* ক্লিক করলে রেসপন্স করবে */
-
-.p-info { display: flex; align-items: center; gap: 10px; }
-.p-logo { width: 30px; height: 30px; border-radius: 50%; overflow: hidden; background: #2b3139; }
-.p-logo img { width: 100%; height: 100%; object-fit: cover; }
-
-.pair-main-name { font-weight: 700; color: #fff; font-size: 14px; }
-.pair-vol { font-size: 10px; color: var(--text-sec); display: block; }
-
-.pair-price-col { font-weight: 700; font-size: 14px; text-align: left; }
-
-.change-badge {
-    display: block;
-    padding: 6px 0;
-    border-radius: 6px;
-    font-size: 11px;
-    font-weight: 900;
-    width: 70px;
-    text-align: center;
-    float: right;
-}
-
-/* মার্কেট পেজ থেকে কালার কোড */
-.up-bg { background: var(--up); color: #000; box-shadow: 0 4px 12px rgba(14, 203, 129, 0.2); }
-.down-bg { background: var(--down); color: #fff; box-shadow: 0 4px 12px rgba(246, 70, 93, 0.2); }
+        .p-price { font-family: var(--font-bold); font-weight: 900; font-size: 15px; text-align: left; }
+        
+        /* Advanced % Change Box */
+        .p-change { 
+            justify-self: end; padding: 8px 0; border-radius: 8px; 
+            font-family: var(--font-bold); font-weight: 900; width: 78px; 
+            text-align: center; font-size: 12px; transition: 0.3s;
+        }
+        .up-bg { background: var(--up); color: #000; box-shadow: 0 4px 12px rgba(14, 203, 129, 0.2); }
+        .down-bg { background: var(--down); color: #fff; box-shadow: 0 4px 12px rgba(246, 70, 93, 0.2); }
 
  /* Trade Layout */
  .trade-grid { display: grid; grid-template-columns: 1.1fr 0.9fr; gap: 12px; padding: 12px; }
