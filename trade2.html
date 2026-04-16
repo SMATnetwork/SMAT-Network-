@@ -882,12 +882,7 @@ localStorage.setItem('unOrders', JSON.stringify(newHistory));
 
 
 
-function switchTab(el, cat) {
-            window.currentActiveTab = cat;
-            document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
-            el.classList.add('active');
-            renderCoins(cat);
-        }
+
 
         // Gaming Menu Toggle
         function toggleGamingMenu() {
