@@ -880,6 +880,35 @@ localStorage.setItem('unOrders', JSON.stringify(newHistory));
     }
 }
 
+
+
+function switchTab(el, cat) {
+            window.currentActiveTab = cat;
+            document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+            el.classList.add('active');
+            renderCoins(cat);
+        }
+
+        // Gaming Menu Toggle
+        function toggleGamingMenu() {
+            const options = document.getElementById('fabOptions');
+            const mainBtn = document.getElementById('mainFab');
+            options.classList.toggle('show');
+            mainBtn.classList.toggle('active');
+            if (navigator.vibrate) navigator.vibrate(50);
+        }
+
+        // Close Menu when clicking outside
+        window.addEventListener('click', (e) => {
+            if (!e.target.closest('.fab-wrapper')) {
+                document.getElementById('fabOptions').classList.remove('show');
+                document.getElementById('mainFab').classList.remove('active');
+            }
+        });
+
+
+
+
  
  window.onload = init;
  </script>
