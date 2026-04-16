@@ -506,7 +506,7 @@ function setMarketTab(m) {
 function renderPairs() {
     const query = document.getElementById('pairSearch').value.toUpperCase();
     const container = document.getElementById('pairListContainer');
-    const smatVal = (window.coinData && window.coinData['smat']) ? window.coinData['smat'].price : 1;
+    const smatVal = (coinData['smat'] && coinData['smat'].price) ? coinData['smat'].price : 1;
 
     let filtered = GLOBAL_COINS.filter(c => 
         c.sym.toUpperCase().includes(query) && 
@@ -515,12 +515,11 @@ function renderPairs() {
 
     container.innerHTML = filtered.map(c => {
         const symLower = c.sym.toLowerCase();
-        const data = (window.coinData && window.coinData[symLower]) ? window.coinData[symLower] : { price: c.price, volume: 0 };
-        
+        const data = coinData[symLower] || { price: c.price, volume: 0 };
         const currentPrice = data.price;
         const basePrice = c.price;
+
         const changePercent = basePrice > 0 ? ((currentPrice - basePrice) / basePrice * 100) : 0;
-        
         let displayPrice = activeMarket === 'SMAT' ? (currentPrice / smatVal) : currentPrice;
         
         const isUp = changePercent >= 0;
@@ -533,25 +532,20 @@ function renderPairs() {
                     <div class="p-logo">
                         <img src="assets/logos/${symLower}.png" onerror="this.src='assets/logos/generic.png'">
                     </div>
-                    <div>
-                        <div class="pair-main-name">${c.sym.toUpperCase()}<span style="color:var(--text-secondary); font-size:10px; font-family:Inter;">/${activeMarket}</span></div>
-                        <div class="pair-vol">Vol: ${parseFloat(data.volume || 0).toLocaleString(undefined, {minimumFractionDigits: 1})}</div>
+                    <div class="c-name-box">
+                        <div class="pair-main-name">${c.sym.toUpperCase()}<span style="font-size:10px; color:var(--text-sec);">/${activeMarket}</span></div>
+                        <div class="pair-vol">Vol: ${parseFloat(data.volume || 0).toLocaleString(undefined, {minimumFractionDigits: 2})}</div>
                     </div>
                 </div>
-                
-                <div class="pair-price-col" style="color: ${isUp ? 'var(--up-color)' : 'var(--down-color)'}">
+                <div class="pair-price-col" style="color: ${isUp ? 'var(--up)' : 'var(--down)'}">
                     ${displayPrice.toLocaleString(undefined, {minimumFractionDigits: displayPrice < 1 ? 4 : 2, maximumFractionDigits: displayPrice < 1 ? 4 : 2})}
                 </div>
-
                 <div class="pair-change-col">
-                    <span class="change-badge ${changeClass}">
-                        ${changeSign}${changePercent.toFixed(2)}%
-                    </span>
+                    <span class="change-badge ${changeClass}">${changeSign}${changePercent.toFixed(2)}%</span>
                 </div>
             </div>`;
     }).join('');
 }
-
 
 function selectCoin(sym) {
     activeCoin = GLOBAL_COINS.find(c => c.sym.toUpperCase() === sym.toUpperCase());
@@ -561,6 +555,7 @@ function selectCoin(sym) {
 
 // পেজ লোড হওয়ার সময় init কল করা
 window.onload = init;
+
 
  
  // --- ৪. UI এবং ব্যালেন্স লজিক ---
