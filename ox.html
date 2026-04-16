@@ -619,6 +619,17 @@ function selectCoin(sym) {
  function refreshUI() {
  if(!activeCoin) return;
  const sym = activeCoin.sym.toLowerCase();
+
+// ১. চার্ট রিডাইরেক্ট লজিক আপডেট (নতুন যোগ করা হয়েছে)
+     const chartBtn = document.getElementById('chartRedirect');
+     if (chartBtn) {
+         chartBtn.onclick = () => {
+             if (!checkAuth()) return;
+             // বর্তমানে যে কয়েন এবং যে মার্কেটে (USDT/USDC/SMAT) আছেন সেটি নিয়ে লিঙ্ক তৈরি
+             const pairSymbol = `${activeCoin.sym.toUpperCase()}_${activeMarket.toUpperCase()}`;
+             location.href = `market_chat.html?symbol=${pairSymbol}`;
+         };
+     }
  
  // ১. প্রথমে localStorage থেকে লেটেস্ট প্রাইস লোড করে মেমোরিতে সেভ করা
  const savedPrice = localStorage.getItem(sym + "_latest_price");
