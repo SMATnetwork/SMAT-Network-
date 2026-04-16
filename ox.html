@@ -42,9 +42,39 @@
  
  .pair-list-scroll { overflow-y: auto; flex: 1; padding-bottom: 20px; }
  .pair-row { padding: 15px 20px; border-bottom: 1px solid #1e2329; cursor: pointer; display: flex; justify-content: space-between; align-items: center; }
- .p-info { display: flex; align-items: center; gap: 15px; }
- .p-logo { width: 32px; height: 32px; background: var(--primary); border-radius: 50%; color: black; display: flex; align-items: center; justify-content: center; font-weight: bold; overflow: hidden; }
- .p-logo img { width: 100%; height: 100%; object-fit: cover; }
+ /* পপআপের ভেতরের পেয়ার স্টাইল */
+.pair-row {
+    display: grid;
+    grid-template-columns: 1.5fr 1.1fr 0.9fr; /* মার্কেট পেজের গ্রিড রেশিও */
+    padding: 12px 15px;
+    align-items: center;
+    border-bottom: 1px solid var(--border);
+}
+
+.p-info { display: flex; align-items: center; gap: 10px; }
+.p-logo { width: 30px; height: 30px; border-radius: 50%; overflow: hidden; background: #2b3139; }
+.p-logo img { width: 100%; height: 100%; object-fit: cover; }
+
+.pair-main-name { font-weight: 700; color: #fff; font-size: 14px; }
+.pair-vol { font-size: 10px; color: var(--text-sec); display: block; }
+
+.pair-price-col { font-weight: 700; font-size: 14px; text-align: left; }
+
+.change-badge {
+    display: block;
+    padding: 6px 0;
+    border-radius: 6px;
+    font-size: 11px;
+    font-weight: 900;
+    width: 70px;
+    text-align: center;
+    float: right;
+}
+
+/* মার্কেট পেজ থেকে কালার কোড */
+.up-bg { background: var(--up); color: #000; }
+.down-bg { background: var(--down); color: #fff; }
+
  
  /* Trade Layout */
  .trade-grid { display: grid; grid-template-columns: 1.1fr 0.9fr; gap: 12px; padding: 12px; }
@@ -421,26 +451,68 @@ const firebaseConfig = {
  }
  
  function renderPairs() {
- const query = document.getElementById('pairSearch').value.toUpperCase();
- const container = document.getElementById('pairListContainer');
- const smatVal = window["smatVal"] || 1;
- 
- let filtered = GLOBAL_COINS.filter(c => c.sym.toUpperCase().includes(query) && c.sym.toUpperCase() !== activeMarket);
- 
- container.innerHTML = filtered.map(c => {
- let val = window[c.sym.toLowerCase() + "Val"] || c.price;
- if(activeMarket === 'SMAT') val = val / smatVal;
- 
- return `
- <div class="pair-row" onclick="selectCoin('${c.sym}')">
- <div class="p-info">
- <div class="p-logo"><img src="assets/logos/${c.sym.toLowerCase()}.png" onerror="this.style.display='none'"></div>
- <div><b>${c.sym.toUpperCase()}/${activeMarket}</b></div>
- </div>
- <div style="text-align:right"><b>${val.toFixed(4)}</b></div>
- </div>`;
- }).join('');
- }
+    const query = document.getElementById('pairSearch').value.toUpperCase();
+    const container = document.getElementById('pairListContainer');
+    
+    // মার্কেট পেজ থেকে নেওয়া smatVal লজিক
+    const smatVal = (coinData['smat'] && coinData['smat'].price) ? coinData['smat'].price : 1;
+
+    let filtered = GLOBAL_COINS.filter(c => 
+        c.sym.toUpperCase().includes(query) && 
+        c.sym.toUpperCase() !== activeMarket
+    );
+
+    container.innerHTML = filtered.map(c => {
+        const symLower = c.sym.toLowerCase();
+        // মার্কেট পেজের মতো ডাটা কল করা হচ্ছে
+        const data = coinData[symLower] || { price: c.price, volume: 0 };
+        
+        const currentPrice = data.price;
+        const basePrice = c.price;
+
+        // আপনার মার্কেট পেজের % Change Calculation লজিক
+        const changePercent = basePrice > 0 ? ((currentPrice - basePrice) / basePrice * 100) : 0;
+        
+        let displayPrice = currentPrice;
+        if(activeMarket === 'SMAT') displayPrice = currentPrice / smatVal;
+        
+        const isUp = changePercent >= 0;
+        const changeClass = isUp ? 'up-bg' : 'down-bg'; 
+        const changeSign = isUp ? '+' : '';
+
+        // এখানে return স্টেটমেন্টটি সঠিকভাবে দেওয়া হয়েছে
+        return `
+            <div class="pair-row" onclick="selectCoin('${c.sym.toUpperCase()}')">
+                <div class="p-info">
+                    <div class="p-logo">
+                        <img src="assets/logos/${symLower}.png" onerror="this.src='assets/logos/generic.png'">
+                    </div>
+                    <div class="c-name-box">
+                        <div class="pair-main-name">
+                            ${c.sym.toUpperCase()}<span style="font-size:10px; color:var(--text-sec);">/${activeMarket}</span>
+                        </div>
+                        <div class="pair-vol">
+                            Vol: ${parseFloat(data.volume || 0).toLocaleString(undefined, {minimumFractionDigits: 2})}
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="pair-price-col" style="color: ${isUp ? 'var(--up)' : 'var(--down)'}">
+                    ${displayPrice.toLocaleString(undefined, {
+                        minimumFractionDigits: displayPrice < 1 ? 4 : 2, 
+                        maximumFractionDigits: displayPrice < 1 ? 4 : 2
+                    })}
+                </div>
+
+                <div class="pair-change-col">
+                    <span class="change-badge ${changeClass}">
+                        ${changeSign}${changePercent.toFixed(2)}%
+                    </span>
+                </div>
+            </div>`;
+    }).join('');
+}
+
  
  function selectCoin(sym) {
  activeCoin = GLOBAL_COINS.find(c => c.sym === sym);
