@@ -11,11 +11,18 @@
  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 <link rel="icon" type="image/svg+xml" href="data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNTEyIiBoZWlnaHQ9IjUxMiIgdmlld0JveD0iMCAwIDUxMiA1MTIiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+CiAgPGNpcmNsZSBjeD0iMjU2IiBjeT0iMjU2IiByPSIyNDAiIGZpbGw9IiNmM2JhMmYiLz4KICA8Y2lyY2xlIGN4PSIyNTYiIGN5PSIyNTYiIHI9IjIxNSIgc3Ryb2tlPSJ3aGl0ZSIgc3Ryb2tlLXdpZHRoPSI4IiBmaWxsPSJ0cmFuc3BhcmVudCIvPgogIDxwYXRoIGQ9Ik0xNTAgMTcwIEMxNTAgMTQ1IDE3MCAxMzUgMjAwIDEzNSBMMzQwIDEzNSBDMzU1IDEzNSAzNjUgMTQ1IDM2NSAxNjAgQzM2NSAxNzUgMzU1IDE4NSAzNDAgMTg1IEwyMDUgMTg1IEMxOTAgMTg1IDE4NSAxOTAgMTg1IDIwNSBDMTg1IDIyMCAxOTAgMjI1IDIwNSAyMjUgTDM0MCAyMjUgQzM3MCAyMjUgMzkwIDI0NSAzOTAgMjc1IEwzOTAgMzI1IEMzOTAgMzU1IDM3MCAzNzUgMzQwIDM3NSBMMTcwIDM3NSBDMTU1IDM3NSAxNDUgMzY1IDE0NSAzNTAgQzE0NSAzMzUgMTU1IDMyNSAxNzAgMzI1IEwzMzUgMzI1IEMzNTAgMzI1IDM1NSAzMjAgMzU1IDMwNSBDMzU1IDI5MCAzNTAgMjg1IDMzNSAyODUgTDIwMCAyODUgQzE3MCAyODUgMTUwIDI2NSAxNTAgMjM1IFoiIGZpbGw9IndoaXRlIi8+Cjwvc3ZnPg=="> 
  <style>
- :root {
- --bg: #0b0e11; --card: #1e2329; --primary: #f0b90b;
- --up: #0ecb81; --down: #f6465d; --text-sec: #848e9c;
- --border: #2b3139;
- }
+ /* Montserrat 900 Font Apply */
+@import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@900&display=swap');
+
+:root {
+    --bg-card: #1e2329;
+    --text-primary: #ffffff;
+    --text-secondary: #848e9c;
+    --primary-gold: #f0b90b;
+    --up-color: #0ecb81;
+    --down-color: #f6465d;
+    --font-bold: 'Montserrat', sans-serif;
+}
  * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Inter', sans-serif; -webkit-tap-highlight-color: transparent; }
  body { background: var(--bg); color: white; overflow-x: hidden; padding-bottom: 80px; }
  
@@ -88,37 +95,54 @@
 /* পপআপের ভেতরের পেয়ার স্টাইল */
 .pair-row {
     display: grid;
-    grid-template-columns: 1.5fr 1.1fr 0.9fr; 
-    padding: 12px 15px;
+    grid-template-columns: 1.4fr 1.1fr 0.9fr; /* Market layout ratio */
+    padding: 14px 18px;
     align-items: center;
-    border-bottom: 1px solid var(--border);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+    transition: background 0.2s;
 }
 
-.pair-row:active { background: rgba(255, 255, 255, 0.05); } /* ক্লিক করলে রেসপন্স করবে */
+.pair-row:active { background: #2b3139; }
 
-.p-info { display: flex; align-items: center; gap: 10px; }
-.p-logo { width: 30px; height: 30px; border-radius: 50%; overflow: hidden; background: #2b3139; }
-.p-logo img { width: 100%; height: 100%; object-fit: cover; }
+.p-info { display: flex; align-items: center; gap: 12px; }
+.p-logo { width: 34px; height: 34px; border-radius: 50%; background: #2b3139; padding: 2px; }
+.p-logo img { width: 100%; height: 100%; object-fit: cover; border-radius: 50%; }
 
-.pair-main-name { font-weight: 700; color: #fff; font-size: 14px; }
-.pair-vol { font-size: 10px; color: var(--text-sec); display: block; }
+.pair-main-name { 
+    font-family: var(--font-bold); 
+    font-weight: 900; 
+    font-size: 15px; 
+    color: var(--text-primary); 
+    letter-spacing: -0.3px;
+}
 
-.pair-price-col { font-weight: 700; font-size: 14px; text-align: left; }
+.pair-vol { 
+    font-size: 11px; 
+    color: var(--text-secondary); 
+    margin-top: 2px;
+}
 
+.pair-price-col { 
+    font-family: var(--font-bold); 
+    font-weight: 900; 
+    font-size: 14px; 
+    text-align: left;
+}
+
+/* Change Badge - মার্কেটের মতো গ্লসি লুক */
 .change-badge {
-    display: block;
-    padding: 6px 0;
+    justify-self: end;
+    padding: 7px 0;
     border-radius: 6px;
-    font-size: 11px;
+    font-family: var(--font-bold);
     font-weight: 900;
-    width: 70px;
+    width: 75px;
     text-align: center;
-    float: right;
+    font-size: 11px;
 }
 
-/* মার্কেট পেজ থেকে কালার কোড */
-.up-bg { background: var(--up); color: #000; box-shadow: 0 4px 12px rgba(14, 203, 129, 0.2); }
-.down-bg { background: var(--down); color: #fff; box-shadow: 0 4px 12px rgba(246, 70, 93, 0.2); }
+.up-bg { background: var(--up-color); color: #000; box-shadow: 0 4px 10px rgba(14, 203, 129, 0.15); }
+.down-bg { background: var(--down-color); color: #fff; box-shadow: 0 4px 10px rgba(246, 70, 93, 0.15); }
 
  
  /* Trade Layout */
@@ -499,7 +523,7 @@ function setMarketTab(m) {
 function renderPairs() {
     const query = document.getElementById('pairSearch').value.toUpperCase();
     const container = document.getElementById('pairListContainer');
-    const smatVal = (coinData['smat'] && coinData['smat'].price) ? coinData['smat'].price : 1;
+    const smatVal = (window.coinData && window.coinData['smat']) ? window.coinData['smat'].price : 1;
 
     let filtered = GLOBAL_COINS.filter(c => 
         c.sym.toUpperCase().includes(query) && 
@@ -508,11 +532,12 @@ function renderPairs() {
 
     container.innerHTML = filtered.map(c => {
         const symLower = c.sym.toLowerCase();
-        const data = coinData[symLower] || { price: c.price, volume: 0 };
+        const data = (window.coinData && window.coinData[symLower]) ? window.coinData[symLower] : { price: c.price, volume: 0 };
+        
         const currentPrice = data.price;
         const basePrice = c.price;
-
         const changePercent = basePrice > 0 ? ((currentPrice - basePrice) / basePrice * 100) : 0;
+        
         let displayPrice = activeMarket === 'SMAT' ? (currentPrice / smatVal) : currentPrice;
         
         const isUp = changePercent >= 0;
@@ -525,20 +550,25 @@ function renderPairs() {
                     <div class="p-logo">
                         <img src="assets/logos/${symLower}.png" onerror="this.src='assets/logos/generic.png'">
                     </div>
-                    <div class="c-name-box">
-                        <div class="pair-main-name">${c.sym.toUpperCase()}<span style="font-size:10px; color:var(--text-sec);">/${activeMarket}</span></div>
-                        <div class="pair-vol">Vol: ${parseFloat(data.volume || 0).toLocaleString(undefined, {minimumFractionDigits: 2})}</div>
+                    <div>
+                        <div class="pair-main-name">${c.sym.toUpperCase()}<span style="color:var(--text-secondary); font-size:10px; font-family:Inter;">/${activeMarket}</span></div>
+                        <div class="pair-vol">Vol: ${parseFloat(data.volume || 0).toLocaleString(undefined, {minimumFractionDigits: 1})}</div>
                     </div>
                 </div>
-                <div class="pair-price-col" style="color: ${isUp ? 'var(--up)' : 'var(--down)'}">
+                
+                <div class="pair-price-col" style="color: ${isUp ? 'var(--up-color)' : 'var(--down-color)'}">
                     ${displayPrice.toLocaleString(undefined, {minimumFractionDigits: displayPrice < 1 ? 4 : 2, maximumFractionDigits: displayPrice < 1 ? 4 : 2})}
                 </div>
+
                 <div class="pair-change-col">
-                    <span class="change-badge ${changeClass}">${changeSign}${changePercent.toFixed(2)}%</span>
+                    <span class="change-badge ${changeClass}">
+                        ${changeSign}${changePercent.toFixed(2)}%
+                    </span>
                 </div>
             </div>`;
     }).join('');
 }
+
 
 function selectCoin(sym) {
     activeCoin = GLOBAL_COINS.find(c => c.sym.toUpperCase() === sym.toUpperCase());
