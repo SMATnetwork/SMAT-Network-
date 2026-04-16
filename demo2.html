@@ -91,29 +91,48 @@ canvas#liveChart {
         .modal-box { background: var(--card); padding: 25px; border-radius: 15px; width: 90%; max-width: 360px; text-align: center; border: 1px solid var(--border); }
         .modal-box input { width: 100%; padding: 12px; background: #0b0e11; border: 1px solid var(--border); color: white; border-radius: 8px; margin: 15px 0; font-size: 20px; text-align: center; outline: none; }
         
-        /* ১. এনিমেশন: ব্যাকগ্রাউন্ড আবছা সবুজ হবে */
-@keyframes rowBlinkGreen {
-    0% { background-color: transparent; }
-    50% { background-color: rgba(14, 203, 129, 0.4) !important; } /* গাঢ় আবছা সবুজ */
-    100% { background-color: transparent; }
+        /* ১. এনিমেশন: ব্যাকগ্রাউন্ড, শ্যাডো এবং একটু সামনের দিকে ঝুঁকে থাকার এফেক্ট */
+@keyframes rowBlinkGreenShadow {
+    0% { 
+        background-color: transparent; 
+        box-shadow: none; 
+        transform: scale(1); /* স্বাভাবিক আকার */
+    }
+    50% { 
+        background-color: rgba(14, 203, 129, 0.4) !important; /* হালকা সবুজ */
+        
+        /* বাইরে দিকে ঝুঁকে থাকার জন্য শ্যাডো এফেক্ট (Glow) */
+        box-shadow: 0 0 15px rgba(14, 203, 129, 0.6) !important; 
+        
+        /* একটু সামনের দিকে ঝুঁকে (Zoom-In) আসার এফেক্ট */
+        transform: scale(1.02); 
+    }
+    100% { 
+        background-color: transparent; 
+        box-shadow: none; 
+        transform: scale(1); 
+    }
 }
 
-/* ২. ব্লিংক ক্লাস - এটিকে টেবিলের সব স্টাইলের উপরে রাখার জন্য !important ব্যবহার */
+/* ২. ব্লিংক ক্লাস - এটিকে সবকিছুর উপরে রাখার জন্য !important ব্যবহার */
 .blink-row {
-    animation: rowBlinkGreen 1.2s infinite ease-in-out !important;
-    background-color: rgba(14, 203, 129, 0.2) !important;
+    animation: rowBlinkGreenShadow 1.2s infinite ease-in-out !important;
+    position: relative; /* শ্যাডো এবং স্কেলের জন্য দরকার */
+    z-index: 10; /* টেবিলের অন্য সব কিছুর উপরে দেখাবে */
+    transition: transform 0.3s ease; /* স্মুথ ট্রানজিশন */
 }
 
-/* ৩. ব্লিংক করা রো-এর সব সেলের (td) লেখার কালার হলুদ */
+/* ৩. ব্লিংক করা রো-এর সব লেখার কালার হলুদ (SMAT থিম) */
 .blink-row td {
     color: #f0b90b !important;
-    border-bottom: 1px solid rgba(14, 203, 129, 0.3) !important; /* নিচের বর্ডারও হালকা সবুজ */
+    border: none !important; /* ব্লিংক করার সময় কোনো বর্ডার না রাখা ভালো দেখায় */
 }
 
 /* ৪. স্পিনারকেও হলুদ করা */
 .blink-row .spinner-sm {
     border-top: 2px solid #f0b90b !important;
 }
+
 .blink { animation: blink 1s infinite; }
         @keyframes blink { 0%, 100% { opacity: 1; } 50% { opacity: 0.2; } }
         .spinner-sm { width: 14px; height: 14px; border: 2px solid rgba(255,255,255,0.1); border-top: 2px solid var(--primary); border-radius: 50%; animation: spin 0.8s linear infinite; display: inline-block; vertical-align: middle; margin-right: 5px; }
