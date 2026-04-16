@@ -339,194 +339,166 @@ function showToast(message) {
 
 
  // --- Firebase Configuration ---
- // আপনার আগের স্ক্রিপ্টে firebaseConfig অবজেক্টটি এভাবে আপডেট করুন
 const firebaseConfig = {
-  apiKey: "AIzaSyAMxtJedkehhxJRMPZLjhpKHqneHEWsGlE",
-  authDomain: "smat-exchange.firebaseapp.com",
-  databaseURL: "https://smat-exchange-default-rtdb.firebaseio.com", // এটি অবশ্যই লাগবে Database এর জন্য
-  projectId: "smat-exchange",
-  storageBucket: "smat-exchange.firebasestorage.app",
-  messagingSenderId: "836334569396",
-  appId: "1:836334569396:web:679effe640b3453412d4e1",
-  measurementId: "G-FCE3H3F18V"
+    apiKey: "AIzaSyAMxtJedkehhxJRMPZLjhpKHqneHEWsGlE",
+    authDomain: "smat-exchange.firebaseapp.com",
+    databaseURL: "https://smat-exchange-default-rtdb.firebaseio.com",
+    projectId: "smat-exchange",
+    storageBucket: "smat-exchange.firebasestorage.app",
+    messagingSenderId: "836334569396",
+    appId: "1:836334569396:web:679effe640b3453412d4e1",
+    measurementId: "G-FCE3H3F18V"
 };
 
- if (!firebase.apps.length) firebase.initializeApp(firebaseConfig);
- const db = firebase.database();
- const auth = firebase.auth();
- let userUID = null;
+if (!firebase.apps.length) firebase.initializeApp(firebaseConfig);
+const db = firebase.database();
+const auth = firebase.auth();
+let userUID = null;
 
- // --- ১. ওয়ালেট ব্যালেন্স রিয়েল-টাইম সিঙ্ক ---
- function syncWalletBalances() {
+// --- গ্লোবাল ভেরিয়েবলস ---
+let activeCoin = null;
+let tradeSide = 'buy';
+let coinData = {}; // মার্কেট ডাটা স্টোর করার জন্য
+let activeHTab = 'global';
+let activeMarket = 'USDT';
+let historyLimit = 10;
+const FEE_RATE = 0.0025;
+let orderBoard = JSON.parse(localStorage.getItem('orderBoard')) || {};
+
+// --- ১. ওয়ালেট ব্যালেন্স রিয়েল-টাইম সিঙ্ক ---
+function syncWalletBalances() {
     auth.onAuthStateChanged(user => {
         if (user) {
             userUID = user.uid;
             db.ref(`users/${userUID}`).on('value', snap => {
                 const d = snap.val();
-                if(d) {
-                    // মেইন অ্যাসেটস সিঙ্ক
+                if (d) {
                     localStorage.setItem('usdt_balance', d.usdt_balance || 0);
                     localStorage.setItem('usdc_balance', d.usdc_balance || 0);
                     localStorage.setItem('bnb_balance', d.bnb_balance || 0);
                     localStorage.setItem('eth_balance', d.eth_balance || 0);
                     localStorage.setItem('oxsmat_balance', d.oxsmat_balance || 0);
                     localStorage.setItem('smat_balance', d.smat_balance || 0);
-                    
-                    // coin.js থেকে আসা ডাইনামিক কয়েন সিঙ্ক
-                    if(typeof GLOBAL_COINS !== 'undefined'){
+
+                    if (typeof GLOBAL_COINS !== 'undefined') {
                         GLOBAL_COINS.forEach(c => {
                             let key = c.sym.toLowerCase() + '_balance';
-                            if(d[key] !== undefined) localStorage.setItem(key, d[key]);
+                            if (d[key] !== undefined) localStorage.setItem(key, d[key]);
                         });
                     }
-                    updateBalanceDisplay(); 
+                    updateBalanceDisplay();
                 }
             });
         }
     });
- }
+}
 
- // --- ২. ট্রেড হওয়ার পর Firebase আপডেট করা ---
- function updateFirebaseBalance(coinKey, amount) {
-    if(!userUID) return;
+// --- ২. ট্রেড হওয়ার পর Firebase আপডেট করা ---
+function updateFirebaseBalance(coinKey, amount) {
+    if (!userUID) return;
     let up = {};
     up[`users/${userUID}/${coinKey.toLowerCase()}_balance`] = parseFloat(amount).toFixed(8);
     db.ref().update(up);
- }
+}
 
- // ==========================================
- // আপনার অরিজিনাল স্ক্রিপ্ট শুরু (একটি লাইনও পরিবর্তন করা হয়নি)
- // ==========================================
- let activeCoin = null;
- let tradeSide = 'buy';
- let coinData = {};
- let activeHTab = 'global';
- let activeMarket = 'USDT';
- let historyLimit = 10;
- const FEE_RATE = 0.0025;
- 
- let orderBoard = JSON.parse(localStorage.getItem('orderBoard')) || {};
- 
- function checkAuth() {
-     if(localStorage.getItem('isLoggedIn') !== 'true') {
-         window.location.href = 'logIn.html';
-         return false;
-     }
-     return true;
- }
- 
-  function init() {
-     syncWalletBalances(); // Firebase থেকে ইউজারের ব্যালেন্স সিঙ্ক
+function checkAuth() {
+    if (localStorage.getItem('isLoggedIn') !== 'true') {
+        window.location.href = 'logIn.html';
+        return false;
+    }
+    return true;
+}
 
-     // --- মার্কেট ডাটা (প্রাইস/ভলিউম) লিসেনার ইনজেক্ট করা হয়েছে ---
-     if (typeof GLOBAL_COINS !== 'undefined') {
-         // coinData ডিক্লেয়ার করা না থাকলে করে নেওয়া হচ্ছে
-         if (typeof window.coinData === 'undefined') window.coinData = {};
+// --- ৩. মেইন ইনিশিয়ালাইজেশন (ইনিট) ফাংশন ---
+function init() {
+    syncWalletBalances();
 
-         GLOBAL_COINS.forEach(coin => {
-             const sym = coin.sym.toLowerCase();
-             // Firebase থেকে প্রতিটি কয়েনের লাইভ ডাটা নেওয়া
-             db.ref('market/' + sym).on('value', (snapshot) => {
-                 const data = snapshot.val();
-                 if (data) {
-                     window.coinData[sym] = data; // গ্লোবাল অবজেক্টে সেভ করা হচ্ছে
-                     
-                     // যদি পপআপ খোলা থাকে তবে লিস্টটি রিয়েল-টাইম আপডেট হবে
-                     if(typeof renderPairs === 'function') renderPairs();
-                 }
-             });
-         });
+    if (typeof GLOBAL_COINS !== 'undefined') {
+        // মার্কেট লাইভ ডাটা লিসেনার
+        GLOBAL_COINS.forEach(coin => {
+            const sym = coin.sym.toLowerCase();
+            db.ref('market/' + sym).on('value', (snapshot) => {
+                const data = snapshot.val();
+                if (data) {
+                    coinData[sym] = data;
+                    if (document.getElementById('pairPopup').style.display === 'flex') {
+                        renderPairs();
+                    }
+                }
+            });
+        });
 
-         // URL থেকে সিলেক্টেড কয়েন বের করা
-         const urlParams = new URLSearchParams(window.location.search);
-         const selectedCoinSym = urlParams.get('coin');
-         
-         if (selectedCoinSym) {
-             const foundCoin = GLOBAL_COINS.find(c => c.sym.toLowerCase() === selectedCoinSym.toLowerCase());
-             activeCoin = foundCoin || GLOBAL_COINS[0];
-         } else {
-             activeCoin = GLOBAL_COINS[0];
-         }
-         
-         const sym = activeCoin.sym.toLowerCase();
-         const savedPrice = localStorage.getItem(sym + "_latest_price");
-         if (savedPrice) {
-             window[sym + "Val"] = parseFloat(savedPrice);
-         }
-     }
-     
-     // বাকি UI রেন্ডার ফাংশনগুলো কল করা
-     renderMarketTabs();
-     refreshUI();
- }
+        // URL প্যারামিটার চেক
+        const urlParams = new URLSearchParams(window.location.search);
+        const selectedCoinSym = urlParams.get('coin');
 
-     
-     renderMarketTabs();
-     const smatVal = window["smatVal"] || 1;
-     const coinPrice = window[activeCoin.sym.toLowerCase() + "Val"] || activeCoin.price;
-     const displayPrice = activeMarket === 'SMAT' ? (coinPrice / smatVal) : coinPrice;
-     
-     document.getElementById('priceInp').value = displayPrice.toFixed(4);
-     refreshUI();
-     
-     setInterval(() => {
-         if(activeCoin) {
-             matchOrders(activeCoin.sym.toUpperCase());
-             renderOrderBook();
-             if(activeHTab === 'global') renderHistory();
-         }
-     }, 2000);
-     
-     document.getElementById('chartRedirect').onclick = () => {
-         if(!checkAuth()) return;
-         location.href = `market_chat.html?symbol=${activeCoin.sym.toUpperCase()}&market=${activeMarket}`;
-     };
- }
- 
- // আপনার দেওয়া অরিজিনাল ফাংশনগুলো (togglePopup, renderPairs, matchOrders, processTrade ইত্যাদি) 
- // আপনার অরিজিনাল ফাইলের নিচে যেভাবে ছিল ঠিক সেভাবেই কাজ করবে।
- // Firebase আপডেট লজিক অটোমেটিক syncWalletBalances এর মাধ্যমে ডাটা রিসিভ করবে।
+        if (selectedCoinSym) {
+            const foundCoin = GLOBAL_COINS.find(c => c.sym.toLowerCase() === selectedCoinSym.toLowerCase());
+            activeCoin = foundCoin || GLOBAL_COINS[0];
+        } else {
+            activeCoin = GLOBAL_COINS[0];
+        }
 
- 
- 
- // --- ৩. পেয়ার এবং মার্কেট ট্যাব লজিক ---
- function togglePopup(show) {
- if(show && !checkAuth()) return;
- const popup = document.getElementById('pairPopup');
- if(show) {
- popup.style.display = 'flex';
- renderMarketTabs();
- renderPairs();
- } else popup.style.display = 'none';
- }
- 
- function renderMarketTabs() {
- const tabContainer = document.getElementById('marketTabs');
- const markets = ['USDT', 'USDC', 'SMAT'];
- tabContainer.innerHTML = markets.map(m => `
- <div class="m-tab ${activeMarket === m ? 'active' : ''}" onclick="setMarketTab('${m}')">
- <div class="tab-logo">${m[0]}</div> ${m}
- </div>
- `).join('');
- }
- 
- function setMarketTab(m) {
- activeMarket = m;
- renderMarketTabs();
- renderPairs();
- updateBalanceDisplay();
- const smatVal = window["smatVal"] || 1;
- const coinPrice = window[activeCoin.sym.toLowerCase() + "Val"] || activeCoin.price;
- const displayPrice = activeMarket === 'SMAT' ? (coinPrice / smatVal) : coinPrice;
- document.getElementById('priceInp').value = displayPrice.toFixed(4);
- calcTotal();
- }
- 
- function renderPairs() {
+        const sym = activeCoin.sym.toLowerCase();
+        const savedPrice = localStorage.getItem(sym + "_latest_price");
+        if (savedPrice) window[sym + "Val"] = parseFloat(savedPrice);
+    }
+
+    renderMarketTabs();
+    refreshUI();
+
+    // চার্ট রিডাইরেক্ট লজিক
+    const chartBtn = document.getElementById('chartRedirect');
+    if (chartBtn) {
+        chartBtn.onclick = () => {
+            if (!checkAuth()) return;
+            location.href = `market_chat.html?symbol=${activeCoin.sym.toUpperCase()}&market=${activeMarket}`;
+        };
+    }
+
+    // অটো ম্যাচিং এবং বুক রেন্ডার
+    setInterval(() => {
+        if (activeCoin) {
+            matchOrders(activeCoin.sym.toUpperCase());
+            renderOrderBook();
+            if (activeHTab === 'global') renderHistory();
+        }
+    }, 2000);
+}
+
+// --- ৪. পেয়ার এবং মার্কেট ট্যাব লজিক ---
+function togglePopup(show) {
+    if (show && !checkAuth()) return;
+    const popup = document.getElementById('pairPopup');
+    if (show) {
+        popup.style.display = 'flex';
+        renderMarketTabs();
+        renderPairs();
+    } else {
+        popup.style.display = 'none';
+    }
+}
+
+function renderMarketTabs() {
+    const tabContainer = document.getElementById('marketTabs');
+    const markets = ['USDT', 'USDC', 'SMAT'];
+    tabContainer.innerHTML = markets.map(m => `
+        <div class="m-tab ${activeMarket === m ? 'active' : ''}" onclick="setMarketTab('${m}')">
+            <div class="tab-logo">${m[0]}</div> ${m}
+        </div>
+    `).join('');
+}
+
+function setMarketTab(m) {
+    activeMarket = m;
+    renderMarketTabs();
+    renderPairs();
+    refreshUI(); // ব্যালেন্স এবং ইনপুট রিফ্রেশ করার জন্য
+}
+
+function renderPairs() {
     const query = document.getElementById('pairSearch').value.toUpperCase();
     const container = document.getElementById('pairListContainer');
-    
-    // মার্কেট পেজ থেকে নেওয়া smatVal লজিক
     const smatVal = (coinData['smat'] && coinData['smat'].price) ? coinData['smat'].price : 1;
 
     let filtered = GLOBAL_COINS.filter(c => 
@@ -536,23 +508,17 @@ const firebaseConfig = {
 
     container.innerHTML = filtered.map(c => {
         const symLower = c.sym.toLowerCase();
-        // মার্কেট পেজের মতো ডাটা কল করা হচ্ছে
         const data = coinData[symLower] || { price: c.price, volume: 0 };
-        
         const currentPrice = data.price;
         const basePrice = c.price;
 
-        // আপনার মার্কেট পেজের % Change Calculation লজিক
         const changePercent = basePrice > 0 ? ((currentPrice - basePrice) / basePrice * 100) : 0;
-        
-        let displayPrice = currentPrice;
-        if(activeMarket === 'SMAT') displayPrice = currentPrice / smatVal;
+        let displayPrice = activeMarket === 'SMAT' ? (currentPrice / smatVal) : currentPrice;
         
         const isUp = changePercent >= 0;
-        const changeClass = isUp ? 'up-bg' : 'down-bg'; 
+        const changeClass = isUp ? 'up-bg' : 'down-bg';
         const changeSign = isUp ? '+' : '';
 
-        // এখানে return স্টেটমেন্টটি সঠিকভাবে দেওয়া হয়েছে
         return `
             <div class="pair-row" onclick="selectCoin('${c.sym.toUpperCase()}')">
                 <div class="p-info">
@@ -560,42 +526,29 @@ const firebaseConfig = {
                         <img src="assets/logos/${symLower}.png" onerror="this.src='assets/logos/generic.png'">
                     </div>
                     <div class="c-name-box">
-                        <div class="pair-main-name">
-                            ${c.sym.toUpperCase()}<span style="font-size:10px; color:var(--text-sec);">/${activeMarket}</span>
-                        </div>
-                        <div class="pair-vol">
-                            Vol: ${parseFloat(data.volume || 0).toLocaleString(undefined, {minimumFractionDigits: 2})}
-                        </div>
+                        <div class="pair-main-name">${c.sym.toUpperCase()}<span style="font-size:10px; color:var(--text-sec);">/${activeMarket}</span></div>
+                        <div class="pair-vol">Vol: ${parseFloat(data.volume || 0).toLocaleString(undefined, {minimumFractionDigits: 2})}</div>
                     </div>
                 </div>
-                
                 <div class="pair-price-col" style="color: ${isUp ? 'var(--up)' : 'var(--down)'}">
-                    ${displayPrice.toLocaleString(undefined, {
-                        minimumFractionDigits: displayPrice < 1 ? 4 : 2, 
-                        maximumFractionDigits: displayPrice < 1 ? 4 : 2
-                    })}
+                    ${displayPrice.toLocaleString(undefined, {minimumFractionDigits: displayPrice < 1 ? 4 : 2, maximumFractionDigits: displayPrice < 1 ? 4 : 2})}
                 </div>
-
                 <div class="pair-change-col">
-                    <span class="change-badge ${changeClass}">
-                        ${changeSign}${changePercent.toFixed(2)}%
-                    </span>
+                    <span class="change-badge ${changeClass}">${changeSign}${changePercent.toFixed(2)}%</span>
                 </div>
             </div>`;
     }).join('');
 }
 
- 
- function selectCoin(sym) {
- activeCoin = GLOBAL_COINS.find(c => c.sym === sym);
- const smatVal = window["smatVal"] || 1;
- const coinPrice = window[activeCoin.sym.toLowerCase() + "Val"] || activeCoin.price;
- const displayPrice = activeMarket === 'SMAT' ? (coinPrice / smatVal) : coinPrice;
- 
- document.getElementById('priceInp').value = displayPrice.toFixed(4);
- togglePopup(false);
- refreshUI();
- }
+function selectCoin(sym) {
+    activeCoin = GLOBAL_COINS.find(c => c.sym.toUpperCase() === sym.toUpperCase());
+    togglePopup(false);
+    refreshUI();
+}
+
+// পেজ লোড হওয়ার সময় init কল করা
+window.onload = init;
+
  
  // --- ৪. UI এবং ব্যালেন্স লজিক ---
  function refreshUI() {
