@@ -32,23 +32,69 @@
  .search-box { background: var(--card); border-radius: 8px; padding: 10px 15px; display: flex; align-items: center; gap: 10px; }
  .search-box input { background: none; border: none; color: white; width: 100%; outline: none; font-size: 16px; }
  
- .market-tabs { display: flex; gap: 20px; padding: 10px 20px; border-bottom: 1px solid #2b3139; }
- .m-tab { padding: 10px 0; color: var(--text-sec); font-size: 15px; cursor: pointer; font-weight: 600; position: relative; display: flex; align-items: center; gap: 6px; }
- .m-tab.active { color: var(--primary); }
- .m-tab.active::after { content: ''; position: absolute; bottom: 0; left: 0; width: 100%; height: 2px; background: var(--primary); }
- 
- .tab-logo { width: 18px; height: 18px; border-radius: 50%; overflow: hidden; display: flex; align-items: center; justify-content: center; background: var(--primary); color: black; font-size: 10px; font-weight: bold; }
- .tab-logo img { width: 100%; height: 100%; object-fit: cover; }
- 
+ /* Market Tabs - ডট (.) যোগ করা হয়েছে */
+.market-tabs { 
+    display: flex; 
+    gap: 20px; 
+    padding: 10px 20px; 
+    border-bottom: 1px solid #2b3139; 
+    overflow-x: auto; /* মোবাইল স্ক্রিনের জন্য স্ক্রলিং সুবিধা */
+    scrollbar-width: none;
+}
 
- /* পপআপের ভেতরের পেয়ার স্টাইল */
+.market-tabs::-webkit-scrollbar { display: none; }
+
+.m-tab { 
+    padding: 10px 0; 
+    color: var(--text-sec); 
+    font-size: 15px; 
+    cursor: pointer; 
+    font-weight: 600; 
+    position: relative; 
+    display: flex; 
+    align-items: center; 
+    gap: 6px; 
+    white-space: nowrap; 
+}
+
+.m-tab.active { color: var(--primary); }
+
+.m-tab.active::after { 
+    content: ''; 
+    position: absolute; 
+    bottom: 0; 
+    left: 0; 
+    width: 100%; 
+    height: 2px; 
+    background: var(--primary); 
+}
+
+.tab-logo { 
+    width: 18px; 
+    height: 18px; 
+    border-radius: 50%; 
+    overflow: hidden; 
+    display: flex; 
+    align-items: center; 
+    justify-content: center; 
+    background: var(--primary); 
+    color: black; 
+    font-size: 10px; 
+    font-weight: bold; 
+}
+
+.tab-logo img { width: 100%; height: 100%; object-fit: cover; }
+
+/* পপআপের ভেতরের পেয়ার স্টাইল */
 .pair-row {
     display: grid;
-    grid-template-columns: 1.5fr 1.1fr 0.9fr; /* মার্কেট পেজের গ্রিড রেশিও */
+    grid-template-columns: 1.5fr 1.1fr 0.9fr; 
     padding: 12px 15px;
     align-items: center;
     border-bottom: 1px solid var(--border);
 }
+
+.pair-row:active { background: rgba(255, 255, 255, 0.05); } /* ক্লিক করলে রেসপন্স করবে */
 
 .p-info { display: flex; align-items: center; gap: 10px; }
 .p-logo { width: 30px; height: 30px; border-radius: 50%; overflow: hidden; background: #2b3139; }
@@ -71,8 +117,8 @@
 }
 
 /* মার্কেট পেজ থেকে কালার কোড */
-.up-bg { background: var(--up); color: #000; }
-.down-bg { background: var(--down); color: #fff; }
+.up-bg { background: var(--up); color: #000; box-shadow: 0 4px 12px rgba(14, 203, 129, 0.2); }
+.down-bg { background: var(--down); color: #fff; box-shadow: 0 4px 12px rgba(246, 70, 93, 0.2); }
 
  
  /* Trade Layout */
@@ -353,6 +399,7 @@ const firebaseConfig = {
  // ==========================================
  let activeCoin = null;
  let tradeSide = 'buy';
+ let coinData = {};
  let activeHTab = 'global';
  let activeMarket = 'USDT';
  let historyLimit = 10;
@@ -368,9 +415,29 @@ const firebaseConfig = {
      return true;
  }
  
- function init() {
-     syncWalletBalances(); // <--- Firebase Sync ইনজেক্ট করা হয়েছে
+  function init() {
+     syncWalletBalances(); // Firebase থেকে ইউজারের ব্যালেন্স সিঙ্ক
+
+     // --- মার্কেট ডাটা (প্রাইস/ভলিউম) লিসেনার ইনজেক্ট করা হয়েছে ---
      if (typeof GLOBAL_COINS !== 'undefined') {
+         // coinData ডিক্লেয়ার করা না থাকলে করে নেওয়া হচ্ছে
+         if (typeof window.coinData === 'undefined') window.coinData = {};
+
+         GLOBAL_COINS.forEach(coin => {
+             const sym = coin.sym.toLowerCase();
+             // Firebase থেকে প্রতিটি কয়েনের লাইভ ডাটা নেওয়া
+             db.ref('market/' + sym).on('value', (snapshot) => {
+                 const data = snapshot.val();
+                 if (data) {
+                     window.coinData[sym] = data; // গ্লোবাল অবজেক্টে সেভ করা হচ্ছে
+                     
+                     // যদি পপআপ খোলা থাকে তবে লিস্টটি রিয়েল-টাইম আপডেট হবে
+                     if(typeof renderPairs === 'function') renderPairs();
+                 }
+             });
+         });
+
+         // URL থেকে সিলেক্টেড কয়েন বের করা
          const urlParams = new URLSearchParams(window.location.search);
          const selectedCoinSym = urlParams.get('coin');
          
@@ -387,6 +454,12 @@ const firebaseConfig = {
              window[sym + "Val"] = parseFloat(savedPrice);
          }
      }
+     
+     // বাকি UI রেন্ডার ফাংশনগুলো কল করা
+     renderMarketTabs();
+     refreshUI();
+ }
+
      
      renderMarketTabs();
      const smatVal = window["smatVal"] || 1;
