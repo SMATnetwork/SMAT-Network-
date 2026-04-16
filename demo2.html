@@ -91,8 +91,30 @@ canvas#liveChart {
         .modal-box { background: var(--card); padding: 25px; border-radius: 15px; width: 90%; max-width: 360px; text-align: center; border: 1px solid var(--border); }
         .modal-box input { width: 100%; padding: 12px; background: #0b0e11; border: 1px solid var(--border); color: white; border-radius: 8px; margin: 15px 0; font-size: 20px; text-align: center; outline: none; }
         
-        .blink { animation: blink 1s infinite; }
-        @keyframes blink { 0%, 100% { opacity: 1; } 50% { opacity: 0.2; } }
+        /* ১. এনিমেশন: ব্যাকগ্রাউন্ড আবছা সবুজ হবে */
+@keyframes rowBlinkGreen {
+    0% { background-color: transparent; }
+    50% { background-color: rgba(14, 203, 129, 0.4) !important; } /* গাঢ় আবছা সবুজ */
+    100% { background-color: transparent; }
+}
+
+/* ২. ব্লিংক ক্লাস - এটিকে টেবিলের সব স্টাইলের উপরে রাখার জন্য !important ব্যবহার */
+.blink-row {
+    animation: rowBlinkGreen 1.2s infinite ease-in-out !important;
+    background-color: rgba(14, 203, 129, 0.2) !important;
+}
+
+/* ৩. ব্লিংক করা রো-এর সব সেলের (td) লেখার কালার হলুদ */
+.blink-row td {
+    color: #f0b90b !important;
+    border-bottom: 1px solid rgba(14, 203, 129, 0.3) !important; /* নিচের বর্ডারও হালকা সবুজ */
+}
+
+/* ৪. স্পিনারকেও হলুদ করা */
+.blink-row .spinner-sm {
+    border-top: 2px solid #f0b90b !important;
+}
+
         .spinner-sm { width: 14px; height: 14px; border: 2px solid rgba(255,255,255,0.1); border-top: 2px solid var(--primary); border-radius: 50%; animation: spin 0.8s linear infinite; display: inline-block; vertical-align: middle; margin-right: 5px; }
         @keyframes spin { 100% { transform: rotate(360deg); } }
     </style>
@@ -354,7 +376,7 @@ const chart = new Chart(ctx, {
         if (user) syncHistory();
     }
 
-    async function syncHistory() {
+        async function syncHistory() {
         if (!user || !activeKey) return;
         const gSnap = await get(ref(db, `marketHistory/${activeKey}`));
         const snap = await get(ref(db, `history/${user.uid}/${activeKey}`));
@@ -381,7 +403,8 @@ const chart = new Chart(ctx, {
                 else if (item.status === "DRAW") winHtml = `<div style="color:#f0b90b">$${parseFloat(item.finalWin).toFixed(4)}</div>`;
             }
 
-            body.innerHTML += `<tr class="${isWaiting ? 'blink' : ''}">
+            // টেবিল রো জেনারেশন (হলুদ টেক্সট এবং আবছা সবুজ ব্লিংক ক্লাস সহ)
+            body.innerHTML += `<tr class="${isWaiting ? 'blink-row' : ''}">
                 <td><img src="assets/logos/${item.logo}" class="hist-logo"> ${item.rid}</td>
                 <td>${item.time}</td>
                 <td>$${parseFloat(item.lockedPrice || 0).toFixed(4)}</td>
@@ -391,6 +414,7 @@ const chart = new Chart(ctx, {
             </tr>`;
         });
     }
+
 
     window.openBetModal = (side) => {
         if (globalState !== "TRADING") return;
