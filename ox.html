@@ -364,34 +364,38 @@ const FEE_RATE = 0.0025;
 let orderBoard = JSON.parse(localStorage.getItem('orderBoard')) || {};
 
 // --- ১. ওয়ালেট ব্যালেন্স রিয়েল-টাইম সিঙ্ক ---
+// --- ১. ওয়ালেট ব্যালেন্স রিয়েল-টাইম সিঙ্ক ---
 function syncWalletBalances() {
     auth.onAuthStateChanged(user => {
         if (user) {
             userUID = user.uid;
             db.ref(`users/${userUID}`).on('value', snap => {
-                const d = snap.val();
-                if (d) {
-                    localStorage.setItem('usdt_balance', d.usdt_balance || 0);
-                    localStorage.setItem('usdc_balance', d.usdc_balance || 0);
-                    localStorage.setItem('bnb_balance', d.bnb_balance || 0);
-                    localStorage.setItem('eth_balance', d.eth_balance || 0);
-localStorage.setItem('btc_balance', d.eth_balance || 0);
-localStorage.setItem('xrp_balance', d.eth_balance || 0);
-                    localStorage.setItem('oxsmat_balance', d.oxsmat_balance || 0);
-                    localStorage.setItem('smat_balance', d.smat_balance || 0);
+                const d = snap.val() || {}; // ডাটা না থাকলে খালি অবজেক্ট
+                
+                // ১. মেইন কারেন্সিগুলো সিঙ্ক (এগুলো ম্যানুয়ালি হ্যান্ডেল করা ভালো)
+                localStorage.setItem('usdt_balance', d.usdt_balance || 0);
+                localStorage.setItem('usdc_balance', d.usdc_balance || 0);
+                localStorage.setItem('smat_balance', d.smat_balance || 0);
+                localStorage.setItem('oxsmat_balance', d.oxsmat_balance || 0);
 
-                    if (typeof GLOBAL_COINS !== 'undefined') {
-                        GLOBAL_COINS.forEach(c => {
-                            let key = c.sym.toLowerCase() + '_balance';
-                            if (d[key] !== undefined) localStorage.setItem(key, d[key]);
-                        });
-                    }
-                    updateBalanceDisplay();
+                // ২. ডাইনামিক কয়েন সিঙ্ক (এটিই সবচেয়ে নিরাপদ উপায়)
+                // আপনার coin.js এ থাকা সব কয়েন (BTC, ETH, XRP ইত্যাদি) অটোমেটিক লুপ হবে
+                if (typeof GLOBAL_COINS !== 'undefined') {
+                    GLOBAL_COINS.forEach(c => {
+                        let sym = c.sym.toLowerCase();
+                        let key = sym + '_balance';
+                        // ডাটাবেসে যা আছে তাই সেট হবে, ডাটাবেসে না থাকলে ০
+                        localStorage.setItem(key, d[key] || 0);
+                    });
                 }
+                
+                // ব্যালেন্স আপডেট দেখানো
+                updateBalanceDisplay();
             });
         }
     });
 }
+
 
 // --- ২. ট্রেড হওয়ার পর Firebase আপডেট করা ---
 function updateFirebaseBalance(coinKey, amount) {
