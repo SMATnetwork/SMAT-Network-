@@ -213,35 +213,34 @@ canvas#liveChart {
             <div id="timerClock" class="timer-clock">00:00</div>
         </div>
 
-        <div class="pools-container" style="width: 100%; max-width: 320px;">
-    <div class="pool-box-unified" style="display: flex; width: 100%; background: transparent; overflow: hidden; padding: 5px;">
+        <div class="pools-container" style="position: absolute; left: 50%; transform: translateX(-50%); width: 220px; bottom: 5px;">
+    <div class="pool-box-unified" style="display: flex; width: 100%; background: transparent; padding: 2px; align-items: center;">
         
-        <div style="flex: 1; display: flex; align-items: center; gap: 6px;">
-            <div class="progress-track" style="width: 3px; height: 22px; background: rgba(255,255,255,0.1);">
+        <div style="flex: 1; display: flex; align-items: center; gap: 4px;">
+            <div class="progress-track" style="width: 3px; height: 18px; background: rgba(255,255,255,0.1);">
                 <div id="upPoolBar" class="progress-fill-up" style="height: 50%;"></div>
             </div>
             <div style="text-align: left; line-height: 1;">
-                <div style="font-size: 7px; color: #0ecb81; font-weight: 800; margin-bottom: 2px;">UP</div>
-                <div id="upPoolTotal" style="font-size: 11px; font-weight: 900; color: white;">$0.00</div>
-                <div id="upPoolPercent" style="font-size: 9px; color: #848e9c;">50%</div>
+                <div style="font-size: 7px; color: #0ecb81; font-weight: 800;">UP</div>
+                <div id="upPoolTotal" style="font-size: 10px; font-weight: 900; color: white;">$0.00</div>
             </div>
         </div>
 
-        <div style="width: 1px; height: 20px; background: rgba(255,255,255,0.1); margin: 0 10px; align-self: center;"></div>
+        <div style="width: 1px; height: 15px; background: rgba(255,255,255,0.2); margin: 0 5px;"></div>
 
-        <div style="flex: 1; display: flex; align-items: center; gap: 6px; justify-content: flex-end;">
+        <div style="flex: 1; display: flex; align-items: center; gap: 4px; justify-content: flex-end;">
             <div style="text-align: right; line-height: 1;">
-                <div style="font-size: 7px; color: #f6465d; font-weight: 800; margin-bottom: 2px;">DOWN</div>
-                <div id="downPoolTotal" style="font-size: 11px; font-weight: 900; color: white;">$0.00</div>
-                <div id="downPoolPercent" style="font-size: 9px; color: #848e9c;">50%</div>
+                <div style="font-size: 7px; color: #f6465d; font-weight: 800;">DOWN</div>
+                <div id="downPoolTotal" style="font-size: 10px; font-weight: 900; color: white;">$0.00</div>
             </div>
-            <div class="progress-track" style="width: 3px; height: 22px; background: rgba(255,255,255,0.1);">
+            <div class="progress-track" style="width: 3px; height: 18px; background: rgba(255,255,255,0.1);">
                 <div id="downPoolBar" class="progress-fill-down" style="height: 50%;"></div>
             </div>
         </div>
         
     </div>
 </div>
+
 
 
     </div>
