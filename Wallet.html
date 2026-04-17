@@ -116,6 +116,43 @@
         .opt-btn { background: var(--card); border: 1px solid var(--border); padding: 12px 5px; border-radius: 12px; text-align: center; font-size: 11px; font-weight: 800; cursor: pointer; }
         .opt-btn.active { border-color: var(--primary); color: var(--primary); }
 
+/* Wallet History Table Container */
+.history-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 15px;
+}
+
+/* কলামগুলোর স্পেসিং ঠিক করার জন্য */
+.history-table th, .history-table td {
+    padding: 12px 8px;
+    text-align: left; /* ডিফল্ট লেফট অ্যালাইন */
+    font-size: 13px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+/* কলাম ওয়াইজ উইডথ ফিক্স (৫ কলামের জন্য পারফেক্ট রেশিও) */
+.history-table th:nth-child(1), .history-table td:nth-child(1) { width: 20%; } /* NAME */
+.history-table th:nth-child(2), .history-table td:nth-child(2) { width: 25%; } /* AMOUNT */
+.history-table th:nth-child(3), .history-table td:nth-child(3) { width: 20%; } /* METHOD */
+.history-table th:nth-child(4), .history-table td:nth-child(4) { width: 20%; } /* TIME */
+.history-table th:nth-child(5), .history-table td:nth-child(5) { width: 15%; text-align: right; } /* ACTION */
+
+/* সাকসেস বাটনের সুন্দর লুক (আপনার স্ক্রিনশট অনুযায়ী) */
+.status-success {
+    background: rgba(14, 203, 129, 0.15);
+    color: #0ecb81;
+    padding: 4px 10px;
+    border-radius: 4px;
+    font-weight: bold;
+    font-size: 11px;
+    text-transform: uppercase;
+}
+
+
+
+
+
         .history-popup { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: var(--bg); z-index: 6000; display: none; flex-direction: column; }
         .hist-card { background: var(--card); padding: 15px; border-radius: 15px; margin-bottom: 12px; border-left: 4px solid var(--primary); }
         .status-spin { animation: spin 2s linear infinite; }
