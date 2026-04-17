@@ -568,44 +568,41 @@ async function processTransfer() {
     const senderUid = auth.currentUser.uid;
     const senderBal = parseFloat(userData[s + '_balance']) || 0;
 
-    // প্রাথমিক চেক
     if(!target || isNaN(amt) || amt <= 0) return showNotify('error', 'Failed', 'Please enter valid details.');
     if(amt > senderBal) return showNotify('error', 'Balance', 'Insufficient balance!');
 
     showNotify('info', 'Searching', 'Verifying recipient...');
 
     try {
-        const usersRef = db.ref('users');
+        const snapshot = await db.ref('users').once('value');
         let receiverUid = null;
         let receiverName = "";
 
-        const snapshot = await usersRef.once('value');
         if (snapshot.exists()) {
             snapshot.forEach(child => {
                 const user = child.val();
-                const inputTarget = target.toLowerCase().trim(); // ইনপুট ছোট হাতের করে নেওয়া
+                const inputTarget = target.toLowerCase().trim();
                 
-                // জিমেইল চেক
                 if (type === 'gmail' && user.email) {
                     if (user.email.toLowerCase() === inputTarget) {
                         receiverUid = child.key;
                         receiverName = user.email;
                     }
                 } 
-                // SMAT ID চেক (SMAT100001 ফরম্যাট সাপোর্ট)
-                else if (type === 'smatid' && user.smatId) {
-                    if (user.smatId.toString().toLowerCase().trim() === inputTarget) {
+                // আপনার ডাটাবেজ অনুযায়ী smatID (বড় হাতের ID) চেক করা হচ্ছে
+                else if (type === 'smatid') {
+                    const dbSmatID = user.smatID || user.smatid || user.smatId; 
+                    if (dbSmatID && dbSmatID.toString().toLowerCase().trim() === inputTarget) {
                         receiverUid = child.key;
-                        receiverName = user.smatId; 
+                        receiverName = dbSmatID;
                     }
                 }
             });
         }
 
-        if (!receiverUid) return showNotify('error', 'NOT FOUND', `User with this ${type.toUpperCase()} not found.`);
-        if (receiverUid === senderUid) return showNotify('error', 'Error', 'Cannot transfer to yourself.');
+        if (!receiverUid) return showNotify('error', 'NOT FOUND', 'User with this ID not found.');
+        if (receiverUid === senderUid) return showNotify('error', 'Invalid', 'Cannot transfer to yourself.');
 
-        // সব ঠিক থাকলে প্রিভিউ পপআপ কল করা
         showTransferPreview({ amt, coin: s.toUpperCase(), receiverName, receiverUid, senderBal, sym: s });
 
     } catch (e) {
@@ -613,14 +610,13 @@ async function processTransfer() {
     }
 }
 
-// ২. কনফার্মেশন প্রিভিউ পপআপ (Security Fix সহ)
+// ২. প্রিভিউ পপআপ (Security Fix সহ)
 function showTransferPreview(data) {
     const overlay = document.getElementById('detailsOverlay');
     const cont = document.getElementById('detailsContent');
     const confirmBtn = overlay.querySelector('.btn-main');
     
-    // বাটন রিসেট: আগের সব ক্লিক লজিক মুছে ফেলা
-    confirmBtn.onclick = null;
+    confirmBtn.onclick = null; // আগের ইভেন্ট পরিষ্কার
     confirmBtn.disabled = false;
     confirmBtn.innerText = "CONFIRM & SEND";
     confirmBtn.style.background = "var(--primary)";
@@ -630,9 +626,8 @@ function showTransferPreview(data) {
             <p style="color:var(--text-sec); font-size:12px;">Confirm Transfer</p>
             <h2 style="color:var(--primary); font-size:28px; margin:5px 0;">${data.amt} ${data.coin}</h2>
             <div style="background:rgba(255,255,255,0.05); padding:15px; border-radius:12px; margin-top:15px; border:1px solid var(--border); text-align:left;">
-                <p style="font-size:11px; color:var(--text-sec);">To Recipient:</p>
+                <p style="font-size:11px; color:var(--text-sec);">Recipient Account:</p>
                 <p style="font-size:14px; font-weight:bold; color:white; margin-top:4px;">${data.receiverName}</p>
-                <p style="font-size:10px; color:var(--up); margin-top:8px;"><i class="fas fa-shield-alt"></i> Internal SMAT Transfer (Zero Fee)</p>
             </div>
         </div>
     `;
@@ -643,19 +638,16 @@ function showTransferPreview(data) {
         await executeFinalTransfer(data);
         overlay.style.display = 'none';
         confirmBtn.disabled = false;
-        confirmBtn.onclick = null; // কাজ শেষে বাটন ক্লিয়ার
     };
     
     overlay.style.display = 'flex';
 }
 
-// ৩. ফাইনাল এক্সিকিউশন (Wallet Update & Toast)
+// ৩. ফাইনাল এক্সিকিউশন
 async function executeFinalTransfer(data) {
     const senderUid = auth.currentUser.uid;
     try {
         const txId = db.ref('transactions').push().key;
-        
-        // রিসিভারের বর্তমান ব্যালেন্স চেক
         const rxBalRef = db.ref(`users/${data.receiverUid}/${data.sym}_balance`);
         const rxSnap = await rxBalRef.once('value');
         const currentRxBal = parseFloat(rxSnap.val()) || 0;
@@ -663,26 +655,25 @@ async function executeFinalTransfer(data) {
         const senderUpdate = (data.senderBal - data.amt).toFixed(8);
         const receiverUpdate = (currentRxBal + data.amt).toFixed(8);
 
-        // ডাটাবেজ আপডেট
         await db.ref(`users/${senderUid}`).update({ [data.sym + '_balance']: parseFloat(senderUpdate) });
         await db.ref(`users/${data.receiverUid}`).update({ [data.sym + '_balance']: parseFloat(receiverUpdate) });
 
-        // হিস্ট্রি সেভ (Sender & Receiver)
         const histData = { coin: data.coin, amount: data.amt, status: 'success', timestamp: Date.now(), network: 'Internal' };
         
         await db.ref(`users/${senderUid}/history/${txId}`).set({ 
             ...histData, method: 'Transfer Out', address: `To: ${data.receiverName}`, hash: 'INT-'+txId.slice(1,8).toUpperCase() 
         });
         await db.ref(`users/${data.receiverUid}/history/${txId}`).set({ 
-            ...histData, method: 'Transfer In', address: `From: ${userData.smatId || 'SMAT User'}`, hash: 'INT-'+txId.slice(1,8).toUpperCase() 
+            ...histData, method: 'Transfer In', address: `From: ${userData.smatID || 'User'}`, hash: 'INT-'+txId.slice(1,8).toUpperCase() 
         });
 
-        showNotify('success', 'Transfer Success', `Sent ${data.amt} ${data.coin} to ${data.receiverName}`);
+        showNotify('success', 'Transfer Success', `Sent ${data.amt} ${data.coin} successfully!`);
         hidePopup();
     } catch (e) {
         showNotify('error', 'Error', 'Transaction failed.');
     }
 }
+
 
 // ৪. হিস্ট্রি পপআপ ফিক্স (Close বাটন রিসেট)
 function showFullDetails(item) {
