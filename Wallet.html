@@ -561,25 +561,119 @@ async function processWithdraw() {
 
 async function processTransfer() {
     const amt = parseFloat(document.getElementById('transAmt').value);
-    const target = document.getElementById('transTarget').value;
+    const target = document.getElementById('transTarget').value.trim();
+    const type = document.getElementById('transType').value; // gmail or smatid
     const s = document.getElementById('popCoinName').innerText.toLowerCase();
-    const bal = parseFloat(userData[s + '_balance']) || 0;    
+    const senderUid = auth.currentUser.uid;
+    const senderBal = parseFloat(userData[s + '_balance']) || 0;
 
-    if(!target || isNaN(amt) || amt <= 0 || amt > bal) return showNotify('error', 'Failed', 'Invalid amount or recipient.');
+    // ১. প্রাথমিক ভ্যালিডেশন
+    if(!target || isNaN(amt) || amt <= 0) return showNotify('error', 'Failed', 'Please enter valid details.');
+    if(amt > senderBal) return showNotify('error', 'Balance', 'Insufficient balance!');
+
+    showNotify('info', 'Searching', 'Verifying recipient...');
 
     try {
-        const txId = db.ref('transactions').push().key;
-        const data = { method: 'Internal Transfer', coin: s.toUpperCase(), amount: amt, network: 'Internal', address: target, status: 'success', timestamp: Date.now(), hash: 'Null' };
-        
-        await db.ref('users/' + auth.currentUser.uid).update({ [s + '_balance']: (bal - amt).toFixed(8) });    
-        await db.ref('users/' + auth.currentUser.uid + '/history/' + txId).set(data);
-        
-        showNotify('success', 'Sent', 'Transfer completed successfully!');
-        hidePopup();
+        // ২. রিসিভার খুঁজে বের করা
+        const usersRef = db.ref('users');
+        let receiverUid = null;
+        let receiverName = "";
+
+        const snapshot = await usersRef.once('value');
+        snapshot.forEach(child => {
+            const user = child.val();
+            if ((type === 'gmail' && user.email === target) || (type === 'smatid' && user.smatId === target)) {
+                receiverUid = child.key;
+                receiverName = user.smatId || user.email;
+            }
+        });
+
+        if (!receiverUid) return showNotify('error', 'Not Found', 'User not found in SMAT network.');
+        if (receiverUid === senderUid) return showNotify('error', 'Error', 'Cannot transfer to yourself.');
+
+        // ৩. গ্রাফিক্স প্রিভিউ পপআপ দেখানো (Confirm করার জন্য)
+        showTransferPreview({
+            amt, 
+            coin: s.toUpperCase(), 
+            receiverName, 
+            receiverUid, 
+            senderBal, 
+            sym: s
+        });
+
     } catch (e) {
-        showNotify('error', 'Error', 'Transfer failed.');
+        showNotify('error', 'Error', 'Reciever search failed.');
     }
 }
+
+// ৪. কনফার্মেশন পপআপ লজিক
+function showTransferPreview(data) {
+    const overlay = document.getElementById('detailsOverlay');
+    const cont = document.getElementById('detailsContent');
+    
+    cont.innerHTML = `
+        <div style="text-align:center; padding:10px 0;">
+            <p style="color:var(--text-sec); font-size:12px;">Confirm Transfer</p>
+            <h2 style="color:var(--primary); font-size:28px; margin:5px 0;">${data.amt} ${data.coin}</h2>
+            <div style="background:rgba(255,255,255,0.05); padding:15px; border-radius:12px; margin-top:15px; border:1px solid var(--border); text-align:left;">
+                <p style="font-size:11px; color:var(--text-sec);">To Recipient:</p>
+                <p style="font-size:14px; font-weight:bold; color:white; margin-top:4px;">${data.receiverName}</p>
+                <p style="font-size:10px; color:var(--up); margin-top:8px;"><i class="fas fa-shield-alt"></i> Internal SMAT Transfer (No Fee)</p>
+            </div>
+        </div>
+    `;
+    
+    const confirmBtn = overlay.querySelector('.btn-main');
+    confirmBtn.innerText = "CONFIRM & SEND";
+    confirmBtn.style.background = "var(--up)";
+    
+    // কনফার্ম বাটনে ক্লিক করলে ফাইনাল ট্রানজাকশন হবে
+    confirmBtn.onclick = async () => {
+        confirmBtn.innerText = "Processing...";
+        confirmBtn.disabled = true;
+        await executeFinalTransfer(data);
+        overlay.style.display = 'none';
+        confirmBtn.disabled = false;
+        confirmBtn.innerText = "CLOSE"; // রিসেট
+    };
+    
+    overlay.style.display = 'flex';
+}
+
+// ৫. ফাইনাল এক্সিকিউশন (প্লাস/মাইনাস এবং সাকসেস টোস্ট)
+async function executeFinalTransfer(data) {
+    const senderUid = auth.currentUser.uid;
+    try {
+        const txId = db.ref('transactions').push().key;
+        
+        // রিসিভারের বর্তমান ব্যালেন্স আনা
+        const rxBalRef = db.ref(`users/${data.receiverUid}/${data.sym}_balance`);
+        const rxSnap = await rxBalRef.once('value');
+        const currentRxBal = parseFloat(rxSnap.val()) || 0;
+
+        // আপডেট ডাটা তৈরি
+        const senderUpdate = (data.senderBal - data.amt).toFixed(8);
+        const receiverUpdate = (currentRxBal + data.amt).toFixed(8);
+
+        // ডাটাবেজ আপডেট
+        await db.ref(`users/${senderUid}`).update({ [data.sym + '_balance']: senderUpdate });
+        await db.ref(`users/${data.receiverUid}`).update({ [data.sym + '_balance']: receiverUpdate });
+
+        // হিস্ট্রি সেভ করা (উভয় পক্ষের জন্য)
+        const histData = { coin: data.coin, amount: data.amt, status: 'success', timestamp: Date.now(), network: 'Internal' };
+        
+        await db.ref(`users/${senderUid}/history/${txId}`).set({ ...histData, method: 'Transfer Out', address: `To: ${data.receiverName}`, hash: 'INT-'+txId.slice(1,8).toUpperCase() });
+        await db.ref(`users/${data.receiverUid}/history/${txId}`).set({ ...histData, method: 'Transfer In', address: `From: ${userData.smatId || 'User'}`, hash: 'INT-'+txId.slice(1,8).toUpperCase() });
+
+        // সাকসেস টোস্ট
+        showNotify('success', 'Transfer Success', `Sent ${data.amt} ${data.coin} to ${data.receiverName}`);
+        hidePopup();
+        
+    } catch (e) {
+        showNotify('error', 'Error', 'Transaction failed at final stage.');
+    }
+}
+
 
 function hidePopup() { document.getElementById('actionOverlay').style.display = 'none'; }
 function closeHistory() { document.getElementById('historyPopup').style.display = 'none'; }
