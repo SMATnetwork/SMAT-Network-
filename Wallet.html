@@ -561,37 +561,47 @@ async function processWithdraw() {
 
 async function processTransfer() {
     const amt = parseFloat(document.getElementById('transAmt').value);
-    const target = document.getElementById('transTarget').value.trim();
-    const type = document.getElementById('transType').value; // gmail or smatid
+    const target = document.getElementById('transTarget').value.trim(); // ইনপুট থেকে স্পেস সরানো
+    const type = document.getElementById('transType').value; // gmail বা smatid
     const s = document.getElementById('popCoinName').innerText.toLowerCase();
     const senderUid = auth.currentUser.uid;
     const senderBal = parseFloat(userData[s + '_balance']) || 0;
 
-    // ১. প্রাথমিক ভ্যালিডেশন
     if(!target || isNaN(amt) || amt <= 0) return showNotify('error', 'Failed', 'Please enter valid details.');
     if(amt > senderBal) return showNotify('error', 'Balance', 'Insufficient balance!');
 
     showNotify('info', 'Searching', 'Verifying recipient...');
 
     try {
-        // ২. রিসিভার খুঁজে বের করা
         const usersRef = db.ref('users');
         let receiverUid = null;
         let receiverName = "";
 
         const snapshot = await usersRef.once('value');
-        snapshot.forEach(child => {
-            const user = child.val();
-            if ((type === 'gmail' && user.email === target) || (type === 'smatid' && user.smatId === target)) {
-                receiverUid = child.key;
-                receiverName = user.smatId || user.email;
-            }
-        });
+        if (snapshot.exists()) {
+            snapshot.forEach(child => {
+                const user = child.val();
+                
+                // জিমেইল বা SMAT ID যেটাই হোক, এখানে নিখুঁতভাবে চেক হবে
+                if (type === 'gmail' && user.email && user.email.toLowerCase() === target.toLowerCase()) {
+                    receiverUid = child.key;
+                    receiverName = user.email;
+                } else if (type === 'smatid' && user.smatId && user.smatId.toString() === target.toString()) {
+                    receiverUid = child.key;
+                    receiverName = user.smatId;
+                }
+            });
+        }
 
-        if (!receiverUid) return showNotify('error', 'Not Found', 'User not found in SMAT network.');
-        if (receiverUid === senderUid) return showNotify('error', 'Error', 'Cannot transfer to yourself.');
+        if (!receiverUid) {
+            return showNotify('error', 'NOT FOUND', 'User not found in SMAT network.');
+        }
 
-        // ৩. গ্রাফিক্স প্রিভিউ পপআপ দেখানো (Confirm করার জন্য)
+        if (receiverUid === senderUid) {
+            return showNotify('error', 'Error', 'Cannot transfer to yourself.');
+        }
+
+        // সব ঠিক থাকলে প্রিভিউ পপআপ দেখাবে
         showTransferPreview({
             amt, 
             coin: s.toUpperCase(), 
@@ -602,9 +612,11 @@ async function processTransfer() {
         });
 
     } catch (e) {
-        showNotify('error', 'Error', 'Reciever search failed.');
+        console.error(e);
+        showNotify('error', 'Error', 'Search failed. Check connection.');
     }
 }
+
 
 // ৪. কনফার্মেশন পপআপ লজিক
 function showTransferPreview(data) {
