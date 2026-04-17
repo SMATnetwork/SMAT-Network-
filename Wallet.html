@@ -560,6 +560,7 @@ async function processWithdraw() {
 }
 
 // ১. মেইন ট্রান্সফার ফাংশন (SMAT ID এবং Gmail সার্চ লজিক সহ)
+// ১. মেইন ট্রান্সফার প্রসেস
 async function processTransfer() {
     const amt = parseFloat(document.getElementById('transAmt').value);
     const target = document.getElementById('transTarget').value.trim();
@@ -583,14 +584,11 @@ async function processTransfer() {
                 const user = child.val();
                 const inputTarget = target.toLowerCase().trim();
                 
-                if (type === 'gmail' && user.email) {
-                    if (user.email.toLowerCase() === inputTarget) {
-                        receiverUid = child.key;
-                        receiverName = user.email;
-                    }
-                } 
-                // আপনার ডাটাবেজ অনুযায়ী smatID (বড় হাতের ID) চেক করা হচ্ছে
-                else if (type === 'smatid') {
+                if (type === 'gmail' && user.email && user.email.toLowerCase() === inputTarget) {
+                    receiverUid = child.key;
+                    receiverName = user.email;
+                } else if (type === 'smatid') {
+                    // আপনার ডাটাবেজ অনুযায়ী smatID (বড় হাতের ID) চেক
                     const dbSmatID = user.smatID || user.smatid || user.smatId; 
                     if (dbSmatID && dbSmatID.toString().toLowerCase().trim() === inputTarget) {
                         receiverUid = child.key;
@@ -600,7 +598,7 @@ async function processTransfer() {
             });
         }
 
-        if (!receiverUid) return showNotify('error', 'NOT FOUND', 'User with this ID not found.');
+        if (!receiverUid) return showNotify('error', 'NOT FOUND', 'User not found.');
         if (receiverUid === senderUid) return showNotify('error', 'Invalid', 'Cannot transfer to yourself.');
 
         showTransferPreview({ amt, coin: s.toUpperCase(), receiverName, receiverUid, senderBal, sym: s });
@@ -610,13 +608,13 @@ async function processTransfer() {
     }
 }
 
-// ২. প্রিভিউ পপআপ (Security Fix সহ)
+// ২. কনফার্মেশন প্রিভিউ পপআপ (গ্রাফিক্স প্রিভিউ)
 function showTransferPreview(data) {
     const overlay = document.getElementById('detailsOverlay');
     const cont = document.getElementById('detailsContent');
     const confirmBtn = overlay.querySelector('.btn-main');
     
-    confirmBtn.onclick = null; // আগের ইভেন্ট পরিষ্কার
+    confirmBtn.onclick = null; 
     confirmBtn.disabled = false;
     confirmBtn.innerText = "CONFIRM & SEND";
     confirmBtn.style.background = "var(--primary)";
@@ -643,7 +641,7 @@ function showTransferPreview(data) {
     overlay.style.display = 'flex';
 }
 
-// ৩. ফাইনাল এক্সিকিউশন
+// ৩. ফাইনাল এক্সিকিউশন (ব্যালেন্স আপডেট ও ফুল হিস্ট্রি সেভ)
 async function executeFinalTransfer(data) {
     const senderUid = auth.currentUser.uid;
     try {
@@ -658,7 +656,14 @@ async function executeFinalTransfer(data) {
         await db.ref(`users/${senderUid}`).update({ [data.sym + '_balance']: parseFloat(senderUpdate) });
         await db.ref(`users/${data.receiverUid}`).update({ [data.sym + '_balance']: parseFloat(receiverUpdate) });
 
-        const histData = { coin: data.coin, amount: data.amt, status: 'success', timestamp: Date.now(), network: 'Internal' };
+        // আপনার চাওয়া অনুযায়ী ফুল হিস্ট্রি অবজেক্ট
+        const histData = { 
+            coin: data.coin, 
+            amount: data.amt, 
+            status: 'success', 
+            timestamp: Date.now(), 
+            network: 'Internal' 
+        };
         
         await db.ref(`users/${senderUid}/history/${txId}`).set({ 
             ...histData, method: 'Transfer Out', address: `To: ${data.receiverName}`, hash: 'INT-'+txId.slice(1,8).toUpperCase() 
@@ -674,31 +679,40 @@ async function executeFinalTransfer(data) {
     }
 }
 
-
-// ৪. হিস্ট্রি পপআপ ফিক্স (Close বাটন রিসেট)
+// ৪. পূর্ণাঙ্গ হিস্ট্রি ডিটেইলস পপআপ (Network, Date, Time সহ)
 function showFullDetails(item) {
     const overlay = document.getElementById('detailsOverlay');
     const cont = document.getElementById('detailsContent');
     const btn = overlay.querySelector('.btn-main');
 
-    // বাটন ক্লিন করা যাতে ট্রান্সফার ফাংশন রান না হয়
+    // বাটন রিসেট (ক্লোজ করার জন্য)
     btn.onclick = null;
     btn.innerText = "CLOSE";
-    btn.style.background = "var(--up)";
+    btn.style.background = "#0ecb81";
     btn.onclick = () => { overlay.style.display = 'none'; };
 
+    // টাইম এবং ডেট ফরম্যাট করা
+    const dt = new Date(item.timestamp);
+    const dateStr = dt.toLocaleDateString();
+    const timeStr = dt.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+
     cont.innerHTML = `
+        <div style="text-align:center; margin-bottom:15px;">
+            <p style="color:var(--text-sec); font-size:12px;">Transaction Details</p>
+        </div>
         <div class="detail-item"><span>Status</span><b style="color:#0ecb81">${item.status.toUpperCase()}</b></div>
         <div class="detail-item"><span>Method</span><b>${item.method}</b></div>
         <div class="detail-item"><span>Amount</span><b>${item.amount} ${item.coin}</b></div>
-        <div class="detail-item"><span>Target</span><b class="responsive-text">${item.address || 'N/A'}</b></div>
+        <div class="detail-item"><span>Network</span><b>${item.network || 'Internal'}</b></div>
+        <div class="detail-item"><span>Target</span><b class="responsive-text" style="font-size:10px;">${item.address || 'N/A'}</b></div>
         <hr style="border:0; border-top:1px dashed rgba(255,255,255,0.1); margin:10px 0;">
-        <div class="detail-item"><span>Hash</span><b class="responsive-text" style="font-size:10px;">${item.hash || item.id}</b></div>
+        <div class="detail-item"><span>Date</span><b>${dateStr}</b></div>
+        <div class="detail-item"><span>Time</span><b>${timeStr}</b></div>
+        <div class="detail-item"><span>ID / Hash</span><b class="responsive-text" style="font-size:9px; color:var(--text-sec);">${item.hash || item.id}</b></div>
     `;
     
     overlay.style.display = 'flex';
 }
-
 
 
 // ৫. ফাইনাল এক্সিকিউশন (প্লাস/মাইনাস এবং সাকসেস টোস্ট)
