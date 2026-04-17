@@ -85,42 +85,56 @@ th:nth-child(6), td:nth-child(6) { width: 18%; }
     overflow: hidden; /* যাতে শ্যাডো চার্টের বাইরে না যায় */
 }
 
-/* পুল কন্টেইনার: চার্টের ভেতর একদম নিচে সেট হবে */
+/* পুল কন্টেইনার মাঝখানে আনার লজিক */
 .pools-container {
     position: absolute;
-    bottom: 0; /* একদম নিচের বর্ডারের সাথে লেগে থাকবে */
-    left: 0;
-    width: 100%;
+    bottom: 15px; /* একদম নিচে লেগে থাকবে */
+    left: 50%;
+    transform: translateX(-50%); /* একদম সেন্টারে রাখার জন্য */
+    width: 90%; /* দুই পাশে কিছুটা জায়গা ছাড়বে যাতে প্রাইস দেখা যায় */
     display: flex;
-    justify-content: space-between;
-    padding: 0 10px 5px 10px; /* নিচের দিকে ৫ পিক্সেল গ্যাপ রাখা হয়েছে */
-    pointer-events: none; /* যাতে চার্ট দেখতে বা টাচ করতে সমস্যা না হয় */
-    z-index: 5;
+    justify-content: center; /* বক্সগুলো মাঝখানে থাকবে */
+    gap: 10px; /* দুই বক্সের মাঝখানের ফাঁকা জায়গা */
+    pointer-events: none;
 }
 
-/* বক্সের ডিজাইন আরও স্লিম করা হয়েছে যাতে চার্ট বেশি ঢেকে না যায় */
 .pool-box {
-    background: rgba(20, 21, 26, 0.6); /* স্বচ্ছতা বাড়ানো হয়েছে */
-    backdrop-filter: blur(4px);
-    border-radius: 6px;
-    padding: 4px 8px;
-    border: 1px solid rgba(255, 255, 255, 0.05);
-    width: 42%; 
-    max-width: 130px;
+    backdrop-filter: blur(6px);
+    border-radius: 8px;
+    padding: 6px 10px;
+    min-width: 110px;
+    flex: 1; /* সমান সাইজ নেওয়ার জন্য */
+    max-width: 140px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.2);
 }
 
-.pool-label { 
-    font-size: 7px; 
-    color: #848e9c; 
-    margin-bottom: 2px; 
-    font-weight: bold;
+/* আপনার চাহিদা মতো হালকা সবুজ এবং লাল ব্যাকগ্রাউন্ড */
+.up-bg { 
+    background: rgba(14, 203, 129, 0.15) !important; /* সামান্য সবুজ */
+    border: 1px solid rgba(14, 203, 129, 0.3);
 }
 
-.pool-values span { 
-    font-size: 11px; 
-    font-weight: 800; 
-    color: #ffffff; 
+.down-bg { 
+    background: rgba(246, 70, 93, 0.15) !important; /* সামান্য লাল */
+    border: 1px solid rgba(246, 70, 93, 0.3);
 }
+
+.pool-label { font-size: 8px; font-weight: 800; color: #848e9c; margin-bottom: 3px; }
+
+.pool-content { display: flex; align-items: center; gap: 8px; }
+
+/* প্রগ্রেস বার */
+.progress-track {
+    width: 4px; height: 24px; background: rgba(255, 255, 255, 0.1);
+    border-radius: 4px; overflow: hidden; display: flex; flex-direction: column; justify-content: flex-end;
+}
+
+.progress-fill-up { background: #0ecb81; box-shadow: 0 0 8px #0ecb81; transition: height 0.5s; }
+.progress-fill-down { background: #f6465d; box-shadow: 0 0 8px #f6465d; transition: height 0.5s; }
+
+.pool-values span { font-size: 11px; font-weight: 900; color: white; display: block; }
+.pool-values small { font-size: 9px; font-weight: 700; }
+
 
 
 /* অটো রেসপনসিভ: ছোট মোবাইলের জন্য */
@@ -189,10 +203,10 @@ canvas#liveChart {
         <div id="priceDisplay" style="justify-self: end; color: var(--up); font-weight: 900; font-size: 17px;">$0.00</div>
     </header>
 
-        <div class="chart-section" style="position: relative;">
-    <div class="chart-overlay" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; display: flex; flex-direction: column; justify-content:建设-between;">
+        <div class="chart-section" style="position: relative; overflow: hidden;">
+    <div class="chart-overlay" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none;">
         
-        <div class="timer-wrapper" style="padding: 10px;">
+        <div style="padding: 10px;">
             <div class="status-container">
                 <div id="statusLabel" class="blink" style="color:var(--up); font-weight:800; font-size:11px;">TRADING TIME</div>
                 <div id="dynamicLockedInfo" style="font-size: 10px; color: #848e9c; font-weight: 600;"></div>
@@ -200,37 +214,37 @@ canvas#liveChart {
             <div id="timerClock" class="timer-clock">00:00</div>
         </div>
 
-        <div class="pools-container" style="position: absolute; bottom: 10px; width: 100%; display: flex; justify-content: space-between; padding: 0 15px;">
-            <div class="pool-box up-pool">
+        <div class="pools-container">
+            <div class="pool-box up-bg">
                 <div class="pool-label">UP POOL</div>
                 <div class="pool-content">
                     <div class="progress-track">
-                        <div id="upPoolBar" class="progress-fill" style="height: 50%;"></div>
+                        <div id="upPoolBar" class="progress-fill-up" style="height: 50%;"></div>
                     </div>
                     <div class="pool-values">
                         <span id="upPoolTotal">$0.00</span>
-                        <small id="upPoolPercent">50%</small>
+                        <small id="upPoolPercent" style="color: #0ecb81;">50%</small>
                     </div>
                 </div>
             </div>
 
-            <div class="pool-box down-pool">
+            <div class="pool-box down-bg">
                 <div class="pool-label" style="text-align: right;">DOWN POOL</div>
                 <div class="pool-content">
                     <div class="pool-values" style="text-align: right;">
                         <span id="downPoolTotal">$0.00</span>
-                        <small id="downPoolPercent">50%</small>
+                        <small id="downPoolPercent" style="color: #f6465d;">50%</small>
                     </div>
                     <div class="progress-track">
-                        <div id="downPoolBar" class="progress-fill" style="height: 50%;"></div>
+                        <div id="downPoolBar" class="progress-fill-down" style="height: 50%;"></div>
                     </div>
                 </div>
             </div>
         </div>
     </div>
-
-    <canvas id="liveChart" style="display: block; width: 100%; height: 300px;"></canvas>
+    <canvas id="liveChart" style="height: 300px; width: 100%;"></canvas>
 </div>
+
 
 
 
