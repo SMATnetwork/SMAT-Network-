@@ -85,7 +85,63 @@ th:nth-child(6), td:nth-child(6) { width: 18%; }
     overflow: hidden; /* যাতে শ্যাডো চার্টের বাইরে না যায় */
 }
 
+/* পুল কন্টেইনার মাঝখানে আনার লজিক */
+.pools-container {
+    position: absolute;
+    bottom: 5px; /* একদম নিচে লেগে থাকবে */
+    left: 50%;
+    transform: translateX(-50%); /* একদম সেন্টারে রাখার জন্য */
+    width: 50%; /* দুই পাশে কিছুটা জায়গা ছাড়বে যাতে প্রাইস দেখা যায় */
+    display: flex;
+    justify-content: center; /* বক্সগুলো মাঝখানে থাকবে */
+    pointer-events: none;
+}
 
+.pool-box {
+    backdrop-filter: blur(6px);
+    border-radius: 8px;
+    padding: 6px 10px;
+    min-width: 110px;
+    flex: 1; /* সমান সাইজ নেওয়ার জন্য */
+    max-width: 140px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+}
+
+/* আপনার চাহিদা মতো হালকা সবুজ এবং লাল ব্যাকগ্রাউন্ড */
+.up-bg { 
+    background: rgba(14, 203, 129, 0.15) !important; /* সামান্য সবুজ */
+    border: 1px solid rgba(14, 203, 129, 0.3);
+}
+
+.down-bg { 
+    background: rgba(246, 70, 93, 0.15) !important; /* সামান্য লাল */
+    border: 1px solid rgba(246, 70, 93, 0.3);
+}
+
+.pool-label { font-size: 8px; font-weight: 800; color: #848e9c; margin-bottom: 3px; }
+
+.pool-content { display: flex; align-items: center; gap: 8px; }
+
+/* প্রগ্রেস বার */
+.progress-track {
+    width: 4px; height: 24px; background: rgba(255, 255, 255, 0.1);
+    border-radius: 4px; overflow: hidden; display: flex; flex-direction: column; justify-content: flex-end;
+}
+
+.progress-fill-up { background: #0ecb81; box-shadow: 0 0 8px #0ecb81; transition: height 0.5s; }
+.progress-fill-down { background: #f6465d; box-shadow: 0 0 8px #f6465d; transition: height 0.5s; }
+
+.pool-values span { font-size: 11px; font-weight: 900; color: white; display: block; }
+.pool-values small { font-size: 9px; font-weight: 700; }
+
+
+
+/* অটো রেসপনসিভ: ছোট মোবাইলের জন্য */
+@media (max-width: 350px) {
+    .pool-box { padding: 4px 6px; }
+    .pool-values span { font-size: 10px; }
+    .progress-track { height: 20px; }
+}
 
 
 /* গ্রাফের ভিতরের কালার গাঢ় এবং স্মুথ করার জন্য CSS */
