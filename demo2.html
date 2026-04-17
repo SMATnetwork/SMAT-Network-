@@ -94,7 +94,7 @@ th:nth-child(6), td:nth-child(6) { width: 18%; }
     width: 90%; /* দুই পাশে কিছুটা জায়গা ছাড়বে যাতে প্রাইস দেখা যায় */
     display: flex;
     justify-content: center; /* বক্সগুলো মাঝখানে থাকবে */
-    gap: 20px; /* দুই বক্সের মাঝখানের ফাঁকা জায়গা */
+    gap: 35px; /* দুই বক্সের মাঝখানের ফাঁকা জায়গা */
     pointer-events: none;
 }
 
@@ -134,33 +134,6 @@ th:nth-child(6), td:nth-child(6) { width: 18%; }
 
 .pool-values span { font-size: 11px; font-weight: 900; color: white; display: block; }
 .pool-values small { font-size: 9px; font-weight: 700; }
-
-/* উইনার ইমোজি স্টাইল */
-.winner-emoji {
-    position: absolute;
-    font-size: 24px;
-    top: -30px;
-    left: 50%;
-    transform: translateX(-50%);
-    animation: bounceEmoji 0.6s infinite alternate;
-    z-index: 100;
-}
-
-@keyframes bounceEmoji {
-    from { transform: translateX(-50%) translateY(0); }
-    to { transform: translateX(-50%) translateY(-10px); }
-}
-
-/* লস পুল ছিটকে যাওয়া */
-.loss-blast {
-    animation: blastOut 1s forwards ease-in !important;
-}
-
-@keyframes blastOut {
-    0% { transform: scale(1) rotate(0); opacity: 1; }
-    50% { transform: scale(1.2) rotate(15deg); filter: contrast(200%); }
-    100% { transform: translate(300px, -300px) scale(0) rotate(720deg); opacity: 0; }
-}
 
 
 
@@ -325,11 +298,6 @@ canvas#liveChart {
 
     let assets = {}; let activeKey = ''; let user = null; let globalState = "TRADING";
 
-    // ৩ সংখ্যা পর পর কমা দেওয়ার ফরম্যাটার
-    const formatNum = (num) => {
-        return new Intl.NumberFormat('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 }).format(num);
-    };
-
     function showToast(msg, type = 'info') {
         const toast = document.createElement('div');
         toast.innerText = msg;
@@ -380,6 +348,7 @@ canvas#liveChart {
         }
     });
 
+    // পুল ডাটা লিসেনার (Real-time Graphical Update)
     function listenPools() {
         if (!activeKey) return;
         onValue(ref(db, `pools/${activeKey}`), (snap) => {
@@ -391,40 +360,14 @@ canvas#liveChart {
             let upP = total === 0 ? 50 : (up / total) * 100;
             let downP = total === 0 ? 50 : (down / total) * 100;
 
-            // কমা ফরম্যাট প্রয়োগ
-            document.getElementById('upPoolTotal').innerText = `$${formatNum(up)}`;
-            document.getElementById('downPoolTotal').innerText = `$${formatNum(down)}`;
+            document.getElementById('upPoolTotal').innerText = `$${up.toFixed(2)}`;
+            document.getElementById('downPoolTotal').innerText = `$${down.toFixed(2)}`;
             document.getElementById('upPoolPercent').innerText = `${upP.toFixed(0)}%`;
             document.getElementById('downPoolPercent').innerText = `${downP.toFixed(0)}%`;
 
             document.getElementById('upPoolBar').style.height = `${upP}%`;
             document.getElementById('downPoolBar').style.height = `${downP}%`;
         });
-    }
-
-    // উইন/লস অ্যানিমেশন ফাংশন
-    function runPoolAnimation(winner) {
-        const upBox = document.querySelector('.up-pool');
-        const downBox = document.querySelector('.down-pool');
-        const winBox = winner === 'UP' ? upBox : downBox;
-        const lossBox = winner === 'UP' ? downBox : upBox;
-
-        // উইনারে কার্টুন (Emoji) যোগ
-        const cartoon = document.createElement('div');
-        cartoon.className = 'winner-emoji'; // এটি আপনার সিএসএস এ থাকা অ্যানিমেশন ব্যবহার করবে
-        cartoon.innerText = "🥳";
-        winBox.appendChild(cartoon);
-
-        // লস পুলে শুট আউট ইফেক্ট
-        setTimeout(() => {
-            lossBox.classList.add('loss-blast'); // সিএসএস অ্যানিমেশন ট্রিগার
-            showToast("🔫 POOL BLASTED!", 'error');
-            
-            setTimeout(() => {
-                cartoon.remove();
-                lossBox.classList.remove('loss-blast');
-            }, 4000);
-        }, 1000);
     }
 
     window.switchAsset = (val) => {
@@ -434,7 +377,7 @@ canvas#liveChart {
         document.getElementById('headerAssetUnit').innerText = "USDT";
         chart.data.datasets[0].data = Array(50).fill(assets[val].currentPrice || 0);
         chart.update('none');
-        listenPools();
+        listenPools(); // অ্যাসেট পরিবর্তনের সাথে পুল লোড
         if (user) syncUser();
     };
 
@@ -481,14 +424,6 @@ canvas#liveChart {
     async function finalizeAndReset(key) {
         if (!user || !assets[key]) return;
         const resPrice = assets[key].currentPrice;
-        const lockedPrice = assets[key].lockedPrice || resPrice;
-        
-        // শুধু একটি অ্যাসেটের জন্য অ্যানিমেশন চালাবো যেটা ইউজার দেখছে
-        if (key === activeKey) {
-            if (resPrice > lockedPrice) runPoolAnimation('UP');
-            else if (resPrice < lockedPrice) runPoolAnimation('DOWN');
-        }
-
         const snap = await get(ref(db, `history/${user.uid}/${key}`));
         const history = snap.val() || {};
 
@@ -504,7 +439,7 @@ canvas#liveChart {
                     }
                 }
                 if (key === activeKey && rec.action !== "NONE") {
-                    if (status === "WIN") showToast(`Win! +$${formatNum(winAmt)}`, 'success');
+                    if (status === "WIN") showToast(`Win! +$${winAmt.toFixed(4)}`, 'success');
                     else if (status === "LOSS") showToast(`Loss!`, 'error');
                 }
                 if (winAmt > 0) {
@@ -526,10 +461,12 @@ canvas#liveChart {
         const currentRid = assets[key].round;
         await set(ref(db, `marketHistory/${key}/${currentRid}`), {
             rid: currentRid, time: new Date().toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'}),
-            lockedPrice: lockedPrice, resultPrice: resPrice, logo: assets[key].logo
+            lockedPrice: assets[key].lockedPrice || assets[key].currentPrice, resultPrice: resPrice, logo: assets[key].logo
         });
         
+        // রাউন্ড শেষে পুল রিসেট করা
         await set(ref(db, `pools/${key}`), { up: 0, down: 0 });
+
         assets[key].round++;
         await update(ref(db, 'roundLogic'), { [key]: assets[key].round });
         assets[key].pending = null;
@@ -569,17 +506,17 @@ canvas#liveChart {
             } else if (!item.action || item.action === "NONE" || item.action === "No Trade") {
                 winHtml = exchangeIcon;
             } else {
-                if (item.status === "WIN") winHtml = `<div style="color:#0ecb81">$${formatNum(item.finalWin)}</div>`;
+                if (item.status === "WIN") winHtml = `<div style="color:#0ecb81">$${parseFloat(item.finalWin).toFixed(4)}</div>`;
                 else if (item.status === "LOSS") winHtml = `<div style="color:#f6465d">$0.0000</div>`;
-                else if (item.status === "DRAW") winHtml = `<div style="color:#f0b90b">$${formatNum(item.finalWin)}</div>`;
+                else if (item.status === "DRAW") winHtml = `<div style="color:#f0b90b">$${parseFloat(item.finalWin).toFixed(4)}</div>`;
             }
 
             body.innerHTML += `<tr class="${isWaiting ? 'blink-row' : ''}">
                 <td><img src="assets/logos/${item.logo}" class="hist-logo"> ${item.rid}</td>
                 <td>${item.time}</td>
-                <td>$${formatNum(item.lockedPrice || 0)}</td>
+                <td>$${parseFloat(item.lockedPrice || 0).toFixed(4)}</td>
                 <td>${actionHtml}</td>
-                <td>${(item.isPending || !item.resultPrice) ? '...' : '$'+formatNum(item.resultPrice)}</td>
+                <td>${(item.isPending || !item.resultPrice) ? '...' : '$'+parseFloat(item.resultPrice).toFixed(4)}</td>
                 <td>${winHtml}</td>
             </tr>`;
         });
@@ -589,7 +526,7 @@ canvas#liveChart {
         if (globalState !== "TRADING") return;
         if (assets[activeKey] && assets[activeKey].pending) return showToast(`Already bet on ${activeKey.toUpperCase()}!`, 'error');
         document.getElementById('modalTitle').innerText = "Bet " + side;
-        document.getElementById('modalAvbl').innerText = formatNum(parseFloat(document.getElementById('headerBalance').innerText || 0));
+        document.getElementById('modalAvbl').innerText = document.getElementById('headerBalance').innerText;
         document.getElementById('betModal').style.display = 'flex';
         document.getElementById('betModal').dataset.side = side;
     };
@@ -606,6 +543,7 @@ canvas#liveChart {
         
         await set(balRef, (curBal - amt).toFixed(8));
         
+        // পুল ডাটা আপডেট লজিক
         const side = document.getElementById('betModal').dataset.side.toLowerCase();
         const poolRef = ref(db, `pools/${activeKey}/${side}`);
         const pSnap = await get(poolRef);
@@ -627,8 +565,7 @@ canvas#liveChart {
 
     function syncUser() {
         onValue(ref(db, `users/${user.uid}/usdt_balance`), (s) => {
-            const val = parseFloat(s.val() || 0);
-            document.getElementById('headerBalance').innerText = formatNum(val);
+            document.getElementById('headerBalance').innerText = parseFloat(s.val() || 0).toFixed(4);
         });
         syncHistory();
     }
@@ -644,7 +581,7 @@ canvas#liveChart {
             if (key) {
                 const price = parseFloat(d.data.p); assets[key].currentPrice = price; 
                 if (key === activeKey) {
-                    document.getElementById('priceDisplay').innerText = '$' + formatNum(price);
+                    document.getElementById('priceDisplay').innerText = '$' + price.toFixed(4);
                     chart.data.datasets[0].data.shift(); 
                     chart.data.datasets[0].data.push(price);
                     chart.update('none');
@@ -656,6 +593,7 @@ canvas#liveChart {
 
     onAuthStateChanged(auth, (u) => { if (u) { user = u; syncUser(); initWS(); initTimer(); listenPools(); } else { window.location.href = "logIn.html"; } });
 </script>
+
 
 </body>
 </html>
