@@ -214,33 +214,36 @@ canvas#liveChart {
             <div id="timerClock" class="timer-clock">00:00</div>
         </div>
 
-        <div class="pools-container">
-            <div class="pool-box up-bg">
-                <div class="pool-label">UP POOL</div>
-                <div class="pool-content">
-                    <div class="progress-track">
-                        <div id="upPoolBar" class="progress-fill-up" style="height: 50%;"></div>
-                    </div>
-                    <div class="pool-values">
-                        <span id="upPoolTotal">$0.00</span>
-                        <small id="upPoolPercent" style="color: #0ecb81;">50%</small>
-                    </div>
-                </div>
+        <div class="pools-container" style="width: 95%; max-width: 340px;">
+    <div class="pool-box-unified" style="display: flex; width: 100%; background: rgba(24, 26, 32, 0.7); backdrop-filter: blur(10px); border-radius: 12px; border: 1px solid var(--border); overflow: hidden; padding: 10px;">
+        
+        <div style="flex: 1; display: flex; align-items: center; gap: 8px;">
+            <div class="progress-track" style="width: 4px; height: 30px; background: rgba(255,255,255,0.05);">
+                <div id="upPoolBar" class="progress-fill-up" style="height: 50%;"></div>
             </div>
-
-            <div class="pool-box down-bg">
-                <div class="pool-label" style="text-align: right;">DOWN POOL</div>
-                <div class="pool-content">
-                    <div class="pool-values" style="text-align: right;">
-                        <span id="downPoolTotal">$0.00</span>
-                        <small id="downPoolPercent" style="color: #f6465d;">50%</small>
-                    </div>
-                    <div class="progress-track">
-                        <div id="downPoolBar" class="progress-fill-down" style="height: 50%;"></div>
-                    </div>
-                </div>
+            <div style="text-align: left;">
+                <div style="font-size: 8px; color: #0ecb81; font-weight: 800; letter-spacing: 0.5px;">UP POOL</div>
+                <div id="upPoolTotal" style="font-size: 13px; font-weight: 900; color: white;">$0.00</div>
+                <div id="upPoolPercent" style="font-size: 10px; color: #848e9c;">50%</div>
             </div>
         </div>
+
+        <div style="width: 1px; background: var(--border); margin: 0 15px;"></div>
+
+        <div style="flex: 1; display: flex; align-items: center; gap: 8px; justify-content: flex-end;">
+            <div style="text-align: right;">
+                <div style="font-size: 8px; color: #f6465d; font-weight: 800; letter-spacing: 0.5px;">DOWN POOL</div>
+                <div id="downPoolTotal" style="font-size: 13px; font-weight: 900; color: white;">$0.00</div>
+                <div id="downPoolPercent" style="font-size: 10px; color: #848e9c;">50%</div>
+            </div>
+            <div class="progress-track" style="width: 4px; height: 30px; background: rgba(255,255,255,0.05);">
+                <div id="downPoolBar" class="progress-fill-down" style="height: 50%;"></div>
+            </div>
+        </div>
+        
+    </div>
+</div>
+
     </div>
     <canvas id="liveChart" style="height: 300px; width: 100%;"></canvas>
 </div>
