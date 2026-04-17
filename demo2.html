@@ -85,63 +85,7 @@ th:nth-child(6), td:nth-child(6) { width: 18%; }
     overflow: hidden; /* যাতে শ্যাডো চার্টের বাইরে না যায় */
 }
 
-/* পুল কন্টেইনার মাঝখানে আনার লজিক */
-.pools-container {
-    position: absolute;
-    bottom: 2px; /* একদম নিচে লেগে থাকবে */
-    left: 50%;
-    transform: translateX(-50%); /* একদম সেন্টারে রাখার জন্য */
-    width: 50%; /* দুই পাশে কিছুটা জায়গা ছাড়বে যাতে প্রাইস দেখা যায় */
-    display: flex;
-    justify-content: center; /* বক্সগুলো মাঝখানে থাকবে */
-    pointer-events: none;
-}
 
-.pool-box {
-    backdrop-filter: blur(6px);
-    border-radius: 8px;
-    padding: 6px 10px;
-    min-width: 110px;
-    flex: 1; /* সমান সাইজ নেওয়ার জন্য */
-    max-width: 140px;
-    box-shadow: 0 4px 12px rgba(0,0,0,0.2);
-}
-
-/* আপনার চাহিদা মতো হালকা সবুজ এবং লাল ব্যাকগ্রাউন্ড */
-.up-bg { 
-    background: rgba(14, 203, 129, 0.15) !important; /* সামান্য সবুজ */
-    border: 1px solid rgba(14, 203, 129, 0.3);
-}
-
-.down-bg { 
-    background: rgba(246, 70, 93, 0.15) !important; /* সামান্য লাল */
-    border: 1px solid rgba(246, 70, 93, 0.3);
-}
-
-.pool-label { font-size: 8px; font-weight: 800; color: #848e9c; margin-bottom: 3px; }
-
-.pool-content { display: flex; align-items: center; gap: 8px; }
-
-/* প্রগ্রেস বার */
-.progress-track {
-    width: 4px; height: 24px; background: rgba(255, 255, 255, 0.1);
-    border-radius: 4px; overflow: hidden; display: flex; flex-direction: column; justify-content: flex-end;
-}
-
-.progress-fill-up { background: #0ecb81; box-shadow: 0 0 8px #0ecb81; transition: height 0.5s; }
-.progress-fill-down { background: #f6465d; box-shadow: 0 0 8px #f6465d; transition: height 0.5s; }
-
-.pool-values span { font-size: 11px; font-weight: 900; color: white; display: block; }
-.pool-values small { font-size: 9px; font-weight: 700; }
-
-
-
-/* অটো রেসপনসিভ: ছোট মোবাইলের জন্য */
-@media (max-width: 350px) {
-    .pool-box { padding: 4px 6px; }
-    .pool-values span { font-size: 10px; }
-    .progress-track { height: 20px; }
-}
 
 
 /* গ্রাফের ভিতরের কালার গাঢ় এবং স্মুথ করার জন্য CSS */
@@ -213,16 +157,16 @@ canvas#liveChart {
             <div id="timerClock" class="timer-clock">00:00</div>
         </div>
 
-        <div class="pools-container" style="position: absolute; left: 50%; transform: translateX(-50%); width: 220px; bottom: 5px;">
-    <div class="pool-box-unified" style="display: flex; width: 100%; background: transparent; padding: 2px; align-items: center;">
+        <div class="pools-container" style="position: absolute; left: 50%; transform: translateX(-50%); width: 200px; bottom: 5px;">
+    <div class="pool-box-unified" style="display: flex; width: 100%; background: transparent; padding: 1px; align-items: center;">
         
         <div style="flex: 1; display: flex; align-items: center; gap: 4px;">
-            <div class="progress-track" style="width: 3px; height: 18px; background: rgba(255,255,255,0.1);">
+            <div class="progress-track" style="width: 3px; height: 20px; background: rgba(255,255,255,0.1);">
                 <div id="upPoolBar" class="progress-fill-up" style="height: 50%;"></div>
             </div>
             <div style="text-align: left; line-height: 1;">
                 <div style="font-size: 7px; color: #0ecb81; font-weight: 800;">UP</div>
-                <div id="upPoolTotal" style="font-size: 10px; font-weight: 900; color: white;">$0.00</div>
+                <div id="upPoolTotal" style="font-size: 12px; font-weight: 900; color: white;">$0.00</div>
             </div>
         </div>
 
@@ -231,9 +175,9 @@ canvas#liveChart {
         <div style="flex: 1; display: flex; align-items: center; gap: 4px; justify-content: flex-end;">
             <div style="text-align: right; line-height: 1;">
                 <div style="font-size: 7px; color: #f6465d; font-weight: 800;">DOWN</div>
-                <div id="downPoolTotal" style="font-size: 10px; font-weight: 900; color: white;">$0.00</div>
+                <div id="downPoolTotal" style="font-size: 12px; font-weight: 900; color: white;">$0.00</div>
             </div>
-            <div class="progress-track" style="width: 3px; height: 18px; background: rgba(255,255,255,0.1);">
+            <div class="progress-track" style="width: 3px; height: 20px; background: rgba(255,255,255,0.1);">
                 <div id="downPoolBar" class="progress-fill-down" style="height: 50%;"></div>
             </div>
         </div>
