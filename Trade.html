@@ -375,16 +375,17 @@ function syncWalletBalances() {
     auth.onAuthStateChanged(user => {
         if (user) {
             userUID = user.uid;
-            // সরাসরি ফায়ারবেস থেকে ইউজারের ব্যালেন্স লিসেন করা
             db.ref(`users/${userUID}`).on('value', snap => {
                 const d = snap.val() || {};
                 
-                // ১. গ্লোবাল কারেন্সি আপডেট
-                localStorage.setItem('usdt_balance', d.usdt_balance || 0);
-                localStorage.setItem('usdc_balance', d.usdc_balance || 0);
-                localStorage.setItem('smat_balance', d.smat_balance || 0);
+                // আপনার রুল: সব ডাটা ডায়নামিক্যালি localStorage এ সেভ হবে
+                Object.keys(d).forEach(key => {
+                    if (key.includes('_balance')) {
+                        localStorage.setItem(key, d[key]);
+                    }
+                });
 
-                // ২. UI তে সরাসরি ডাটা সেট করা (এটিই ব্যালেন্স মেলাবে)
+                // UI তে সাথে সাথে লাইভ ব্যালেন্স রিফ্লেক্ট করবে
                 updateBalanceDisplayFromData(d);
             });
         }
@@ -393,13 +394,18 @@ function syncWalletBalances() {
 
 // এই নতুন ফাংশনটি ডাটা সরাসরি UI-তে পাঠাবে
 function updateBalanceDisplayFromData(data) {
+    if (!activeCoin) return;
+
     if (tradeSide === 'buy') {
-        const bal = parseFloat(data[activeMarket.toLowerCase() + '_balance']) || 0;
+        // মার্কেট ব্যালেন্স (USDT/USDC/SMAT)
+        const mKey = activeMarket.toLowerCase() + '_balance';
+        const bal = parseFloat(data[mKey]) || 0;
         document.getElementById('avblVal').innerText = bal.toFixed(4);
         document.getElementById('avblUnit').innerText = activeMarket;
     } else {
-        const s = activeCoin.sym.toLowerCase();
-        const bal = parseFloat(data[s + '_balance']) || 0;
+        // কয়েন ব্যালেন্স (BTC/ETH/SMAT)
+        const sKey = activeCoin.sym.toLowerCase() + '_balance';
+        const bal = parseFloat(data[sKey]) || 0;
         document.getElementById('avblVal').innerText = bal.toFixed(4);
         document.getElementById('avblUnit').innerText = activeCoin.sym.toUpperCase();
     }
@@ -439,21 +445,29 @@ function checkAuth() {
 
 // --- ৩. মেইন ইনিশিয়ালাইজেশন (ইনিট) ফাংশন (সংশোধিত) ---
 function init() {
+    // ১. ইউজারের ওয়ালেট ব্যালেন্স লাইভ সিঙ্ক শুরু করা
     syncWalletBalances();
 
     if (typeof GLOBAL_COINS !== 'undefined') {
-        // মার্কেট লাইভ ডাটা লিসেনার
+        // ২. সব কয়েনের জন্য মার্কেট লাইভ ডাটা লিসেনার সেট করা
         GLOBAL_COINS.forEach(coin => {
             const sym = coin.sym.toLowerCase();
+            
             db.ref('market/' + sym).on('value', (snapshot) => {
                 const data = snapshot.val();
                 if (data) {
-                    coinData[sym] = data;
+                    // গ্লোবাল ডাটা অবজেক্টে সেভ করা (যাতে অন্যান্য ফাংশন লেটেস্ট ডাটা পায়)
+                    coinData[sym] = data; 
+                    
+                    // ট্রেড ইঞ্জিনের জন্য লেটেস্ট প্রাইস লোকাল স্টোরেজে রাখা
+                    localStorage.setItem(sym + "_latest_price", data.price);
+                    window[sym + "Val"] = data.price;
 
-                    // --- নতুন লাইভ সিঙ্ক লজিক (মার্কেট পেজের মতো) ---
+                    // --- ৩. ডায়নামিক লাইভ আপডেট (শুধুমাত্র একটিভ কয়েনের জন্য) ---
                     if (activeCoin && activeCoin.sym.toLowerCase() === sym) {
                         const currentPrice = data.price;
-                        const basePrice = activeCoin.price; // coin.js থেকে আসা বেইজ প্রাইস
+                        // coin.js থেকে আসা বেইজ প্রাইস ব্যবহার করে % বের করা
+                        const basePrice = coin.price; 
                         const changePercent = basePrice > 0 ? ((currentPrice - basePrice) / basePrice * 100) : 0;
                         const isUp = changePercent >= 0;
 
@@ -471,7 +485,7 @@ function init() {
                             changeEl.style.color = isUp ? 'var(--up)' : 'var(--down)';
                         }
 
-                        // ৩. ভলিউম আপডেট (সরাসরি Firebase থেকে)
+                        // ৩. ভলিউম আপডেট
                         const volEl = document.getElementById('curVol');
                         if (volEl) {
                             volEl.innerText = parseFloat(data.volume || 0).toLocaleString(undefined, {
@@ -480,8 +494,8 @@ function init() {
                             });
                         }
                     }
-                    // -------------------------------------------
 
+                    // ৪. পপআপ লিস্ট খোলা থাকলে সেখানেও রিয়েল-টাইম আপডেট করা
                     if (document.getElementById('pairPopup').style.display === 'flex') {
                         renderPairs();
                     }
@@ -489,7 +503,7 @@ function init() {
             });
         });
 
-        // URL প্যারামিটার চেক
+        // ৫. URL প্যারামিটার অনুযায়ী একটিভ কয়েন সেট করা
         const urlParams = new URLSearchParams(window.location.search);
         const selectedCoinSym = urlParams.get('coin');
 
@@ -500,23 +514,27 @@ function init() {
             activeCoin = GLOBAL_COINS[0];
         }
 
-        const sym = activeCoin.sym.toLowerCase();
-        const savedPrice = localStorage.getItem(sym + "_latest_price");
-        if (savedPrice) window[sym + "Val"] = parseFloat(savedPrice);
+        // ৬. প্রাথমিক প্রাইস সেট করা
+        const currentSym = activeCoin.sym.toLowerCase();
+        const savedPrice = localStorage.getItem(currentSym + "_latest_price");
+        if (savedPrice) window[currentSym + "Val"] = parseFloat(savedPrice);
     }
 
+    // ৭. প্রাথমিক UI রেন্ডারিং
     renderMarketTabs();
     refreshUI();
 
-    // অটো ম্যাচিং এবং বুক রেন্ডার
+    // ৮. অটো ম্যাচিং এবং অর্ডার বুক রিফ্রেশ (প্রতি ২ সেকেন্ডে)
     setInterval(() => {
         if (activeCoin) {
             matchOrders(activeCoin.sym.toUpperCase());
             renderOrderBook();
+            // শুধুমাত্র গ্লোবাল ট্যাব ওপেন থাকলে হিস্টোরি রেন্ডার হবে
             if (activeHTab === 'global') renderHistory();
         }
     }, 2000);
 }
+
 
 
 // --- ৪. পেয়ার এবং মার্কেট ট্যাব লজিক ---
