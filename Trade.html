@@ -445,47 +445,46 @@ function checkAuth() {
 
 // --- ৩. মেইন ইনিশিয়ালাইজেশন (ইনিট) ফাংশন (সংশোধিত) ---
 function init() {
-    // ১. ইউজারের ওয়ালেট ব্যালেন্স লাইভ সিঙ্ক শুরু করা
+    // ১. ওয়ালেট ব্যালেন্স লিসেনার (সরাসরি Firebase থেকে)
     syncWalletBalances();
 
     if (typeof GLOBAL_COINS !== 'undefined') {
-        // ২. সব কয়েনের জন্য মার্কেট লাইভ ডাটা লিসেনার সেট করা
         GLOBAL_COINS.forEach(coin => {
             const sym = coin.sym.toLowerCase();
             
+            // ২. মার্কেট ডাটা লিসেনার (Real-time DB)
             db.ref('market/' + sym).on('value', (snapshot) => {
                 const data = snapshot.val();
                 if (data) {
-                    // গ্লোবাল ডাটা অবজেক্টে সেভ করা (যাতে অন্যান্য ফাংশন লেটেস্ট ডাটা পায়)
-                    coinData[sym] = data; 
+                    coinData[sym] = data; // গ্লোবাল মেমরিতে রাখা
                     
-                    // ট্রেড ইঞ্জিনের জন্য লেটেস্ট প্রাইস লোকাল স্টোরেজে রাখা
-                    localStorage.setItem(sym + "_latest_price", data.price);
-                    window[sym + "Val"] = data.price;
+                    // লাইভ প্রাইস উইন্ডো ভেরিয়েবলে আপডেট (ক্যালকুলেশনের জন্য)
+                    window[sym + "Val"] = parseFloat(data.price);
 
-                    // --- ৩. ডায়নামিক লাইভ আপডেট (শুধুমাত্র একটিভ কয়েনের জন্য) ---
+                    // ৩. UI আপডেট (শুধুমাত্র একটিভ পেয়ারের জন্য)
                     if (activeCoin && activeCoin.sym.toLowerCase() === sym) {
-                        const currentPrice = data.price;
-                        // coin.js থেকে আসা বেইজ প্রাইস ব্যবহার করে % বের করা
-                        const basePrice = coin.price; 
-                        const changePercent = basePrice > 0 ? ((currentPrice - basePrice) / basePrice * 100) : 0;
+                        const currentPrice = parseFloat(data.price);
+                        
+                        // পার্সেন্টেজ লজিক: ফায়ারবেসে 'open' প্রাইস থাকলে সেটা নিন, নাহলে coin.js এর বেইজ
+                        const openPrice = parseFloat(data.open || coin.price); 
+                        const changePercent = ((currentPrice - openPrice) / openPrice * 100);
                         const isUp = changePercent >= 0;
 
-                        // ১. মেইন প্রাইস আপডেট
+                        // প্রাইস ও কালার সেট
                         const priceEl = document.getElementById('marketPrice');
                         if (priceEl) {
                             priceEl.innerText = currentPrice.toFixed(currentPrice < 1 ? 6 : 4);
                             priceEl.style.color = isUp ? 'var(--up)' : 'var(--down)';
                         }
 
-                        // ২. পার্সেন্টেজ (%) আপডেট
+                        // পার্সেন্টেজ সেট
                         const changeEl = document.getElementById('priceChange');
                         if (changeEl) {
                             changeEl.innerText = (isUp ? '+' : '') + changePercent.toFixed(2) + '%';
                             changeEl.style.color = isUp ? 'var(--up)' : 'var(--down)';
                         }
 
-                        // ৩. ভলিউম আপডেট
+                        // ভলিউম সেট (সরাসরি DB থেকে)
                         const volEl = document.getElementById('curVol');
                         if (volEl) {
                             volEl.innerText = parseFloat(data.volume || 0).toLocaleString(undefined, {
@@ -495,7 +494,7 @@ function init() {
                         }
                     }
 
-                    // ৪. পপআপ লিস্ট খোলা থাকলে সেখানেও রিয়েল-টাইম আপডেট করা
+                    // ৪. পপআপ খোলা থাকলে রেন্ডার পেয়ার্স আপডেট
                     if (document.getElementById('pairPopup').style.display === 'flex') {
                         renderPairs();
                     }
@@ -503,33 +502,20 @@ function init() {
             });
         });
 
-        // ৫. URL প্যারামিটার অনুযায়ী একটিভ কয়েন সেট করা
+        // URL প্যারামিটার হ্যান্ডলিং
         const urlParams = new URLSearchParams(window.location.search);
         const selectedCoinSym = urlParams.get('coin');
-
-        if (selectedCoinSym) {
-            const foundCoin = GLOBAL_COINS.find(c => c.sym.toLowerCase() === selectedCoinSym.toLowerCase());
-            activeCoin = foundCoin || GLOBAL_COINS[0];
-        } else {
-            activeCoin = GLOBAL_COINS[0];
-        }
-
-        // ৬. প্রাথমিক প্রাইস সেট করা
-        const currentSym = activeCoin.sym.toLowerCase();
-        const savedPrice = localStorage.getItem(currentSym + "_latest_price");
-        if (savedPrice) window[currentSym + "Val"] = parseFloat(savedPrice);
+        activeCoin = selectedCoinSym ? (GLOBAL_COINS.find(c => c.sym.toLowerCase() === selectedCoinSym.toLowerCase()) || GLOBAL_COINS[0]) : GLOBAL_COINS[0];
     }
 
-    // ৭. প্রাথমিক UI রেন্ডারিং
     renderMarketTabs();
     refreshUI();
 
-    // ৮. অটো ম্যাচিং এবং অর্ডার বুক রিফ্রেশ (প্রতি ২ সেকেন্ডে)
+    // ৫. অটো ম্যাচিং (সব ডাটাবেস থেকে হবে)
     setInterval(() => {
         if (activeCoin) {
             matchOrders(activeCoin.sym.toUpperCase());
             renderOrderBook();
-            // শুধুমাত্র গ্লোবাল ট্যাব ওপেন থাকলে হিস্টোরি রেন্ডার হবে
             if (activeHTab === 'global') renderHistory();
         }
     }, 2000);
@@ -787,44 +773,54 @@ if (chartBtn) {
         let bid = pair.bids[0]; 
         let matchQty = Math.min(ask.a, bid.a);
         let matchPrice = ask.p;
+        const symLower = symbol.toLowerCase();
 
-        // ভলিউম আপডেট
-        const volKey = symbol.toLowerCase() + "_volume";
-        let currentVolData = parseFloat(localStorage.getItem(volKey)) || 0;
-        localStorage.setItem(volKey, (currentVolData + (matchQty * matchPrice)).toFixed(2)); 
+        // ১. সরাসরি Firebase থেকে বর্তমান মার্কেট ডাটা আনা (Volume & Price Persistence)
+        db.ref('market/' + symLower).once('value').then(snap => {
+            const mData = snap.val() || { volume: 0, price: 0 };
+            let newVolume = parseFloat(mData.volume || 0) + (matchQty * matchPrice);
 
-        localStorage.setItem(symbol.toLowerCase() + "_latest_price", matchPrice);
+            // ২. ফায়ারবেসে সরাসরি দাম এবং ভলিউম আপডেট (এটিই রিফ্রেশ সমস্যা সমাধান করবে)
+            db.ref('market/' + symLower).update({
+                price: matchPrice,
+                volume: newVolume.toFixed(2)
+            });
+            
+            // লোকাল রেফারেন্স আপডেট (UI এর জন্য)
+            localStorage.setItem(symLower + "_volume", newVolume.toFixed(2));
+            localStorage.setItem(symLower + "_latest_price", matchPrice);
+        });
 
-        // --- BUYER (ক্রেতা) এর ব্যালেন্স আপডেট ---
+        // --- BUYER (ক্রেতা) আপডেট ---
         if(bid.isUser) {
-            const coinKey = symbol.toLowerCase() + "_balance";
-            let currentCoinBal = parseFloat(localStorage.getItem(coinKey)) || 0;
-            const feeInCoin = matchQty * FEE_RATE; // ০.২৫% ফি কাটা হচ্ছে
-            let finalAmt = (currentCoinBal + (matchQty - feeInCoin)).toFixed(8);
-            
-            localStorage.setItem(coinKey, finalAmt);
-            updateFirebaseBalance(symbol, finalAmt); // Firebase-এ পাঠানো হচ্ছে
-            
-            saveToHistory('my', {time: new Date().toLocaleTimeString(), p: matchPrice, a: matchQty, s: symbol, side: 'buy'});
+            const coinKey = symLower + "_balance";
+            db.ref(`users/${userUID}/${coinKey}`).once('value').then(snap => {
+                let currentBal = parseFloat(snap.val()) || 0;
+                const feeInCoin = matchQty * FEE_RATE;
+                let finalAmt = (currentBal + (matchQty - feeInCoin)).toFixed(8);
+                
+                updateFirebaseBalance(symbol, finalAmt);
+                saveToHistory('my', {time: new Date().toLocaleTimeString(), p: matchPrice, a: matchQty, s: symbol, side: 'buy'});
+            });
             syncUnsuccessfulOrder(bid.id, matchQty);
         }
         
-        // --- SELLER (বিক্রেতা) এর ব্যালেন্স আপডেট ---
+        // --- SELLER (বিক্রেতা) আপডেট ---
         if(ask.isUser) {
-            const receivedAmount = matchQty * matchPrice;
-            const fee = receivedAmount * FEE_RATE; // ০.২৫% ফি কাটা হচ্ছে
-            const balKey = ask.market.toLowerCase() + '_balance';
-            let currentBal = parseFloat(localStorage.getItem(balKey)) || 0;
-            let finalAmt = (currentBal + (receivedAmount - fee)).toFixed(8);
-            
-            localStorage.setItem(balKey, finalAmt);
-            updateFirebaseBalance(ask.market, finalAmt); // Firebase-এ পাঠানো হচ্ছে
-            
-            saveToHistory('my', {time: new Date().toLocaleTimeString(), p: matchPrice, a: matchQty, s: symbol, side: 'sell'});
+            const mKey = ask.market.toLowerCase() + '_balance';
+            db.ref(`users/${userUID}/${mKey}`).once('value').then(snap => {
+                let currentBal = parseFloat(snap.val()) || 0;
+                const receivedAmount = matchQty * matchPrice;
+                const fee = receivedAmount * FEE_RATE;
+                let finalAmt = (currentBal + (receivedAmount - fee)).toFixed(8);
+                
+                updateFirebaseBalance(ask.market, finalAmt);
+                saveToHistory('my', {time: new Date().toLocaleTimeString(), p: matchPrice, a: matchQty, s: symbol, side: 'sell'});
+            });
             syncUnsuccessfulOrder(ask.id, matchQty);
         }
         
-        // বাকি ম্যাচিং লজিক...
+        // গ্লোবাল হিস্টোরি ও অর্ডার কিউ ম্যানেজমেন্ট
         let globalSide = ask.time > bid.time ? 'sell' : 'buy';
         saveToHistory('global', {time: new Date().toLocaleTimeString(), p: matchPrice, a: matchQty, s: symbol, side: globalSide});
         
@@ -833,8 +829,8 @@ if (chartBtn) {
         if (bid.a <= 0.00000001) pair.bids.shift();
     }
     localStorage.setItem('orderBoard', JSON.stringify(orderBoard));
-    updateBalanceDisplay();
 }
+
 
  
  function processTrade() {
