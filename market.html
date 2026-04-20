@@ -147,6 +147,42 @@ const db = firebase.database();
 let activeMarket = 'USDT';
 let coinData = {}; 
 
+
+
+
+        window.currentActiveTab = 'hot';
+        function openSidebar() { document.getElementById('sidebar').classList.add('active'); document.getElementById('overlay').style.display='block'; }
+        function closeSidebar() { document.getElementById('sidebar').classList.remove('active'); document.getElementById('overlay').style.display='none'; }
+        function openRefPopup() { closeSidebar(); document.getElementById('refPopup').style.display='flex'; }
+        function closeRefPopup() { document.getElementById('refPopup').style.display='none'; }
+        function copyRef() { const inp = document.getElementById('referralLink'); inp.select(); navigator.clipboard.writeText(inp.value); alert("Referral Link Copied!"); }
+
+        function switchTab(el, cat) {
+            window.currentActiveTab = cat;
+            document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+            el.classList.add('active');
+            renderCoins(cat);
+        }
+
+        // Gaming Menu Toggle
+        function toggleGamingMenu() {
+            const options = document.getElementById('fabOptions');
+            const mainBtn = document.getElementById('mainFab');
+            options.classList.toggle('show');
+            mainBtn.classList.toggle('active');
+            if (navigator.vibrate) navigator.vibrate(50);
+        }
+
+        // Close Menu when clicking outside
+        window.addEventListener('click', (e) => {
+            if (!e.target.closest('.fab-wrapper')) {
+                document.getElementById('fabOptions').classList.remove('show');
+                document.getElementById('mainFab').classList.remove('active');
+            }
+        });
+
+
+
 function init() {
     renderTabs();
     GLOBAL_COINS.forEach(coin => {
