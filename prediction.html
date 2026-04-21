@@ -1,0 +1,599 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>SMAT | Prediction Market</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<link rel="icon" type="image/svg+xml" href="data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNTEyIiBoZWlnaHQ9IjUxMiIgdmlld0JveD0iMCAwIDUxMiA1MTIiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+CiAgPGNpcmNsZSBjeD0iMjU2IiBjeT0iMjU2IiByPSIyNDAiIGZpbGw9IiNmM2JhMmYiLz4KICA8Y2lyY2xlIGN4PSIyNTYiIGN5PSIyNTYiIHI9IjIxNSIgc3Ryb2tlPSJ3aGl0ZSIgc3Ryb2tlLXdpZHRoPSI4IiBmaWxsPSJ0cmFuc3BhcmVudCIvPgogIDxwYXRoIGQ9Ik0xNTAgMTcwIEMxNTAgMTQ1IDE3MCAxMzUgMjAwIDEzNSBMMzQwIDEzNSBDMzU1IDEzNSAzNjUgMTQ1IDM2NSAxNjAgQzM2NSAxNzUgMzU1IDE4NSAzNDAgMTg1IEwyMDUgMTg1IEMxOTAgMTg1IDE4NSAxOTAgMTg1IDIwNSBDMTg1IDIyMCAxOTAgMjI1IDIwNSAyMjUgTDM0MCAyMjUgQzM3MCAyMjUgMzkwIDI0NSAzOTAgMjc1IEwzOTAgMzI1IEMzOTAgMzU1IDM3MCAzNzUgMzQwIDM3NSBMMTcwIDM3NSBDMTU1IDM3NSAxNDUgMzY1IDE0NSAzNTAgQzE0NSAzMzUgMTU1IDMyNSAxNzAgMzI1IEwzMzUgMzI1IEMzNTAgMzI1IDM1NSAzMjAgMzU1IDMwNSBDMzU1IDI5MCAzNTAgMjg1IDMzNSAyODUgTDIwMCAyODUgQzE3MCAyODUgMTUwIDI2NSAxNTAgMjM1IFoiIGZpbGw9IndoaXRlIi8+Cjwvc3ZnPg==">    
+
+
+<style>
+        :root { --bg: #0b0e11; --card: #181a20; --border: #2b3139; --up: #0ecb81; --down: #f6465d; --warn: #f0b90b; --primary: #f0b90b; --cyan: #00ffff; }
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Inter', sans-serif; }
+        body { background: var(--bg); color: white; height: 100vh; display: flex; flex-direction: column; overflow: hidden; }
+        
+        .header { display: grid; grid-template-columns: 1fr 1.2fr 1fr; align-items: center; padding: 10px 15px; background: #12161c; border-bottom: 1px solid var(--border); }
+        .asset-selector { display: flex; align-items: center; gap: 8px; background: #1e2329; padding: 5px 5px; border-radius: 8px; border: 1px solid var(--border); }
+        .asset-selector img { width: 22px; height: 22px; border-radius: 50%; object-fit: cover; }
+        .asset-selector select { background: transparent; color: white; border: none; font-weight: 700; outline: none; cursor: pointer; }
+        
+        .bal-box { background:none; border: none; text-align: center; font-size: 12px; color: #848e9c; }
+        .bal-amount { font-weight: 800; font-size: 12px; color: var(--primary); }
+        
+        .chart-section { width: 100%; position: relative; background: #000; height: 25vh; border-bottom: 1px solid var(--border); overflow: hidden; }
+        .chart-overlay { position: absolute; top: 0; left: 0; width: 100%; z-index: 10; display: flex; justify-content: space-between; padding: 12px; pointer-events: none; }
+        .timer-clock { font-size: 20px; font-weight: 900; color: white; text-align: right; }
+        
+        .history-section { flex: 1; background: var(--card); display: flex; flex-direction: column; overflow: hidden; padding-bottom: 85px; }
+        .history-header { text-align: center; padding: 10px; font-size: 15px; font-weight: 900; border-bottom: 1px solid var(--border); background: #12161c; }
+        .table-container { flex: 1; overflow-y: auto; overflow-x: auto; }
+table { 
+    width: 100%; 
+    border-collapse: collapse; 
+    font-size: 10px; 
+    text-align: center; 
+    table-layout: fixed; 
+}
+
+th { 
+    background: #12161c; 
+    padding: 10px 2px; 
+    color: #848e9c; 
+    position: sticky; 
+    top: 0; 
+    z-index: 5; 
+    font-size: 9px; 
+    text-transform: uppercase;
+}
+
+td { 
+    padding: 10px 2px; 
+    border-bottom: 1px solid #23272e; 
+    font-weight: 600; 
+    vertical-align: middle; 
+    word-break: break-all; 
+}
+
+th:nth-child(1), td:nth-child(1) { width: 16%; } 
+th:nth-child(2), td:nth-child(2) { width: 16%; } 
+th:nth-child(3), td:nth-child(3) { width: 18%; } 
+th:nth-child(4), td:nth-child(4) { width: 14%; } 
+th:nth-child(5), td:nth-child(5) { width: 18%; } 
+th:nth-child(6), td:nth-child(6) { width: 18%; } 
+
+.hist-logo { 
+    width: 12px; 
+    height: 12px; 
+    border-radius: 50%; 
+    vertical-align: middle; 
+    margin-right: 2px; 
+}
+
+.sub-text { 
+    display: block; 
+    font-size: 7px; 
+    color: #848e9c; 
+    margin-top: 1px; 
+}
+
+/* চার্ট সেকশন যাতে কন্টেইনার হিসেবে কাজ করে */
+.chart-section {
+    position: relative;
+    width: 100%;
+    overflow: hidden; /* যাতে শ্যাডো চার্টের বাইরে না যায় */
+}
+
+/* পুল কন্টেইনার মাঝখানে আনার লজিক */
+.pools-container {
+    position: absolute;
+    bottom: 2px; /* একদম নিচে লেগে থাকবে */
+    left: 50%;
+    transform: translateX(-50%); /* একদম সেন্টারে রাখার জন্য */
+    width: 80%; /* দুই পাশে কিছুটা জায়গা ছাড়বে যাতে প্রাইস দেখা যায় */
+    display: flex;
+    justify-content: center; /* বক্সগুলো মাঝখানে থাকবে */
+    gap: 8px; /* দুই বক্সের মাঝখানের ফাঁকা জায়গা */
+    pointer-events: none;
+}
+
+.pool-box {
+    backdrop-filter: blur(6px);
+    border-radius: 8px;
+    padding: 6px 6px;
+    min-width: 110px;
+    flex: 1; /* সমান সাইজ নেওয়ার জন্য */
+    max-width: 120px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+}
+
+/* আপনার চাহিদা মতো হালকা সবুজ এবং লাল ব্যাকগ্রাউন্ড */
+.up-bg { 
+    background: rgba(14, 203, 129, 0.15) !important; /* সামান্য সবুজ */
+    border: 1px solid rgba(14, 203, 129, 0.2);
+}
+
+.down-bg { 
+    background: rgba(246, 70, 93, 0.15) !important; /* সামান্য লাল */
+    border: 1px solid rgba(246, 70, 93, 0.2);
+}
+
+.pool-label { font-size: 8px; font-weight: 800; color: #848e9c; margin-bottom: 3px; }
+
+.pool-content { display: flex; align-items: center; gap: 8px; }
+
+/* প্রগ্রেস বার */
+.progress-track {
+    width: 4px; height: 24px; background: rgba(255, 255, 255, 0.1);
+    border-radius: 4px; overflow: hidden; display: flex; flex-direction: column; justify-content: flex-end;
+}
+
+.progress-fill-up { background: #0ecb81; box-shadow: 0 0 8px #0ecb81; transition: height 0.5s; }
+.progress-fill-down { background: #f6465d; box-shadow: 0 0 8px #f6465d; transition: height 0.5s; }
+
+.pool-values span { font-size: 11px; font-weight: 900; color: white; display: block; }
+.pool-values small { font-size: 9px; font-weight: 700; }
+
+
+
+/* অটো রেসপনসিভ: ছোট মোবাইলের জন্য */
+@media (max-width: 350px) {
+    .pool-box { padding: 4px 6px; }
+    .pool-values span { font-size: 10px; }
+    .progress-track { height: 20px; }
+}
+
+
+/* গ্রাফের ভিতরের কালার গাঢ় এবং স্মুথ করার জন্য CSS */
+canvas#liveChart {
+    background-color: transparent !important; /* চার্টের ব্যাকগ্রাউন্ড স্বচ্ছ */
+}
+
+        .action-area { position: fixed; bottom: 0; width: 100%; padding: 15px; background: #12161c; border-top: 1px solid var(--border); z-index: 2000; }
+        .t-btn { flex: 1; padding: 16px; border: none; border-radius: 10px; font-weight: 900; font-size: 16px; color: white; cursor: pointer; text-transform: uppercase; }
+        .t-btn:disabled { opacity: 0.4; cursor: not-allowed; filter: grayscale(1); }
+        
+        .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.85); display: none; justify-content: center; align-items: center; z-index: 3000; }
+        .modal-box { background: var(--card); padding: 25px; border-radius: 15px; width: 90%; max-width: 360px; text-align: center; border: 1px solid var(--border); }
+        .modal-box input { width: 100%; padding: 12px; background: #0b0e11; border: 1px solid var(--border); color: white; border-radius: 8px; margin: 15px 0; font-size: 20px; text-align: center; outline: none; }
+        
+        /* ১. এনিমেশন: ব্যাকগ্রাউন্ড আবছা সবুজ হবে */
+@keyframes rowBlinkGreen {
+    0% { background-color: transparent; }
+    50% { background-color: rgba(14, 203, 129, 0.4) !important; } /* গাঢ় আবছা সবুজ */
+    100% { background-color: transparent; }
+}
+
+/* ২. ব্লিংক ক্লাস - এটিকে টেবিলের সব স্টাইলের উপরে রাখার জন্য !important ব্যবহার */
+.blink-row {
+    animation: rowBlinkGreen 1.2s infinite ease-in-out !important;
+    background-color: rgba(14, 203, 129, 0.2) !important;
+}
+
+/* ৩. ব্লিংক করা রো-এর সব সেলের (td) লেখার কালার হলুদ */
+.blink-row td {
+    color: #f0b90b !important;
+    border-bottom: 1px solid rgba(14, 203, 129, 0.3) !important; /* নিচের বর্ডারও হালকা সবুজ */
+}
+
+/* ৪. স্পিনারকেও হলুদ করা */
+.blink-row .spinner-sm {
+    border-top: 2px solid #f0b90b !important;
+}
+
+
+.blink-row { animation: blink 1s infinite; }
+        @keyframes blink { 0%, 100% { opacity: 1; } 50% { opacity: 0.2; } }
+        .spinner-sm { width: 14px; height: 14px; border: 2px solid rgba(255,255,255,0.1); border-top: 2px solid var(--primary); border-radius: 50%; animation: spin 0.8s linear infinite; display: inline-block; vertical-align: middle; margin-right: 5px; }
+        @keyframes spin { 100% { transform: rotate(360deg); } }
+    </style>
+</head>
+<body>
+
+    <header class="header">
+        <div class="asset-selector">
+            <img id="assetLogo" src="">
+            <select id="assetSelect" onchange="window.switchAsset(this.value)"></select>
+        </div>
+        <div class="bal-box"> Balance
+            <span id="headerBalance" class="bal-amount">0.00000000</span>
+            <span id="headerAssetUnit" style="font-size:10px; color:#848e9c;">USDT</span>
+        </div>
+        <div id="priceDisplay" style="justify-self: end; color: var(--up); font-weight: 900; font-size: 17px;">$0.00</div>
+    </header>
+
+        <div class="chart-section" style="position: relative; overflow: hidden;">
+    <div class="chart-overlay" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none;">
+        
+        <div style="padding: 10px;">
+            <div class="status-container">
+                <div id="statusLabel" class="blink" style="color:var(--up); font-weight:800; font-size:11px;">TRADING TIME</div>
+                <div id="dynamicLockedInfo" style="font-size: 10px; color: #848e9c; font-weight: 600;"></div>
+            </div>
+            <div id="timerClock" class="timer-clock">00:00</div>
+        </div>
+
+        <div class="pools-container">
+            <div class="pool-box up-bg">
+                <div class="pool-label">UP POOL</div>
+                <div class="pool-content">
+                    <div class="progress-track">
+                        <div id="upPoolBar" class="progress-fill-up" style="height: 50%;"></div>
+                    </div>
+                    <div class="pool-values">
+                        <span id="upPoolTotal">$0.00</span>
+                        <small id="upPoolPercent" style="color: #0ecb81;">50%</small>
+                    </div>
+                </div>
+            </div>
+
+            <div class="pool-box down-bg">
+                <div class="pool-label" style="text-align: right;">DOWN POOL</div>
+                <div class="pool-content">
+                    <div class="pool-values" style="text-align: right;">
+                        <span id="downPoolTotal">$0.00</span>
+                        <small id="downPoolPercent" style="color: #f6465d;">50%</small>
+                    </div>
+                    <div class="progress-track">
+                        <div id="downPoolBar" class="progress-fill-down" style="height: 50%;"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <canvas id="liveChart" style="height: 300px; width: 100%;"></canvas>
+</div>
+
+
+
+
+    <div class="history-section">
+        <h1 class="history-header">REAL-TIME MARKET HISTORY</h1>
+        <div class="table-container">
+            <table>
+                <thead>
+                    <tr><th>Round</th><th>Time</th><th>Locked Price</th><th>Action</th><th>Result</th><th>My Win</th></tr>
+                </thead>
+                <tbody id="historyBody"></tbody>
+            </table>
+        </div>
+    </div>
+
+    <div class="action-area">
+        <div style="display:flex; gap:12px; max-width:600px; margin:0 auto;">
+            <button id="upBtn" class="t-btn" style="background: var(--up);" onclick="window.openBetModal('UP')">UP</button>
+            <button id="downBtn" class="t-btn" style="background: var(--down);" onclick="window.openBetModal('DOWN')">DOWN</button>
+        </div>
+    </div>
+
+    <div id="betModal" class="modal-overlay">
+        <div class="modal-box">
+            <h3 id="modalTitle" style="color:var(--primary)">Bet UP</h3>
+            <p style="font-size: 11px; color: #848e9c; margin-top: 8px;">Available Balance: <span id="modalAvbl">0.00</span> USDT</p>
+            <input type="number" id="betAmount" step="0.00000001" placeholder="0.00000000">
+            <div style="display: flex; gap: 10px;">
+                <button class="t-btn" style="background:#2b3139;" onclick="window.closeBetModal()">Cancel</button>
+                <button class="t-btn" style="background:var(--primary); color:black;" onclick="window.confirmBet()">Confirm</button>
+            </div>
+        </div>
+    </div>
+
+<script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+    import { getDatabase, ref, onValue, set, update, get, push } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
+    import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+
+    const firebaseConfig = {
+        apiKey: "AIzaSyAMxtJedkehhxJRMPZLjhpKHqneHEWsGlE",
+        authDomain: "smat-exchange.firebaseapp.com",
+        databaseURL: "https://smat-exchange-default-rtdb.firebaseio.com",
+        projectId: "smat-exchange",
+        appId: "1:836334569396:web:679effe640b3453412d4e1"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const db = getDatabase(app);
+    const auth = getAuth(app);
+
+    let assets = {}; let activeKey = ''; let user = null; let globalState = "TRADING";
+
+    function showToast(msg, type = 'info') {
+        const toast = document.createElement('div');
+        toast.innerText = msg;
+        toast.style.cssText = `position:fixed; top:20px; right:20px; padding:12px 25px; border-radius:8px; z-index:9999; font-weight:bold; color:white; transition:0.5s; 
+        background:${type === 'success' ? '#0ecb81' : type === 'error' ? '#f6465d' : '#f0b90b'}; box-shadow: 0 4px 15px rgba(0,0,0,0.3);`;
+        document.body.appendChild(toast);
+        setTimeout(() => { toast.style.opacity = '0'; setTimeout(() => toast.remove(), 500); }, 3000);
+    }
+
+    const ctx = document.getElementById('liveChart').getContext('2d');
+    const gradient = ctx.createLinearGradient(0, 0, 0, 300);
+    gradient.addColorStop(0, 'rgba(14, 203, 129, 0.4)');
+    gradient.addColorStop(1, 'rgba(14, 203, 129, 0)');
+
+    const chart = new Chart(ctx, {
+        type: 'line',
+        data: { 
+            labels: Array(50).fill(''), 
+            datasets: [{ 
+                data: Array(50).fill(0), 
+                borderColor: '#0ecb81', 
+                borderWidth: 2, 
+                pointRadius: 0, 
+                tension: 0.1, 
+                fill: true, 
+                backgroundColor: gradient, 
+            }] 
+        },
+        options: { 
+            responsive: true, maintainAspectRatio: false, animation: false, 
+            scales: { x: { display: false }, y: { display: true, position: 'right', grid: { color: 'rgba(255, 255, 255, 0.03)' }, ticks: { color: '#848e9c', font: { size: 10 } } } }, 
+            plugins: { legend: { display: false } } 
+        }
+    });
+
+    onValue(ref(db, 'predictionAssets'), (snapshot) => {
+        const data = snapshot.val();
+        if (data) {
+            assets = data;
+            const select = document.getElementById('assetSelect');
+            select.innerHTML = ""; 
+            Object.keys(assets).forEach(key => {
+                const option = document.createElement('option');
+                option.value = key; option.innerText = assets[key].name;
+                select.appendChild(option);
+            });
+            if (!activeKey) { activeKey = Object.keys(assets)[0]; window.switchAsset(activeKey); initWS(); }
+        }
+    });
+
+    // পুল ডাটা লিসেনার (Real-time Graphical Update)
+    function listenPools() {
+        if (!activeKey) return;
+        onValue(ref(db, `pools/${activeKey}`), (snap) => {
+            const data = snap.val() || { up: 0, down: 0 };
+            const up = parseFloat(data.up || 0);
+            const down = parseFloat(data.down || 0);
+            const total = up + down;
+
+            let upP = total === 0 ? 50 : (up / total) * 100;
+            let downP = total === 0 ? 50 : (down / total) * 100;
+
+            document.getElementById('upPoolTotal').innerText = `$${up.toFixed(2)}`;
+            document.getElementById('downPoolTotal').innerText = `$${down.toFixed(2)}`;
+            document.getElementById('upPoolPercent').innerText = `${upP.toFixed(0)}%`;
+            document.getElementById('downPoolPercent').innerText = `${downP.toFixed(0)}%`;
+
+            document.getElementById('upPoolBar').style.height = `${upP}%`;
+            document.getElementById('downPoolBar').style.height = `${downP}%`;
+        });
+    }
+
+    window.switchAsset = (val) => {
+        if (!assets[val]) return;
+        activeKey = val;
+        document.getElementById('assetLogo').src = `assets/logos/${assets[val].logo}`;
+        document.getElementById('headerAssetUnit').innerText = "USDT";
+        chart.data.datasets[0].data = Array(50).fill(assets[val].currentPrice || 0);
+        chart.update('none');
+        listenPools(); // অ্যাসেট পরিবর্তনের সাথে পুল লোড
+        if (user) syncUser();
+    };
+
+    function initTimer() {
+        onValue(ref(db, 'timerLogic'), (snap) => {
+            const data = snap.val();
+            if (data) updateEngineUI(data.timeLeft, data.state);
+        });
+        onValue(ref(db, 'roundLogic'), (snap) => {
+            const rounds = snap.val();
+            if (rounds) Object.keys(rounds).forEach(k => { if(assets[k]) assets[k].round = rounds[k]; });
+        });
+    }
+
+    setInterval(async () => {
+        const timerRef = ref(db, 'timerLogic');
+        const snap = await get(timerRef);
+        const data = snap.val();
+        if (!data) return;
+        let t = data.timeLeft; let s = data.state;
+        if (t > 0) { t--; } else {
+            if (s === "TRADING") { s = "CLOSED"; t = 3; Object.keys(assets).forEach(key => lockAndSaveRound(key)); }
+            else if (s === "CLOSED") { s = "WAITING"; t = 180; }
+            else { 
+                s = "TRADING"; t = 60; 
+                Object.keys(assets).forEach(key => finalizeAndReset(key)); 
+            }
+        }
+        await update(timerRef, { timeLeft: t, state: s });
+    }, 1000);
+
+    async function lockAndSaveRound(key) {
+        if (!assets[key] || !user) return;
+        assets[key].lockedPrice = assets[key].currentPrice; 
+        const rid = assets[key].round;
+        const bet = assets[key].pending;
+        await set(ref(db, `history/${user.uid}/${key}/${rid}`), {
+            rid: rid, time: new Date().toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'}),
+            lockedPrice: assets[key].currentPrice, action: bet ? bet.side : "NONE",
+            betAmt: bet ? bet.amount : 0, isPending: true, logo: assets[key].logo
+        });
+    }
+
+    async function finalizeAndReset(key) {
+        if (!user || !assets[key]) return;
+        const resPrice = assets[key].currentPrice;
+        const snap = await get(ref(db, `history/${user.uid}/${key}`));
+        const history = snap.val() || {};
+
+        for (let rid in history) {
+            if (history[rid].isPending) {
+                const rec = history[rid];
+                let status = "LOSS"; let winAmt = 0;
+                if (rec.action !== "NONE") {
+                    if (resPrice === rec.lockedPrice) { status = "DRAW"; winAmt = rec.betAmt * 0.5; }
+                    else {
+                        const win = (rec.action === "UP" && resPrice > rec.lockedPrice) || (rec.action === "DOWN" && resPrice < rec.lockedPrice);
+                        if (win) { status = "WIN"; winAmt = rec.betAmt + (rec.betAmt * 0.96); }
+                    }
+                }
+                if (key === activeKey && rec.action !== "NONE") {
+                    if (status === "WIN") showToast(`Win! +$${winAmt.toFixed(4)}`, 'success');
+                    else if (status === "LOSS") showToast(`Loss!`, 'error');
+                }
+                if (winAmt > 0) {
+                    const bRef = ref(db, `users/${user.uid}/usdt_balance`);
+                    const bSnap = await get(bRef);
+                    const newTotal = (parseFloat(bSnap.val() || 0) + winAmt).toFixed(8);
+                    await set(bRef, newTotal);
+                    const hRef = push(ref(db, `users/${user.uid}/history`));
+                    await set(hRef, { 
+                        method: "preWin", amount: winAmt.toFixed(4), coin: "USDT", 
+                        status: 'success', color: 'green', timestamp: Date.now(), 
+                        address: "Market", network: assets[key].name, 
+                        hash: "WIN-" + Math.random().toString(36).substr(2,9).toUpperCase() 
+                    });
+                }
+                await update(ref(db, `history/${user.uid}/${key}/${rid}`), { isPending: false, resultPrice: resPrice, status: status, finalWin: winAmt });
+            }
+        }
+        const currentRid = assets[key].round;
+        await set(ref(db, `marketHistory/${key}/${currentRid}`), {
+            rid: currentRid, time: new Date().toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'}),
+            lockedPrice: assets[key].lockedPrice || assets[key].currentPrice, resultPrice: resPrice, logo: assets[key].logo
+        });
+        
+        // রাউন্ড শেষে পুল রিসেট করা
+        await set(ref(db, `pools/${key}`), { up: 0, down: 0 });
+
+        assets[key].round++;
+        await update(ref(db, 'roundLogic'), { [key]: assets[key].round });
+        assets[key].pending = null;
+    }
+
+    function updateEngineUI(t, s) {
+        globalState = s;
+        const min = Math.floor(t / 60); const sec = t % 60;
+        document.getElementById('timerClock').innerText = `${min.toString().padStart(2,'0')}:${sec.toString().padStart(2,'0')}`;
+        const lbl = document.getElementById('statusLabel');
+        if (s === "TRADING") { lbl.innerHTML = `TRADING TIME`; lbl.style.color = "#0ecb81"; }
+        else if (s === "CLOSED") { lbl.innerHTML = `TRADING CLOSED`; lbl.style.color = "#f6465d"; }
+        else { lbl.innerHTML = `<div class="spinner-sm"></div> WAITING RESULT`; lbl.style.color = "#f0b90b"; }
+        
+        const currentAssetHasBet = assets[activeKey] && assets[activeKey].pending;
+        document.getElementById('upBtn').disabled = (s !== "TRADING" || currentAssetHasBet);
+        document.getElementById('downBtn').disabled = (s !== "TRADING" || currentAssetHasBet);
+        
+        if (user) syncHistory();
+    }
+
+    async function syncHistory() {
+        if (!user || !activeKey) return;
+        const gSnap = await get(ref(db, `marketHistory/${activeKey}`));
+        const snap = await get(ref(db, `history/${user.uid}/${activeKey}`));
+        const mergedData = { ...(gSnap.val() || {}), ...(snap.val() || {}) };
+        const body = document.getElementById('historyBody');
+        body.innerHTML = "";
+        
+        Object.values(mergedData).reverse().slice(0, 15).forEach(item => {
+            const isWaiting = item.isPending && (globalState === "WAITING" || globalState === "CLOSED");
+            const exchangeIcon = '<i class="fa-solid fa-right-left" style="color:#848e9c; font-size:12px;"></i>';
+            let actionHtml = (item.action === "UP") ? '<span style="color:#0ecb81">UP</span>' : (item.action === "DOWN") ? '<span style="color:#f6465d">DOWN</span>' : exchangeIcon;
+            let winHtml = '';
+            if (item.isPending) {
+                winHtml = '<div class="spinner-sm"></div>';
+            } else if (!item.action || item.action === "NONE" || item.action === "No Trade") {
+                winHtml = exchangeIcon;
+            } else {
+                if (item.status === "WIN") winHtml = `<div style="color:#0ecb81">$${parseFloat(item.finalWin).toFixed(4)}</div>`;
+                else if (item.status === "LOSS") winHtml = `<div style="color:#f6465d">$0.0000</div>`;
+                else if (item.status === "DRAW") winHtml = `<div style="color:#f0b90b">$${parseFloat(item.finalWin).toFixed(4)}</div>`;
+            }
+
+            body.innerHTML += `<tr class="${isWaiting ? 'blink-row' : ''}">
+                <td><img src="assets/logos/${item.logo}" class="hist-logo"> ${item.rid}</td>
+                <td>${item.time}</td>
+                <td>$${parseFloat(item.lockedPrice || 0).toFixed(4)}</td>
+                <td>${actionHtml}</td>
+                <td>${(item.isPending || !item.resultPrice) ? '...' : '$'+parseFloat(item.resultPrice).toFixed(4)}</td>
+                <td>${winHtml}</td>
+            </tr>`;
+        });
+    }
+
+    window.openBetModal = (side) => {
+        if (globalState !== "TRADING") return;
+        if (assets[activeKey] && assets[activeKey].pending) return showToast(`Already bet on ${activeKey.toUpperCase()}!`, 'error');
+        document.getElementById('modalTitle').innerText = "Bet " + side;
+        document.getElementById('modalAvbl').innerText = document.getElementById('headerBalance').innerText;
+        document.getElementById('betModal').style.display = 'flex';
+        document.getElementById('betModal').dataset.side = side;
+    };
+
+    window.closeBetModal = () => document.getElementById('betModal').style.display = 'none';
+
+    window.confirmBet = async () => {
+        const amtInput = document.getElementById('betAmount'); const amt = parseFloat(amtInput.value);
+        if (isNaN(amt) || amt <= 0) return showToast("Enter a valid amount", 'error');
+
+        const balRef = ref(db, `users/${user.uid}/usdt_balance`);
+        const bSnap = await get(balRef); const curBal = parseFloat(bSnap.val() || 0);
+        if (amt > curBal) return showToast("Insufficient Balance!", 'error');
+        
+        await set(balRef, (curBal - amt).toFixed(8));
+        
+        // পুল ডাটা আপডেট লজিক
+        const side = document.getElementById('betModal').dataset.side.toLowerCase();
+        const poolRef = ref(db, `pools/${activeKey}/${side}`);
+        const pSnap = await get(poolRef);
+        await set(poolRef, (parseFloat(pSnap.val() || 0) + amt).toFixed(2));
+
+        const hKey = push(ref(db, `users/${user.uid}/history`)).key;
+        await set(ref(db, `users/${user.uid}/history/${hKey}`), { 
+            method: "preCost", amount: amt.toFixed(4), coin: "USDT", 
+            status: 'success', color: 'red', timestamp: Date.now(), 
+            address: "Market", network: assets[activeKey].name, 
+            hash: "BET-" + Math.random().toString(36).substr(2,9).toUpperCase() 
+        });
+
+        assets[activeKey].pending = { side: document.getElementById('betModal').dataset.side, amount: amt };
+        window.closeBetModal();
+        amtInput.value = "";
+        showToast(`Bet placed on ${activeKey.toUpperCase()}!`, 'success');
+    };
+
+    function syncUser() {
+        onValue(ref(db, `users/${user.uid}/usdt_balance`), (s) => {
+            document.getElementById('headerBalance').innerText = parseFloat(s.val() || 0).toFixed(4);
+        });
+        syncHistory();
+    }
+
+    function initWS() {
+        if (Object.keys(assets).length === 0) return;
+        const streams = Object.values(assets).map(a => `${a.symbol}@trade`).join('/');
+        const ws = new WebSocket(`wss://stream.binance.com:9443/stream?streams=${streams}`);
+        ws.onmessage = (e) => {
+            const d = JSON.parse(e.data);
+            const symbol = d.data.s.toLowerCase();
+            const key = Object.keys(assets).find(k => assets[k].symbol === symbol);
+            if (key) {
+                const price = parseFloat(d.data.p); assets[key].currentPrice = price; 
+                if (key === activeKey) {
+                    document.getElementById('priceDisplay').innerText = '$' + price.toFixed(4);
+                    chart.data.datasets[0].data.shift(); 
+                    chart.data.datasets[0].data.push(price);
+                    chart.update('none');
+                }
+            }
+        };
+        ws.onclose = () => setTimeout(initWS, 1000);
+    }
+
+    onAuthStateChanged(auth, (u) => { if (u) { user = u; syncUser(); initWS(); initTimer(); listenPools(); } else { window.location.href = "logIn.html"; } });
+</script>
+
+
+</body>
+</html>
