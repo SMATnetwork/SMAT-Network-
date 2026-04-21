@@ -372,28 +372,45 @@ function init() {
 }
 
 function updateUI() {
-    const sorted = GLOBAL_COINS.map(c => {
+    // ১. প্রথমে সব কয়েনের ডাটা প্রসেস করে নিচ্ছি
+    const allProcessedCoins = GLOBAL_COINS.map(c => {
         const s = c.sym.toLowerCase();
         const price = livePrices[s]?.price || c.price;
         const bal = parseFloat(userData[s + '_balance']) || 0;        
         return { ...c, price, bal, val: bal * price };
-    }).sort((a,b) => b.val - a.val);
+    });
 
-    document.getElementById('assetList').innerHTML = sorted.map(c => `
-        <div class="asset-card" onclick="openActionPopup('${c.sym.toLowerCase()}', 'all')">
-            <div class="a-logo"><img src="assets/logos/${c.sym.toLowerCase()}.png"></div>
-            <div style="flex:1">
-                <h4>${c.sym.toUpperCase()}</h4>
-                <p style="font-size:11px; color:var(--text-sec)">$${formatPrice(c.price)}</p>
+    // ২. মেইন লিস্টের জন্য শুধু ব্যালেন্স থাকা কয়েনগুলো ফিল্টার করছি
+    const visibleCoins = allProcessedCoins
+        .filter(c => c.bal > 0) // যাদের ব্যালেন্স ০ এর বেশি শুধু তারা থাকবে
+        .sort((a,b) => b.val - a.val);
+
+    // ৩. লিস্টে রেন্ডার করা
+    const assetListCont = document.getElementById('assetList');
+    if(visibleCoins.length === 0) {
+        assetListCont.innerHTML = `
+            <div style="text-align:center; padding:40px; color:var(--text-sec); opacity:0.5;">
+                <i class="fas fa-coins" style="font-size:30px; margin-bottom:10px;"></i>
+                <p style="font-size:12px;">No active assets</p>
+            </div>`;
+    } else {
+        assetListCont.innerHTML = visibleCoins.map(c => `
+            <div class="asset-card" onclick="openActionPopup('${c.sym.toLowerCase()}', 'all')">
+                <div class="a-logo"><img src="assets/logos/${c.sym.toLowerCase()}.png"></div>
+                <div style="flex:1">
+                    <h4>${c.sym.toUpperCase()}</h4>
+                    <p style="font-size:11px; color:var(--text-sec)">$${formatPrice(c.price)}</p>
+                </div>
+                <div style="text-align:right">
+                    <b>${formatAmt(c.bal)}</b><br>
+                    <span style="font-size:11px; color:var(--text-sec)">$${formatPrice(c.val)}</span>
+                </div>
             </div>
-            <div style="text-align:right">
-                <b>${formatAmt(c.bal)}</b><br>
-                <span style="font-size:11px; color:var(--text-sec)">$${formatPrice(c.val)}</span>
-            </div>
-        </div>
-    `).join('');
+        `).join('');
+    }
     
-    let total = sorted.reduce((a, b) => a + b.val, 0);
+    // ৪. টোটাল ব্যালেন্স ক্যালকুলেশন (সব কয়েনের ব্যালেন্স যোগ হবে, এমনকি যেগুলো ০ এর বেশি তারা লুকানো থাকলেও)
+    let total = allProcessedCoins.reduce((a, b) => a + b.val, 0);
     document.getElementById('totalBalance').innerText = formatPrice(total);
 }
 
@@ -401,8 +418,38 @@ function openCoinSelector(mode) {
     currentSelectorMode = mode;
     document.getElementById('selectorTitle').innerText = mode === 'deposit' ? 'Deposit' : 'Withdraw';
     document.getElementById('coinSelector').style.display = 'flex';
-    filterCoins();
+    
+    // এখানে filterCoins() কল করার সময় সব কয়েন দেখাবে (যেহেতু এর ভেতরে ব্যালেন্স ফিল্টার নেই)
+    filterCoins(); 
 }
+
+// আপনার filterCoins ফাংশনটি যদি আগে থেকে থাকে তবে সেটি এমন হওয়া উচিত:
+function filterCoins() {
+    const query = document.getElementById('coinSearch').value.toLowerCase();
+    
+    // এখানে কোনো ব্যালেন্স ফিল্টার নেই, তাই সব কয়েনই দেখাবে
+    const list = GLOBAL_COINS.map(c => {
+        const s = c.sym.toLowerCase();
+        const bal = parseFloat(userData[s + '_balance']) || 0;        
+        return { ...c, bal };
+    })
+    .filter(c => c.name.toLowerCase().includes(query) || c.sym.toLowerCase().includes(query))
+    .sort((a,b) => b.bal - a.bal);
+
+    document.getElementById('selectorList').innerHTML = list.map(c => `
+        <div class="asset-card" onclick="openActionPopup('${c.sym.toLowerCase()}', '${currentSelectorMode}')">
+            <div class="a-logo"><img src="assets/logos/${c.sym.toLowerCase()}.png"></div>
+            <div style="flex:1">
+                <h4>${c.sym.toUpperCase()}</h4>
+                <p style="font-size:11px; color:var(--text-sec)">${c.name}</p>
+            </div>
+            <div style="text-align:right">
+                <b style="color:var(--primary)">${formatAmt(c.bal)}</b>
+            </div>
+        </div>
+    `).join('');
+}
+
 
 function filterCoins() {
     const query = document.getElementById('coinSearch').value.toLowerCase();
