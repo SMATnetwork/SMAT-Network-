@@ -1,0 +1,294 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>SMAT CEX | Coin Panel</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;700;900&display=swap');
+
+        :root {
+            --bg: #0b0e11; --card: #181a20; --border: #2b3139;
+            --primary: #f0b90b; --up: #0ecb81; --down: #f6465d;
+            --text-main: #ffffff; --text-muted: #848e9c;
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Inter', sans-serif; }
+
+        html, body { height: 100%; width: 100%; overflow: hidden; background: var(--bg); }
+        body { display: flex; flex-direction: column; }
+
+        /* --- লগইন ওভারলে --- */
+        #loginOverlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: var(--bg); display: flex; justify-content: center; align-items: center; z-index: 9999; }
+        .login-box { background: var(--card); padding: 40px; border-radius: 15px; width: 90%; max-width: 400px; border: 1px solid var(--border); text-align: center; }
+        .login-box h2 { font-weight: 900; margin-bottom: 25px; color: var(--primary); font-size: 24px; text-transform: uppercase; }
+
+        /* --- ফিক্সড হেডার --- */
+        .header { 
+            background: var(--card); padding: 0 20px; border-bottom: 1px solid var(--border); 
+            display: flex; justify-content: space-between; align-items: center; 
+            height: 65px; flex-shrink: 0; z-index: 1000;
+        }
+        .logo-area { font-size: 20px; font-weight: 900; color: var(--primary); letter-spacing: -1px; }
+
+        /* --- মেইন কন্টেন্ট --- */
+        .main-content { 
+            flex: 1; overflow-y: auto; padding: 15px; background: #000;
+            -webkit-overflow-scrolling: touch;
+        }
+
+        .card { background: var(--card); border: 1px solid var(--border); padding: 18px; border-radius: 15px; margin-bottom: 20px; }
+        h2 { font-weight: 900; font-size: 14px; margin-bottom: 15px; color: var(--primary); display: flex; align-items: center; gap: 8px; text-transform: uppercase; }
+
+        /* ইনপুট গ্রিড */
+        .grid-inputs { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+        .full-row { grid-column: span 2; }
+        label { display: block; font-size: 9px; color: var(--text-muted); margin-bottom: 5px; font-weight: 900; text-transform: uppercase; }
+        input, select { width: 100%; padding: 12px; background: #0b0e11; border: 1px solid var(--border); color: white; border-radius: 8px; outline: none; font-size: 13px; font-weight: 700; }
+        input:focus, select:focus { border-color: var(--primary); }
+        
+        .btn-main { background: var(--primary); color: #000; width: 100%; padding: 15px; border: none; border-radius: 10px; font-weight: 900; cursor: pointer; text-transform: uppercase; font-size: 14px; margin-top: 15px; }
+
+        /* --- ফিক্সড ফুটার --- */
+        .admin-footer { 
+            background: var(--card); border-top: 1px solid var(--border); 
+            display: grid; grid-template-columns: 1fr 1fr 1fr; 
+            height: 75px; flex-shrink: 0; z-index: 1000;
+            padding-bottom: env(safe-area-inset-bottom);
+        }
+        .footer-item { background: none; border: none; color: var(--text-muted); display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 5px; cursor: pointer; }
+        .footer-item i { font-size: 18px; }
+        .footer-item span { font-size: 10px; font-weight: 900; text-transform: uppercase; }
+        .footer-item.active { color: var(--primary); border-top: 3px solid var(--primary); background: rgba(240, 185, 11, 0.05); }
+
+        /* --- হিস্ট্রি টেবিল --- */
+        .coin-row {
+            display: flex; align-items: center; justify-content: space-between; 
+            padding: 12px 0; border-bottom: 1px solid #23272e;
+        }
+        .coin-info-group { display: flex; align-items: center; gap: 12px; color: #fff; }
+        .coin-icon { width: 30px; height: 30px; border-radius: 50%; background: #2b3139; object-fit: cover; }
+        .status-badge { color:var(--up); font-weight: 900; font-size: 11px; text-align: center; flex: 1; }
+        .btn-del { color: var(--down); background: transparent; border: 1px solid var(--down); padding: 5px 10px; border-radius: 5px; cursor: pointer; font-size: 10px; font-weight: 900; }
+
+        .tab-content { display: none; }
+        .tab-content.active { display: block; }
+    </style>
+</head>
+<body>
+
+<div id="loginOverlay">
+    <div class="login-box">
+        <h2>ADMIN ACCESS</h2>
+        <input type="email" id="loginEmail" placeholder="Email" style="margin-bottom: 10px;">
+        <input type="password" id="loginPass" placeholder="Password" style="margin-bottom: 20px;">
+        <button class="btn-main" onclick="handleLogin()">LOGIN</button>
+    </div>
+</div>
+
+<header class="header">
+    <div class="logo-area">SMAT <span style="color:white">NETWORK</span></div>
+    <div onclick="handleLogout()" style="color: var(--down); cursor: pointer;">
+       <i class="fas fa-sign-out-alt" style="font-size: 24px;"></i>
+    </div>
+</header>
+
+<div class="main-content">
+    
+    <div id="spotSec" class="tab-content active">
+        <div class="card">
+            <h2><i class="fas fa-coins"></i> Spot Coin Management</h2>
+            <div class="grid-inputs">
+                <div class="input-group"><label>Symbol</label><input type="text" id="sSym" placeholder="btc"></div>
+                <div class="input-group"><label>Name</label><input type="text" id="sName" placeholder="Bitcoin"></div>
+                <div class="input-group"><label>Price</label><input type="number" id="sPrice" placeholder="65000"></div>
+                <div class="input-group"><label>Decimal</label><input type="number" id="sDec" placeholder="8"></div>
+                
+                <div class="input-group">
+                    <label>Trade Status</label>
+                    <select id="sStatus">
+                        <option value="active">🟢 Unlock / Trading Active</option>
+                        <option value="locked">🔴 Locked / Coming Soon</option>
+                    </select>
+                </div>
+                <div class="input-group">
+                    <label>Unlock Time (Optional)</label>
+                    <input type="datetime-local" id="sTime">
+                </div>
+                <div class="full-row"><label>Lock Notice Message</label><input type="text" id="sMsg" placeholder="Ex: Trading will start on May 1st"></div>
+                
+                <div class="full-row"><label>Contract Address</label><input type="text" id="sCon" placeholder="0x..."></div>
+                <div class="full-row"><label>Support Networks</label><input type="text" id="sNet" placeholder="BEP20, ERC20"></div>
+                <div class="full-row"><label>Logo Image Path</label><input type="text" id="sLogo" placeholder="btc.png"></div>
+            </div>
+            <button class="btn-main" onclick="saveData('spotAssets', 's')">সেভ এন্ড লাইভ</button>
+        </div>
+        <div class="card">
+            <h2>Active Spot Assets</h2>
+            <div id="spotTable"></div>
+        </div>
+    </div>
+
+    <div id="predictionSec" class="tab-content">
+        <div class="card">
+            <h2><i class="fas fa-chart-line"></i> প্রিডিকশন লিস্টিং</h2>
+            <div class="grid-inputs">
+                <div class="input-group"><label>Unit ID</label><input type="text" id="pID" placeholder="eth"></div>
+                <div class="input-group"><label>Binance Symbol</label><input type="text" id="pBin" placeholder="ethusdt"></div>
+                <div class="full-row"><label>Pair Name</label><input type="text" id="pName" placeholder="ETH/USDT"></div>
+                <div class="input-group"><label>Initial Round</label><input type="number" id="pRound" placeholder="10001"></div>
+                <div class="input-group"><label>Logo File</label><input type="text" id="pLogo" placeholder="eth.png"></div>
+            </div>
+            <button class="btn-main" onclick="saveData('predictionAssets', 'p')">অ্যাড প্রিডিকশন</button>
+        </div>
+        <div class="card">
+            <h2>Active Predictions</h2>
+            <div id="preTable"></div>
+        </div>
+    </div>
+
+    <div id="featureSec" class="tab-content">
+        <div class="card">
+            <h2><i class="fas fa-bolt"></i> ফিউচার লঞ্চার</h2>
+            <div class="grid-inputs">
+                <div class="input-group"><label>Asset ID</label><input type="text" id="fID" placeholder="sol"></div>
+                <div class="input-group"><label>Max Leverage</label><input type="number" id="fLev" placeholder="50"></div>
+                <div class="input-group"><label>Binance Symbol</label><input type="text" id="fBin" placeholder="solusdt"></div>
+                <div class="input-group"><label>Logo File</label><input type="text" id="fLogo" placeholder="sol.png"></div>
+                <div class="full-row"><label>Pair Name</label><input type="text" id="fName" placeholder="SOL/USDT"></div>
+            </div>
+            <button class="btn-main" onclick="saveData('featureAssets', 'f')">অ্যাড ফিউচার</button>
+        </div>
+        <div class="card">
+            <h2>Active Futures</h2>
+            <div id="featTable"></div>
+        </div>
+    </div>
+
+</div>
+
+<footer class="admin-footer">
+    <div class="footer-item active" onclick="switchTab('spot', this)">
+        <i class="fas fa-wallet"></i><span>Spot</span>
+    </div>
+    <div class="footer-item" onclick="switchTab('prediction', this)">
+        <i class="fas fa-chart-line"></i><span>Prediction</span>
+    </div>
+    <div class="footer-item" onclick="switchTab('feature', this)">
+        <i class="fas fa-bolt"></i><span>Future</span>
+    </div>
+</footer>
+
+<script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+    import { getDatabase, ref, set, onValue, remove } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
+    import { getAuth, signInWithEmailAndPassword, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+
+    const firebaseConfig = {
+        apiKey: "AIzaSyAMxtJedkehhxJRMPZLjhpKHqneHEWsGlE",
+        authDomain: "smat-exchange.firebaseapp.com",
+        databaseURL: "https://smat-exchange-default-rtdb.firebaseio.com",
+        projectId: "smat-exchange",
+        appId: "1:836334569396:web:679effe640b3453412d4e1"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const db = getDatabase(app);
+    const auth = getAuth(app);
+
+    // --- লগইন লজিক ---
+    window.handleLogin = () => {
+        const e = document.getElementById('loginEmail').value;
+        const p = document.getElementById('loginPass').value;
+        signInWithEmailAndPassword(auth, e, p).catch((err) => alert("Error: " + err.message));
+    };
+
+    window.handleLogout = () => signOut(auth);
+
+    onAuthStateChanged(auth, (u) => {
+        document.getElementById('loginOverlay').style.display = u ? 'none' : 'flex';
+        if(u) sync();
+    });
+
+    // --- ট্যাব সুইচ ---
+    window.switchTab = (tab, el) => {
+        document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+        document.querySelectorAll('.footer-item').forEach(i => i.classList.remove('active'));
+        document.getElementById(tab + 'Sec').classList.add('active');
+        el.classList.add('active');
+    };
+
+    // --- ডাটা সেভ ---
+    window.saveData = (path, pre) => {
+        const idInput = document.getElementById(pre === 's' ? 'sSym' : pre + 'ID');
+        const id = idInput.value.toLowerCase().trim();
+        if(!id) return alert("ID দিন!");
+
+        let data = {};
+        if(pre === 's') {
+            data = { 
+                sym: id, 
+                name: document.getElementById('sName').value, 
+                price: document.getElementById('sPrice').value, 
+                decimal: document.getElementById('sDec').value, 
+                contract: document.getElementById('sCon').value, 
+                networks: document.getElementById('sNet').value.split(','), 
+                logo: document.getElementById('sLogo').value, 
+                status: document.getElementById('sStatus').value, // নতুন
+                unlock_time: document.getElementById('sTime').value, // নতুন
+                lock_msg: document.getElementById('sMsg').value, // নতুন
+                key: id + "_balance" 
+            };
+        } else if(pre === 'p') {
+            data = { unit: id.toUpperCase(), name: document.getElementById('pName').value, symbol: document.getElementById('pBin').value, logo: document.getElementById('pLogo').value, round: document.getElementById('pRound').value };
+        } else if(pre === 'f') {
+            data = { unit: id.toUpperCase(), name: document.getElementById('fName').value, symbol: document.getElementById('fBin').value.toLowerCase(), logo: document.getElementById('fLogo').value, lev: document.getElementById('fLev').value };
+        }
+
+        set(ref(db, path + '/' + id), data)
+            .then(() => alert("সাফল্যজনকভাবে আপডেট হয়েছে!"))
+            .catch(err => alert("Error: " + err.message));
+    };
+
+    window.del = (path, id) => { if(confirm("মুছে ফেলবেন?")) remove(ref(db, path + '/' + id)); };
+
+    // --- রিয়েল-টাইম সিঙ্ক ---
+    function sync() {
+        const conf = { spotAssets: 'spotTable', predictionAssets: 'preTable', featureAssets: 'featTable' };
+        Object.entries(conf).forEach(([path, tID]) => {
+            onValue(ref(db, path), (s) => {
+                const d = s.val();
+                const container = document.getElementById(tID);
+                container.innerHTML = "";
+                if(d) {
+                    Object.entries(d).forEach(([k, v]) => {
+                        const logo = v.logo ? `assets/logos/${v.logo}` : 'https://via.placeholder.com/30';
+                        const displayName = v.unit || (v.sym ? v.sym.toUpperCase() : 'N/A');
+                        
+                        // স্পট অ্যাসেটের জন্য লক আইকন দেখানো
+                        let statusHTML = '';
+                        if(path === 'spotAssets') {
+                            statusHTML = v.status === 'locked' ? '<i class="fas fa-lock" style="color:var(--down)"></i>' : '<i class="fas fa-check-circle" style="color:var(--up)"></i>';
+                        }
+
+                        container.innerHTML += `
+                        <div class="coin-row">
+                            <div class="coin-info-group">
+                                <img src="${logo}" class="coin-icon" onerror="this.src='https://via.placeholder.com/30'">
+                                <div>
+                                    <span>${displayName} ${statusHTML}</span><br>
+                                    <small style="color:var(--text-muted)">${v.name || ''}</small>
+                                </div>
+                            </div>
+                            <div class="status-badge">${v.price ? '$'+v.price : (v.lev ? v.lev+'x' : 'ACTIVE')}</div>
+                            <button class="btn-del" onclick="del('${path}','${k}')">REMOVE</button>
+                        </div>`;
+                    });
+                }
+            });
+        });
+    }
+</script>
+</body>
+</html>
