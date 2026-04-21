@@ -56,7 +56,7 @@
         }
 
         .logo-box { display: flex; align-items: center; gap: 10px; }
-        .logo-box img { width: 35px; height: 35px; object-fit: contain; }
+        .logo-box img { width: 35px; height: 35px; object-fit: contain; border-radius:50px;}
 
         .stat-value {
             font-weight: 900;
@@ -71,11 +71,11 @@
             bottom: 0;
             width: 100%;
             height: 70px;
-            background: rgba(11, 14, 17, 0.95);
+            background:#06080a;
             display: flex;
             justify-content: space-around;
             align-items: center;
-            border-top: 1px solid rgba(255, 255, 255, 0.08);
+          
             z-index: 2000;
         }
 
@@ -198,65 +198,94 @@
     </nav>
 
     <script type="module">
-        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-        import { getDatabase, ref, onValue } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+    import { getDatabase, ref, onValue } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
 
-        const firebaseConfig = {
-            apiKey: "AIzaSyAMxtJedkehhxJRMPZLjhpKHqneHEWsGlE",
-            authDomain: "smat-exchange.firebaseapp.com",
-            projectId: "smat-exchange",
-            databaseURL: "https://smat-exchange-default-rtdb.firebaseio.com"
-        };
+    const firebaseConfig = {
+        apiKey: "AIzaSyAMxtJedkehhxJRMPZLjhpKHqneHEWsGlE",
+        authDomain: "smat-exchange.firebaseapp.com",
+        projectId: "smat-exchange",
+        databaseURL: "https://smat-exchange-default-rtdb.firebaseio.com"
+    };
 
-        const app = initializeApp(firebaseConfig);
-        const db = getDatabase(app);
+    const app = initializeApp(firebaseConfig);
+    const db = getDatabase(app);
 
-        // Live Price Sync (From Trade Engine Path)
-        onValue(ref(db, 'market/oxsmat'), (snap) => {
-            const mData = snap.val() || { price: 0 };
-            const livePrice = parseFloat(mData.price) || 0;
-            document.getElementById('ox-live-price').innerText = "$" + livePrice.toFixed(4);
-            window.currentOxPrice = livePrice;
+    // সংখ্যাকে কমা দিয়ে ফরমেট করার ফাংশন
+    const formatNum = (num, minDec = 2, maxDec = 2) => {
+        return parseFloat(num).toLocaleString('en-US', {
+            minimumFractionDigits: minDec,
+            maximumFractionDigits: maxDec
+        });
+    };
+
+    // ১. Live Price Sync (From Trade Engine Path)
+    onValue(ref(db, 'market/oxsmat'), (snap) => {
+        const mData = snap.val() || { price: 0 };
+        const livePrice = parseFloat(mData.price) || 0;
+        
+        // প্রাইস কমা সহ ফরমেট (যেমন: $1,250.50)
+        document.getElementById('ox-live-price').innerText = "$" + formatNum(livePrice, 4, 4);
+        window.currentOxPrice = livePrice;
+        
+        // প্রাইস আপডেট হলে ভ্যালু কার্ডটিও আপডেট করার চেষ্টা করবে
+        updateValueDisplay();
+    });
+
+    // ২. Global User Data Sync
+    onValue(ref(db, 'users'), (snap) => {
+        if(!snap.exists()) return;
+
+        let totalMined = 0;
+        let totalStaked = 0;
+        let activeMiners = 0;
+        let totalNetworkHash = 0;
+        let totalCrashB = 0;
+        let totalPredB = 0;
+
+        const userArray = Object.values(snap.val());
+
+        userArray.forEach(u => {
+            totalMined += (parseFloat(u.smat_balance) || 0) + (parseFloat(u.sessionSmat) || 0);
+            totalStaked += parseFloat(u.oxStaked) || 0;
+
+            if(u.miningActive) {
+                activeMiners++;
+                const cb = parseFloat(u.crashVol_6am) || 0;
+                const pb = parseFloat(u.predVol_6am) || 0;
+                const sb = (parseFloat(u.oxStaked) || 0) * 10;
+                totalNetworkHash += (1.0 + cb + pb + sb);
+                totalCrashB += cb;
+                totalPredB += pb;
+            }
         });
 
-        // Global User Data Sync
-        onValue(ref(db, 'users'), (snap) => {
-            if(!snap.exists()) return;
+        // UI আপডেট কমা সহ
+        document.getElementById('total-network-hash').innerText = formatNum(totalNetworkHash) + "x";
+        document.getElementById('active-miner-count').innerText = activeMiners + " NODES ACTIVELY MINING";
+        document.getElementById('global-mined').innerText = formatNum(totalMined);
+        document.getElementById('global-staked').innerText = formatNum(totalStaked);
+        
+        // গ্লোবাল ভেরিয়েবল আপডেট
+        window.globalTotalStaked = totalStaked;
+        updateValueDisplay();
 
-            let totalMined = 0;
-            let totalStaked = 0;
-            let activeMiners = 0;
-            let totalNetworkHash = 0;
-            let totalCrashB = 0;
-            let totalPredB = 0;
+        // এভারেজ বুস্ট কমা সহ
+        const totalCount = userArray.length || 1;
+        document.getElementById('avg-crash').innerText = "+" + formatNum((totalCrashB / totalCount)) + "x";
+        document.getElementById('avg-pred').innerText = "+" + formatNum((totalPredB / totalCount)) + "x";
+    });
 
-            const userArray = Object.values(snap.val());
+    // ভ্যালু ডিসপ্লে আপডেট করার আলাদা ফাংশন (প্রাইস বা স্ট্যাক যেটা আগে আসুক কাজ করবে)
+    function updateValueDisplay() {
+        const staked = window.globalTotalStaked || 0;
+        const price = window.currentOxPrice || 0;
+        const totalValue = staked * price;
+        
+        const el = document.getElementById('global-staked-value');
+        if(el) el.innerText = "$" + formatNum(totalValue);
+    }
+</script>
 
-            userArray.forEach(u => {
-                totalMined += (parseFloat(u.smat_balance) || 0) + (parseFloat(u.sessionSmat) || 0);
-                totalStaked += parseFloat(u.oxStaked) || 0;
-
-                if(u.miningActive) {
-                    activeMiners++;
-                    const cb = parseFloat(u.crashVol_6am) || 0;
-                    const pb = parseFloat(u.predVol_6am) || 0;
-                    const sb = (parseFloat(u.oxStaked) || 0) * 10;
-                    totalNetworkHash += (1.0 + cb + pb + sb);
-                    totalCrashB += cb;
-                    totalPredB += pb;
-                }
-            });
-
-            document.getElementById('total-network-hash').innerText = totalNetworkHash.toFixed(2) + "x";
-            document.getElementById('active-miner-count').innerText = activeMiners + " NODES ACTIVELY MINING";
-            document.getElementById('global-mined').innerText = totalMined.toFixed(2);
-            document.getElementById('global-staked').innerText = totalStaked.toFixed(2);
-            document.getElementById('global-staked-value').innerText = "$" + (totalStaked * (window.currentOxPrice || 0)).toFixed(2);
-            
-            const totalCount = userArray.length || 1;
-            document.getElementById('avg-crash').innerText = "+" + (totalCrashB / totalCount).toFixed(2) + "x";
-            document.getElementById('avg-pred').innerText = "+" + (totalPredB / totalCount).toFixed(2) + "x";
-        });
-    </script>
 </body>
 </html>
