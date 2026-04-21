@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SMAT Network | Global Analytics</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        body { background: #0b0e11; color: white; font-family: 'Inter', sans-serif; }
+        .glass { background: rgba(30, 35, 41, 0.6); backdrop-filter: blur(15px); border: 1px solid rgba(255,255,255,0.05); border-radius: 20px; }
+        .gold-border { border-top: 2px solid #f0b90b; }
+        .stat-label { font-size: 10px; font-weight: 800; color: #848e9c; text-transform: uppercase; letter-spacing: 1px; }
+        .live-pulse { width: 10px; height: 10px; background: #0ecb81; border-radius: 50%; box-shadow: 0 0 10px #0ecb81; animation: pulse 1.5s infinite; }
+        @keyframes pulse { 0% { opacity: 1; } 50% { opacity: 0.4; } 100% { opacity: 1; } }
+    </style>
+</head>
+<body class="p-4 pb-24">
+
+    <div class="flex justify-between items-center mb-6 px-2">
+        <div>
+            <h1 class="text-2xl font-black text-white">NETWORK <span class="text-yellow-500">LIVE</span></h1>
+            <p class="stat-label">Real-time Ecosystem Intelligence</p>
+        </div>
+        <div class="live-pulse"></div>
+    </div>
+
+    <div class="glass p-6 mb-4 gold-border text-center">
+        <p class="stat-label mb-2">Total SMAT Mined by All Users</p>
+        <h2 id="global-mined" class="text-4xl font-black tracking-tighter text-white">0.00</h2>
+        <div class="flex justify-center gap-4 mt-4">
+            <div class="px-3 py-1 bg-green-500/10 rounded-full border border-green-500/20">
+                <span class="text-[10px] font-bold text-green-500" id="active-miners">0 Active Miners</span>
+            </div>
+        </div>
+    </div>
+
+    <div class="grid grid-cols-2 gap-4 mb-4">
+        <div class="glass p-4 col-span-2">
+            <div class="flex justify-between items-center">
+                <div>
+                    <p class="stat-label">Global Staked oxSMAT</p>
+                    <h3 id="global-staked" class="text-2xl font-black">0.00</h3>
+                </div>
+                <div class="text-right">
+                    <p class="stat-label">Live Price</p>
+                    <h3 id="ox-live-price" class="text-xl font-black text-yellow-500">$0.00</h3>
+                </div>
+            </div>
+            <div class="mt-4 pt-4 border-t border-white/5 flex justify-between">
+                <div>
+                    <p class="stat-label">Total Asset Value</p>
+                    <p id="global-staked-value" class="text-lg font-bold text-green-500">$0.00</p>
+                </div>
+                <div class="text-right">
+                    <p class="stat-label">Today's Unstaked</p>
+                    <p id="global-unstaked" class="text-lg font-bold text-red-500">0.00</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="grid grid-cols-2 gap-3">
+        <div class="glass p-4">
+            <p class="stat-label">Avg. Crash Boost</p>
+            <h4 id="avg-crash" class="text-lg font-bold text-blue-400">+0.00x</h4>
+        </div>
+        <div class="glass p-4">
+            <p class="stat-label">Avg. Predict Boost</p>
+            <h4 id="avg-pred" class="text-lg font-bold text-purple-400">+0.00x</h4>
+        </div>
+        <div class="glass p-4">
+            <p class="stat-label">Active Refer Boost</p>
+            <h4 id="total-ref-boost" class="text-lg font-bold text-orange-400">0.00x</h4>
+        </div>
+        <div class="glass p-4">
+            <p class="stat-label">Current Avg. Power</p>
+            <h4 id="avg-power" class="text-lg font-bold text-yellow-500">1.00x</h4>
+        </div>
+    </div>
+
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+        import { getDatabase, ref, onValue } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyAMxtJedkehhxJRMPZLjhpKHqneHEWsGlE",
+            authDomain: "smat-exchange.firebaseapp.com",
+            projectId: "smat-exchange",
+            databaseURL: "https://smat-exchange-default-rtdb.firebaseio.com"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const db = getDatabase(app);
+
+        let livePrice = 0;
+
+        // ১. লাইভ প্রাইস সিঙ্ক (আপনার ট্রেড ইঞ্জিনের ডাটাবেস পাথ অনুযায়ী)
+        onValue(ref(db, 'prices/oxsmat'), (snap) => {
+            livePrice = parseFloat(snap.val()) || 0;
+            document.getElementById('ox-live-price').innerText = "$" + livePrice.toFixed(4);
+        });
+
+        // ২. সকল ইউজারের ডাটা ক্যালকুলেশন (Global Stats)
+        onValue(ref(db, 'users'), (snap) => {
+            if(!snap.exists()) return;
+
+            let totalMined = 0;
+            let totalStaked = 0;
+            let activeMiners = 0;
+            let totalCrashBoost = 0;
+            let totalPredBoost = 0;
+            let totalRefBoost = 0;
+            let totalUnstakedToday = 0;
+            const userArray = Object.values(snap.val());
+            const userCount = userArray.length;
+            const today = new Date().toLocaleDateString();
+
+            userArray.forEach(u => {
+                // মাইনিং হিসাব
+                totalMined += (parseFloat(u.smat_balance) || 0) + (parseFloat(u.sessionSmat) || 0);
+                if(u.miningActive) activeMiners++;
+
+                // স্ট্যাকিং হিসাব
+                totalStaked += parseFloat(u.oxStaked) || 0;
+
+                // বুস্ট হিসাব
+                totalCrashBoost += parseFloat(u.crashVol_6am) || 0;
+                totalPredBoost += parseFloat(u.predVol_6am) || 0;
+
+                // আজকের আনস্টেক (হিস্ট্রি থেকে)
+                if(u.history) {
+                    Object.values(u.history).forEach(h => {
+                        if((h.method === "Unstake" || h.method === "Unstake (Early)") && h.date === today) {
+                            totalUnstakedToday += parseFloat(h.amount) || 0;
+                        }
+                    });
+                }
+            });
+
+            // ৩. UI আপডেট
+            document.getElementById('global-mined').innerText = totalMined.toFixed(2);
+            document.getElementById('active-miners').innerText = activeMiners + " Active Miners";
+            document.getElementById('global-staked').innerText = totalStaked.toFixed(2);
+            document.getElementById('global-staked-value').innerText = "$" + (totalStaked * livePrice).toFixed(2);
+            document.getElementById('global-unstaked').innerText = totalUnstakedToday.toFixed(2);
+
+            // এভারেজ ক্যালকুলেশন
+            document.getElementById('avg-crash').innerText = "+" + (totalCrashBoost / userCount).toFixed(2) + "x";
+            document.getElementById('avg-pred').innerText = "+" + (totalPredBoost / userCount).toFixed(2) + "x";
+            
+            // একটিভ পাওয়ার (গড় স্পিড)
+            const avgPower = 1.0 + (totalCrashBoost / userCount) + (totalPredBoost / userCount) + ((totalStaked / userCount) * 10);
+            document.getElementById('avg-power').innerText = avgPower.toFixed(2) + "x";
+        });
+    </script>
+</body>
+</html>
