@@ -6,189 +6,70 @@
     <title>SMAT | Prediction Market</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-<link rel="icon" type="image/svg+xml" href="data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNTEyIiBoZWlnaHQ9IjUxMiIgdmlld0JveD0iMCAwIDUxMiA1MTIiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+CiAgPGNpcmNsZSBjeD0iMjU2IiBjeT0iMjU2IiByPSIyNDAiIGZpbGw9IiNmM2JhMmYiLz4KICA8Y2lyY2xlIGN4PSIyNTYiIGN5PSIyNTYiIHI9IjIxNSIgc3Ryb2tlPSJ3aGl0ZSIgc3Ryb2tlLXdpZHRoPSI4IiBmaWxsPSJ0cmFuc3BhcmVudCIvPgogIDxwYXRoIGQ9Ik0xNTAgMTcwIEMxNTAgMTQ1IDE3MCAxMzUgMjAwIDEzNSBMMzQwIDEzNSBDMzU1IDEzNSAzNjUgMTQ1IDM2NSAxNjAgQzM2NSAxNzUgMzU1IDE4NSAzNDAgMTg1IEwyMDUgMTg1IEMxOTAgMTg1IDE4NSAxOTAgMTg1IDIwNSBDMTg1IDIyMCAxOTAgMjI1IDIwNSAyMjUgTDM0MCAyMjUgQzM3MCAyMjUgMzkwIDI0NSAzOTAgMjc1IEwzOTAgMzI1IEMzOTAgMzU1IDM3MCAzNzUgMzQwIDM3NSBMMTcwIDM3NSBDMTU1IDM3NSAxNDUgMzY1IDE0NSAzNTAgQzE0NSAzMzUgMTU1IDMyNSAxNzAgMzI1IEwzMzUgMzI1IEMzNTAgMzI1IDM1NSAzMjAgMzU1IDMwNSBDMzU1IDI5MCAzNTAgMjg1IDMzNSAyODUgTDIwMCAyODUgQzE3MCAyODUgMTUwIDI2NSAxNTAgMjM1IFoiIGZpbGw9IndoaXRlIi8+Cjwvc3ZnPg==">    
+    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNTEyIiBoZWlnaHQ9IjUxMiIgdmlld0JveD0iMCAwIDUxMiA1MTIiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+CiAgPGNpcmNsZSBjeD0iMjU2IiBjeT0iMjU2IiByPSIyNDAiIGZpbGw9IiNmM2JhMmYiLz4KICA8Y2lyY2xlIGN4PSIyNTYiIGN5PSIyNTYiIHI9IjIxNSIgc3Ryb2tlPSJ3aGl0ZSIgc3Ryb2tlLXdpZHRoPSI4IiBmaWxsPSJ0cmFuc3BhcmVudCIvPgogIDxwYXRoIGQ9Ik0xNTAgMTcwIEMxNTAgMTQ1IDE3MCAxMzUgMjAwIDEzNSBMMzQwIDEzNSBDMzU1IDEzNSAzNjUgMTQ1IDM2NSAxNjAgQzM2NSAxNzUgMzU1IDE4NSAzNDAgMTg1IEwyMDUgMTg1IEMxOTAgMTg1IDE4NSAxOTAgMTg1IDIwNSBDMTg1IDIyMCAxOTAgMjI1IDIwNSAyMjUgTDM0MCAyMjUgQzM3MCAyMjUgMzkwIDI0NSAzOTAgMjc1IEwzOTAgMzI1IEMzOTAgMzU1IDM3MCAzNzUgMzQwIDM3NSBMMTcwIDM3NSBDMTU1IDM3NSAxNDUgMzY1IDE0NSAzNTAgQzE0NSAzMzUgMTU1IDMyNSAxNzAgMzI1IEwzMzUgMzI1IEMzNTAgMzI1IDM1NSAzMjAgMzU1IDMwNSBDMzU1IDI5MCAzNTAgMjg1IDMzNSAyODUgTDIwMCAyODUgQzE3MCAyODUgMTUwIDI2NSAxNTAgMjM1IFoiIGZpbGw9IndoaXRlIi8+Cjwvc3ZnPg==">    
 
 
 <style>
         :root { --bg: #0b0e11; --card: #181a20; --border: #2b3139; --up: #0ecb81; --down: #f6465d; --warn: #f0b90b; --primary: #f0b90b; --cyan: #00ffff; }
         * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Inter', sans-serif; }
         body { background: var(--bg); color: white; height: 100vh; display: flex; flex-direction: column; overflow: hidden; }
-        
         .header { display: grid; grid-template-columns: 1fr 1.2fr 1fr; align-items: center; padding: 10px 15px; background: #12161c; border-bottom: 1px solid var(--border); }
         .asset-selector { display: flex; align-items: center; gap: 8px; background: #1e2329; padding: 5px 5px; border-radius: 8px; border: 1px solid var(--border); }
         .asset-selector img { width: 22px; height: 22px; border-radius: 50%; object-fit: cover; }
         .asset-selector select { background: transparent; color: white; border: none; font-weight: 700; outline: none; cursor: pointer; }
-        
         .bal-box { background:none; border: none; text-align: center; font-size: 12px; color: #848e9c; }
         .bal-amount { font-weight: 800; font-size: 12px; color: var(--primary); }
-        
         .chart-section { width: 100%; position: relative; background: #000; height: 25vh; border-bottom: 1px solid var(--border); overflow: hidden; }
         .chart-overlay { position: absolute; top: 0; left: 0; width: 100%; z-index: 10; display: flex; justify-content: space-between; padding: 12px; pointer-events: none; }
-        .timer-clock { font-size: 20px; font-weight: 900; color: white; text-align: right; }
-        
+        .timer-clock { font-size: 20px; font-weight: 900; color: white; text-align: right; }        
         .history-section { flex: 1; background: var(--card); display: flex; flex-direction: column; overflow: hidden; padding-bottom: 85px; }
         .history-header { text-align: center; padding: 10px; font-size: 15px; font-weight: 900; border-bottom: 1px solid var(--border); background: #12161c; }
         .table-container { flex: 1; overflow-y: auto; overflow-x: auto; }
-table { 
-    width: 100%; 
-    border-collapse: collapse; 
-    font-size: 10px; 
-    text-align: center; 
-    table-layout: fixed; 
-}
-
-th { 
-    background: #12161c; 
-    padding: 10px 2px; 
-    color: #848e9c; 
-    position: sticky; 
-    top: 0; 
-    z-index: 5; 
-    font-size: 9px; 
-    text-transform: uppercase;
-}
-
-td { 
-    padding: 10px 2px; 
-    border-bottom: 1px solid #23272e; 
-    font-weight: 600; 
-    vertical-align: middle; 
-    word-break: break-all; 
-}
-
-th:nth-child(1), td:nth-child(1) { width: 16%; } 
-th:nth-child(2), td:nth-child(2) { width: 16%; } 
-th:nth-child(3), td:nth-child(3) { width: 18%; } 
-th:nth-child(4), td:nth-child(4) { width: 14%; } 
-th:nth-child(5), td:nth-child(5) { width: 18%; } 
-th:nth-child(6), td:nth-child(6) { width: 18%; } 
-
-.hist-logo { 
-    width: 12px; 
-    height: 12px; 
-    border-radius: 50%; 
-    vertical-align: middle; 
-    margin-right: 2px; 
-}
-
-.sub-text { 
-    display: block; 
-    font-size: 7px; 
-    color: #848e9c; 
-    margin-top: 1px; 
-}
-
-/* চার্ট সেকশন যাতে কন্টেইনার হিসেবে কাজ করে */
-.chart-section {
-    position: relative;
-    width: 100%;
-    overflow: hidden; /* যাতে শ্যাডো চার্টের বাইরে না যায় */
-}
-
-/* পুল কন্টেইনার মাঝখানে আনার লজিক */
-.pools-container {
-    position: absolute;
-    bottom: 2px; /* একদম নিচে লেগে থাকবে */
-    left: 50%;
-    transform: translateX(-50%); /* একদম সেন্টারে রাখার জন্য */
-    width: 80%; /* দুই পাশে কিছুটা জায়গা ছাড়বে যাতে প্রাইস দেখা যায় */
-    display: flex;
-    justify-content: center; /* বক্সগুলো মাঝখানে থাকবে */
-    gap: 8px; /* দুই বক্সের মাঝখানের ফাঁকা জায়গা */
-    pointer-events: none;
-}
-
-.pool-box {
-    backdrop-filter: blur(6px);
-    border-radius: 8px;
-    padding: 6px 6px;
-    min-width: 110px;
-    flex: 1; /* সমান সাইজ নেওয়ার জন্য */
-    max-width: 120px;
-    box-shadow: 0 4px 12px rgba(0,0,0,0.2);
-}
-
-/* আপনার চাহিদা মতো হালকা সবুজ এবং লাল ব্যাকগ্রাউন্ড */
-.up-bg { 
-    background: rgba(14, 203, 129, 0.15) !important; /* সামান্য সবুজ */
-    border: 1px solid rgba(14, 203, 129, 0.2);
-}
-
-.down-bg { 
-    background: rgba(246, 70, 93, 0.15) !important; /* সামান্য লাল */
-    border: 1px solid rgba(246, 70, 93, 0.2);
-}
-
-.pool-label { font-size: 8px; font-weight: 800; color: #848e9c; margin-bottom: 3px; }
-
-.pool-content { display: flex; align-items: center; gap: 8px; }
-
-/* প্রগ্রেস বার */
-.progress-track {
-    width: 4px; height: 24px; background: rgba(255, 255, 255, 0.1);
-    border-radius: 4px; overflow: hidden; display: flex; flex-direction: column; justify-content: flex-end;
-}
-
-.progress-fill-up { background: #0ecb81; box-shadow: 0 0 8px #0ecb81; transition: height 0.5s; }
-.progress-fill-down { background: #f6465d; box-shadow: 0 0 8px #f6465d; transition: height 0.5s; }
-
-.pool-values span { font-size: 11px; font-weight: 900; color: white; display: block; }
-.pool-values small { font-size: 9px; font-weight: 700; }
-
-
-
-/* অটো রেসপনসিভ: ছোট মোবাইলের জন্য */
-@media (max-width: 350px) {
-    .pool-box { padding: 4px 6px; }
-    .pool-values span { font-size: 10px; }
-    .progress-track { height: 20px; }
-}
-
-
-/* গ্রাফের ভিতরের কালার গাঢ় এবং স্মুথ করার জন্য CSS */
-canvas#liveChart {
-    background-color: transparent !important; /* চার্টের ব্যাকগ্রাউন্ড স্বচ্ছ */
-}
-
-        .action-area { position: fixed; bottom: 0; width: 100%; padding: 15px; background: #12161c; border-top: 1px solid var(--border); z-index: 2000; }
+         table {   width: 100%;   border-collapse: collapse;   font-size: 10px;   text-align: center;  table-layout: fixed; }
+         th {   background: #12161c;   padding: 10px 2px;   color: #848e9c;  position: sticky;  top: 0;  z-index: 5;  font-size: 9px;  text-transform: uppercase;}
+         td {  padding: 10px 2px;  border-bottom: 1px solid #23272e;  font-weight: 600;  vertical-align: middle;  word-break: break-all; }
+              th:nth-child(1), td:nth-child(1) { width: 16%; } 
+              th:nth-child(2), td:nth-child(2) { width: 16%; } 
+              th:nth-child(3), td:nth-child(3) { width: 18%; } 
+              th:nth-child(4), td:nth-child(4) { width: 14%; } 
+              th:nth-child(5), td:nth-child(5) { width: 18%; } 
+              th:nth-child(6), td:nth-child(6) { width: 18%; } 
+        .hist-logo {   width: 12px;   height: 12px;   border-radius: 50%;   vertical-align: middle;   margin-right: 2px; }
+        .sub-text {  display: block;   font-size: 7px;  color: #848e9c;  margin-top: 1px; }
+        .chart-section { position: relative;  width: 100%; overflow: hidden;}
+        .pools-container {  position: absolute;  bottom: 2px; left: 50%; transform: translateX(-50%);   width: 80%;  display: flex;  justify-content: center;   gap: 8px; pointer-events: none;}
+        .pool-box { backdrop-filter: blur(6px);  border-radius: 8px; padding: 6px 6px;  min-width: 110px;  flex: 1;   max-width: 120px; box-shadow: 0 4px 12px rgba(0,0,0,0.2);}
+        .up-bg {  background: rgba(14, 203, 129, 0.15) !important;  border: 1px solid rgba(14, 203, 129, 0.2);}
+        .down-bg {  background: rgba(246, 70, 93, 0.15) !important; border: 1px solid rgba(246, 70, 93, 0.2);}
+        .pool-label { font-size: 8px; font-weight: 800; color: #848e9c; margin-bottom: 3px; }
+        .pool-content { display: flex; align-items: center; gap: 8px; }
+        .progress-track { width: 4px; height: 24px; background: rgba(255, 255, 255, 0.1); border-radius: 4px; overflow: hidden; display: flex; flex-direction: column; justify-content: flex-end;}
+        .progress-fill-up { background: #0ecb81; box-shadow: 0 0 8px #0ecb81; transition: height 0.5s; }
+        .progress-fill-down { background: #f6465d; box-shadow: 0 0 8px #f6465d; transition: height 0.5s; }
+        .pool-values span { font-size: 11px; font-weight: 900; color: white; display: block; }
+        .pool-values small { font-size: 9px; font-weight: 700; }
+                          @media (max-width: 350px) {  .pool-box { padding: 4px 6px; } .pool-values span { font-size: 10px; } .progress-track { height: 20px; }}
+         canvas#liveChart { background-color: transparent !important; }
+         .action-area { position: fixed; bottom: 0; width: 100%; padding: 15px; background: #12161c; border-top: 1px solid var(--border); z-index: 2000; }
         .t-btn { flex: 1; padding: 16px; border: none; border-radius: 10px; font-weight: 900; font-size: 16px; color: white; cursor: pointer; text-transform: uppercase; }
         .t-btn:disabled { opacity: 0.4; cursor: not-allowed; filter: grayscale(1); }
-        
         .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.85); display: none; justify-content: center; align-items: center; z-index: 3000; }
         .modal-box { background: var(--card); padding: 25px; border-radius: 15px; width: 90%; max-width: 360px; text-align: center; border: 1px solid var(--border); }
         .modal-box input { width: 100%; padding: 12px; background: #0b0e11; border: 1px solid var(--border); color: white; border-radius: 8px; margin: 15px 0; font-size: 20px; text-align: center; outline: none; }
-        
-        /* ১. এনিমেশন: ব্যাকগ্রাউন্ড আবছা সবুজ হবে */
-@keyframes rowBlinkGreen {
-    0% { background-color: transparent; }
-    50% { background-color: rgba(14, 203, 129, 0.4) !important; } /* গাঢ় আবছা সবুজ */
-    100% { background-color: transparent; }
-}
-
-/* ২. ব্লিংক ক্লাস - এটিকে টেবিলের সব স্টাইলের উপরে রাখার জন্য !important ব্যবহার */
-.blink-row {
-    animation: rowBlinkGreen 1.2s infinite ease-in-out !important;
-    background-color: rgba(14, 203, 129, 0.2) !important;
-}
-
-/* ৩. ব্লিংক করা রো-এর সব সেলের (td) লেখার কালার হলুদ */
-.blink-row td {
-    color: #f0b90b !important;
-    border-bottom: 1px solid rgba(14, 203, 129, 0.3) !important; /* নিচের বর্ডারও হালকা সবুজ */
-}
-
-/* ৪. স্পিনারকেও হলুদ করা */
-.blink-row .spinner-sm {
-    border-top: 2px solid #f0b90b !important;
-}
-
-
-.blink-row { animation: blink 1s infinite; }
-        @keyframes blink { 0%, 100% { opacity: 1; } 50% { opacity: 0.2; } }
-        .spinner-sm { width: 14px; height: 14px; border: 2px solid rgba(255,255,255,0.1); border-top: 2px solid var(--primary); border-radius: 50%; animation: spin 0.8s linear infinite; display: inline-block; vertical-align: middle; margin-right: 5px; }
-        @keyframes spin { 100% { transform: rotate(360deg); } }
-    </style>
+                              @keyframes rowBlinkGreen {  0% { background-color: transparent; }  50% { background-color: rgba(14, 203, 129, 0.4) !important; }  100% { background-color: transparent; }}
+        .blink-row {  animation: rowBlinkGreen 1.2s infinite ease-in-out !important; background-color: rgba(14, 203, 129, 0.2) !important;}
+        .blink-row td { color: #f0b90b !important; border-bottom: 1px solid rgba(14, 203, 129, 0.3) !important; }
+        .blink-row .spinner-sm {  border-top: 2px solid #f0b90b !important;}
+        .blink-row { animation: blink 1s infinite; } @keyframes blink { 0%, 100% { opacity: 1; } 50% { opacity: 0.2; } } .spinner-sm { width: 14px; height: 14px; border: 2px solid rgba(255,255,255,0.1); border-top: 2px solid var(--primary); border-radius: 50%; animation: spin 0.8s linear infinite; display: inline-block; vertical-align: middle; margin-right: 5px; }@keyframes spin { 100% { transform: rotate(360deg); } }
+    
+</style>
 </head>
+
+
+
+
+
+
 <body>
 
     <header class="header">
