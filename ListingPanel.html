@@ -197,7 +197,7 @@
     const db = getDatabase(app);
     const auth = getAuth(app);
 
-    // --- লগইন লজিক ---
+    // --- Auth ---
     window.handleLogin = () => {
         const e = document.getElementById('loginEmail').value;
         const p = document.getElementById('loginPass').value;
@@ -211,7 +211,7 @@
         if(u) sync();
     });
 
-    // --- ট্যাব সুইচ ---
+    // --- UI Tabs ---
     window.switchTab = (tab, el) => {
         document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
         document.querySelectorAll('.footer-item').forEach(i => i.classList.remove('active'));
@@ -219,7 +219,7 @@
         el.classList.add('active');
     };
 
-    // --- ডাটা সেভ ---
+    // --- Save Data Logic ---
     window.saveData = (path, pre) => {
         const idInput = document.getElementById(pre === 's' ? 'sSym' : pre + 'ID');
         const id = idInput.value.toLowerCase().trim();
@@ -227,6 +227,7 @@
 
         let data = {};
         if(pre === 's') {
+            // Spot ডাটা যা coin.js-এর নতুন ইঞ্জিনের সাথে মিল রাখা হয়েছে
             data = { 
                 sym: id, 
                 name: document.getElementById('sName').value, 
@@ -235,10 +236,10 @@
                 contract: document.getElementById('sCon').value, 
                 networks: document.getElementById('sNet').value.split(','), 
                 logo: document.getElementById('sLogo').value, 
-                status: document.getElementById('sStatus').value, // নতুন
-                unlock_time: document.getElementById('sTime').value, // নতুন
-                lock_msg: document.getElementById('sMsg').value, // নতুন
-                key: id + "_balance" 
+                status: document.getElementById('sStatus').value, // 'active' or 'locked'
+                unlock_time: document.getElementById('sTime').value, 
+                lock_msg: document.getElementById('sMsg').value,
+                key: id + "_balance" // Wallet ব্যালেন্স কি
             };
         } else if(pre === 'p') {
             data = { unit: id.toUpperCase(), name: document.getElementById('pName').value, symbol: document.getElementById('pBin').value, logo: document.getElementById('pLogo').value, round: document.getElementById('pRound').value };
@@ -247,13 +248,13 @@
         }
 
         set(ref(db, path + '/' + id), data)
-            .then(() => alert("সাফল্যজনকভাবে আপডেট হয়েছে!"))
+            .then(() => alert(id.toUpperCase() + " successfully updated!"))
             .catch(err => alert("Error: " + err.message));
     };
 
     window.del = (path, id) => { if(confirm("মুছে ফেলবেন?")) remove(ref(db, path + '/' + id)); };
 
-    // --- রিয়েল-টাইম সিঙ্ক ---
+    // --- Sync & Display ---
     function sync() {
         const conf = { spotAssets: 'spotTable', predictionAssets: 'preTable', featureAssets: 'featTable' };
         Object.entries(conf).forEach(([path, tID]) => {
@@ -266,10 +267,12 @@
                         const logo = v.logo ? `assets/logos/${v.logo}` : 'https://via.placeholder.com/30';
                         const displayName = v.unit || (v.sym ? v.sym.toUpperCase() : 'N/A');
                         
-                        // স্পট অ্যাসেটের জন্য লক আইকন দেখানো
                         let statusHTML = '';
                         if(path === 'spotAssets') {
-                            statusHTML = v.status === 'locked' ? '<i class="fas fa-lock" style="color:var(--down)"></i>' : '<i class="fas fa-check-circle" style="color:var(--up)"></i>';
+                            // লকড থাকলে লাল তালা, একটিভ থাকলে সবুজ টিক
+                            statusHTML = v.status === 'locked' ? 
+                                `<i class="fas fa-lock" style="color:var(--down); margin-left:5px;"></i>` : 
+                                `<i class="fas fa-check-circle" style="color:var(--up); margin-left:5px;"></i>`;
                         }
 
                         container.innerHTML += `
