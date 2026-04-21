@@ -94,14 +94,14 @@
 </div>
 
 <style>
-        .footer {font-weight: 900; position: fixed; bottom: 0; width: 100%; height: 80px; background: #181a20; display: flex; justify-content: space-around; align-items: center; border-top: 1px solid var(--border); z-index: 3000; }
+        .footer {font-weight: 900; position: fixed; bottom: 0; width: 100%; height: 80px; background: #0b0e11; display: flex; justify-content: space-around; align-items: center; z-index: 3000; }
         .f-nav { text-decoration: none; color: var(--text-sec); text-align: center; font-size: 10px; flex: 1; display: flex; flex-direction: column; align-items: center; }
         .f-nav i { font-size: 22px; margin-bottom: 5px; }
         .f-nav.active { color: var(--primary); }
         .fab-wrapper { position: relative; width: 75px; display: flex; justify-content: center; }       
         .fab-options {  position: absolute; bottom: 30px; display: flex; justify-content: center;   align-items: center; pointer-events: none; width: 250px; height: 180px;  }
         .fab-options i{font-size:20px;background :none;color:black;}
-        .popup-btn {   position: absolute; background:yellow; padding: 18px 18px; border-radius: 50px;  text-decoration: none; font-weight: 800; font-size: 12px;   box-shadow: 0 10px 25px rgba(0,0,0,0.6); transition: all 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);  opacity: 0; transform: scale(0.3) translateY(120px); pointer-events: auto; white-space: nowrap; z-index: 2900;}
+        .popup-btn {   position: absolute; background:silver; padding: 18px 18px; border-radius: 50px;  text-decoration: none; font-weight: 800; font-size: 12px;   box-shadow: 0 10px 25px rgba(0,0,0,0.6); transition: all 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);  opacity: 0; transform: scale(0.3) translateY(120px); pointer-events: auto; white-space: nowrap; z-index: 2900;}
         .fab-options.show .btn-left { opacity: 1; transform: translate(-95px, -45px) scale(1); }
         .fab-options.show .btn-center { opacity: 1; transform: translate(0, -115px) scale(1); }
         .fab-options.show .btn-right { opacity: 1; transform: translate(95px, -45px) scale(1); }
@@ -144,15 +144,15 @@
  });
  </script>
     <footer class="footer">
-        <a href="home.html" class="f-nav active"><i class="fas fa-home"></i>Home</a>
-        <a href="mining.html" class="f-nav active"><i class="fas fa-microchip"></i>Mining</a>
+        <a href="home.html" class="f-nav "><i class="fas fa-home"></i>Home</a>
+        <a href="mining.html" class="f-nav "><i class="fas fa-microchip"></i>Mining</a>
                               <div class="fab-wrapper"><div class="fab-options" id="fabOptions">
                 <a href="feature.html" class="popup-btn btn-left"><i class="fas fa-bolt"></i></a>
                 <a href="crash.html" class="popup-btn btn-center"><i class="fas fa-rocket"></i></a>
                 <a href="prediction.html" class="popup-btn btn-right"><i class="fas fa-chart-line"></i></a>
                                        </div> <button class="main-fab" id="mainFab" onclick="toggleGamingMenu()">  <i class="fa-solid fa-plus" id="icon" style="font-size: 24px; -webkit-text-stroke: 2px; stroke-width: 2px;"></i> </button></div>
-        <a href="trade.html" class="f-nav active"><i class="fas fa-exchange-alt"></i>Trade</a>
-        <a href="wallet.html" class="f-nav active"><i class="fas fa-wallet"></i>Wallet</a>
+        <a href="trade.html" class="f-nav "><i class="fas fa-exchange-alt"></i>Trade</a>
+        <a href="wallet.html" class="f-nav "><i class="fas fa-wallet"></i>Wallet</a>
     </footer>
 
 
