@@ -2,318 +2,306 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>SMAT | Reg & LogIn</title>
-    <style>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>SMAT | SignIn</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+<link rel="icon" type="image/svg+xml" href="data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNTEyIiBoZWlnaHQ9IjUxMiIgdmlld0JveD0iMCAwIDUxMiA1MTIiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+CiAgPGNpcmNsZSBjeD0iMjU2IiBjeT0iMjU2IiByPSIyNDAiIGZpbGw9IiNmM2JhMmYiLz4KICA8Y2lyY2xlIGN4PSIyNTYiIGN5PSIyNTYiIHI9IjIxNSIgc3Ryb2tlPSJ3aGl0ZSIgc3Ryb2tlLXdpZHRoPSI4IiBmaWxsPSJ0cmFuc3BhcmVudCIvPgogIDxwYXRoIGQ9Ik0xNTAgMTcwIEMxNTAgMTQ1IDE3MCAxMzUgMjAwIDEzNSBMMzQwIDEzNSBDMzU1IDEzNSAzNjUgMTQ1IDM2NSAxNjAgQzM2NSAxNzUgMzU1IDE4NSAzNDAgMTg1IEwyMDUgMTg1IEMxOTAgMTg1IDE4NSAxOTAgMTg1IDIwNSBDMTg1IDIyMCAxOTAgMjI1IDIwNSAyMjUgTDM0MCAyMjUgQzM3MCAyMjUgMzkwIDI0NSAzOTAgMjc1IEwzOTAgMzI1IEMzOTAgMzU1IDM3MCAzNzUgMzQwIDM3NSBMMTcwIDM3NSBDMTU1IDM3NSAxNDUgMzY1IDE0NSAzNTAgQzE0NSAzMzUgMTU1IDMyNSAxNzAgMzI1IEwzMzUgMzI1IEMzNTAgMzI1IDM1NSAzMjAgMzU1IDMwNSBDMzU1IDI5MCAzNTAgMjg1IDMzNSAyODUgTDIwMCAyODUgQzE3MCAyODUgMTUwIDI2NSAxNTAgMjM1IFoiIGZpbGw9IndoaXRlIi8+Cjwvc3ZnPg==">
+
+
+<style>
         :root {
-            --primary: #f3ba2f;
-            --primary-hover: #dbc03d;
-            --bg: #0b0e11;
-            --card-bg: #1e2329;
-            --input-bg: #2b3139;
-            --text-main: #eaecef;
+            --primary: #00ff88;
+            --bg: #000000;
+            --card: rgba(15, 18, 22, 0.96);
             --text-muted: #848e9c;
-            --border: #474d57;
-            --shadow: 0 12px 40px rgba(0, 0, 0, 0.6);
         }
 
+        /* ক্লিক গ্লিচ বন্ধ এবং ইন্টারফেস রিসেট */
         * { 
-            box-sizing: border-box; 
-            transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
-            outline: none !important;
+            margin: 0; padding: 0; box-sizing: border-box; 
+            font-family: 'Inter', sans-serif;
             -webkit-tap-highlight-color: transparent;
+            outline: none !important;
         }
 
         body {
-            margin: 0;
-            padding: 0;
-            font-family: 'Segoe UI', Roboto, sans-serif;
             background-color: var(--bg);
-            background-image: radial-gradient(circle at 50% 50%, #181a20 0%, #0b0e11 100%);
-            color: var(--text-main);
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            min-height: 100vh;
+            height: 100vh; display: flex;
+            justify-content: center; align-items: center;
+            overflow: hidden; position: relative;
         }
 
+        /* --- Pure Code Digital Graphics --- */
+        #graphicsCanvas {
+            position: absolute; top: 0; left: 0;
+            width: 100%; height: 100%;
+            z-index: 1;
+        }
+
+        /* ওল্ড স্কুল ডিজিটাল ফিল্টার */
+        .scanlines {
+            position: absolute; width: 100%; height: 100%;
+            background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.25) 50%), 
+                        linear-gradient(90deg, rgba(255, 0, 0, 0.06), rgba(0, 255, 0, 0.02), rgba(0, 0, 255, 0.06));
+            background-size: 100% 4px, 3px 100%;
+            z-index: 2; pointer-events: none;
+        }
+
+        /* --- Auth Card --- */
         .auth-container {
-            width: 92%;
-            max-width: 380px;
-            background: var(--card-bg);
-            padding: 45px 35px;
-            border-radius: 24px;
-            box-shadow: var(--shadow);
+            position: relative; z-index: 10;
+            width: 90%; max-width: 420px;
+            background: var(--card);
+            padding: 45px 30px;
+            border-radius: 32px;
+            border: 1px solid rgba(0, 255, 136, 0.2);
+            box-shadow: 0 0 40px rgba(0, 0, 0, 0.8);
             text-align: center;
-            border: 1px solid rgba(255, 255, 255, 0.04);
+            backdrop-filter: blur(10px);
         }
 
-        h2 {
-            font-size: 26px;
-            font-weight: 700;
-            margin: 0 0 10px 0;
-            color: var(--text-main);
-            letter-spacing: -0.5px;
+        .logo-circle {
+            width: 90px; height: 90px; margin: 0 auto 20px;
+            background: #fff; border-radius: 60%; overflow: hidden;
         }
+        .logo-circle img { width: 100%; height: 100%; object-fit: cover; border-radius: 50%; }
 
-        .subtitle {
-            color: var(--text-muted);
-            font-size: 14px;
-            margin-bottom: 35px;
-        }
+        .brand-name { font-size: 28px; font-weight: 900; color: #fff; margin-bottom: 8px; }
+        .brand-name span { color: var(--primary); }
+        .sub-desc { color: var(--text-muted); font-size: 14px; margin-bottom: 35px; }
 
-        .input-group {
-            text-align: left;
-            margin-bottom: 22px;
-        }
-
-        label {
-            display: flex;
-            justify-content: space-between;
-            font-size: 13px;
-            margin-bottom: 8px;
-            color: var(--text-muted);
-            font-weight: 500;
-        }
+        .form-group { text-align: left; margin-bottom: 25px; }
+        label { display: block; font-size: 11px; color: var(--text-muted); margin-bottom: 8px; font-weight: 800; text-transform: uppercase; letter-spacing: 1px; }
 
         input {
-            width: 100%;
-            padding: 15px 18px;
-            background-color: var(--input-bg);
-            border: 1.5px solid transparent;
-            border-radius: 12px;
-            color: white;
-            font-size: 15px;
+            width: 100%; padding: 18px;
+            background: #1e2329; border: 1px solid transparent;
+            border-radius: 14px; color: #fff; font-size: 16px;
         }
+        input:focus { border-color: var(--primary); background: #000; }
 
-        input:focus {
-            border-color: var(--primary);
-            background-color: #1e2329;
-            box-shadow: 0 0 10px rgba(243, 186, 47, 0.1);
+        .pass-box { position: relative; }
+        .eye-icon { position: absolute; right: 18px; top: 50%; transform: translateY(-50%); color: var(--text-muted); cursor: pointer; padding: 5px; }
+
+        #actionBtn {
+            width: 100%; padding: 18px;
+            background: var(--primary); color: #000;
+            border: none; border-radius: 14px;
+            font-size: 18px; font-weight: 900;
+            cursor: pointer; margin-top: 10px; transition: 0.3s;
         }
+        #actionBtn:disabled { background: #2b3139; color: #5e6673; cursor: not-allowed; }
 
-        .pass-hint {
-            font-size: 10px;
-            color: var(--text-muted);
+        /* লিঙ্ক গ্লিচ বন্ধ করার মাস্টার ফিক্স */
+        .auth-footer { margin-top: 25px; padding-top: 20px; border-top: 1px solid rgba(255, 255, 255, 0.05); }
+        .link-primary { color: var(--primary); cursor: pointer; font-weight: 800; font-size: 14px; background: none !important; }
+        .link-secondary { color: var(--text-muted); cursor: pointer; font-size: 13px; display: block; margin-top: 15px; background: none !important; }
+
+        /* টোস্ট */
+        #customToast {
+            position: fixed; top: -100px; left: 50%; transform: translateX(-50%);
+            background: #1e2329; color: #fff; padding: 16px 25px; border-radius: 12px;
+            z-index: 1000; border-left: 5px solid var(--primary); transition: 0.5s;
+            display: flex; align-items: center; gap: 12px; box-shadow: 0 10px 30px rgba(0,0,0,0.5);
         }
-
-        button {
-            width: 100%;
-            padding: 16px;
-            background-color: var(--primary);
-            color: #000;
-            border: none;
-            border-radius: 12px;
-            font-size: 16px;
-            font-weight: 700;
-            cursor: pointer;
-            margin-top: 15px;
-            box-shadow: 0 4px 15px rgba(243, 186, 47, 0.2);
-        }
-
-        button:disabled {
-            background-color: #474d57;
-            color: #848e9c;
-            cursor: not-allowed;
-            box-shadow: none;
-        }
-
-        button:hover:not(:disabled) {
-            background-color: var(--primary-hover);
-            transform: translateY(-2px);
-            box-shadow: 0 6px 20px rgba(243, 186, 47, 0.3);
-        }
-
-        .footer-links {
-            margin-top: 30px;
-            display: flex;
-            flex-direction: column;
-            gap: 15px;
-        }
-
-        .toggle-link {
-            color: var(--primary);
-            font-size: 14px;
-            cursor: pointer;
-            font-weight: 600;
-            text-decoration: none;
-        }
-
-        .toggle-link:hover { color: #fff; }
-
-        .forgot-pass {
-            color: var(--text-muted);
-            font-size: 13px;
-            cursor: pointer;
-        }
-
-        .msg {
-            margin-top: 20px;
-            padding: 12px;
-            border-radius: 10px;
-            font-size: 13px;
-            display: none;
-            background: rgba(255, 255, 255, 0.03);
-        }
+        #customToast.active { top: 30px; }
     </style>
 </head>
 <body>
 
+<div class="scanlines"></div>
+<canvas id="graphicsCanvas"></canvas>
+
+<div id="customToast">
+    <i class="fa-solid fa-shield-halved" style="color: var(--primary);"></i>
+    <span id="toastMsg">Securing connection...</span>
+</div>
+
 <div class="auth-container">
-    <h2 id="title">Sign In</h2>
-    <p class="subtitle" id="subtitle">Log in to your SMAT account</p>
+    <div class="logo-circle">
+        <img src="assets/logos/oxsmat.png" alt="SMAT">
+    </div>
+    <h1 class="brand-name">SMAT <span>EXCHANGE</span></h1>
+    <p class="sub-desc" id="uiLabel">Welcome to SMAT Exchange </p>
 
-    <div class="input-group">
-        <label>Email Address</label>
-        <input type="email" id="email" placeholder="email@example.com">
+    <div class="form-group">
+        <label>Account Email</label>
+        <input type="email" id="email" placeholder="welcome@smat.com">
     </div>
 
-    <div class="input-group">
-        <label>
-            Password 
-            <span id="passStatus" class="pass-hint"></span>
-        </label>
-        <input type="password" id="password" placeholder="••••••••" oninput="validatePassword()">
+    <div class="form-group">
+        <label>Security Key <span id="passState" style="float: right; text-transform: none;"></span></label>
+        <div class="pass-box">
+            <input type="password" id="password" placeholder="••••••••" oninput="liveCheck()">
+            <i class="fa-solid fa-eye eye-icon" onclick="togglePass()"></i>
+        </div>
     </div>
 
-    <button id="btn" onclick="handleAuth()">Login</button>
+    <button id="actionBtn" onclick="executeAuth()">LOGIN</button>
 
-    <div id="message" class="msg"></div>
-
-    <div class="footer-links">
-        <div class="toggle-link" id="toggleLink" onclick="toggleForm()">Create account</div>
-        <div class="forgot-pass" onclick="resetPass()">Forgot password?</div>
+    <div class="auth-footer">
+        <span class="link-primary" id="uiSwitch" onclick="switchUI()">Register new account</span>
+        <span class="link-secondary" onclick="forgotPass()">Recover password?</span>
     </div>
 </div>
 
 <script type="module">
-  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-  import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, sendEmailVerification, sendPasswordResetEmail } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
-  import { getDatabase, ref, set, get, runTransaction } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+    import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, sendEmailVerification, sendPasswordResetEmail } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+    import { getDatabase, ref, set, get, runTransaction } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
 
-  const firebaseConfig = {
-    apiKey: "AIzaSyAMxtJedkehhxJRMPZLjhpKHqneHEWsGlE",
-    authDomain: "smat-exchange.firebaseapp.com",
-    projectId: "smat-exchange",
-    storageBucket: "smat-exchange.firebasestorage.app",
-    messagingSenderId: "836334569396",
-    appId: "1:836334569396:web:679effe640b3453412d4e1",
-    measurementId: "G-FCE3H3F18V"
-  };
+    const firebaseConfig = {
+        apiKey: "AIzaSyAMxtJedkehhxJRMPZLjhpKHqneHEWsGlE",
+        authDomain: "smat-exchange.firebaseapp.com",
+        projectId: "smat-exchange",
+        storageBucket: "smat-exchange.firebasestorage.app",
+        messagingSenderId: "836334569396",
+        appId: "1:836334569396:web:679effe640b3453412d4e1"
+    };
 
-  const app = initializeApp(firebaseConfig);
-  const auth = getAuth(app);
-  const db = getDatabase(app);
+    const app = initializeApp(firebaseConfig);
+    const auth = getAuth(app);
+    const db = getDatabase(app);
 
-  let isLogin = true;
+    // --- ১. Pure Code Graphics (Moving Matrix Grid) ---
+    const canvas = document.getElementById('graphicsCanvas');
+    const ctx = canvas.getContext('2d');
+    let w, h;
 
-  // --- Referral Detection ---
-  const urlParams = new URLSearchParams(window.location.search);
-  const referralID = urlParams.get('ref') || null;
-
-  window.validatePassword = () => {
-    const pass = document.getElementById('password').value;
-    const status = document.getElementById('passStatus');
-    const submitBtn = document.getElementById('btn');
-    const regex = /^(?=.*[A-Za-z])(?=.*\d)[A-Za-z\d]{8,}$/;
-
-    if (pass === "") {
-        status.innerText = "";
-        submitBtn.disabled = false;
-        return;
+    function resize() {
+        w = canvas.width = window.innerWidth;
+        h = canvas.height = window.innerHeight;
     }
+    window.addEventListener('resize', resize);
+    resize();
 
-    if (regex.test(pass)) {
-        status.innerText = "✓ Strong";
-        status.style.color = "#00ff88";
-        submitBtn.disabled = false;
-    } else {
-        status.innerText = "Min 8 chars, Letter & Number";
-        status.style.color = "#ff4d4d";
-        if(!isLogin) submitBtn.disabled = true;
-    }
-  };
-
-  window.toggleForm = () => {
-    isLogin = !isLogin;
-    document.getElementById('title').innerText = isLogin ? "Sign In" : "Register";
-    document.getElementById('subtitle').innerText = isLogin ? "Log in to your SMAT account" : "Join the SMAT ecosystem today";
-    document.getElementById('btn').innerText = isLogin ? "Login" : "Create Account";
-    document.getElementById('toggleLink').innerText = isLogin ? "Create account" : "Already have an account? Sign In";
-    document.getElementById('message').style.display = "none";
-    document.getElementById('passStatus').innerText = "";
-    document.getElementById('btn').disabled = false;
-  };
-
-  const generateSmatID = async () => {
-    const counterRef = ref(db, 'counters/lastSmatId');
-    const result = await runTransaction(counterRef, (currentValue) => {
-      return (currentValue || 100000) + 1;
-    });
-    return "SMAT" + result.snapshot.val();
-  };
-
-  window.handleAuth = async () => {
-    const email = document.getElementById('email').value;
-    const pass = document.getElementById('password').value;
-    const msgBox = document.getElementById('message');
-    
-    if(!email || !pass) return alert("Please fill all fields");
-
-    msgBox.style.display = "block";
-    msgBox.style.color = "white";
-    msgBox.innerText = "Processing...";
-
-    try {
-      if (isLogin) {
-        const userCredential = await signInWithEmailAndPassword(auth, email, pass);
-        
-        if (userCredential.user.emailVerified) {
-          const userSnapshot = await get(ref(db, 'users/' + userCredential.user.uid));
-          if(userSnapshot.exists()){
-            localStorage.setItem('smatID', userSnapshot.val().smatID);
-          }
-          
-          localStorage.setItem('isLoggedIn', 'true');
-          localStorage.setItem('userEmail', email);
-          window.location.href = "home.html"; 
-        } else {
-          msgBox.style.color = "#f3ba2f";
-          msgBox.innerText = "Please verify your email first!";
-        }
-      } else {
-        const userCredential = await createUserWithEmailAndPassword(auth, email, pass);
-        const newUser = userCredential.user;
-        const newSmatID = await generateSmatID();
-
-        // ডেটাবেজে ইউজারের তথ্য সেভ করা (রেফারেলসহ)
-        await set(ref(db, 'users/' + newUser.uid), {
-          email: email,
-          smatID: newSmatID,
-          kycStatus: 'unverified',
-          referredBy: referralID, // URL থেকে পাওয়া রেফারেল আইডি এখানে সেভ হবে
-          createdAt: new Date().toISOString()
+    const dots = [];
+    for(let i=0; i<60; i++) {
+        dots.push({
+            x: Math.random() * w,
+            y: Math.random() * h,
+            vx: (Math.random() - 0.5) * 0.5,
+            vy: (Math.random() - 0.5) * 0.5
         });
-
-        await sendEmailVerification(newUser);
-        msgBox.style.color = "#00ff88";
-        msgBox.innerText = "Verification link sent! Check your Gmail.";
-      }
-    } catch (e) {
-      msgBox.style.color = "#ff4d4d";
-      msgBox.innerText = e.message;
     }
-  };
 
-  window.resetPass = async () => {
-    const email = document.getElementById('email').value;
-    if(!email) return alert("Enter email first.");
-    try {
-        await sendPasswordResetEmail(auth, email);
-        alert("Password reset link sent to your email!");
-    } catch (e) { alert(e.message); }
-  };
+    function draw() {
+        ctx.fillStyle = "rgba(0, 0, 0, 0.1)";
+        ctx.fillRect(0, 0, w, h);
+        ctx.strokeStyle = "rgba(0, 255, 136, 0.15)";
+        ctx.lineWidth = 0.5;
+
+        dots.forEach(d => {
+            d.x += d.vx;
+            d.y += d.vy;
+            if(d.x < 0 || d.x > w) d.vx *= -1;
+            if(d.y < 0 || d.y > h) d.vy *= -1;
+
+            ctx.beginPath();
+            ctx.arc(d.x, d.y, 1, 0, Math.PI * 2);
+            ctx.fillStyle = "rgba(0, 255, 136, 0.5)";
+            ctx.fill();
+
+            dots.forEach(d2 => {
+                let dist = Math.hypot(d.x - d2.x, d.y - d2.y);
+                if(dist < 150) {
+                    ctx.beginPath();
+                    ctx.moveTo(d.x, d.y);
+                    ctx.lineTo(d2.x, d2.y);
+                    ctx.stroke();
+                }
+            });
+        });
+        requestAnimationFrame(draw);
+    }
+    draw();
+
+    // --- ২. আপনার অরিজিনাল লজিক (SMAT ID, Referral, Firebase) ---
+    let loginMode = true;
+    const urlParams = new URLSearchParams(window.location.search);
+    const referralID = urlParams.get('ref') || null;
+
+    window.popToast = (msg, err = false) => {
+        const t = document.getElementById('customToast');
+        document.getElementById('toastMsg').innerText = msg;
+        t.style.borderLeftColor = err ? "#ff4d4d" : "#00ff88";
+        t.classList.add('active');
+        setTimeout(() => t.classList.remove('active'), 3000);
+    };
+
+    window.togglePass = () => {
+        const p = document.getElementById('password');
+        p.type = p.type === 'password' ? 'text' : 'password';
+    };
+
+    window.liveCheck = () => {
+        const val = document.getElementById('password').value;
+        const state = document.getElementById('passState');
+        const btn = document.getElementById('actionBtn');
+        const regex = /^(?=.*[A-Za-z])(?=.*\d)[A-Za-z\d]{8,}$/;
+
+        if(val === "") { state.innerText = ""; return; }
+        if(regex.test(val)) {
+            state.innerHTML = '<i class="fa-solid fa-circle-check"></i> Strong';
+            state.style.color = "#00ff88";
+            btn.disabled = false;
+        } else {
+            state.innerText = "Min 8 Chars (Letter + Number)";
+            state.style.color = "#ff4d4d";
+            if(!loginMode) btn.disabled = true;
+        }
+    };
+
+    window.switchUI = () => {
+        loginMode = !loginMode;
+        document.getElementById('uiLabel').innerText = loginMode ? "Welcome to SMAT Exchange " : "All in One Exchange Platform";
+        document.getElementById('actionBtn').innerText = loginMode ? "LOGIN" : "REGISTER";
+        document.getElementById('uiSwitch').innerText = loginMode ? "Register new account" : "Sign in instead";
+        document.getElementById('passState').innerText = "";
+    };
+
+    const getSmatID = async () => {
+        const counterRef = ref(db, 'counters/lastSmatId');
+        const result = await runTransaction(counterRef, (v) => (v || 100000) + 1);
+        return "SMAT" + result.snapshot.val();
+    };
+
+    window.executeAuth = async () => {
+        const email = document.getElementById('email').value;
+        const pass = document.getElementById('password').value;
+        if(!email || !pass) return popToast("Details missing!", true);
+
+        popToast("Connecting to SMAT...");
+        try {
+            if (loginMode) {
+                const res = await signInWithEmailAndPassword(auth, email, pass);
+                if (res.user.emailVerified) {
+                    const snap = await get(ref(db, 'users/' + res.user.uid));
+                    if(snap.exists()) localStorage.setItem('smatID', snap.val().smatID);
+                    localStorage.setItem('isLoggedIn', 'true');
+                    window.location.href = "home.html"; 
+                } else popToast("Please verify your email address!", true);
+            } else {
+                const res = await createUserWithEmailAndPassword(auth, email, pass);
+                const sID = await getSmatID();
+                await set(ref(db, 'users/' + res.user.uid), {
+                    email, smatID: sID, kycStatus: 'unverified', referredBy: referralID, createdAt: new Date().toISOString()
+                });
+                await sendEmailVerification(res.user);
+                popToast("Verification link send to Gmail!");
+            }
+        } catch (e) { popToast(e.message, true); }
+    };
+
+    window.forgotPass = async () => {
+        const email = document.getElementById('email').value;
+        if(!email) return popToast("Enter email first!", true);
+        try {
+            await sendPasswordResetEmail(auth, email);
+            popToast("Recovery instructions sent!");
+        } catch (e) { popToast(e.message, true); }
+    };
 </script>
-
 </body>
 </html>
