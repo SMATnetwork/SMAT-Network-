@@ -143,18 +143,14 @@
     let user = null;
     let uData = {};
     let referrals = [];
-    
-    // ১. Base Mining Rate: 0.00125 per Hour
     const BASE_MINING_HOURLY = 0.00125; 
     const BASE_MINING_SECOND = BASE_MINING_HOURLY / 3600;
-
     let displaySmat = 0;
     let isUpdating = false;
 
-    // Toast Notification Function
     function showToast(msg, type = "success") {
         const toast = document.createElement("div");
-        toast.style.cssText = `fixed; bottom: 100px; left: 50%; transform: translateX(-50%); background: ${type === 'success' ? '#0ecb81' : '#f6465d'}; color: white; padding: 12px 25px; border-radius: 50px; z-index: 10000; font-weight: bold; font-size: 13px; box-shadow: 0 10px 20px rgba(0,0,0,0.3);`;
+        toast.style.cssText = `position: fixed; bottom: 100px; left: 50%; transform: translateX(-50%); background: ${type === 'success' ? '#0ecb81' : '#f6465d'}; color: white; padding: 12px 25px; border-radius: 50px; z-index: 10000; font-weight: bold; font-size: 13px; box-shadow: 0 10px 20px rgba(0,0,0,0.3);`;
         toast.innerText = msg;
         document.body.appendChild(toast);
         setTimeout(() => toast.remove(), 3000);
@@ -165,11 +161,9 @@
             user = u;
             onValue(ref(db, `users/${u.uid}`), (snap) => {
                 uData = snap.val() || {};
-                // নাম ডায়নামিক রাখা হয়েছে
                 uData.oxBalance = parseFloat(uData.oxsmat_balance) || 0; 
                 uData.oxStaked = parseFloat(uData.oxStaked) || 0;
                 uData.sessionSmat = parseFloat(uData.sessionSmat) || 0;
-                
                 if(uData.smatID) syncRefs(uData.smatID);
                 updateUI();
             });
@@ -186,8 +180,6 @@
     function updateUI() {
         if(!user) return;
         const activeRefs = referrals.filter(r => r.miningActive === true).length;
-        
-        // সব বুস্ট লজিক
         let cBoost = parseFloat(uData.crashVol_6am) || 0;
         let pBoost = parseFloat(uData.predVol_6am) || 0;
         let sBoost = uData.oxStaked * 10;
@@ -216,16 +208,11 @@
 
     window.triggerMining = () => {
         if(uData.miningActive) return;
-        update(ref(db, `users/${user.uid}`), {
-            miningActive: true,
-            mineEndTime: Date.now() + 86400000,
-            sessionSmat: 0
-        });
+        update(ref(db, `users/${user.uid}`), { miningActive: true, mineEndTime: Date.now() + 86400000, sessionSmat: 0 });
         displaySmat = 0;
         showToast("Mining Started!");
     };
 
-    // ৩. oxSMAT Boost (Staking & Unstaking Logic with Fee)
     window.openActionModal = (mode) => {
         const modal = document.getElementById('actionModal');
         document.getElementById('modalTitle').innerText = mode === 'stake' ? "Stake oxSMAT" : "Unstake oxSMAT";
@@ -241,26 +228,59 @@
         if(!amount || amount <= 0) return showToast("Enter valid amount", "error");
         
         const uRef = ref(db, `users/${user.uid}`);
+        const historyRef = push(ref(db, `users/${user.uid}/history`));
+
         if(mode === 'stake') {
             if(amount > uData.oxBalance) return showToast("Insufficient oxSMAT", "error");
-            await update(uRef, { 
-                oxsmat_balance: (uData.oxBalance - amount).toFixed(8), 
-                oxStaked: (uData.oxStaked + amount).toFixed(8), 
-                lastStakeTime: Date.now() 
-            });
+            
+            const updates = {};
+            updates[`users/${user.uid}/oxsmat_balance`] = (uData.oxBalance - amount).toFixed(8);
+            updates[`users/${user.uid}/oxStaked`] = (uData.oxStaked + amount).toFixed(8);
+            updates[`users/${user.uid}/lastStakeTime`] = Date.now();
+            
+            updates[`users/${user.uid}/history/${historyRef.key}`] = {
+                method: "Stake oxSMAT",
+                amount: amount.toFixed(2),
+                coin: "oxSMAT",
+                status: "success",
+                timestamp: Date.now(),
+                date: new Date().toLocaleDateString(),
+                target: "To Mining Boost"
+            };
+
+            await update(ref(db), updates);
             showToast("Staked Successfully!");
         } else {
             if(amount > uData.oxStaked) return showToast("Insufficient Staked Amount", "error");
+            
             let receive = amount;
-            if(Date.now() - (uData.lastStakeTime || 0) < 604800000) { 
-                receive = amount * 0.99; // ১% ফি
-                showToast("1% Early Unstake Fee deducted", "error");
+            let fee = 0;
+            const isEarly = (Date.now() - (uData.lastStakeTime || 0) < 604800000);
+
+            if(isEarly) {
+                fee = amount * 0.01;
+                receive = amount - fee;
+                const confirmEarly = confirm(`Early Unstake Warning!\n\nFee: ${fee.toFixed(4)} oxSMAT (1%)\nYou will receive: ${receive.toFixed(4)} oxSMAT\n\nDo you want to proceed?`);
+                if(!confirmEarly) return;
             }
-            await update(uRef, { 
-                oxsmat_balance: (uData.oxBalance + receive).toFixed(8), 
-                oxStaked: (uData.oxStaked - amount).toFixed(8) 
-            });
-            showToast("Unstaked Successfully!");
+
+            const updates = {};
+            updates[`users/${user.uid}/oxsmat_balance`] = (uData.oxBalance + receive).toFixed(8);
+            updates[`users/${user.uid}/oxStaked`] = (uData.oxStaked - amount).toFixed(8);
+            
+            updates[`users/${user.uid}/history/${historyRef.key}`] = {
+                method: isEarly ? "Unstake (Early)" : "Unstake",
+                amount: receive.toFixed(4),
+                coin: "oxSMAT",
+                status: "success",
+                fee: fee > 0 ? fee.toFixed(4) : "0.00",
+                timestamp: Date.now(),
+                date: new Date().toLocaleDateString(),
+                target: "To Wallet"
+            };
+
+            await update(ref(db), updates);
+            showToast(isEarly ? `Unstaked with 1% fee` : "Unstaked Successfully!");
         }
         closeModals();
     }
@@ -273,7 +293,6 @@
     // --- MAIN MINING LOOP ---
     setInterval(async () => {
         if (!uData.miningActive || !user || !uData.mineEndTime || isUpdating) return;
-        
         let now = Date.now();
         let remain = uData.mineEndTime - now;
         
@@ -281,14 +300,12 @@
             isUpdating = true;
             const minedAmount = parseFloat(displaySmat || uData.sessionSmat) || 0;
             const currentWalletSmat = parseFloat(uData.smat_balance) || 0;
-            
             const updates = {};
             updates[`users/${user.uid}/smat_balance`] = (currentWalletSmat + minedAmount).toFixed(8);
             updates[`users/${user.uid}/miningActive`] = false;
             updates[`users/${user.uid}/sessionSmat`] = 0;
             updates[`users/${user.uid}/mineEndTime`] = 0;
 
-            // হিস্ট্রি ডাটা
             const historyRef = push(ref(db, `users/${user.uid}/history`));
             updates[`users/${user.uid}/history/${historyRef.key}`] = {
                 method: "Mining Rewards",
@@ -306,11 +323,8 @@
             try {
                 await update(ref(db), updates);
                 showToast(`Success! ${minedAmount.toFixed(4)} SMAT added.`);
-                setTimeout(() => location.reload(), 2000); // ২ সেকেন্ড পর রিলোড
-            } catch (e) {
-                isUpdating = false;
-            }
-
+                setTimeout(() => location.reload(), 2000);
+            } catch (e) { isUpdating = false; }
         } else {
             let h = Math.floor(remain / 3600000).toString().padStart(2, '0');
             let m = Math.floor((remain % 3600000) / 60000).toString().padStart(2, '0');
@@ -318,15 +332,9 @@
             document.getElementById('timer').innerText = `${h}:${m}:${s}`;
 
             const activeCount = referrals.filter(r => r.miningActive).length;
-            
-            // বুস্ট ক্যালকুলেশন
-            let speed = 1.0 + (parseFloat(uData.crashVol_6am) || 0) + 
-                        (parseFloat(uData.predVol_6am) || 0) + 
-                        ((parseFloat(uData.oxStaked) || 0) * 10) + 
-                        (activeCount * 1.0);
+            let speed = 1.0 + (parseFloat(uData.crashVol_6am) || 0) + (parseFloat(uData.predVol_6am) || 0) + ((parseFloat(uData.oxStaked) || 0) * 10) + (activeCount * 1.0);
 
             if (!displaySmat || displaySmat === 0) displaySmat = parseFloat(uData.sessionSmat) || 0;
-            
             displaySmat += (BASE_MINING_SECOND * speed);
             document.getElementById('session-smat').innerText = displaySmat.toFixed(8);
 
@@ -351,6 +359,7 @@
         modal.style.display = 'flex';
     };
 </script>
+
 
 </body>
 </html>
