@@ -170,13 +170,15 @@
     const auth = firebase.auth();
 
     let userUID = null;
-    let prices = { USDT: 1, BNB: 0, ETH: 0, oxSMAT: 8 };
+    // oxSMAT শুরুতে 0 রাখা হয়েছে, এটি Firebase থেকে আপডেট হবে
+    let prices = { USDT: 1, BNB: 0, ETH: 0, oxSMAT: 0 }; 
     let userBalances = { USDT: 0, BNB: 0, ETH: 0, oxSMAT: 0 };
 
     auth.onAuthStateChanged(user => {
         if (user) { 
             userUID = user.uid; 
             syncBalances(); 
+            syncOxSmatPrice(); // oxSMAT এর লাইভ প্রাইস লিসেনার চালু
         } else {
             resetToZero();
             window.location.href = "login.html"; 
@@ -184,21 +186,36 @@
     });
 
     function resetToZero() {
-        document.getElementById('bal-from').innerText = "0.00";
-        document.getElementById('bal-to').innerText = "0.00";
+        const balFrom = document.getElementById('bal-from');
+        const balTo = document.getElementById('bal-to');
+        if(balFrom) balFrom.innerText = "0.00";
+        if(balTo) balTo.innerText = "0.00";
     }
 
+    // BNB এবং ETH এর দাম বিন্যান্স থেকে আনা হচ্ছে
     async function fetchPrices() {
         try {
             const [b, e] = await Promise.all([
                 fetch('https://api.binance.com/api/v3/ticker/price?symbol=BNBUSDT'),
                 fetch('https://api.binance.com/api/v3/ticker/price?symbol=ETHUSDT')
             ]);
-            const bj = await b.json(); const ej = await e.json();
+            const bj = await b.json(); 
+            const ej = await e.json();
             prices.BNB = parseFloat(bj.price);
             prices.ETH = parseFloat(ej.price);
             calculate();
-        } catch (err) { console.log("Price fetch fail"); }
+        } catch (err) { console.log("External Price fetch fail"); }
+    }
+
+    // oxSMAT এর দাম সরাসরি ট্রেড পেজের (Firebase) ডাটা থেকে আনা হচ্ছে
+    function syncOxSmatPrice() {
+        db.ref('market/oxsmat/price').on('value', snap => {
+            const livePrice = parseFloat(snap.val());
+            if (livePrice) {
+                prices.oxSMAT = livePrice;
+                calculate();
+            }
+        });
     }
 
     function syncBalances() {
@@ -208,7 +225,7 @@
                 userBalances.USDT = parseFloat(d.usdt_balance) || 0;
                 userBalances.BNB = parseFloat(d.bnb_balance) || 0;
                 userBalances.ETH = parseFloat(d.eth_balance) || 0;
-                userBalances.oxSMAT = parseFloat(d.oxsmat_balance) || 0; // Correctly calling oxsmat_balance
+                userBalances.oxSMAT = parseFloat(d.oxsmat_balance) || 0;
                 updateUIBalances();
             }
         });
@@ -228,6 +245,12 @@
         const t = document.getElementById('select-to').value;
         const input = parseFloat(document.getElementById('input-from').value) || 0;
         
+        // যদি দাম এখনো লোড না হয় (০ থাকে)
+        if (prices[f] === 0 || prices[t] === 0) {
+            document.getElementById('live-rate').innerText = "Updating price...";
+            return;
+        }
+
         const fee = input * 0.001;
         const netInput = input - fee;
         const out = (netInput * prices[f]) / prices[t];
@@ -285,6 +308,7 @@
 
         if(!fAmt || fAmt <= 0) return showToast("ERROR", "Please enter a valid amount");
         if(f === t) return showToast("ERROR", "Cannot swap the same coin");
+        if(prices[f] === 0 || prices[t] === 0) return showToast("ERROR", "Price data not ready");
 
         document.getElementById('btn-loader').style.display = 'block';
         document.getElementById('btn-text').innerText = 'PROCESSING...';
@@ -302,13 +326,13 @@
 
             const logKey = db.ref(`users/${userUID}/history`).push().key;
             up[`users/${userUID}/history/${logKey}`] = {
-                method: `SWAP ${f} TO ${t}`, // Title for Wallet History
+                method: `SWAP ${f} TO ${t}`,
                 amount: tAmt.toFixed(6),
                 coin: t,
                 status: 'success',
                 timestamp: Date.now(),
-                address: "Internal System", // Fixed Undefined Address
-                network: "DexSwap",         // Fixed Undefined Network
+                address: "Internal System",
+                network: "DexSwap",
                 hash: "SWAP-" + Math.random().toString(36).substr(2, 9).toUpperCase()
             };
 
@@ -326,8 +350,15 @@
         document.getElementById('swap-btn').disabled = false;
     }
 
+    // প্রতি ১৫ সেকেন্ডে বিন্যান্স প্রাইস আপডেট
     setInterval(fetchPrices, 15000);
-    window.onload = fetchPrices;
+    
+    // উইন্ডো লোড হলে সব শুরু হবে
+    window.onload = function() {
+        fetchPrices();
+        // oxSMAT এর প্রাইস লিসেনার auth চ্যাঞ্জ হ্যান্ডলারে আগেই কল করা হয়েছে
+    };
 </script>
+
 </body>
 </html>
