@@ -125,225 +125,232 @@
 
 
     <script type="module">
-        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-        import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
-        import { getDatabase, ref, onValue, update, query, orderByChild, equalTo } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+    import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+    import { getDatabase, ref, onValue, update, query, orderByChild, equalTo, push } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
 
-        const firebaseConfig = {
-            apiKey: "AIzaSyAMxtJedkehhxJRMPZLjhpKHqneHEWsGlE",
-            authDomain: "smat-exchange.firebaseapp.com",
-            projectId: "smat-exchange",
-            databaseURL: "https://smat-exchange-default-rtdb.firebaseio.com"
-        };
+    const firebaseConfig = {
+        apiKey: "AIzaSyAMxtJedkehhxJRMPZLjhpKHqneHEWsGlE",
+        authDomain: "smat-exchange.firebaseapp.com",
+        projectId: "smat-exchange",
+        databaseURL: "https://smat-exchange-default-rtdb.firebaseio.com"
+    };
 
-        const app = initializeApp(firebaseConfig);
-        const auth = getAuth(app);
-        const db = getDatabase(app);
+    const app = initializeApp(firebaseConfig);
+    const auth = getAuth(app);
+    const db = getDatabase(app);
 
-        let user = null;
-let uData = {};
-let referrals = [];
-const BASE_MINING = 0.00005;
-let displaySmat = 0; // এই লাইনে বসান
+    let user = null;
+    let uData = {};
+    let referrals = [];
+    
+    // ১. Base Mining Rate: 0.00125 per Hour
+    const BASE_MINING_HOURLY = 0.00125; 
+    const BASE_MINING_SECOND = BASE_MINING_HOURLY / 3600;
 
+    let displaySmat = 0;
+    let isUpdating = false;
 
-        onAuthStateChanged(auth, (u) => {
-    if (u) {
-        user = u;
-        onValue(ref(db, `users/${u.uid}`), (snap) => {
-            uData = snap.val() || {};
-            // আপনার ডাইনামিক সিস্টেম অনুযায়ী সঠিক ব্যালেন্স রিড করা
-            uData.oxBalance = parseFloat(uData.oxsmat_balance) || 0; 
-            uData.oxStaked = parseFloat(uData.oxStaked) || 0;
-            uData.sessionSmat = parseFloat(uData.sessionSmat) || 0;
-            
-            if(uData.smatID) syncRefs(uData.smatID);
-            updateUI();
-        });
-    } else { window.location.href = 'logIn.html'; }
-});
+    // Toast Notification Function
+    function showToast(msg, type = "success") {
+        const toast = document.createElement("div");
+        toast.style.cssText = `fixed; bottom: 100px; left: 50%; transform: translateX(-50%); background: ${type === 'success' ? '#0ecb81' : '#f6465d'}; color: white; padding: 12px 25px; border-radius: 50px; z-index: 10000; font-weight: bold; font-size: 13px; box-shadow: 0 10px 20px rgba(0,0,0,0.3);`;
+        toast.innerText = msg;
+        document.body.appendChild(toast);
+        setTimeout(() => toast.remove(), 3000);
+    }
 
-
-        function syncRefs(sid) {
-            onValue(query(ref(db, 'users'), orderByChild('referredBy'), equalTo(sid)), (snap) => {
-                referrals = snap.val() ? Object.values(snap.val()) : [];
+    onAuthStateChanged(auth, (u) => {
+        if (u) {
+            user = u;
+            onValue(ref(db, `users/${u.uid}`), (snap) => {
+                uData = snap.val() || {};
+                // নাম ডায়নামিক রাখা হয়েছে
+                uData.oxBalance = parseFloat(uData.oxsmat_balance) || 0; 
+                uData.oxStaked = parseFloat(uData.oxStaked) || 0;
+                uData.sessionSmat = parseFloat(uData.sessionSmat) || 0;
+                
+                if(uData.smatID) syncRefs(uData.smatID);
                 updateUI();
             });
+        } else { window.location.href = 'logIn.html'; }
+    });
+
+    function syncRefs(sid) {
+        onValue(query(ref(db, 'users'), orderByChild('referredBy'), equalTo(sid)), (snap) => {
+            referrals = snap.val() ? Object.values(snap.val()) : [];
+            updateUI();
+        });
+    }
+
+    function updateUI() {
+        if(!user) return;
+        const activeRefs = referrals.filter(r => r.miningActive === true).length;
+        
+        // সব বুস্ট লজিক
+        let cBoost = parseFloat(uData.crashVol_6am) || 0;
+        let pBoost = parseFloat(uData.predVol_6am) || 0;
+        let sBoost = uData.oxStaked * 10;
+        let rBoost = activeRefs * 1.0;
+        let totalSpeed = 1.0 + cBoost + pBoost + sBoost + rBoost;
+
+        document.getElementById('user-display-id').innerText = uData.smatID || "Assigning...";
+        document.getElementById('ox-staked-val').innerText = uData.oxStaked.toFixed(2);
+        document.getElementById('active-ref-count').innerText = activeRefs;
+        document.getElementById('total-boost').innerText = totalSpeed.toFixed(2) + "x";
+        document.getElementById('crash-boost').innerText = `+${cBoost}x`;
+        document.getElementById('pred-boost').innerText = `+${pBoost}x`;
+        document.getElementById('session-smat').innerText = (displaySmat || uData.sessionSmat).toFixed(8);
+
+        if(uData.miningActive) {
+            document.getElementById('hub').classList.add('active-glow');
+            document.getElementById('h-status').innerText = "MINING ACTIVE";
+            document.getElementById('h-status').style.color = "#0ecb81";
+        } else {
+            document.getElementById('hub').classList.remove('active-glow');
+            document.getElementById('h-status').innerText = "OFFLINE";
+            document.getElementById('h-status').style.color = "#848e9c";
+            document.getElementById('timer').innerText = "24:00:00";
         }
+    }
 
-        function updateUI() {
-            if(!user) return;
-            const activeRefs = referrals.filter(r => r.miningActive === true).length;
+    window.triggerMining = () => {
+        if(uData.miningActive) return;
+        update(ref(db, `users/${user.uid}`), {
+            miningActive: true,
+            mineEndTime: Date.now() + 86400000,
+            sessionSmat: 0
+        });
+        displaySmat = 0;
+        showToast("Mining Started!");
+    };
+
+    // ৩. oxSMAT Boost (Staking & Unstaking Logic with Fee)
+    window.openActionModal = (mode) => {
+        const modal = document.getElementById('actionModal');
+        document.getElementById('modalTitle').innerText = mode === 'stake' ? "Stake oxSMAT" : "Unstake oxSMAT";
+        document.getElementById('available-bal').innerText = mode === 'stake' ? uData.oxBalance.toFixed(2) : uData.oxStaked.toFixed(2);
+        const isEarly = mode === 'unstake' && (Date.now() - (uData.lastStakeTime || 0) < 604800000);
+        document.getElementById('feeNotice').classList.toggle('hidden', !isEarly);
+        modal.style.display = 'flex';
+        document.getElementById('confirmBtn').onclick = () => handleStaking(mode);
+    };
+
+    async function handleStaking(mode) {
+        const amount = parseFloat(document.getElementById('amountInput').value);
+        if(!amount || amount <= 0) return showToast("Enter valid amount", "error");
+        
+        const uRef = ref(db, `users/${user.uid}`);
+        if(mode === 'stake') {
+            if(amount > uData.oxBalance) return showToast("Insufficient oxSMAT", "error");
+            await update(uRef, { 
+                oxsmat_balance: (uData.oxBalance - amount).toFixed(8), 
+                oxStaked: (uData.oxStaked + amount).toFixed(8), 
+                lastStakeTime: Date.now() 
+            });
+            showToast("Staked Successfully!");
+        } else {
+            if(amount > uData.oxStaked) return showToast("Insufficient Staked Amount", "error");
+            let receive = amount;
+            if(Date.now() - (uData.lastStakeTime || 0) < 604800000) { 
+                receive = amount * 0.99; // ১% ফি
+                showToast("1% Early Unstake Fee deducted", "error");
+            }
+            await update(uRef, { 
+                oxsmat_balance: (uData.oxBalance + receive).toFixed(8), 
+                oxStaked: (uData.oxStaked - amount).toFixed(8) 
+            });
+            showToast("Unstaked Successfully!");
+        }
+        closeModals();
+    }
+
+    window.closeModals = () => {
+        document.getElementById('actionModal').style.display = 'none';
+        document.getElementById('referralModal').style.display = 'none';
+    };
+
+    // --- MAIN MINING LOOP ---
+    setInterval(async () => {
+        if (!uData.miningActive || !user || !uData.mineEndTime || isUpdating) return;
+        
+        let now = Date.now();
+        let remain = uData.mineEndTime - now;
+        
+        if (remain <= 0) {
+            isUpdating = true;
+            const minedAmount = parseFloat(displaySmat || uData.sessionSmat) || 0;
+            const currentWalletSmat = parseFloat(uData.smat_balance) || 0;
             
-            let cBoost = parseFloat(uData.crashVol_6am) || 0;
-            let pBoost = parseFloat(uData.predVol_6am) || 0;
-            let sBoost = uData.oxStaked * 10;
-            let rBoost = activeRefs * 1.0;
-            let totalSpeed = 1.0 + cBoost + pBoost + sBoost + rBoost;
+            const updates = {};
+            updates[`users/${user.uid}/smat_balance`] = (currentWalletSmat + minedAmount).toFixed(8);
+            updates[`users/${user.uid}/miningActive`] = false;
+            updates[`users/${user.uid}/sessionSmat`] = 0;
+            updates[`users/${user.uid}/mineEndTime`] = 0;
 
-            document.getElementById('user-display-id').innerText = uData.smatID || "Assigning...";
-            document.getElementById('ox-staked-val').innerText = uData.oxStaked.toFixed(2);
-            document.getElementById('active-ref-count').innerText = activeRefs;
-            document.getElementById('total-boost').innerText = totalSpeed.toFixed(2) + "x";
-            document.getElementById('crash-boost').innerText = `+${cBoost}x`;
-            document.getElementById('pred-boost').innerText = `+${pBoost}x`;
-            document.getElementById('session-smat').innerText = uData.sessionSmat.toFixed(8);
+            // হিস্ট্রি ডাটা
+            const historyRef = push(ref(db, `users/${user.uid}/history`));
+            updates[`users/${user.uid}/history/${historyRef.key}`] = {
+                method: "Mining Rewards",
+                amount: minedAmount.toFixed(8),
+                coin: "SMAT",
+                status: "success",
+                network: "SMAT Testnet",
+                hash: "SMAT-MINE-" + Math.random().toString(36).substr(2, 9).toUpperCase(),
+                timestamp: Date.now(),
+                address: "Internal Mining Pool",
+                date: new Date().toLocaleDateString(),
+                target: "From Mining"
+            };
 
-            if(uData.miningActive) {
-                document.getElementById('hub').classList.add('active-glow');
-                document.getElementById('h-status').innerText = "MINING ACTIVE";
-                document.getElementById('h-status').style.color = "#0ecb81";
-            } else {
-                document.getElementById('hub').classList.remove('active-glow');
-                document.getElementById('h-status').innerText = "OFFLINE";
-                document.getElementById('h-status').style.color = "#848e9c";
+            try {
+                await update(ref(db), updates);
+                showToast(`Success! ${minedAmount.toFixed(4)} SMAT added.`);
+                setTimeout(() => location.reload(), 2000); // ২ সেকেন্ড পর রিলোড
+            } catch (e) {
+                isUpdating = false;
+            }
+
+        } else {
+            let h = Math.floor(remain / 3600000).toString().padStart(2, '0');
+            let m = Math.floor((remain % 3600000) / 60000).toString().padStart(2, '0');
+            let s = Math.floor((remain % 60000) / 1000).toString().padStart(2, '0');
+            document.getElementById('timer').innerText = `${h}:${m}:${s}`;
+
+            const activeCount = referrals.filter(r => r.miningActive).length;
+            
+            // বুস্ট ক্যালকুলেশন
+            let speed = 1.0 + (parseFloat(uData.crashVol_6am) || 0) + 
+                        (parseFloat(uData.predVol_6am) || 0) + 
+                        ((parseFloat(uData.oxStaked) || 0) * 10) + 
+                        (activeCount * 1.0);
+
+            if (!displaySmat || displaySmat === 0) displaySmat = parseFloat(uData.sessionSmat) || 0;
+            
+            displaySmat += (BASE_MINING_SECOND * speed);
+            document.getElementById('session-smat').innerText = displaySmat.toFixed(8);
+
+            if (Math.floor(now / 1000) % 20 === 0) {
+                update(ref(db, `users/${user.uid}`), { sessionSmat: displaySmat });
             }
         }
+    }, 1000);
 
-        window.triggerMining = () => {
-            if(uData.miningActive) return;
-            update(ref(db, `users/${user.uid}`), {
-                miningActive: true,
-                mineEndTime: Date.now() + 86400000,
-                sessionSmat: 0
-            });
-        };
-
-        window.openActionModal = (mode) => {
-            const modal = document.getElementById('actionModal');
-            document.getElementById('modalTitle').innerText = mode === 'stake' ? "Stake oxSMAT" : "Unstake oxSMAT";
-            document.getElementById('available-bal').innerText = mode === 'stake' ? uData.oxBalance.toFixed(2) : uData.oxStaked.toFixed(2);
-            
-            const isEarly = mode === 'unstake' && (Date.now() - (uData.lastStakeTime || 0) < 604800000);
-            document.getElementById('feeNotice').classList.toggle('hidden', !isEarly);
-            modal.style.display = 'flex';
-            document.getElementById('confirmBtn').onclick = () => handleStaking(mode);
-        };
-
-        async function handleStaking(mode) {
-    const amount = parseFloat(document.getElementById('amountInput').value);
-    if(!amount || amount <= 0) return alert("Enter amount");
-    const uRef = ref(db, `users/${user.uid}`);
-    
-    // ডাইনামিক কি (Key) এর নাম
-    const balKey = 'oxsmat_balance';
-
-    if(mode === 'stake') {
-        if(amount > uData.oxBalance) return alert("Insufficient Balance");
-        
-        await update(uRef, { 
-            [balKey]: uData.oxBalance - amount, 
-            oxStaked: uData.oxStaked + amount, 
-            lastStakeTime: Date.now() 
-        });
-    } else {
-        if(amount > uData.oxStaked) return alert("Insufficient Staked");
-        
-        let receive = amount;
-        // ৭ দিনের আগে আনস্ট্যাক করলে ১% ফি
-        if(Date.now() - (uData.lastStakeTime || 0) < 604800000) {
-            const fee = amount * 0.01; 
-            receive = amount - fee;
-            alert(`1% Fee deducted: $${fee.toFixed(4)}`);
-        }
-        
-        await update(uRef, { 
-            [balKey]: uData.oxBalance + receive, 
-            oxStaked: uData.oxStaked - amount 
-        });
-    }
-    closeModals();
-}
-
-
-
-        window.openReferralAnalytics = () => {
-            const modal = document.getElementById('referralModal');
-            const activeCount = referrals.filter(r => r.miningActive).length;
-            document.getElementById('pop-total-ref').innerText = referrals.length;
-            document.getElementById('pop-active-ref').innerText = activeCount;
-            document.getElementById('pop-boost-ref').innerText = `+${activeCount}x`;
-            document.getElementById('ref-list-ui').innerHTML = referrals.map(r => `
-                <div class="flex justify-between items-center p-4 bg-white/5 rounded-2xl border border-white/5">
-                    <div class="flex items-center"><span class="status-dot ${r.miningActive?'bg-green-500':'bg-red-500'}"></span><span class="text-xs font-bold">${r.email?.split('@')[0] || 'User'}</span></div>
-                    <span class="text-[10px] font-black ${r.miningActive?'text-green-500':'text-gray-500'}">${r.miningActive?'+1x Active':'Inactive'}</span>
-                </div>
-            `).join('');
-            modal.style.display = 'flex';
-        };
-
-window.closeModals = () => {
-    // অ্যাকশন মডাল এবং রেফারেল মডাল দুটোই খুঁজে বের করে হাইড করবে
-    const actionModal = document.getElementById('actionModal');
-    const referralModal = document.getElementById('referralModal');
-    
-    if(actionModal) actionModal.style.display = 'none';
-    if(referralModal) referralModal.style.display = 'none';
-    
-    // ইনপুট ফিল্ড ক্লিয়ার করে দেওয়া (ঐচ্ছিক কিন্তু ভালো)
-    const amountInput = document.getElementById('amountInput');
-    if(amountInput) amountInput.value = '';
-};
-
-
-                        // Every 1 Second Update
-        // Every 1 Second Update
-setInterval(() => {
-    if (!uData.miningActive || !user || !uData.mineEndTime) return;
-    
-    let now = Date.now();
-    let remain = uData.mineEndTime - now;
-    
-    if (remain <= 0) {
-        // --- ফিক্সড লজিক: সেশন শেষ, ওয়ালেটে ব্যালেন্স ট্রান্সফার ---
-        
-        // ১. ডাটাবেসের বর্তমান লেটেস্ট ভ্যালু আবার চেক করা যাতে নিখুঁত হিসাব থাকে
-        const finalSessionAmount = parseFloat(displaySmat) || 0;
-        const currentWalletSmat = parseFloat(uData.smat_balance) || 0; // এখানে smat_balance হবে
-
-        const uRef = ref(db, `users/${user.uid}`);
-        
-        update(uRef, { 
-            miningActive: false,
-            smat_balance: currentWalletSmat + finalSessionAmount, // সঠিক ফিল্ডে যোগ হচ্ছে
-            sessionSmat: 0,
-            mineEndTime: 0 
-        }).then(() => {
-            alert("Congratulations! Mining rewards added to your wallet.");
-            location.reload();
-        }).catch((error) => {
-            console.error("Balance Update Failed:", error);
-        });
-
-    } else {
-        // টাইমার ডিসপ্লে
-        let h = Math.floor(remain / 3600000).toString().padStart(2, '0');
-        let m = Math.floor((remain % 3600000) / 60000).toString().padStart(2, '0');
-        let s = Math.floor((remain % 60000) / 1000).toString().padStart(2, '0');
-        document.getElementById('timer').innerText = `${h}:${m}:${s}`;
-
-        // বর্তমান স্পিড ক্যালকুলেশন
+    window.openReferralAnalytics = () => {
+        const modal = document.getElementById('referralModal');
         const activeCount = referrals.filter(r => r.miningActive).length;
-        let speed = 1.0 + (parseFloat(uData.crashVol_6am) || 0) + 
-                    (parseFloat(uData.predVol_6am) || 0) + 
-                    ((parseFloat(uData.oxStaked) || 0) * 10) + 
-                    (activeCount * 1.0);
+        document.getElementById('pop-total-ref').innerText = referrals.length;
+        document.getElementById('pop-active-ref').innerText = activeCount;
+        document.getElementById('pop-boost-ref').innerText = `+${activeCount}x`;
+        document.getElementById('ref-list-ui').innerHTML = referrals.map(r => `
+            <div class="flex justify-between items-center p-4 bg-white/5 rounded-2xl border border-white/5">
+                <div class="flex items-center"><span class="status-dot ${r.miningActive?'bg-green-500':'bg-red-500'}"></span><span class="text-xs font-bold">${r.email?.split('@')[0] || 'User'}</span></div>
+                <span class="text-[10px] font-black ${r.miningActive?'text-green-500':'text-gray-500'}">${r.miningActive?'+1x Active':'Inactive'}</span>
+            </div>
+        `).join('');
+        modal.style.display = 'flex';
+    };
+</script>
 
-        // রিয়েল টাইম ব্যালেন্স আপডেট
-        if (typeof displaySmat === 'undefined' || displaySmat === 0) {
-            displaySmat = parseFloat(uData.sessionSmat) || 0;
-        }
-        
-        displaySmat += (BASE_MINING * speed) / 3600;
-        document.getElementById('session-smat').innerText = displaySmat.toFixed(8);
-
-        // প্রতি ২০ সেকেন্ডে অটো-সেভ
-        if (Math.floor(now / 1000) % 20 === 0) {
-            update(ref(db, `users/${user.uid}`), { sessionSmat: displaySmat });
-        }
-    }
-}, 1000);
-
-    </script>
 </body>
 </html>
