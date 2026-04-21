@@ -7,9 +7,7 @@
     
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
-    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
+    
     <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><circle cx='50' cy='50' r='50' fill='%23f3ba2f'/><text x='50%25' y='55%25' text-anchor='middle' dy='.3em' fill='black' font-family='Courier New, monospace' font-weight='900' font-size='60'>S</text></svg>">
     
     <style>
@@ -305,26 +303,8 @@
 </div>
 
 <script>
-    // --- Firebase Configuration ---
-    const firebaseConfig = {
-        apiKey: "AIzaSyAMxtJedkehhxJRMPZLjhpKHqneHEWsGlE",
-        authDomain: "smat-exchange.firebaseapp.com",
-        databaseURL: "https://smat-exchange-default-rtdb.firebaseio.com",
-        projectId: "smat-exchange",
-        storageBucket: "smat-exchange.firebasestorage.app",
-        messagingSenderId: "836334569396",
-        appId: "1:836334569396:web:679effe640b3453412d4e1",
-        measurementId: "G-FCE3H3F18V"
-    };
-
-    if (!firebase.apps.length) firebase.initializeApp(firebaseConfig);
-    const db = firebase.database();
-    const auth = firebase.auth();
-    let userUID = null;
-
-    // --- ১. গ্লোবাল ভেরিয়েবলস (oxsmat_balance সহ) ---
-    let oxsmat_balance = parseFloat(localStorage.getItem('oxsmat_balance')) || 0.000000;
-    let bankBalance = parseFloat(localStorage.getItem('bankBalance')) || 1000000.0000;
+    let smatBalance = parseFloat(localStorage.getItem('smatBalance')) || 1000.000000;
+    let bankBalance = parseFloat(localStorage.getItem('bankBalance')) || 10000.0000;
     let dailyTotalBet = parseFloat(localStorage.getItem('dailyTotalBet')) || 0;
     let gameId = parseInt(localStorage.getItem('gameId')) || 100000;
     let currentMultiplier = 1.00;
@@ -347,43 +327,6 @@
     let isMuted = localStorage.getItem('isMuted') === 'true';
     const audioContext = new (window.AudioContext || window.webkitAudioContext)();
 
-    // --- ২. Firebase সিঙ্কিং এবং হিস্টোরি লজিক ---
-    auth.onAuthStateChanged(user => {
-        if (user) {
-            userUID = user.uid;
-            db.ref(`users/${userUID}/oxsmat_balance`).on('value', snap => {
-                if (snap.exists()) {
-                    oxsmat_balance = parseFloat(snap.val());
-                    updateUI();
-                }
-            });
-            db.ref('games/crash_config').on('value', snap => {
-                const config = snap.val();
-                if (config) {
-                    gameId = config.gameId || gameId;
-                    bankBalance = config.bankBalance || bankBalance;
-                    updateUI();
-                }
-            });
-        }
-    });
-
-    function pushTradeHistory(type, amount) {
-        if (!userUID) return;
-        const now = new Date();
-        const historyData = {
-            status: "success",
-            amount: amount.toFixed(6),
-            method: type === 'bet' ? "Crash Bet" : "Crash Out",
-            date: now.toLocaleDateString(),
-            time: now.toLocaleTimeString(),
-            network: "Internal Game",
-            hash: "TXN" + Math.random().toString(36).substr(2, 9).toUpperCase()
-        };
-        db.ref(`users/${userUID}/history`).push(historyData);
-    }
-
-    // --- ৩. গেমের অরিজিনাল ফাংশনালিটি (১ বিন্দু পরিবর্তন ছাড়া) ---
     function toggleSound() {
         isMuted = !isMuted;
         localStorage.setItem('isMuted', isMuted);
@@ -410,13 +353,13 @@
     }
 
     function updateUI() { 
-        document.getElementById('balance-display').innerText = oxsmat_balance.toFixed(6) + " SMAT"; 
+        document.getElementById('balance-display').innerText = smatBalance.toFixed(6) + " SMAT"; 
         document.getElementById('bank-display').innerText = bankBalance.toFixed(4);
         document.getElementById('game-id-display').innerText = "#" + gameId;
         let totalPool = fakePool + (hasBet ? betAmt : 0);
         document.getElementById('total-pool-display').innerText = totalPool.toFixed(6);
 
-        localStorage.setItem('oxsmat_balance', oxsmat_balance); 
+        localStorage.setItem('smatBalance', smatBalance); 
         localStorage.setItem('bankBalance', bankBalance);
         localStorage.setItem('gameId', gameId);
         localStorage.setItem('dailyTotalBet', dailyTotalBet);
@@ -452,8 +395,7 @@
             const currentSlotID = `${bdTime.getDate()}-${bdTime.getHours()}`;
             hideBubble();
             localStorage.setItem('lastClaimedSlot', currentSlotID);
-            oxsmat_balance += 1.0;
-            if(userUID) db.ref(`users/${userUID}`).update({ oxsmat_balance: oxsmat_balance.toFixed(8) });
+            smatBalance += 1.0;
             updateUI();
             const msg = document.getElementById('pop-msg');
             msg.style.display = 'block';
@@ -567,7 +509,9 @@
 
     function toggleMore() {
         visiblePlayersCount += 10;
-        if (visiblePlayersCount > players.length + 1) { visiblePlayersCount = 10; }
+        if (visiblePlayersCount > players.length + 1) {
+            visiblePlayersCount = 10;
+        }
         renderBets();
     }
     
@@ -576,23 +520,44 @@
         let userBetObj = hasBet ? { name: "YOU", bet: betAmt, isUser: true, won: hasCashed } : null;
         let sortedPlayers = [...players].sort((a, b) => b.bet - a.bet);
         let displayList = userBetObj ? [userBetObj, ...sortedPlayers] : sortedPlayers;
+
         const moreBtn = document.getElementById('more-btn');
+
         if (displayList.length > 10) { 
             moreBtn.style.display = 'block'; 
-            if (visiblePlayersCount >= displayList.length) { moreBtn.innerHTML = `Show Less <i class="fas fa-chevron-up ml-1"></i>`; } 
-            else { moreBtn.innerHTML = `Show More (${visiblePlayersCount}/${displayList.length}) <i class="fas fa-chevron-down ml-1"></i>`; }
+            if (visiblePlayersCount >= displayList.length) {
+                moreBtn.innerHTML = `Show Less <i class="fas fa-chevron-up ml-1"></i>`;
+            } else {
+                moreBtn.innerHTML = `Show More (${visiblePlayersCount}/${displayList.length}) <i class="fas fa-chevron-down ml-1"></i>`;
+            }
             displayList = displayList.slice(0, visiblePlayersCount);
-        } else { moreBtn.style.display = 'none'; }
+        } else { 
+            moreBtn.style.display = 'none'; 
+        }
+
         const htmlRows = displayList.map(p => {
             let pCol = "text-wait", mDisp = "-", pDisp = "-";
             if(p.won) { 
                 pCol="text-win"; 
                 const m = p.isUser ? localStorage.getItem('lastCash') : p.target; 
-                mDisp=m+"x"; pDisp="+"+(p.bet*m - p.bet).toFixed(4); 
+                mDisp=m+"x"; 
+                pDisp="+"+(p.bet*m - p.bet).toFixed(4); 
             }
-            else if(isGameOver) { pCol="text-loss"; mDisp="0.00x"; pDisp="-"+p.bet.toFixed(4); }
-            return `<div class="bet-row"><span class="player-name ${p.isUser?'text-yellow-500':''}">${p.isUser ? '<i class="fas fa-user-circle mr-1"></i>' : ''}${p.name}</span><span class="bet-value">${p.bet.toFixed(4)}</span><span class="mult-value ${pCol}">${mDisp}</span><span class="profit-value ${pCol}">${pDisp}</span></div>`;
+            else if(isGameOver) { 
+                pCol="text-loss"; 
+                mDisp="0.00x"; 
+                pDisp="-"+p.bet.toFixed(4); 
+            }
+            return `<div class="bet-row">
+                <span class="player-name ${p.isUser?'text-yellow-500':''}">
+                    ${p.isUser ? '<i class="fas fa-user-circle mr-1"></i>' : ''}${p.name}
+                </span>
+                <span class="bet-value">${p.bet.toFixed(4)}</span>
+                <span class="mult-value ${pCol}">${mDisp}</span>
+                <span class="profit-value ${pCol}">${pDisp}</span>
+            </div>`;
         }).join("");
+
         list.innerHTML = htmlRows;
         updateActiveCount();
     }
@@ -635,18 +600,11 @@
         if(isRunning || hasBet || isProcessingBet) return;
         const val = parseFloat(document.getElementById('bet-amount').value);
         if(isNaN(val) || val <= 0) return alert("Invalid Bet Amount!");
-        if(oxsmat_balance < val) return alert("Low Balance!");
+        if(smatBalance < val) return alert("Low Balance!");
         isProcessingBet = true;
         const actionBtn = document.getElementById('action-btn');
         actionBtn.innerText = "PROCESSING..."; actionBtn.disabled = true;
-        betAmt = val; oxsmat_balance -= val; dailyTotalBet += val; hasBet = true; 
-        
-        // --- Firebase Update & History Push ---
-        if (userUID) {
-            db.ref(`users/${userUID}`).update({ oxsmat_balance: oxsmat_balance.toFixed(8) });
-            pushTradeHistory('bet', val);
-        }
-
+        betAmt = val; smatBalance -= val; dailyTotalBet += val; hasBet = true; 
         updateUI(); actionBtn.innerText = "WAITING..."; renderBets();
     }
 
@@ -671,21 +629,29 @@
             if(hasBet && !hasCashed) btn.innerText = "CASH OUT: " + (betAmt * currentMultiplier).toFixed(6);
             players.forEach(p => { if (!p.won && currentMultiplier >= p.target) { p.won = true; bankBalance -= (p.bet * p.target - p.bet); updateUI(); renderBets(); } });
             updateCharacters(); 
+            
+            // প্লেনের মুভমেন্ট লিমিট করা যাতে চ্যাট আইকন বা স্ক্রিনের বাইরে না যায়
             let maxMoveX = document.getElementById('screen').clientWidth - 110; 
-            let maxMoveY = 200; 
+            let maxMoveY = 200; // চ্যাট আইকনের নিচে থাকার জন্য উচ্চতা নিয়ন্ত্রণ (200px approx)
+            
             let moveX = Math.min(flightSeconds * 30, maxMoveX);
             let moveY = Math.min((currentMultiplier - 1) * 50, maxMoveY); 
+            
             plane.style.transform = `translate(${moveX}px, -${moveY}px)`;
+            
             const xLabels = document.getElementById('x-labels');
             const sec = Math.floor(flightSeconds);
             xLabels.innerHTML = `<span>${sec}s</span><span>${sec+1}s</span><span>${sec+2}s</span><span>${sec+3}s</span><span>${sec+4}s</span>`;
+            
             const yLabels = document.getElementById('y-labels');
             yLabels.innerHTML = `<span>${currentMultiplier.toFixed(1)}x</span><span>${(currentMultiplier+0.2).toFixed(1)}x</span><span>${(currentMultiplier+0.4).toFixed(1)}x</span><span><span>${(currentMultiplier+0.6).toFixed(1)}x</span><span>${(currentMultiplier+0.8).toFixed(1)}x</span>`;
+            
             if(moveX >= maxMoveX || currentMultiplier >= 10) { 
                 document.getElementById('grid-bg').classList.add('moving-bg'); 
                 document.getElementById('cloud-layer').style.opacity = "0.4";
                 document.getElementById('cloud-layer').classList.add('moving-clouds');
             }
+            
             let autoVal = parseFloat(document.getElementById('auto-cashout').value) || Infinity;
             if(hasBet && !hasCashed && currentMultiplier >= autoVal) manualCashOut();
         }, 60);
@@ -697,15 +663,7 @@
         const winAmount = (betAmt * currentMultiplier);
         const profit = winAmount - betAmt;
         localStorage.setItem('lastCash', currentMultiplier.toFixed(2));
-        oxsmat_balance += winAmount; bankBalance -= profit;
-        
-        // --- Firebase Update & History Push ---
-        if (userUID) {
-            db.ref(`users/${userUID}`).update({ oxsmat_balance: oxsmat_balance.toFixed(8) });
-            db.ref('games/crash_config').update({ bankBalance: bankBalance.toFixed(4) });
-            pushTradeHistory('cashout', winAmount);
-        }
-
+        smatBalance += winAmount; bankBalance -= profit;
         updateUI();
         const popup = document.getElementById('cashout-popup');
         document.getElementById('cashout-msg-amount').innerText = winAmount.toFixed(6) + " SMAT";
@@ -720,28 +678,27 @@
         const actionBtn = document.getElementById('action-btn');
         actionBtn.disabled = true; actionBtn.innerText = "NEXT";
         actionBtn.className = "w-full bg-black-600 text-white py-4 rounded-xl font-black text-xl";
-        if (hasBet && !hasCashed) { 
-            bankBalance += betAmt; hasBet = false; 
-            if (userUID) db.ref('games/crash_config').update({ bankBalance: bankBalance.toFixed(4) });
-        }
+        if (hasBet && !hasCashed) { bankBalance += betAmt; hasBet = false; }
         players.forEach(p => { if(!p.won) bankBalance += p.bet; });
         const result = parseFloat(currentMultiplier.toFixed(2));
         const m = document.getElementById('multiplier');
         m.innerText = "CRASHED"; m.style.color = "#ef4444"; m.classList.add('crashed-text'); 
         document.getElementById('plane').style.opacity="0"; 
         document.getElementById('grid-bg').classList.remove('moving-bg');
+        
         crashHistoryDots.push(result);
         if(crashHistoryDots.length > 50) crashHistoryDots.shift();
         localStorage.setItem('crashHistoryDots', JSON.stringify(crashHistoryDots));
-        gameId++; 
-        if (userUID) db.ref('games/crash_config').update({ gameId: gameId });
-        renderDots(); renderBets();
+        gameId++; renderDots(); renderBets();
+
         const pillContainer = document.getElementById('history-pills');
         const pill = document.createElement('div');
         pill.className = `history-pill-item ${getPillColor(result)}`;
         pill.innerText = result.toFixed(2) + "x";
+        
         pillContainer.prepend(pill);
         if(pillContainer.children.length > 20) pillContainer.removeChild(pillContainer.lastChild);
+
         setTimeout(()=>{
             actionBtn.innerText = "PLACE BET"; actionBtn.disabled = false; actionBtn.onclick = placeBet;
             actionBtn.className = "w-full bg-yellow-500 text-black py-4 rounded-xl font-black text-xl shadow-lg";
