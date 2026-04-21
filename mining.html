@@ -148,12 +148,45 @@
     let displaySmat = 0;
     let isUpdating = false;
 
+    // --- কাস্টম গ্রাফিক্স টোস্ট নোটিফিকেশন ---
     function showToast(msg, type = "success") {
         const toast = document.createElement("div");
-        toast.style.cssText = `position: fixed; bottom: 100px; left: 50%; transform: translateX(-50%); background: ${type === 'success' ? '#0ecb81' : '#f6465d'}; color: white; padding: 12px 25px; border-radius: 50px; z-index: 10000; font-weight: bold; font-size: 13px; box-shadow: 0 10px 20px rgba(0,0,0,0.3);`;
+        toast.style.cssText = `position: fixed; bottom: 100px; left: 50%; transform: translateX(-50%); background: ${type === 'success' ? 'rgba(14, 203, 129, 0.95)' : 'rgba(246, 70, 93, 0.95)'}; color: white; padding: 12px 25px; border-radius: 15px; z-index: 10000; font-weight: bold; font-size: 13px; backdrop-filter: blur(10px); border: 1px solid rgba(255,255,255,0.1); box-shadow: 0 10px 30px rgba(0,0,0,0.5);`;
         toast.innerText = msg;
         document.body.appendChild(toast);
         setTimeout(() => toast.remove(), 3000);
+    }
+
+    // --- কাস্টম গ্রাফিক্স কনফার্মেশন মডাল ---
+    function showConfirm(title, message, onConfirm) {
+        const overlay = document.createElement("div");
+        overlay.style.cssText = `position: fixed; inset: 0; background: rgba(0,0,0,0.85); backdrop-filter: blur(8px); z-index: 11000; display: flex; align-items: center; justify-content: center; padding: 20px;`;
+        
+        overlay.innerHTML = `
+            <div style="background: #1e2329; width: 100%; max-width: 350px; border-radius: 25px; border: 1px solid rgba(240,185,11,0.2); overflow: hidden; animation: slideUp 0.3s ease-out;">
+                <div style="padding: 25px; text-align: center;">
+                    <div style="width: 60px; height: 60px; background: rgba(240,185,11,0.1); border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 15px;">
+                        <i class="fas fa-exclamation-triangle" style="color: #f0b90b; font-size: 24px;"></i>
+                    </div>
+                    <h3 style="color: white; font-weight: 900; margin-bottom: 10px; font-size: 18px;">${title}</h3>
+                    <div style="color: #929aa5; font-size: 13px; line-height: 1.6; margin-bottom: 25px;">${message}</div>
+                    <div style="display: flex; gap: 10px;">
+                        <button id="cancel-confirm" style="flex: 1; background: rgba(255,255,255,0.05); color: white; border: none; padding: 15px; border-radius: 15px; font-weight: bold; font-size: 12px; cursor: pointer;">CANCEL</button>
+                        <button id="ok-confirm" style="flex: 1; background: #f0b90b; color: black; border: none; padding: 15px; border-radius: 15px; font-weight: 900; font-size: 12px; cursor: pointer;">PROCEED</button>
+                    </div>
+                </div>
+            </div>
+            <style>
+                @keyframes slideUp { from { transform: translateY(20px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+            </style>
+        `;
+        document.body.appendChild(overlay);
+
+        document.getElementById('cancel-confirm').onclick = () => overlay.remove();
+        document.getElementById('ok-confirm').onclick = () => {
+            overlay.remove();
+            onConfirm();
+        };
     }
 
     onAuthStateChanged(auth, (u) => {
@@ -232,24 +265,17 @@
 
         if(mode === 'stake') {
             if(amount > uData.oxBalance) return showToast("Insufficient oxSMAT", "error");
-            
             const updates = {};
             updates[`users/${user.uid}/oxsmat_balance`] = (uData.oxBalance - amount).toFixed(8);
             updates[`users/${user.uid}/oxStaked`] = (uData.oxStaked + amount).toFixed(8);
             updates[`users/${user.uid}/lastStakeTime`] = Date.now();
-            
             updates[`users/${user.uid}/history/${historyRef.key}`] = {
-                method: "Stake oxSMAT",
-                amount: amount.toFixed(2),
-                coin: "oxSMAT",
-                status: "success",
-                timestamp: Date.now(),
-                date: new Date().toLocaleDateString(),
-                target: "To Mining Boost"
+                method: "Stake oxSMAT", amount: amount.toFixed(2), coin: "oxSMAT", status: "success",
+                timestamp: Date.now(), date: new Date().toLocaleDateString(), target: "To Mining Boost"
             };
-
             await update(ref(db), updates);
             showToast("Staked Successfully!");
+            closeModals();
         } else {
             if(amount > uData.oxStaked) return showToast("Insufficient Staked Amount", "error");
             
@@ -257,32 +283,31 @@
             let fee = 0;
             const isEarly = (Date.now() - (uData.lastStakeTime || 0) < 604800000);
 
+            const processUnstake = async () => {
+                const updates = {};
+                updates[`users/${user.uid}/oxsmat_balance`] = (uData.oxBalance + receive).toFixed(8);
+                updates[`users/${user.uid}/oxStaked`] = (uData.oxStaked - amount).toFixed(8);
+                updates[`users/${user.uid}/history/${historyRef.key}`] = {
+                    method: isEarly ? "Unstake (Early)" : "Unstake",
+                    amount: receive.toFixed(4), coin: "oxSMAT", status: "success",
+                    fee: fee > 0 ? fee.toFixed(4) : "0.00", timestamp: Date.now(),
+                    date: new Date().toLocaleDateString(), target: "To Wallet"
+                };
+                await update(ref(db), updates);
+                showToast(isEarly ? `Unstaked with 1% fee` : "Unstaked Successfully!");
+                closeModals();
+            };
+
             if(isEarly) {
                 fee = amount * 0.01;
                 receive = amount - fee;
-                const confirmEarly = confirm(`Early Unstake Warning!\n\nFee: ${fee.toFixed(4)} oxSMAT (1%)\nYou will receive: ${receive.toFixed(4)} oxSMAT\n\nDo you want to proceed?`);
-                if(!confirmEarly) return;
-            }
-
-            const updates = {};
-            updates[`users/${user.uid}/oxsmat_balance`] = (uData.oxBalance + receive).toFixed(8);
-            updates[`users/${user.uid}/oxStaked`] = (uData.oxStaked - amount).toFixed(8);
-            
-            updates[`users/${user.uid}/history/${historyRef.key}`] = {
-                method: isEarly ? "Unstake (Early)" : "Unstake",
-                amount: receive.toFixed(4),
-                coin: "oxSMAT",
-                status: "success",
-                fee: fee > 0 ? fee.toFixed(4) : "0.00",
-                timestamp: Date.now(),
-                date: new Date().toLocaleDateString(),
-                target: "To Wallet"
-            };
-
-            await update(ref(db), updates);
-            showToast(isEarly ? `Unstaked with 1% fee` : "Unstaked Successfully!");
+                showConfirm(
+                    "Early Unstake", 
+                    `Fee: ${fee.toFixed(4)} oxSMAT (1%)<br>You will receive: <b>${receive.toFixed(4)} oxSMAT</b>`, 
+                    processUnstake
+                );
+            } else { processUnstake(); }
         }
-        closeModals();
     }
 
     window.closeModals = () => {
@@ -306,18 +331,11 @@
             updates[`users/${user.uid}/sessionSmat`] = 0;
             updates[`users/${user.uid}/mineEndTime`] = 0;
 
-            const historyRef = push(ref(db, `users/${user.uid}/history`));
-            updates[`users/${user.uid}/history/${historyRef.key}`] = {
-                method: "Mining Rewards",
-                amount: minedAmount.toFixed(8),
-                coin: "SMAT",
-                status: "success",
-                network: "SMAT Testnet",
-                hash: "SMAT-MINE-" + Math.random().toString(36).substr(2, 9).toUpperCase(),
-                timestamp: Date.now(),
-                address: "Internal Mining Pool",
-                date: new Date().toLocaleDateString(),
-                target: "From Mining"
+            const hRef = push(ref(db, `users/${user.uid}/history`));
+            updates[`users/${user.uid}/history/${hRef.key}`] = {
+                method: "Mining Rewards", amount: minedAmount.toFixed(8), coin: "SMAT", status: "success",
+                network: "SMAT Testnet", hash: "SMAT-MINE-" + Math.random().toString(36).substr(2, 9).toUpperCase(),
+                timestamp: Date.now(), address: "Internal Mining Pool", date: new Date().toLocaleDateString(), target: "From Mining"
             };
 
             try {
@@ -359,7 +377,6 @@
         modal.style.display = 'flex';
     };
 </script>
-
 
 </body>
 </html>
