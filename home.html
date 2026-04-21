@@ -336,18 +336,19 @@
     
     <div class="fab-wrapper">
         <div class="fab-options" id="fabOptions">
-            <a href="feature.html" class="popup-btn btn-left"><i class="fas fa-bolt"></i></a>
-            <a href="crash.html" class="popup-btn btn-center"><i class="fas fa-rocket"></i></a>
-            <a href="prediction.html" class="popup-btn btn-right"><i class="fas fa-chart-line"></i></a>
+            <a href="javascript:void(0)" onclick="checkLoginStatus('feature.html')" class="popup-btn btn-left"><i class="fas fa-bolt"></i></a>
+            <a href="javascript:void(0)" onclick="checkLoginStatus('crash.html')" class="popup-btn btn-center"><i class="fas fa-rocket"></i></a>
+            <a href="javascript:void(0)" onclick="checkLoginStatus('prediction.html')" class="popup-btn btn-right"><i class="fas fa-chart-line"></i></a>
         </div>
         <button class="main-fab" id="mainFab" onclick="toggleGamingMenu()">
-             <i class="fa-solid fa-plus" id="icon" style="font-size: 24px; -webkit-text-stroke: 2px; stroke-width: 2px;"></i>
+             <i class="fa-solid fa-plus" id="icon" style="font-size: 24px;"></i>
         </button>
     </div>
 
-    <a href="trade.html" class="f-nav"><i class="fas fa-exchange-alt"></i>Trade</a>
-    <a href="wallet.html" class="f-nav"><i class="fas fa-wallet"></i>Wallet</a>
+    <a href="javascript:void(0)" onclick="checkLoginStatus('trade.html')" class="f-nav"><i class="fas fa-exchange-alt"></i>Trade</a>
+    <a href="javascript:void(0)" onclick="checkLoginStatus('wallet.html')" class="f-nav"><i class="fas fa-wallet"></i>Wallet</a>
 </footer>
+
 
 
     <script type="module">
@@ -376,21 +377,20 @@
         let isBalanceHidden = localStorage.getItem('hideBalance') === 'true';
         let userKycStatus = 'unverified';
 
-                onAuthStateChanged(auth, (user) => {
+                        onAuthStateChanged(auth, (user) => {
             if (user) {
+                // ইউজার লগইন থাকলে যা হবে
                 document.getElementById('userEmail').innerText = user.email;
                 if (localStorage.getItem('noticeSeen') !== 'true') {
                     document.getElementById('noticeBadge').style.display = 'block';
                 }
 
-                // ইউজারের ডাটাবেস লিসেনার
                 onValue(ref(db, 'users/' + user.uid), (snap) => {
                     const userData = snap.val();
                     if(userData) {
                         const sid = userData.smatID || "Assigning...";
                         document.getElementById('displaySmatID').innerText = sid;
                         
-                        // পোর্টফোলিও ভ্যালু ক্যালকুলেশন ফাংশন কল
                         calculateTotalPortfolio(userData);
                         
                         userKycStatus = userData.kycStatus || 'unverified';
@@ -399,9 +399,37 @@
                     }
                 });
             } else { 
-                location.href = 'logIn.html'; 
+                // লগইন না থাকলে সরাসরি রিডাইরেক্ট হবে না
+                // গেস্ট মোডে ডেটা দেখাবে
+                document.getElementById('userEmail').innerText = "Guest Mode";
+                document.getElementById('displaySmatID').innerText = "Login for ID";
+                document.getElementById('totalVal').innerText = "0.00";
+                document.getElementById('pnlVal').innerText = "Please login to track PNL";
+                
+                // ডিফল্ট স্ট্যাটাস সেট করে রাখা
+                userKycStatus = 'unverified';
             }
         });
+
+        // সাইডবার ওপেন করার সময় চেক (যদি লগইন না থাকে তবে লগইন পেজে পাঠাবে)
+        window.openSidebar = () => {
+            if (!auth.currentUser) {
+                location.href = 'logIn.html';
+            } else {
+                document.getElementById('sidebar').classList.add('active'); 
+                document.getElementById('overlay').style.display='block';
+            }
+        };
+
+        // গেস্টদের জন্য সুরক্ষিত লিঙ্ক চেক করার ফাংশন
+        window.checkAuth = (targetUrl) => {
+            if (!auth.currentUser) {
+                location.href = 'logIn.html';
+            } else {
+                location.href = targetUrl;
+            }
+        };
+
 
         // সব কয়েনের সমন্বয় করে টোটাল ভ্যালু বের করার ফাংশন
         function calculateTotalPortfolio(userData) {
