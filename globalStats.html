@@ -2,88 +2,199 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>SMAT  | Global Status</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>SMAT | Live Network Analytics</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-<link rel="icon" type="image/svg+xml" href="data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNTEyIiBoZWlnaHQ9IjUxMiIgdmlld0JveD0iMCAwIDUxMiA1MTIiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+CiAgPGNpcmNsZSBjeD0iMjU2IiBjeT0iMjU2IiByPSIyNDAiIGZpbGw9IiNmM2JhMmYiLz4KICA8Y2lyY2xlIGN4PSIyNTYiIGN5PSIyNTYiIHI9IjIxNSIgc3Ryb2tlPSJ3aGl0ZSIgc3Ryb2tlLXdpZHRoPSI4IiBmaWxsPSJ0cmFuc3BhcmVudCIvPgogIDxwYXRoIGQ9Ik0xNTAgMTcwIEMxNTAgMTQ1IDE3MCAxMzUgMjAwIDEzNSBMMzQwIDEzNSBDMzU1IDEzNSAzNjUgMTQ1IDM2NSAxNjAgQzM2NSAxNzUgMzU1IDE4NSAzNDAgMTg1IEwyMDUgMTg1IEMxOTAgMTg1IDE4NSAxOTAgMTg1IDIwNSBDMTg1IDIyMCAxOTAgMjI1IDIwNSAyMjUgTDM0MCAyMjUgQzM3MCAyMjUgMzkwIDI0NSAzOTAgMjc1IEwzOTAgMzI1IEMzOTAgMzU1IDM3MCAzNzUgMzQwIDM3NSBMMTcwIDM3NSBDMTU1IDM3NSAxNDUgMzY1IDE0NSAzNTAgQzE0NSAzMzUgMTU1IDMyNSAxNzAgMzI1IEwzMzUgMzI1IEMzNTAgMzI1IDM1NSAzMjAgMzU1IDMwNSBDMzU1IDI5MCAzNTAgMjg1IDMzNSAyODUgTDIwMCAyODUgQzE3MCAyODUgMTUwIDI2NSAxNTAgMjM1IFoiIGZpbGw9IndoaXRlIi8+Cjwvc3ZnPg==">
     <style>
-        body { background: #0b0e11; color: white; font-family: 'Inter', sans-serif; }
-        .glass { background: rgba(30, 35, 41, 0.6); backdrop-filter: blur(15px); border: 1px solid rgba(255,255,255,0.05); border-radius: 20px; }
-        .gold-border { border-top: 2px solid #f0b90b; }
-        .stat-label { font-size: 10px; font-weight: 800; color: #848e9c; text-transform: uppercase; letter-spacing: 1px; }
-        .live-pulse { width: 10px; height: 10px; background: #0ecb81; border-radius: 50%; box-shadow: 0 0 10px #0ecb81; animation: pulse 1.5s infinite; }
-        @keyframes pulse { 0% { opacity: 1; } 50% { opacity: 0.4; } 100% { opacity: 1; } }
-        .hash-glow { text-shadow: 0 0 10px rgba(240, 185, 11, 0.5); }
+        @import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;600;900&display=swap');
+        
+        :root {
+            --bg: #06080a;
+            --card-bg: rgba(18, 22, 28, 0.8);
+            --primary: #f0b90b;
+            --secondary: #0ecb81;
+            --border-glow: rgba(240, 185, 11, 0.15);
+        }
+
+        body {
+            background-color: var(--bg);
+            background-image: radial-gradient(circle at 50% -20%, #1e1e1e 0%, #06080a 100%);
+            color: #e2e2e2;
+            font-family: 'Outfit', sans-serif;
+            margin: 0;
+            padding-bottom: 100px;
+        }
+
+        /* Glassmorphism Cards with Deep Shadow */
+        .glass-card {
+            background: var(--card-bg);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            border-radius: 24px;
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.5), inset 0 0 20px rgba(255, 255, 255, 0.02);
+            transition: transform 0.3s ease;
+        }
+
+        .gold-glow {
+            border-top: 2px solid var(--primary);
+            box-shadow: 0 10px 40px var(--border-glow);
+        }
+
+        .header {
+            background: rgba(6, 8, 10, 0.9);
+            backdrop-filter: blur(10px);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+            padding: 15px 20px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+        }
+
+        .logo-box { display: flex; align-items: center; gap: 10px; }
+        .logo-box img { width: 35px; height: 35px; object-fit: contain; }
+
+        .stat-value {
+            font-weight: 900;
+            letter-spacing: -1px;
+            background: linear-gradient(180deg, #fff 0%, #aaa 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .footer-nav {
+            position: fixed;
+            bottom: 0;
+            width: 100%;
+            height: 70px;
+            background: rgba(11, 14, 17, 0.95);
+            display: flex;
+            justify-content: space-around;
+            align-items: center;
+            border-top: 1px solid rgba(255, 255, 255, 0.08);
+            z-index: 2000;
+        }
+
+        .nav-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            color: #848e9c;
+            font-size: 11px;
+            text-decoration: none;
+            font-weight: 600;
+        }
+
+        .nav-item.active { color: var(--primary); }
+        .nav-item i { font-size: 20px; margin-bottom: 4px; }
+
+        .pulse-live {
+            width: 8px;
+            height: 8px;
+            background: var(--secondary);
+            border-radius: 50%;
+            box-shadow: 0 0 12px var(--secondary);
+            animation: pulse 1.5s infinite;
+        }
+
+        @keyframes pulse { 0% { opacity: 1; } 50% { opacity: 0.3; } 100% { opacity: 1; } }
     </style>
 </head>
-<body class="p-4 pb-24">
+<body>
 
-    <div class="flex justify-between items-center mb-6 px-2">
-        <div>
-            <h1 class="text-2xl font-black text-white">NETWORK <span class="text-yellow-500">LIVE</span></h1>
-            <p class="stat-label">Real-time Ecosystem Intelligence</p>
+    <header class="header">
+        <div class="logo-box">
+            <img src="assets/logos/smat.png" alt="SMAT">
+            <h1 class="text-xl font-black tracking-tighter">NETWORK <span class="text-yellow-500">STATS</span></h1>
         </div>
-        <div class="live-pulse"></div>
-    </div>
+        <div class="pulse-live"></div>
+    </header>
 
-    <div class="glass p-6 mb-4 gold-border text-center relative overflow-hidden">
-        <div class="absolute top-0 right-0 p-4 opacity-10">
-            <i class="fas fa-microchip text-6xl"></i>
-        </div>
-        <p class="stat-label mb-2">Total Network Hash Power (Active)</p>
-        <h2 id="total-network-hash" class="text-4xl font-black tracking-tighter text-yellow-500 hash-glow">0.00x</h2>
-        <p class="text-[10px] text-gray-500 font-bold mt-2" id="active-miner-count">Scanning Nodes...</p>
-    </div>
+    <main class="p-5 space-y-5">
 
-    <div class="glass p-5 mb-4">
-        <div class="flex justify-between items-center border-b border-white/5 pb-4 mb-4">
-            <div>
-                <p class="stat-label">oxSMAT Live Price</p>
-                <h3 id="ox-live-price" class="text-2xl font-black text-green-400">$0.0000</h3>
-            </div>
-            <div class="text-right">
-                <p class="stat-label">Market Status</p>
-                <span class="text-[10px] bg-green-500/20 text-green-500 px-2 py-1 rounded font-bold">STABLE</span>
+        <div class="glass-card gold-glow p-8 text-center">
+            <span class="text-[10px] font-bold text-gray-500 uppercase tracking-[3px]">Total Network Hash Power</span>
+            <div id="total-network-hash" class="stat-value text-5xl my-2 text-yellow-500">0.00x</div>
+            <div class="flex justify-center items-center gap-2 text-gray-400">
+                <i class="fas fa-server text-[10px]"></i>
+                <span id="active-miner-count" class="text-[11px] font-bold">Initializing Nodes...</span>
             </div>
         </div>
+
+        <div class="grid grid-cols-1 gap-4">
+            <div class="glass-card p-6 flex justify-between items-center">
+                <div>
+                    <p class="text-[10px] font-bold text-gray-500 uppercase">oxSMAT Live Price</p>
+                    <h3 id="ox-live-price" class="text-2xl font-black text-green-400">$0.0000</h3>
+                </div>
+                <div class="text-right">
+                    <p class="text-[10px] font-bold text-gray-500 uppercase">Total Asset Value</p>
+                    <h3 id="global-staked-value" class="text-2xl font-black text-white">$0.00</h3>
+                </div>
+            </div>
+        </div>
+
         <div class="grid grid-cols-2 gap-4">
-            <div>
-                <p class="stat-label">Global Staked</p>
-                <p id="global-staked" class="text-lg font-bold">0.00</p>
+            <div class="glass-card p-5">
+                <p class="text-[9px] font-bold text-gray-500 uppercase mb-1">Total SMAT Mined</p>
+                <div id="global-mined" class="text-xl font-black">0.00</div>
             </div>
-            <div class="text-right">
-                <p class="stat-label">Global Staked Value</p>
-                <p id="global-staked-value" class="text-lg font-bold text-yellow-500">$0.00</p>
+            <div class="glass-card p-5">
+                <p class="text-[9px] font-bold text-gray-500 uppercase mb-1">Global Staked</p>
+                <div id="global-staked" class="text-xl font-black">0.00</div>
             </div>
         </div>
-    </div>
 
-    <div class="grid grid-cols-2 gap-3 mb-4">
-        <div class="glass p-4">
-            <p class="stat-label">Total SMAT Mined</p>
-            <h4 id="global-mined" class="text-lg font-bold">0.00</h4>
+        <div class="glass-card p-6">
+            <p class="text-[10px] font-bold text-gray-500 uppercase mb-4 text-center">Ecosystem Boost Efficiency</p>
+            <div class="grid grid-cols-3 gap-2">
+                <div class="bg-white/5 p-3 rounded-xl text-center">
+                    <i class="fas fa-rocket text-blue-400 mb-1"></i>
+                    <p class="text-[8px] text-gray-400 font-bold uppercase">Crash</p>
+                    <p id="avg-crash" class="text-xs font-black">+0.00x</p>
+                </div>
+                <div class="bg-white/5 p-3 rounded-xl text-center">
+                    <i class="fas fa-chart-line text-purple-400 mb-1"></i>
+                    <p class="text-[8px] text-gray-400 font-bold uppercase">Predict</p>
+                    <p id="avg-pred" class="text-xs font-black">+0.00x</p>
+                </div>
+                <div class="bg-white/5 p-3 rounded-xl text-center">
+                    <i class="fas fa-users text-orange-400 mb-1"></i>
+                    <p class="text-[8px] text-gray-400 font-bold uppercase">Ref</p>
+                    <p id="total-ref-boost" class="text-xs font-black">+0.00x</p>
+                </div>
+            </div>
         </div>
-        <div class="glass p-4 text-right">
-            <p class="stat-label">Daily Unstaked</p>
-            <h4 id="global-unstaked" class="text-lg font-bold text-red-500">0.00</h4>
-        </div>
-    </div>
 
-    <div class="grid grid-cols-3 gap-2">
-        <div class="glass p-3 text-center">
-            <p class="stat-label">Crash</p>
-            <p id="avg-crash" class="text-xs font-bold text-blue-400">+0.00x</p>
+        <div class="text-center py-6">
+            <p class="text-[10px] text-gray-600 font-bold tracking-widest uppercase">
+                &copy; 2026 SMAT NETWORK | ALL RIGHTS RESERVED
+            </p>
         </div>
-        <div class="glass p-3 text-center">
-            <p class="stat-label">Predict</p>
-            <p id="avg-pred" class="text-xs font-bold text-purple-400">+0.00x</p>
-        </div>
-        <div class="glass p-3 text-center">
-            <p class="stat-label">Ref</p>
-            <p id="total-ref-boost" class="text-xs font-bold text-orange-400">+0.00x</p>
-        </div>
-    </div>
+
+    </main>
+
+    <nav class="footer-nav">
+        <a href="home.html" class="nav-item">
+            <i class="fas fa-home"></i>
+            <span>Home</span>
+        </a>
+        <a href="swap.html" class="nav-item">
+            <i class="fas fa-sync-alt"></i>
+            <span>Swap</span>
+        </a>
+        <a href="mining.html" class="nav-item active">
+            <i class="fas fa-chart-pie"></i>
+            <span>Stats</span>
+        </a>
+        <a href="wallet.html" class="nav-item">
+            <i class="fas fa-wallet"></i>
+            <span>Wallet</span>
+        </a>
+    </nav>
 
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
@@ -99,85 +210,51 @@
         const app = initializeApp(firebaseConfig);
         const db = getDatabase(app);
 
-        // ১. লাইভ প্রাইস সিঙ্ক (আপনার ট্রেড ইঞ্জিনের logic অনুযায়ী)
-        // ট্রেড ইঞ্জিনে যেভাবে market/sym থেকে প্রাইস নেওয়া হয়
+        // Live Price Sync (From Trade Engine Path)
         onValue(ref(db, 'market/oxsmat'), (snap) => {
             const mData = snap.val() || { price: 0 };
             const livePrice = parseFloat(mData.price) || 0;
             document.getElementById('ox-live-price').innerText = "$" + livePrice.toFixed(4);
-            
-            // প্রাইস পাওয়া গেলে স্ট্যাক ভ্যালু আপডেট করার জন্য গ্লোবাল কলব্যাক
             window.currentOxPrice = livePrice;
         });
 
-        // ২. গ্লোবাল নেটওয়ার্ক ডাটা ক্যালকুলেশন
+        // Global User Data Sync
         onValue(ref(db, 'users'), (snap) => {
             if(!snap.exists()) return;
 
             let totalMined = 0;
             let totalStaked = 0;
             let activeMiners = 0;
-            let totalNetworkHash = 0; // মোট মাইনিং পাওয়ার
-            
-            let totalCrashBoost = 0;
-            let totalPredBoost = 0;
-            let totalUnstakedToday = 0;
+            let totalNetworkHash = 0;
+            let totalCrashB = 0;
+            let totalPredB = 0;
 
             const userArray = Object.values(snap.val());
-            const today = new Date().toLocaleDateString();
 
             userArray.forEach(u => {
-                // ক) মাইনিং এবং একটিভ পাওয়ার হিসাব
-                const sessionSmat = parseFloat(u.sessionSmat) || 0;
-                const walletSmat = parseFloat(u.smat_balance) || 0;
-                totalMined += (sessionSmat + walletSmat);
-
-                // খ) ইউজার ভিত্তিক হ্যাশ পাওয়ার ক্যালকুলেশন (আপনার ট্রেড লজিক অনুযায়ী)
-                if(u.miningActive) {
-                    activeMiners++;
-                    const cBoost = parseFloat(u.crashVol_6am) || 0;
-                    const pBoost = parseFloat(u.predVol_6am) || 0;
-                    const sBoost = (parseFloat(u.oxStaked) || 0) * 10;
-                    
-                    // এখানে আমরা রেফারেল বুস্ট সাধারণত ১x করে ধরি প্রতিটি একটিভ রেফারের জন্য
-                    // আপাতত বেস ১x + অন্যান্য বুস্ট যোগ করছি
-                    const userPower = 1.0 + cBoost + pBoost + sBoost; 
-                    totalNetworkHash += userPower;
-
-                    // এভারেজ দেখানোর জন্য বুস্ট জমা করা
-                    totalCrashBoost += cBoost;
-                    totalPredBoost += pBoost;
-                }
-
-                // গ) স্ট্যাকিং হিসাব
+                totalMined += (parseFloat(u.smat_balance) || 0) + (parseFloat(u.sessionSmat) || 0);
                 totalStaked += parseFloat(u.oxStaked) || 0;
 
-                // ঘ) আজকের আনস্টেক হিস্ট্রি চেক
-                if(u.history) {
-                    Object.values(u.history).forEach(h => {
-                        if((h.method === "Unstake" || h.method === "Unstake (Early)") && h.date === today) {
-                            totalUnstakedToday += parseFloat(h.amount) || 0;
-                        }
-                    });
+                if(u.miningActive) {
+                    activeMiners++;
+                    const cb = parseFloat(u.crashVol_6am) || 0;
+                    const pb = parseFloat(u.predVol_6am) || 0;
+                    const sb = (parseFloat(u.oxStaked) || 0) * 10;
+                    totalNetworkHash += (1.0 + cb + pb + sb);
+                    totalCrashB += cb;
+                    totalPredB += pb;
                 }
             });
 
-            // ৩. UI আপডেট
             document.getElementById('total-network-hash').innerText = totalNetworkHash.toFixed(2) + "x";
             document.getElementById('active-miner-count').innerText = activeMiners + " NODES ACTIVELY MINING";
-            
             document.getElementById('global-mined').innerText = totalMined.toFixed(2);
             document.getElementById('global-staked').innerText = totalStaked.toFixed(2);
-            document.getElementById('global-unstaked').innerText = totalUnstakedToday.toFixed(2);
-
-            // স্ট্যাক করা কয়েনের রিয়েল ভ্যালু (Live Price দিয়ে গুণ)
-            const livePrice = window.currentOxPrice || 0;
-            document.getElementById('global-staked-value').innerText = "$" + (totalStaked * livePrice).toFixed(2);
-
-            // এভারেজ বুস্ট ক্যালকুলেশন
-            const totalUsers = userArray.length || 1;
-            document.getElementById('avg-crash').innerText = "+" + (totalCrashBoost / totalUsers).toFixed(2) + "x";
-            document.getElementById('avg-pred').innerText = "+" + (totalPredBoost / totalUsers).toFixed(2) + "x";
+            document.getElementById('global-staked-value').innerText = "$" + (totalStaked * (window.currentOxPrice || 0)).toFixed(2);
+            
+            const totalCount = userArray.length || 1;
+            document.getElementById('avg-crash').innerText = "+" + (totalCrashB / totalCount).toFixed(2) + "x";
+            document.getElementById('avg-pred').innerText = "+" + (totalPredB / totalCount).toFixed(2) + "x";
         });
     </script>
 </body>
