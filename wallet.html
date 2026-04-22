@@ -586,6 +586,7 @@ function showFullDetails(item) {
         const fullDate = dateObj.toLocaleDateString(); // যেমন: 4/15/2026
         const fullTime = dateObj.toLocaleTimeString(); // যেমন: 3:24:57 AM
 
+        
         // স্ট্যাটাসের রঙ নির্ধারণ
         let statusColor = '#f0b90b'; // pending
         if(item.status === 'success') statusColor = '#0ecb81';
@@ -614,9 +615,6 @@ function showFullDetails(item) {
         
         overlay.style.display = 'flex';
     }
-
-
-
 // --- PROCESSORS ---
 async function processWithdraw() {
     const amt = parseFloat(document.getElementById('withAmt').value);
