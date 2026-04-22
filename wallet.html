@@ -798,53 +798,51 @@ function showFullDetails(item) {
 async function executeFinalTransfer(data) {
     const senderUid = auth.currentUser.uid;
     try {
-        // ১. ট্রানজেকশন আইডি তৈরি (হিস্ট্রির জন্য ইউনিক কী)
-        const txId = db.ref().child('history').push().key;
+        // ১. সরাসরি রেন্ডম কী জেনারেট করুন (transactions নোডে হিট না করে)
+        const txId = db.ref().child('history_logs').push().key; 
         
-        // ২. রিসিভারের বর্তমান ব্যালেন্স আনা
         const rxBalRef = db.ref(`users/${data.receiverUid}/${data.sym}_balance`);
         const rxSnap = await rxBalRef.once('value');
         const currentRxBal = parseFloat(rxSnap.val()) || 0;
 
-        // ৩. আপডেট ডাটা তৈরি (ভ্যালুগুলো Number হিসেবে রাখা নিরাপদ)
         const senderUpdate = parseFloat((data.senderBal - data.amt).toFixed(8));
         const receiverUpdate = parseFloat((currentRxBal + data.amt).toFixed(8));
 
-        // ৪. ডাটাবেজ আপডেট (উভয় পক্ষের ব্যালেন্স)
-        await db.ref(`users/${senderUid}`).update({ [data.sym + '_balance']: senderUpdate });
-        await db.ref(`users/${data.receiverUid}`).update({ [data.sym + '_balance']: receiverUpdate });
+        // ২. ট্রানজেকশন একসাথে আপডেট (Atomic Update)
+        const updates = {};
+        updates[`users/${senderUid}/${data.sym}_balance`] = senderUpdate;
+        updates[`users/${data.receiverUid}/${data.sym}_balance`] = receiverUpdate;
+        await db.ref().update(updates);
 
-        // ৫. হিস্ট্রি ডাটা অবজেক্ট তৈরি
-        const histBase = { 
+        // ৩. হিস্ট্রি ডাটা - এখানে userData এর বদলে সরাসরি চেক করুন
+        const senderSmatID = userData && userData.smatID ? userData.smatID : "User";
+
+        const histData = { 
             coin: data.coin, 
             amount: data.amt, 
             status: 'success', 
             timestamp: Date.now(), 
             network: 'Internal',
-            hash: 'INT-' + txId.substring(1, 8).toUpperCase()
+            hash: 'INT-' + txId.slice(1, 8).toUpperCase()
         };
         
-        // প্রেরকের হিস্ট্রিতে (Transfer Out)
-        await db.ref(`users/${senderUid}/history/${txId}`).set({ 
-            ...histBase, 
-            method: 'Transfer Out', 
-            address: `To: ${data.receiverName}` // এখানে প্রাপকের smatID থাকবে
-        });
+        // প্রেরক ও প্রাপকের হিস্ট্রি আলাদা ট্রাই-ক্যাচে রাখুন
+        try {
+            await db.ref(`users/${senderUid}/history/${txId}`).set({ 
+                ...histData, method: 'Transfer Out', address: `To: ${data.receiverName}` 
+            });
+            await db.ref(`users/${data.receiverUid}/history/${txId}`).set({ 
+                ...histData, method: 'Transfer In', address: `From: ${senderSmatID}` 
+            });
+        } catch (histErr) {
+            console.error("History push failed:", histErr);
+        }
 
-        // প্রাপকের হিস্ট্রিতে (Transfer In) - এখানে smatID ফিক্স করা হয়েছে
-        await db.ref(`users/${data.receiverUid}/history/${txId}`).set({ 
-            ...histBase, 
-            method: 'Transfer In', 
-            address: `From: ${userData.smatID || 'User'}` // এখানে smatID বড় হাতের 'ID' হবে
-        });
-
-        // ৬. সাকসেস মেসেজ ও পপআপ বন্ধ
-        showNotify('success', 'Transfer Success', `Sent ${data.amt} ${data.coin} to ${data.receiverName}`);
+        showNotify('success', 'Transfer Success', `Sent ${data.amt} ${data.coin}`);
         hidePopup();
-        
     } catch (e) {
-        console.error(e); // ডিবাগিংয়ের জন্য এররটি কনসোলে দেখা ভালো
-        showNotify('error', 'Error', 'Transaction failed at final stage.');
+        console.error("Final Transfer Error:", e);
+        showNotify('error', 'Error', 'Transaction failed.');
     }
 }
 
