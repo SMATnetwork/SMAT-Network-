@@ -2,6 +2,7 @@ The oxSMAT Tokenomics is engineered to create a deflationary, utility-first econ
 
 
                     oxSMAT Ecosystems
+install npn
                     
 1. SMAT L1 Blockchain
 2. SMAT Centralized Exchange
