@@ -611,42 +611,106 @@ function showTransferPreview(data) {
     const cont = document.getElementById('detailsContent');
     const confirmBtn = overlay.querySelector('.btn-main');
     
+    // বাটন রিসেট (আগের কোনো স্টেট থাকলে তা পরিষ্কার করা)
     confirmBtn.innerText = "CONFIRM & SEND";
+    confirmBtn.disabled = false;
+    confirmBtn.style.opacity = "1";
+    confirmBtn.style.pointerEvents = "auto";
     confirmBtn.style.background = "var(--primary)";
+
     confirmBtn.onclick = async () => {
-        confirmBtn.innerText = "Processing..."; confirmBtn.disabled = true;
-        await executeFinalTransfer(data);
-        overlay.style.display = 'none'; confirmBtn.disabled = false;
+        // ১. ক্লিক করার সাথে সাথে বাটন লক করা
+        confirmBtn.innerText = "Processing..."; 
+        confirmBtn.disabled = true;
+        confirmBtn.style.opacity = "0.6";
+        confirmBtn.style.pointerEvents = "none"; // কোনোভাবেই যেন আর ক্লিক না লাগে
+
+        try {
+            // ২. ট্রান্সফার প্রসেস কল করা
+            await executeFinalTransfer(data);
+            
+            // ৩. সাকসেস হলে পপআপ বন্ধ করা
+            overlay.style.display = 'none'; 
+        } catch (e) {
+            console.error("Transfer Error:", e);
+            showNotify('error', 'Failed', 'Transaction interrupted.');
+            
+            // এরর হলে বাটন আবার সচল করা যাতে ইউজার আবার ট্রাই করতে পারে
+            confirmBtn.innerText = "CONFIRM & SEND";
+            confirmBtn.disabled = false;
+            confirmBtn.style.opacity = "1";
+            confirmBtn.style.pointerEvents = "auto";
+        }
     };
 
-    cont.innerHTML = `<div style="text-align:center; padding:10px 0;"><p style="color:var(--text-sec); font-size:12px;">Confirm Transfer</p><h2 style="color:var(--primary); font-size:28px; margin:5px 0;">${data.amt} ${data.coin}</h2><div style="background:rgba(255,255,255,0.05); padding:15px; border-radius:12px; margin-top:15px; border:1px solid var(--border); text-align:left;"><p style="font-size:11px; color:var(--text-sec);">Recipient Account:</p><p style="font-size:14px; font-weight:bold; color:white; margin-top:4px;">${data.receiverName}</p></div></div>`;
+    // UI কন্টেন্ট আপডেট
+    cont.innerHTML = `
+        <div style="text-align:center; padding:10px 0;">
+            <p style="color:var(--text-sec); font-size:12px;">Confirm Transfer</p>
+            <h2 style="color:var(--primary); font-size:28px; margin:5px 0;">${data.amt} ${data.coin}</h2>
+            <div style="background:rgba(255,255,255,0.05); padding:15px; border-radius:12px; margin-top:15px; border:1px solid var(--border); text-align:left;">
+                <p style="font-size:11px; color:var(--text-sec);">Recipient Account:</p>
+                <p style="font-size:14px; font-weight:bold; color:white; margin-top:4px;">${data.receiverName}</p>
+            </div>
+        </div>`;
+    
     overlay.style.display = 'flex';
 }
 
 async function executeFinalTransfer(data) {
+    if (!auth.currentUser) return;
     const senderUid = auth.currentUser.uid;
+    
     try {
-        const txId = db.ref(`users/${senderUid}/history`).push().key;
+        // নতুন ট্রানজ্যাকশন আইডি জেনারেট
+        const txRef = db.ref(`users/${senderUid}/history`).push();
+        const txId = txRef.key;
+        
+        // রিসিভারের বর্তমান ব্যালেন্স চেক করা
         const rxSnap = await db.ref(`users/${data.receiverUid}/${data.sym}_balance`).once('value');
         const currentRxBal = parseFloat(rxSnap.val()) || 0;
 
-        const senderName = (typeof userData !== 'undefined' && userData.smatID) ? userData.smatID : "User";
+        const senderName = (userData && userData.smatID) ? userData.smatID : "User";
         const txHash = 'INT-' + txId.substring(1, 8).toUpperCase();
         const timestamp = Date.now();
 
-        const histBase = { coin: data.coin, amount: data.amt, status: 'success', timestamp: timestamp, network: 'Internal', hash: txHash };
+        // কমন ডাটা অবজেক্ট
+        const histBase = { 
+            coin: data.coin, 
+            amount: data.amt, 
+            status: 'success', 
+            timestamp: timestamp, 
+            network: 'Internal', 
+            hash: txHash,
+            date: new Date().toLocaleDateString(),
+            time: new Date().toLocaleTimeString()
+        };
 
         const updates = {};
+        // ১. সেন্ডারের ব্যালেন্স কমানো
         updates[`users/${senderUid}/${data.sym}_balance`] = parseFloat((data.senderBal - data.amt).toFixed(8));
+        // ২. রিসিভারের ব্যালেন্স বাড়ানো
         updates[`users/${data.receiverUid}/${data.sym}_balance`] = parseFloat((currentRxBal + data.amt).toFixed(8));
+        // ৩. সেন্ডারের হিস্টোরি
         updates[`users/${senderUid}/history/${txId}`] = { ...histBase, method: 'Transfer Out', address: `To: ${data.receiverName}` };
+        // ৪. রিসিভারের হিস্টোরি
         updates[`users/${data.receiverUid}/history/${txId}`] = { ...histBase, method: 'Transfer In', address: `From: ${senderName}` };
 
+        // ডাটাবেস আপডেট (Atomic Update)
         await db.ref().update(updates);
+        
         showNotify('success', 'Transfer Success', `Sent ${data.amt} ${data.coin}`);
-        hidePopup();
-    } catch (e) { showNotify('error', 'Error', 'Execution failed.'); }
+        
+        // ৫. সব পপআপ ওভারলে বন্ধ করা
+        hidePopup(); // actionOverlay বন্ধের জন্য
+        
+    } catch (e) {
+        console.error("Execution Error:", e);
+        showNotify('error', 'Error', 'Execution failed. Please check connection.');
+        throw e; // এই এররটি উপরের catch ব্লকে পাঠাবে যাতে বাটন রিলিজ হয়
+    }
 }
+
 
 function showFullDetails(item) {
     const overlay = document.getElementById('detailsOverlay');
