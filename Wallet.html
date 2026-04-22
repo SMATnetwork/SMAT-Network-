@@ -80,12 +80,23 @@
         .quick-actions { font-weight: 900;display: grid; grid-template-columns: repeat(3, 1fr); gap: 15px; padding: 0 20px 25px; }
         .q-btn { font-weight: 900;background: var(--card); border: 1px solid var(--border); border-radius: 16px; padding: 15px; text-align: center; cursor: pointer; }
 
-        .asset-list { padding: 0 15px; }
-        .asset-card {
-            background: var(--card); border-radius: 18px; padding: 15px; margin-bottom: 10px;
-            display: grid; grid-template-columns: auto 1fr auto; align-items: center; gap: 12px;
-            border: 1px solid var(--border);
-        }
+        ..asset-list { 
+    padding: 0 15px; 
+    max-width: 100%; /* কন্টেইনার যেন স্ক্রিনের বাইরে না যায় */
+    overflow-x: hidden; /* সাইড স্ক্রল বন্ধ করবে */
+}
+
+.asset-card {
+    background:transparent; 
+    border-radius: 2px; 
+    padding: 15px; 
+    margin-bottom: 8px;
+    display: flex; /* Grid এর বদলে Flex ব্যবহার করা ডেক্সটপ/মোবাইল সব ভিউতে নিরাপদ */
+    justify-content: space-between; 
+    align-items: center; 
+    gap: 8px;
+    width: 100%; /* কার্ড যেন কন্টেইনারের সমান থাকে */
+}
         .a-logo { width: 40px; height: 40px; border-radius: 50%; overflow: hidden; background: #000; }
         .a-logo img { width: 100%; height: 100%; object-fit: cover; }
 
@@ -104,12 +115,49 @@
         .opt-btn { background: var(--card); border: 1px solid var(--border); padding: 12px 5px; border-radius: 12px; text-align: center; font-size: 11px; font-weight: 800; cursor: pointer; }
         .opt-btn.active { border-color: var(--primary); color: var(--primary); }
 
+/* Wallet History Table Container */
+.history-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 15px;
+}
+
+/* কলামগুলোর স্পেসিং ঠিক করার জন্য */
+.history-table th, .history-table td {
+    padding: 12px 8px;
+    text-align: left; /* ডিফল্ট লেফট অ্যালাইন */
+    font-size: 13px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+/* কলাম ওয়াইজ উইডথ ফিক্স (৫ কলামের জন্য পারফেক্ট রেশিও) */
+.history-table th:nth-child(1), .history-table td:nth-child(1) { width: 20%; } /* NAME */
+.history-table th:nth-child(2), .history-table td:nth-child(2) { width: 25%; } /* AMOUNT */
+.history-table th:nth-child(3), .history-table td:nth-child(3) { width: 20%; } /* METHOD */
+.history-table th:nth-child(4), .history-table td:nth-child(4) { width: 20%; } /* TIME */
+.history-table th:nth-child(5), .history-table td:nth-child(5) { width: 15%; text-align: right; } /* ACTION */
+
+/* সাকসেস বাটনের সুন্দর লুক (আপনার স্ক্রিনশট অনুযায়ী) */
+.status-success {
+    background: rgba(14, 203, 129, 0.15);
+    color: #0ecb81;
+    padding: 4px 10px;
+    border-radius: 4px;
+    font-weight: bold;
+    font-size: 11px;
+    text-transform: uppercase;
+}
+
+
+
+
+
         .history-popup { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: var(--bg); z-index: 6000; display: none; flex-direction: column; }
         .hist-card { background: var(--card); padding: 15px; border-radius: 15px; margin-bottom: 12px; border-left: 4px solid var(--primary); }
         .status-spin { animation: spin 2s linear infinite; }
         @keyframes spin { 100% { transform: rotate(360deg); } }
 
-         .footer {position: fixed; bottom: 0; width: 100%; height: 75px; background: #181a20; display: flex; justify-content: space-around; align-items: center; border-top: 1px solid var(--border); z-index: 4000; }
+         .footer {position: fixed; bottom: 0; width: 100%; height: 75px; background: #0b0e11; display: flex; justify-content: space-around; align-items: center; z-index: 4000; }
         .f-nav {font-weight: 900; text-decoration: none; color: var(--text-sec); text-align: center; font-size: 12px; flex: 1; display: flex; flex-direction: column; align-items: center; gap: 4px; }
         .f-nav.active { color: var(--primary); }
   .footer a i {font-size:20px;}
@@ -119,7 +167,7 @@
         .main-fab.active { transform: rotate(45deg); background: var(--down); }
 
         .fab-menu { position: absolute; bottom: 75px; left: 50%; transform: translateX(-50%); display: none; flex-direction: column; gap: 15px; z-index: 4004; align-items: center; }
-        .fab-item { width: 50px; height: 50px; background: var(--primary); border-radius: 50%; display: flex; justify-content: center; align-items: center; color: black; box-shadow: 0 5px 15px rgba(0,0,0,0.5); text-decoration: none; animation: popIn 0.3s ease-out forwards; position: relative; }
+        .fab-item { width: 50px; height: 50px; background:silver; border-radius: 50%; display: flex; justify-content: center; align-items: center; color: black; box-shadow: 0 5px 15px rgba(0,0,0,0.5); text-decoration: none; animation: popIn 0.3s ease-out forwards; position: relative; }
         .fab-label { font-weight: 900;position: absolute; left: 60px; background: var(--card); color: white; padding: 4px 10px; border-radius: 6px; font-size: 11px; font-weight: bold; border: 1px solid var(--border); white-space: nowrap; }
         
         @keyframes popIn { from { transform: scale(0) translateY(50px); opacity: 0; } to { transform: scale(1) translateY(0); opacity: 1; } }
@@ -211,24 +259,24 @@
 
 
  <footer class="footer">
-    <a href="home.html" class="f-nav active"><i class="fas fa-home"></i>Home</a>
+    <a href="home.html" class="f-nav "><i class="fas fa-home"></i>Home</a>
     
-    <a href="market.html" class="f-nav active"><i class="fas fa-chart-line"></i>Market</a>
+    <a href="market.html" class="f-nav "><i class="fas fa-chart-line"></i>Market</a>
     
     <div class="main-fab-container">
         <div class="fab-menu" id="fabMenu">
-            <a href="prediction.html" class="fab-item" style="animation-delay: 0.2s;"><i class="fas fa-clock"></i><span class="fab-label">Prediction</span></a>
+            <a href="prediction.html" class="fab-item" style="animation-delay: 0.2s;"><i class="fas fa-clock"></i><span class="fab-label"></span></a>
             
-            <a href="crash.html" class="fab-item" style="animation-delay: 0.1s;"><i class="fas fa-rocket"></i><span class="fab-label">Crash</span></a>
+            <a href="crash.html" class="fab-item" style="animation-delay: 0.1s;"><i class="fas fa-rocket"></i><span class="fab-label"></span></a>
             
-            <a href="feature.html" class="fab-item active"><i class="fas fa-gem"></i><span class="fab-label">Feature</span></a>
+            <a href="feature.html" class="fab-item active"><i class="fas fa-gem"></i><span class="fab-label"></span></a>
         </div>
         <div class="main-fab" id="mainFab" onclick="toggleFab()"><i class="fas fa-plus" style="color:black"></i></div>
     </div>
 
-    <a href="swap.html" class="f-nav active"><i class="fas fa-exchange-alt"></i>Swap</a>
+    <a href="trade.html" class="f-nav "><i class="fas fa-exchange-alt"></i>Trade</a>
     
-    <a href="mining.html" class="f-nav active"><i class="fas fa-microchip"></i>Mining</a>
+    <a href="mining.html" class="f-nav "><i class="fas fa-microchip"></i>Mining</a>
 </footer>
 
 
@@ -547,27 +595,196 @@ async function processWithdraw() {
     }
 }
 
+// ১. মেইন ট্রান্সফার ফাংশন (SMAT ID এবং Gmail সার্চ লজিক সহ)
+// ১. মেইন ট্রান্সফার প্রসেস
 async function processTransfer() {
     const amt = parseFloat(document.getElementById('transAmt').value);
-    const target = document.getElementById('transTarget').value;
+    const target = document.getElementById('transTarget').value.trim();
+    const type = document.getElementById('transType').value;
     const s = document.getElementById('popCoinName').innerText.toLowerCase();
-    const bal = parseFloat(userData[s + '_balance']) || 0;    
+    const senderUid = auth.currentUser.uid;
+    const senderBal = parseFloat(userData[s + '_balance']) || 0;
 
-    if(!target || isNaN(amt) || amt <= 0 || amt > bal) return showNotify('error', 'Failed', 'Invalid amount or recipient.');
+    if(!target || isNaN(amt) || amt <= 0) return showNotify('error', 'Failed', 'Please enter valid details.');
+    if(amt > senderBal) return showNotify('error', 'Balance', 'Insufficient balance!');
+
+    showNotify('info', 'Searching', 'Verifying recipient...');
 
     try {
-        const txId = db.ref('transactions').push().key;
-        const data = { method: 'Internal Transfer', coin: s.toUpperCase(), amount: amt, network: 'Internal', address: target, status: 'success', timestamp: Date.now(), hash: 'Null' };
-        
-        await db.ref('users/' + auth.currentUser.uid).update({ [s + '_balance']: (bal - amt).toFixed(8) });    
-        await db.ref('users/' + auth.currentUser.uid + '/history/' + txId).set(data);
-        
-        showNotify('success', 'Sent', 'Transfer completed successfully!');
-        hidePopup();
+        const snapshot = await db.ref('users').once('value');
+        let receiverUid = null;
+        let receiverName = "";
+
+        if (snapshot.exists()) {
+            snapshot.forEach(child => {
+                const user = child.val();
+                const inputTarget = target.toLowerCase().trim();
+                
+                if (type === 'gmail' && user.email && user.email.toLowerCase() === inputTarget) {
+                    receiverUid = child.key;
+                    receiverName = user.email;
+                } else if (type === 'smatid') {
+                    // আপনার ডাটাবেজ অনুযায়ী smatID (বড় হাতের ID) চেক
+                    const dbSmatID = user.smatID || user.smatid || user.smatId; 
+                    if (dbSmatID && dbSmatID.toString().toLowerCase().trim() === inputTarget) {
+                        receiverUid = child.key;
+                        receiverName = dbSmatID;
+                    }
+                }
+            });
+        }
+
+        if (!receiverUid) return showNotify('error', 'NOT FOUND', 'User not found.');
+        if (receiverUid === senderUid) return showNotify('error', 'Invalid', 'Cannot transfer to yourself.');
+
+        showTransferPreview({ amt, coin: s.toUpperCase(), receiverName, receiverUid, senderBal, sym: s });
+
     } catch (e) {
-        showNotify('error', 'Error', 'Transfer failed.');
+        showNotify('error', 'Error', 'Search failed.');
     }
 }
+
+// ২. কনফার্মেশন প্রিভিউ পপআপ (গ্রাফিক্স প্রিভিউ)
+function showTransferPreview(data) {
+    const overlay = document.getElementById('detailsOverlay');
+    const cont = document.getElementById('detailsContent');
+    const confirmBtn = overlay.querySelector('.btn-main');
+    
+    confirmBtn.onclick = null; 
+    confirmBtn.disabled = false;
+    confirmBtn.innerText = "CONFIRM & SEND";
+    confirmBtn.style.background = "var(--primary)";
+
+    cont.innerHTML = `
+        <div style="text-align:center; padding:10px 0;">
+            <p style="color:var(--text-sec); font-size:12px;">Confirm Transfer</p>
+            <h2 style="color:var(--primary); font-size:28px; margin:5px 0;">${data.amt} ${data.coin}</h2>
+            <div style="background:rgba(255,255,255,0.05); padding:15px; border-radius:12px; margin-top:15px; border:1px solid var(--border); text-align:left;">
+                <p style="font-size:11px; color:var(--text-sec);">Recipient Account:</p>
+                <p style="font-size:14px; font-weight:bold; color:white; margin-top:4px;">${data.receiverName}</p>
+            </div>
+        </div>
+    `;
+    
+    confirmBtn.onclick = async () => {
+        confirmBtn.innerText = "Processing...";
+        confirmBtn.disabled = true;
+        await executeFinalTransfer(data);
+        overlay.style.display = 'none';
+        confirmBtn.disabled = false;
+    };
+    
+    overlay.style.display = 'flex';
+}
+
+// ৩. ফাইনাল এক্সিকিউশন (ব্যালেন্স আপডেট ও ফুল হিস্ট্রি সেভ)
+async function executeFinalTransfer(data) {
+    const senderUid = auth.currentUser.uid;
+    try {
+        const txId = db.ref('transactions').push().key;
+        const rxBalRef = db.ref(`users/${data.receiverUid}/${data.sym}_balance`);
+        const rxSnap = await rxBalRef.once('value');
+        const currentRxBal = parseFloat(rxSnap.val()) || 0;
+
+        const senderUpdate = (data.senderBal - data.amt).toFixed(8);
+        const receiverUpdate = (currentRxBal + data.amt).toFixed(8);
+
+        await db.ref(`users/${senderUid}`).update({ [data.sym + '_balance']: parseFloat(senderUpdate) });
+        await db.ref(`users/${data.receiverUid}`).update({ [data.sym + '_balance']: parseFloat(receiverUpdate) });
+
+        // আপনার চাওয়া অনুযায়ী ফুল হিস্ট্রি অবজেক্ট
+        const histData = { 
+            coin: data.coin, 
+            amount: data.amt, 
+            status: 'success', 
+            timestamp: Date.now(), 
+            network: 'Internal' 
+        };
+        
+        await db.ref(`users/${senderUid}/history/${txId}`).set({ 
+            ...histData, method: 'Transfer Out', address: `To: ${data.receiverName}`, hash: 'INT-'+txId.slice(1,8).toUpperCase() 
+        });
+        await db.ref(`users/${data.receiverUid}/history/${txId}`).set({ 
+            ...histData, method: 'Transfer In', address: `From: ${userData.smatID || 'User'}`, hash: 'INT-'+txId.slice(1,8).toUpperCase() 
+        });
+
+        showNotify('success', 'Transfer Success', `Sent ${data.amt} ${data.coin} successfully!`);
+        hidePopup();
+    } catch (e) {
+        showNotify('error', 'Error', 'Transaction failed.');
+    }
+}
+
+// ৪. পূর্ণাঙ্গ হিস্ট্রি ডিটেইলস পপআপ (Network, Date, Time সহ)
+function showFullDetails(item) {
+    const overlay = document.getElementById('detailsOverlay');
+    const cont = document.getElementById('detailsContent');
+    const btn = overlay.querySelector('.btn-main');
+
+    // বাটন রিসেট (ক্লোজ করার জন্য)
+    btn.onclick = null;
+    btn.innerText = "CLOSE";
+    btn.style.background = "#0ecb81";
+    btn.onclick = () => { overlay.style.display = 'none'; };
+
+    // টাইম এবং ডেট ফরম্যাট করা
+    const dt = new Date(item.timestamp);
+    const dateStr = dt.toLocaleDateString();
+    const timeStr = dt.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+
+    cont.innerHTML = `
+        <div style="text-align:center; margin-bottom:15px;">
+            <p style="color:var(--text-sec); font-size:12px;">Transaction Details</p>
+        </div>
+        <div class="detail-item"><span>Status</span><b style="color:#0ecb81">${item.status.toUpperCase()}</b></div>
+        <div class="detail-item"><span>Method</span><b>${item.method}</b></div>
+        <div class="detail-item"><span>Amount</span><b>${item.amount} ${item.coin}</b></div>
+        <div class="detail-item"><span>Network</span><b>${item.network || 'Internal'}</b></div>
+        <div class="detail-item"><span>Target</span><b class="responsive-text" style="font-size:10px;">${item.address || 'N/A'}</b></div>
+        <hr style="border:0; border-top:1px dashed rgba(255,255,255,0.1); margin:10px 0;">
+        <div class="detail-item"><span>Date</span><b>${dateStr}</b></div>
+        <div class="detail-item"><span>Time</span><b>${timeStr}</b></div>
+        <div class="detail-item"><span>ID / Hash</span><b class="responsive-text" style="font-size:9px; color:var(--text-sec);">${item.hash || item.id}</b></div>
+    `;
+    
+    overlay.style.display = 'flex';
+}
+
+
+// ৫. ফাইনাল এক্সিকিউশন (প্লাস/মাইনাস এবং সাকসেস টোস্ট)
+async function executeFinalTransfer(data) {
+    const senderUid = auth.currentUser.uid;
+    try {
+        const txId = db.ref('transactions').push().key;
+        
+        // রিসিভারের বর্তমান ব্যালেন্স আনা
+        const rxBalRef = db.ref(`users/${data.receiverUid}/${data.sym}_balance`);
+        const rxSnap = await rxBalRef.once('value');
+        const currentRxBal = parseFloat(rxSnap.val()) || 0;
+
+        // আপডেট ডাটা তৈরি
+        const senderUpdate = (data.senderBal - data.amt).toFixed(8);
+        const receiverUpdate = (currentRxBal + data.amt).toFixed(8);
+
+        // ডাটাবেজ আপডেট
+        await db.ref(`users/${senderUid}`).update({ [data.sym + '_balance']: senderUpdate });
+        await db.ref(`users/${data.receiverUid}`).update({ [data.sym + '_balance']: receiverUpdate });
+
+        // হিস্ট্রি সেভ করা (উভয় পক্ষের জন্য)
+        const histData = { coin: data.coin, amount: data.amt, status: 'success', timestamp: Date.now(), network: 'Internal' };
+        
+        await db.ref(`users/${senderUid}/history/${txId}`).set({ ...histData, method: 'Transfer Out', address: `To: ${data.receiverName}`, hash: 'INT-'+txId.slice(1,8).toUpperCase() });
+        await db.ref(`users/${data.receiverUid}/history/${txId}`).set({ ...histData, method: 'Transfer In', address: `From: ${userData.smatId || 'User'}`, hash: 'INT-'+txId.slice(1,8).toUpperCase() });
+
+        // সাকসেস টোস্ট
+        showNotify('success', 'Transfer Success', `Sent ${data.amt} ${data.coin} to ${data.receiverName}`);
+        hidePopup();
+        
+    } catch (e) {
+        showNotify('error', 'Error', 'Transaction failed at final stage.');
+    }
+}
+
 
 function hidePopup() { document.getElementById('actionOverlay').style.display = 'none'; }
 function closeHistory() { document.getElementById('historyPopup').style.display = 'none'; }
