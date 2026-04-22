@@ -291,27 +291,18 @@ function toggleFab() {
     fab.classList.toggle('active');
 }
 
-// --- CORE FUNCTIONS (Decimal Fixed) ---
-
-// Coin Amount: সর্বোচ্চ ৮ দশমিক
+// --- CORE FORMATTING ---
 function formatAmt(num) {
     if(!num) return "0.00";
-    return parseFloat(num).toLocaleString(undefined, { 
-        minimumFractionDigits: 2, 
-        maximumFractionDigits: 8 
-    });
+    return parseFloat(num).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 8 });
 }
 
-// Price & Dollar Value: ফিক্সড ৪ দশমিক
 function formatPrice(num) {
     if(!num) return "0.0000";
-    return parseFloat(num).toLocaleString(undefined, { 
-        minimumFractionDigits: 4, 
-        maximumFractionDigits: 4 
-    });
+    return parseFloat(num).toLocaleString(undefined, { minimumFractionDigits: 4, maximumFractionDigits: 4 });
 }
 
-// --- GRAPHIC TOAST NOTIFICATION SYSTEM ---
+// --- NOTIFICATION SYSTEM ---
 function showNotify(type, title, message) {
     let container = document.getElementById('notification-container');
     if (!container) {
@@ -320,43 +311,19 @@ function showNotify(type, title, message) {
         container.style = "position:fixed; top:20px; left:50%; transform:translateX(-50%); z-index:10000; display:flex; flex-direction:column; gap:10px; width:90%; max-width:350px;";
         document.body.appendChild(container);
     }
-
     const toast = document.createElement('div');
-    // গ্রাফিক্স স্টাইল
-    toast.style = `
-        background: #1e2329; border: 1px solid rgba(255,255,255,0.1); border-radius: 12px; padding: 15px; 
-        box-shadow: 0 10px 30px rgba(0,0,0,0.5); display: flex; flex-direction: column; align-items: center; 
-        animation: slideDown 0.4s ease forwards; transition: all 0.5s ease;
-    `;
-    
+    toast.style = `background: #1e2329; border: 1px solid rgba(255,255,255,0.1); border-radius: 12px; padding: 15px; box-shadow: 0 10px 30px rgba(0,0,0,0.5); display: flex; flex-direction: column; align-items: center; animation: slideDown 0.4s ease forwards; transition: all 0.5s ease;`;
     let icon = 'fa-info-circle', titleColor = '#f0b90b';
     if (type === 'success') { icon = 'fa-check-circle'; titleColor = '#0ecb81'; }
     else if (type === 'error') { icon = 'fa-times-circle'; titleColor = '#f6465d'; }
-
-    toast.innerHTML = `
-        <div style="font-weight: 800; color: ${titleColor}; margin-bottom: 5px; font-size: 14px; display: flex; align-items: center; gap: 8px;">
-            <i class="fas ${icon}"></i> ${title.toUpperCase()}
-        </div>
-        <div style="font-size: 11px; color: #848e9c; font-weight: 700; text-align: center;">${message}</div>
-    `;
-
+    toast.innerHTML = `<div style="font-weight: 800; color: ${titleColor}; margin-bottom: 5px; font-size: 14px; display: flex; align-items: center; gap: 8px;"><i class="fas ${icon}"></i> ${title.toUpperCase()}</div><div style="font-size: 11px; color: #848e9c; font-weight: 700; text-align: center;">${message}</div>`;
     container.appendChild(toast);
-
-    setTimeout(() => {
-        toast.style.opacity = '0';
-        toast.style.transform = 'translateY(-20px)';
-        setTimeout(() => toast.remove(), 500);
-    }, 4000);
+    setTimeout(() => { toast.style.opacity = '0'; setTimeout(() => toast.remove(), 500); }, 4000);
 }
-
-// CSS Animation for Toast
-const style = document.createElement('style');
-style.innerHTML = `@keyframes slideDown { from { transform: translateY(-50px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }`;
-document.head.appendChild(style);
 
 // --- FIREBASE INITIALIZATION ---
 const firebaseConfig = { apiKey: "AIzaSyAMxtJedkehhxJRMPZLjhpKHqneHEWsGlE", authDomain: "smat-exchange.firebaseapp.com", projectId: "smat-exchange", databaseURL: "https://smat-exchange-default-rtdb.firebaseio.com", storageBucket: "smat-exchange.appspot.com", messagingSenderId: "836334569396", appId: "1:836334569396:web:679effe640b3453412d4e1" };
-firebase.initializeApp(firebaseConfig);
+if (!firebase.apps.length) firebase.initializeApp(firebaseConfig);
 const db = firebase.database();
 const auth = firebase.auth();
 
@@ -372,68 +339,68 @@ function init() {
 }
 
 function updateUI() {
-    const sorted = GLOBAL_COINS.map(c => {
+    if (!window.GLOBAL_COINS) return;
+    const allProcessedCoins = GLOBAL_COINS.map(c => {
         const s = c.sym.toLowerCase();
-        const price = livePrices[s]?.price || c.price;
+        const price = livePrices[s]?.price || c.price || 0;
         const bal = parseFloat(userData[s + '_balance']) || 0;        
         return { ...c, price, bal, val: bal * price };
-    }).sort((a,b) => b.val - a.val);
+    });
 
-    document.getElementById('assetList').innerHTML = sorted.map(c => `
-        <div class="asset-card" onclick="openActionPopup('${c.sym.toLowerCase()}', 'all')">
-            <div class="a-logo"><img src="assets/logos/${c.sym.toLowerCase()}.png"></div>
-            <div style="flex:1">
-                <h4>${c.sym.toUpperCase()}</h4>
-                <p style="font-size:11px; color:var(--text-sec)">$${formatPrice(c.price)}</p>
-            </div>
-            <div style="text-align:right">
-                <b>${formatAmt(c.bal)}</b><br>
-                <span style="font-size:11px; color:var(--text-sec)">$${formatPrice(c.val)}</span>
-            </div>
-        </div>
-    `).join('');
+    const visibleCoins = allProcessedCoins.filter(c => c.bal > 0).sort((a,b) => b.val - a.val);
+    const assetListCont = document.getElementById('assetList');
+    if(assetListCont) {
+        assetListCont.innerHTML = visibleCoins.length ? visibleCoins.map(c => `
+            <div class="asset-card" onclick="openActionPopup('${c.sym.toLowerCase()}', 'all')">
+                <div class="a-logo"><img src="assets/logos/${c.sym.toLowerCase()}.png" onerror="this.src='assets/logos/generic.png'"></div>
+                <div style="flex:1"><h4>${c.sym.toUpperCase()}</h4><p style="font-size:11px; color:var(--text-sec)">$${formatPrice(c.price)}</p></div>
+                <div style="text-align:right"><b>${formatAmt(c.bal)}</b><br><span style="font-size:11px; color:var(--text-sec)">$${formatPrice(c.val)}</span></div>
+            </div>`).join('') : `<div style="text-align:center; padding:40px; color:var(--text-sec); opacity:0.5;"><i class="fas fa-coins" style="font-size:30px; margin-bottom:10px;"></i><p style="font-size:12px;">No active assets</p></div>`;
+    }
     
-    let total = sorted.reduce((a, b) => a + b.val, 0);
-    document.getElementById('totalBalance').innerText = formatPrice(total);
+    let total = allProcessedCoins.reduce((a, b) => a + b.val, 0);
+    const totalElem = document.getElementById('totalBalance');
+    if(totalElem) totalElem.innerText = formatPrice(total);
 }
 
 function openCoinSelector(mode) {
     currentSelectorMode = mode;
     document.getElementById('selectorTitle').innerText = mode === 'deposit' ? 'Deposit' : 'Withdraw';
     document.getElementById('coinSelector').style.display = 'flex';
-    filterCoins();
+    filterCoins(); 
 }
 
 function filterCoins() {
-    const query = document.getElementById('coinSearch').value.toLowerCase();
+    const searchInput = document.getElementById('coinSearch');
+    const query = searchInput ? searchInput.value.toLowerCase() : "";
     const list = GLOBAL_COINS.map(c => {
         const s = c.sym.toLowerCase();
         const bal = parseFloat(userData[s + '_balance']) || 0;        
         return { ...c, bal };
-    }).sort((a,b) => b.bal - a.bal)
-    .filter(c => c.name.toLowerCase().includes(query) || c.sym.toLowerCase().includes(query));
+    }).filter(c => c.name.toLowerCase().includes(query) || c.sym.toLowerCase().includes(query)).sort((a,b) => b.bal - a.bal);
 
-    document.getElementById('selectorList').innerHTML = list.map(c => `
-        <div class="asset-card" onclick="openActionPopup('${c.sym.toLowerCase()}', '${currentSelectorMode}')">
-            <div class="a-logo"><img src="assets/logos/${c.sym.toLowerCase()}.png"></div>
-            <div style="flex:1"><h4>${c.sym.toUpperCase()}</h4><p style="font-size:11px; color:var(--text-sec)">${c.name}</p></div>
-            <div style="text-align:right"><b style="color:var(--primary)">${formatAmt(c.bal)}</b></div>
-        </div>
-    `).join('');
+    const listCont = document.getElementById('selectorList');
+    if(listCont) {
+        listCont.innerHTML = list.map(c => `
+            <div class="asset-card" onclick="openActionPopup('${c.sym.toLowerCase()}', '${currentSelectorMode}')">
+                <div class="a-logo"><img src="assets/logos/${c.sym.toLowerCase()}.png" onerror="this.src='assets/logos/generic.png'"></div>
+                <div style="flex:1"><h4>${c.sym.toUpperCase()}</h4><p style="font-size:11px; color:var(--text-sec)">${c.name}</p></div>
+                <div style="text-align:right"><b style="color:var(--primary)">${formatAmt(c.bal)}</b></div>
+            </div>`).join('');
+    }
 }
 
 function openActionPopup(sym, mode) {
     const coin = GLOBAL_COINS.find(c => c.sym.toLowerCase() === sym);
-    const s = coin.sym.toLowerCase();
+    const s = sym.toLowerCase();
     const bal = parseFloat(userData[s + '_balance']) || 0;    
-    const price = livePrices[s]?.price || coin.price;
+    const price = livePrices[s]?.price || coin.price || 1;
 
     document.getElementById('popCoinLogo').src = `assets/logos/${s}.png`;
     document.getElementById('qrCoinLogo').src = `assets/logos/${s}.png`;
     document.getElementById('popCoinName').innerText = sym.toUpperCase();
     document.getElementById('depAddr').innerText = userData.depositAddress || "0xLoading...";
     
-    // ফি ক্যালকুলেশন এবং ৮ দশমিক এ ডিসপ্লে
     const fee = 0.25 / price;
     document.getElementById('availWith').innerText = formatAmt(Math.max(0, bal - fee));
     document.getElementById('availTrans').innerText = formatAmt(bal);
@@ -447,130 +414,48 @@ function openActionPopup(sym, mode) {
     document.getElementById('actionOverlay').style.display = 'flex';
     
     const grid = document.getElementById('actionSwitchers');
-    const bDep = document.getElementById('btnDep'), bWith = document.getElementById('btnWith'), bTrans = document.getElementById('btnTrans');
+    document.getElementById('btnDep').style.display = (mode === 'withdraw') ? 'none' : 'block';
+    document.getElementById('btnWith').style.display = (mode === 'deposit') ? 'none' : 'block';
+    document.getElementById('btnTrans').style.display = (mode === 'deposit') ? 'none' : 'block';
     
-    if(mode === 'deposit') {
-        grid.style.display = 'grid'; bDep.style.display = 'block'; bWith.style.display = 'none'; bTrans.style.display = 'none';
-        switchMode('deposit');
-    } else if(mode === 'withdraw') {
-        grid.style.display = 'grid'; bDep.style.display = 'none'; bWith.style.display = 'block'; bTrans.style.display = 'block';
-        switchMode('withdraw');
-    } else {
-        grid.style.display = 'grid'; bDep.style.display = 'block'; bWith.style.display = 'block'; bTrans.style.display = 'block';
-        switchMode('deposit');
-    }
+    switchMode(mode === 'all' ? 'deposit' : mode);
 }
 
 function switchMode(m) {
     document.querySelectorAll('.mode-ui').forEach(u => u.style.display = 'none');
     document.querySelectorAll('.opt-btn').forEach(b => b.classList.remove('active'));
-    document.getElementById('ui' + m.charAt(0).toUpperCase() + m.slice(1)).style.display = 'block';
-    document.getElementById('btn' + m.charAt(0).toUpperCase() + m.slice(1).substring(0,3)).classList.add('active');
+    const targetUI = document.getElementById('ui' + m.charAt(0).toUpperCase() + m.slice(1));
+    if(targetUI) targetUI.style.display = 'block';
+    const btn = document.getElementById('btn' + m.charAt(0).toUpperCase() + m.slice(1).substring(0,3));
+    if(btn) btn.classList.add('active');
 }
 
 function openHistory() {
     document.getElementById('historyPopup').style.display = 'flex';
     const cont = document.getElementById('histContent');
-    
-    // Table Header
-    let html = `
-        <div class="hist-table-header">
-            <span>Name</span>
-            <span>Amount</span>
-            <span>Method</span>
-            <span class="hist-time-col">Time</span>
-            <span style="text-align:right">Action</span>
-        </div>
-    `;
+    const header = `<div class="hist-table-header"><span>Name</span><span>Amount</span><span>Method</span><span class="hist-time-col">Time</span><span style="text-align:right">Action</span></div>`;
 
     db.ref('users/' + auth.currentUser.uid + '/history').on('value', snap => {
         const data = snap.val();
-        if(!data) { 
-            cont.innerHTML = html + "<p style='text-align:center; color:var(--text-sec); padding:40px;'>No history found.</p>"; 
-            return; 
-        }
-
+        if(!data) { cont.innerHTML = header + "<p style='text-align:center; color:var(--text-sec); padding:40px;'>No history found.</p>"; return; }
         const items = Object.keys(data).map(key => ({ id: key, ...data[key] })).sort((a,b) => b.timestamp - a.timestamp);
         
-        let rows = "";
-        items.forEach(item => {
+        cont.innerHTML = header + items.map(item => {
             const coinSym = (item.coin || 'SMAT').toLowerCase();
             const statusClass = item.status === 'success' ? 'status-success' : (item.status === 'failed' ? 'status-failed' : 'status-pending');
             const statusText = item.status === 'pending' ? '<i class="fas fa-spinner fa-spin"></i>' : item.status.toUpperCase();
-            
-            // মেথড নাম ছোট করার লজিক
-            let displayMethod = item.method ? item.method.split(' ')[0] : 'Transfer'; 
-
-            // অ্যামাউন্ট ফরম্যাটিং: সর্বনিম্ন ২ এবং সর্বোচ্চ ৮ ডেসিমাল
-            let formattedAmount = parseFloat(item.amount).toLocaleString(undefined, {
-                minimumFractionDigits: 2,
-                maximumFractionDigits: 8
-            });
-
-            const shortTime = new Date(item.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-
-            rows += `
+            return `
                 <div class="hist-row" onclick='showFullDetails(${JSON.stringify(item)})'>
-                    <div class="name-col">
-                        <img src="assets/logos/${coinSym}.png" class="small-logo" onerror="this.src='assets/logos/generic.png'">
-                        <b style="font-size: 10px; white-space: nowrap;">${item.coin}</b>
-                    </div>
-                    
-                    <b style="font-family: monospace; font-size: 10px;">${formattedAmount}</b>
-                    
-                    <span style="color: var(--text-sec); font-size: 10px;">${displayMethod}</span>
-                    
-                    <span class="hist-time-col" style="color: var(--text-sec); font-size: 10px;">${shortTime}</span>
-                    <div style="text-align:right">
-                        <span class="status-badge ${statusClass}">${statusText}</span>
-                    </div>
-                </div>
-            `;
-        });
-        cont.innerHTML = html + rows;
+                    <div class="name-col"><img src="assets/logos/${coinSym}.png" class="small-logo" onerror="this.src='assets/logos/generic.png'"><b>${item.coin}</b></div>
+                    <b style="font-family: monospace;">${formatAmt(item.amount)}</b>
+                    <span style="color:var(--text-sec)">${item.method ? item.method.split(' ')[0] : 'Transfer'}</span>
+                    <span class="hist-time-col" style="color:var(--text-sec)">${new Date(item.timestamp).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}</span>
+                    <div style="text-align:right"><span class="status-badge ${statusClass}">${statusText}</span></div>
+                </div>`;
+        }).join('');
     });
 }
 
-function showFullDetails(item) {
-        const overlay = document.getElementById('detailsOverlay');
-        const cont = document.getElementById('detailsContent');
-        
-        const dateObj = new Date(item.timestamp);
-        const fullDate = dateObj.toLocaleDateString(); // যেমন: 4/15/2026
-        const fullTime = dateObj.toLocaleTimeString(); // যেমন: 3:24:57 AM
-
-        // স্ট্যাটাসের রঙ নির্ধারণ
-        let statusColor = '#f0b90b'; // pending
-        if(item.status === 'success') statusColor = '#0ecb81';
-        else if(item.status === 'failed') statusColor = '#f6465d';
-
-        cont.innerHTML = `
-            <div class="detail-item"><span>Status</span><b style="color:${statusColor}">${item.status.toUpperCase()}</b></div>
-            <div class="detail-item"><span>Method</span><b>${item.method}</b></div>
-            <div class="detail-item"><span>Amount</span><b>${item.amount} ${item.coin}</b></div>
-            <div class="detail-item"><span>Network</span><b>${item.network || 'Internal'}</b></div>
-            
-            <div class="detail-item">
-                <span>Target</span>
-                <b class="responsive-text">${item.address || 'N/A'}</b>
-            </div>
-            
-            <hr style="border:0; border-top:1px dashed rgba(255,255,255,0.1); margin:10px 0;">
-            <div class="detail-item"><span>Date</span><b>${fullDate}</b></div>
-            <div class="detail-item"><span>Time</span><b>${fullTime}</b></div>
-            
-            <div class="detail-item" style="border-bottom:none; margin-bottom:0;">
-                <span>ID / Hash</span>
-                <b class="responsive-text" style="color:var(--text-sec);">${item.hash || item.id}</b>
-            </div>
-        `;
-        
-        overlay.style.display = 'flex';
-    }
-
-
-
-// --- PROCESSORS ---
 async function processWithdraw() {
     const amt = parseFloat(document.getElementById('withAmt').value);
     const addr = document.getElementById('withAddr').value;
@@ -578,223 +463,97 @@ async function processWithdraw() {
     const bal = parseFloat(userData[s + '_balance']) || 0;    
     const price = livePrices[s]?.price || 1, fee = 0.25 / price;
 
-    if(!addr || isNaN(amt) || amt <= 0) return showNotify('error', 'Failed', 'Please enter valid details.');
-    if((amt + fee) > bal) return showNotify('error', 'Balance', 'Insufficient balance including fee!');
+    if(!addr || isNaN(amt) || amt <= 0) return showNotify('error', 'Failed', 'Invalid details.');
+    if((amt + fee) > bal) return showNotify('error', 'Balance', 'Insufficient balance!');
 
-    try {
-        const txId = db.ref('transactions').push().key;
-        const data = { method: 'Withdraw', coin: s.toUpperCase(), amount: amt, network: document.getElementById('withNet').value, address: addr, status: 'pending', timestamp: Date.now(), hash: '...' };
-        
-        await db.ref('users/' + auth.currentUser.uid).update({ [s + '_balance']: (bal - (amt + fee)).toFixed(8) });    
-        await db.ref('users/' + auth.currentUser.uid + '/history/' + txId).set(data);
-        
-        showNotify('success', 'Submitted', 'Withdrawal request sent successfully!');
-        hidePopup();
-    } catch (e) {
-        showNotify('error', 'Error', 'Transaction failed. Try again.');
-    }
+    const txId = db.ref(`users/${auth.currentUser.uid}/history`).push().key;
+    const data = { method: 'Withdraw', coin: s.toUpperCase(), amount: amt, network: document.getElementById('withNet').value, address: addr, status: 'pending', timestamp: Date.now(), hash: 'Pending...' };
+    
+    const updates = {};
+    updates[`users/${auth.currentUser.uid}/${s}_balance`] = parseFloat((bal - (amt + fee)).toFixed(8));
+    updates[`users/${auth.currentUser.uid}/history/${txId}`] = data;
+    
+    await db.ref().update(updates);
+    showNotify('success', 'Submitted', 'Withdrawal request sent!');
+    hidePopup();
 }
 
-// ১. মেইন ট্রান্সফার ফাংশন (SMAT ID এবং Gmail সার্চ লজিক সহ)
-// ১. মেইন ট্রান্সফার প্রসেস
 async function processTransfer() {
     const amt = parseFloat(document.getElementById('transAmt').value);
     const target = document.getElementById('transTarget').value.trim();
     const type = document.getElementById('transType').value;
     const s = document.getElementById('popCoinName').innerText.toLowerCase();
-    const senderUid = auth.currentUser.uid;
     const senderBal = parseFloat(userData[s + '_balance']) || 0;
 
-    if(!target || isNaN(amt) || amt <= 0) return showNotify('error', 'Failed', 'Please enter valid details.');
+    if(!target || isNaN(amt) || amt <= 0) return showNotify('error', 'Failed', 'Invalid details.');
     if(amt > senderBal) return showNotify('error', 'Balance', 'Insufficient balance!');
 
     showNotify('info', 'Searching', 'Verifying recipient...');
+    const snapshot = await db.ref('users').once('value');
+    let receiverUid = null, receiverName = "";
 
-    try {
-        const snapshot = await db.ref('users').once('value');
-        let receiverUid = null;
-        let receiverName = "";
+    snapshot.forEach(child => {
+        const user = child.val();
+        if (type === 'gmail' && user.email?.toLowerCase() === target.toLowerCase()) { receiverUid = child.key; receiverName = user.email; }
+        else if (type === 'smatid' && (user.smatID || user.smatid)?.toString() === target) { receiverUid = child.key; receiverName = target; }
+    });
 
-        if (snapshot.exists()) {
-            snapshot.forEach(child => {
-                const user = child.val();
-                const inputTarget = target.toLowerCase().trim();
-                
-                if (type === 'gmail' && user.email && user.email.toLowerCase() === inputTarget) {
-                    receiverUid = child.key;
-                    receiverName = user.email;
-                } else if (type === 'smatid') {
-                    // আপনার ডাটাবেজ অনুযায়ী smatID (বড় হাতের ID) চেক
-                    const dbSmatID = user.smatID || user.smatid || user.smatId; 
-                    if (dbSmatID && dbSmatID.toString().toLowerCase().trim() === inputTarget) {
-                        receiverUid = child.key;
-                        receiverName = dbSmatID;
-                    }
-                }
-            });
-        }
+    if (!receiverUid) return showNotify('error', 'Not Found', 'User not found.');
+    if (receiverUid === auth.currentUser.uid) return showNotify('error', 'Invalid', 'Cannot transfer to self.');
 
-        if (!receiverUid) return showNotify('error', 'NOT FOUND', 'User not found.');
-        if (receiverUid === senderUid) return showNotify('error', 'Invalid', 'Cannot transfer to yourself.');
-
-        showTransferPreview({ amt, coin: s.toUpperCase(), receiverName, receiverUid, senderBal, sym: s });
-
-    } catch (e) {
-        showNotify('error', 'Error', 'Search failed.');
-    }
+    showTransferPreview({ amt, coin: s.toUpperCase(), receiverName, receiverUid, senderBal, sym: s });
 }
 
-// ২. কনফার্মেশন প্রিভিউ পপআপ (গ্রাফিক্স প্রিভিউ)
 function showTransferPreview(data) {
     const overlay = document.getElementById('detailsOverlay');
-    const cont = document.getElementById('detailsContent');
     const confirmBtn = overlay.querySelector('.btn-main');
-    
-    confirmBtn.onclick = null; 
-    confirmBtn.disabled = false;
     confirmBtn.innerText = "CONFIRM & SEND";
-    confirmBtn.style.background = "var(--primary)";
-
-    cont.innerHTML = `
-        <div style="text-align:center; padding:10px 0;">
-            <p style="color:var(--text-sec); font-size:12px;">Confirm Transfer</p>
-            <h2 style="color:var(--primary); font-size:28px; margin:5px 0;">${data.amt} ${data.coin}</h2>
-            <div style="background:rgba(255,255,255,0.05); padding:15px; border-radius:12px; margin-top:15px; border:1px solid var(--border); text-align:left;">
-                <p style="font-size:11px; color:var(--text-sec);">Recipient Account:</p>
-                <p style="font-size:14px; font-weight:bold; color:white; margin-top:4px;">${data.receiverName}</p>
-            </div>
-        </div>
-    `;
-    
     confirmBtn.onclick = async () => {
-        confirmBtn.innerText = "Processing...";
         confirmBtn.disabled = true;
         await executeFinalTransfer(data);
-        overlay.style.display = 'none';
-        confirmBtn.disabled = false;
+        overlay.style.display = 'none'; confirmBtn.disabled = false;
     };
-    
+    document.getElementById('detailsContent').innerHTML = `<div style="text-align:center;"><p style="color:var(--text-sec); font-size:12px;">Confirm Transfer</p><h2 style="color:var(--primary); font-size:28px; margin:10px 0;">${data.amt} ${data.coin}</h2><div style="background:rgba(255,255,255,0.05); padding:15px; border-radius:12px; text-align:left;"><p style="font-size:11px; color:var(--text-sec);">Recipient:</p><p style="font-weight:bold;">${data.receiverName}</p></div></div>`;
     overlay.style.display = 'flex';
 }
 
-// ৩. ফাইনাল এক্সিকিউশন (ব্যালেন্স আপডেট ও ফুল হিস্ট্রি সেভ)
 async function executeFinalTransfer(data) {
     const senderUid = auth.currentUser.uid;
-    try {
-        const txId = db.ref('transactions').push().key;
-        const rxBalRef = db.ref(`users/${data.receiverUid}/${data.sym}_balance`);
-        const rxSnap = await rxBalRef.once('value');
-        const currentRxBal = parseFloat(rxSnap.val()) || 0;
+    const txId = db.ref(`users/${senderUid}/history`).push().key;
+    const rxSnap = await db.ref(`users/${data.receiverUid}/${data.sym}_balance`).once('value');
+    const rxBal = parseFloat(rxSnap.val()) || 0;
+    const txHash = 'INT-' + txId.substring(1, 8).toUpperCase();
+    const ts = Date.now();
 
-        const senderUpdate = (data.senderBal - data.amt).toFixed(8);
-        const receiverUpdate = (currentRxBal + data.amt).toFixed(8);
+    const updates = {};
+    updates[`users/${senderUid}/${data.sym}_balance`] = parseFloat((data.senderBal - data.amt).toFixed(8));
+    updates[`users/${data.receiverUid}/${data.sym}_balance`] = parseFloat((rxBal + data.amt).toFixed(8));
+    updates[`users/${senderUid}/history/${txId}`] = { coin: data.coin, amount: data.amt, status: 'success', timestamp: ts, method: 'Transfer Out', address: `To: ${data.receiverName}`, hash: txHash };
+    updates[`users/${data.receiverUid}/history/${txId}`] = { coin: data.coin, amount: data.amt, status: 'success', timestamp: ts, method: 'Transfer In', address: `From: ${userData.smatID || 'User'}`, hash: txHash };
 
-        await db.ref(`users/${senderUid}`).update({ [data.sym + '_balance']: parseFloat(senderUpdate) });
-        await db.ref(`users/${data.receiverUid}`).update({ [data.sym + '_balance']: parseFloat(receiverUpdate) });
-
-        // আপনার চাওয়া অনুযায়ী ফুল হিস্ট্রি অবজেক্ট
-        const histData = { 
-            coin: data.coin, 
-            amount: data.amt, 
-            status: 'success', 
-            timestamp: Date.now(), 
-            network: 'Internal' 
-        };
-        
-        await db.ref(`users/${senderUid}/history/${txId}`).set({ 
-            ...histData, method: 'Transfer Out', address: `To: ${data.receiverName}`, hash: 'INT-'+txId.slice(1,8).toUpperCase() 
-        });
-        await db.ref(`users/${data.receiverUid}/history/${txId}`).set({ 
-            ...histData, method: 'Transfer In', address: `From: ${userData.smatID || 'User'}`, hash: 'INT-'+txId.slice(1,8).toUpperCase() 
-        });
-
-        showNotify('success', 'Transfer Success', `Sent ${data.amt} ${data.coin} successfully!`);
-        hidePopup();
-    } catch (e) {
-        showNotify('error', 'Error', 'Transaction failed.');
-    }
+    await db.ref().update(updates);
+    showNotify('success', 'Success', `Sent ${data.amt} ${data.coin}`);
+    hidePopup();
 }
 
-// ৪. পূর্ণাঙ্গ হিস্ট্রি ডিটেইলস পপআপ (Network, Date, Time সহ)
 function showFullDetails(item) {
-    const overlay = document.getElementById('detailsOverlay');
-    const cont = document.getElementById('detailsContent');
-    const btn = overlay.querySelector('.btn-main');
-
-    // বাটন রিসেট (ক্লোজ করার জন্য)
-    btn.onclick = null;
-    btn.innerText = "CLOSE";
-    btn.style.background = "#0ecb81";
-    btn.onclick = () => { overlay.style.display = 'none'; };
-
-    // টাইম এবং ডেট ফরম্যাট করা
     const dt = new Date(item.timestamp);
-    const dateStr = dt.toLocaleDateString();
-    const timeStr = dt.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' });
-
-    cont.innerHTML = `
-        <div style="text-align:center; margin-bottom:15px;">
-            <p style="color:var(--text-sec); font-size:12px;">Transaction Details</p>
-        </div>
-        <div class="detail-item"><span>Status</span><b style="color:#0ecb81">${item.status.toUpperCase()}</b></div>
+    const color = item.status === 'success' ? '#0ecb81' : (item.status === 'failed' ? '#f6465d' : '#f0b90b');
+    document.getElementById('detailsContent').innerHTML = `
+        <div class="detail-item"><span>Status</span><b style="color:${color}">${item.status.toUpperCase()}</b></div>
         <div class="detail-item"><span>Method</span><b>${item.method}</b></div>
         <div class="detail-item"><span>Amount</span><b>${item.amount} ${item.coin}</b></div>
-        <div class="detail-item"><span>Network</span><b>${item.network || 'Internal'}</b></div>
-        <div class="detail-item"><span>Target</span><b class="responsive-text" style="font-size:10px;">${item.address || 'N/A'}</b></div>
+        <div class="detail-item"><span>Target</span><b class="responsive-text">${item.address || 'N/A'}</b></div>
         <hr style="border:0; border-top:1px dashed rgba(255,255,255,0.1); margin:10px 0;">
-        <div class="detail-item"><span>Date</span><b>${dateStr}</b></div>
-        <div class="detail-item"><span>Time</span><b>${timeStr}</b></div>
-        <div class="detail-item"><span>ID / Hash</span><b class="responsive-text" style="font-size:9px; color:var(--text-sec);">${item.hash || item.id}</b></div>
-    `;
-    
-    overlay.style.display = 'flex';
+        <div class="detail-item"><span>Time</span><b>${dt.toLocaleString()}</b></div>
+        <div class="detail-item"><span>Hash</span><b class="responsive-text" style="color:var(--text-sec)">${item.hash || item.id}</b></div>`;
+    document.getElementById('detailsOverlay').style.display = 'flex';
 }
-
-
-// ৫. ফাইনাল এক্সিকিউশন (প্লাস/মাইনাস এবং সাকসেস টোস্ট)
-async function executeFinalTransfer(data) {
-    const senderUid = auth.currentUser.uid;
-    try {
-        const txId = db.ref('transactions').push().key;
-        
-        // রিসিভারের বর্তমান ব্যালেন্স আনা
-        const rxBalRef = db.ref(`users/${data.receiverUid}/${data.sym}_balance`);
-        const rxSnap = await rxBalRef.once('value');
-        const currentRxBal = parseFloat(rxSnap.val()) || 0;
-
-        // আপডেট ডাটা তৈরি
-        const senderUpdate = (data.senderBal - data.amt).toFixed(8);
-        const receiverUpdate = (currentRxBal + data.amt).toFixed(8);
-
-        // ডাটাবেজ আপডেট
-        await db.ref(`users/${senderUid}`).update({ [data.sym + '_balance']: senderUpdate });
-        await db.ref(`users/${data.receiverUid}`).update({ [data.sym + '_balance']: receiverUpdate });
-
-        // হিস্ট্রি সেভ করা (উভয় পক্ষের জন্য)
-        const histData = { coin: data.coin, amount: data.amt, status: 'success', timestamp: Date.now(), network: 'Internal' };
-        
-        await db.ref(`users/${senderUid}/history/${txId}`).set({ ...histData, method: 'Transfer Out', address: `To: ${data.receiverName}`, hash: 'INT-'+txId.slice(1,8).toUpperCase() });
-        await db.ref(`users/${data.receiverUid}/history/${txId}`).set({ ...histData, method: 'Transfer In', address: `From: ${userData.smatId || 'User'}`, hash: 'INT-'+txId.slice(1,8).toUpperCase() });
-
-        // সাকসেস টোস্ট
-        showNotify('success', 'Transfer Success', `Sent ${data.amt} ${data.coin} to ${data.receiverName}`);
-        hidePopup();
-        
-    } catch (e) {
-        showNotify('error', 'Error', 'Transaction failed at final stage.');
-    }
-}
-
 
 function hidePopup() { document.getElementById('actionOverlay').style.display = 'none'; }
 function closeHistory() { document.getElementById('historyPopup').style.display = 'none'; }
 function closeSelector() { document.getElementById('coinSelector').style.display = 'none'; }
-function copyValueText(t) { 
-    navigator.clipboard.writeText(t); 
-    showNotify('success', 'Copied', 'Information copied to clipboard.');
-}
-function copyValue(id) { copyValueText(document.getElementById(id).innerText); }
-function closePopupOverlay(e) { if(e.target.id === 'actionOverlay') hidePopup(); }
+function copyValue(id) { navigator.clipboard.writeText(document.getElementById(id).innerText); showNotify('success', 'Copied', 'Copied to clipboard'); }
 
 window.onload = init;
 </script>
