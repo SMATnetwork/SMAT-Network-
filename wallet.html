@@ -726,39 +726,50 @@ function showTransferPreview(data) {
 async function executeFinalTransfer(data) {
     const senderUid = auth.currentUser.uid;
     try {
-        const txId = db.ref('transactions').push().key;
-        const rxBalRef = db.ref(`users/${data.receiverUid}/${data.sym}_balance`);
-        const rxSnap = await rxBalRef.once('value');
+        // ১. সেফলি ইউনিক আইডি জেনারেট করুন
+        const txRef = db.ref().child('history_logs').push();
+        const txId = txRef.key;
+        
+        // ২. রিসিভারের ব্যালেন্স আনা
+        const rxSnap = await db.ref(`users/${data.receiverUid}/${data.sym}_balance`).once('value');
         const currentRxBal = parseFloat(rxSnap.val()) || 0;
 
-        const senderUpdate = (data.senderBal - data.amt).toFixed(8);
-        const receiverUpdate = (currentRxBal + data.amt).toFixed(8);
+        // ৩. ব্যালেন্স আপডেট (Atomic Update ব্যবহার করা হয়েছে যাতে ফেইল না হয়)
+        const updates = {};
+        updates[`users/${senderUid}/${data.sym}_balance`] = parseFloat((data.senderBal - data.amt).toFixed(8));
+        updates[`users/${data.receiverUid}/${data.sym}_balance`] = parseFloat((currentRxBal + data.amt).toFixed(8));
+        await db.ref().update(updates);
 
-        await db.ref(`users/${senderUid}`).update({ [data.sym + '_balance']: parseFloat(senderUpdate) });
-        await db.ref(`users/${data.receiverUid}`).update({ [data.sym + '_balance']: parseFloat(receiverUpdate) });
-
-        // আপনার চাওয়া অনুযায়ী ফুল হিস্ট্রি অবজেক্ট
-        const histData = { 
+        // ৪. হিস্ট্রি সেভ (userData এর জন্য ডিফোল্ট ভ্যালু সেট করা হয়েছে)
+        const senderName = (typeof userData !== 'undefined' && userData.smatID) ? userData.smatID : "User";
+        
+        const histBase = { 
             coin: data.coin, 
             amount: data.amt, 
             status: 'success', 
             timestamp: Date.now(), 
-            network: 'Internal' 
+            network: 'Internal',
+            hash: 'INT-' + txId.substring(1, 8).toUpperCase()
         };
         
+        // প্রেরক ও প্রাপকের হিস্ট্রি আলাদা আলাদা ব্লকে সেভ করা হচ্ছে
         await db.ref(`users/${senderUid}/history/${txId}`).set({ 
-            ...histData, method: 'Transfer Out', address: `To: ${data.receiverName}`, hash: 'INT-'+txId.slice(1,8).toUpperCase() 
+            ...histBase, method: 'Transfer Out', address: `To: ${data.receiverName}` 
         });
+        
         await db.ref(`users/${data.receiverUid}/history/${txId}`).set({ 
-            ...histData, method: 'Transfer In', address: `From: ${userData.smatID || 'User'}`, hash: 'INT-'+txId.slice(1,8).toUpperCase() 
+            ...histBase, method: 'Transfer In', address: `From: ${senderName}` 
         });
 
-        showNotify('success', 'Transfer Success', `Sent ${data.amt} ${data.coin} successfully!`);
+        showNotify('success', 'Transfer Success', `Sent ${data.amt} ${data.coin}`);
         hidePopup();
+        
     } catch (e) {
-        showNotify('error', 'Error', 'Transaction failed.');
+        console.error("Execution Error:", e);
+        showNotify('error', 'Error', 'Transaction process failed.');
     }
 }
+
 
 // ৪. পূর্ণাঙ্গ হিস্ট্রি ডিটেইলস পপআপ (Network, Date, Time সহ)
 function showFullDetails(item) {
@@ -795,56 +806,6 @@ function showFullDetails(item) {
     overlay.style.display = 'flex';
 }
 
-async function executeFinalTransfer(data) {
-    const senderUid = auth.currentUser.uid;
-    try {
-        // ১. সরাসরি রেন্ডম কী জেনারেট করুন (transactions নোডে হিট না করে)
-        const txId = db.ref().child('history_logs').push().key; 
-        
-        const rxBalRef = db.ref(`users/${data.receiverUid}/${data.sym}_balance`);
-        const rxSnap = await rxBalRef.once('value');
-        const currentRxBal = parseFloat(rxSnap.val()) || 0;
-
-        const senderUpdate = parseFloat((data.senderBal - data.amt).toFixed(8));
-        const receiverUpdate = parseFloat((currentRxBal + data.amt).toFixed(8));
-
-        // ২. ট্রানজেকশন একসাথে আপডেট (Atomic Update)
-        const updates = {};
-        updates[`users/${senderUid}/${data.sym}_balance`] = senderUpdate;
-        updates[`users/${data.receiverUid}/${data.sym}_balance`] = receiverUpdate;
-        await db.ref().update(updates);
-
-        // ৩. হিস্ট্রি ডাটা - এখানে userData এর বদলে সরাসরি চেক করুন
-        const senderSmatID = userData && userData.smatID ? userData.smatID : "User";
-
-        const histData = { 
-            coin: data.coin, 
-            amount: data.amt, 
-            status: 'success', 
-            timestamp: Date.now(), 
-            network: 'Internal',
-            hash: 'INT-' + txId.slice(1, 8).toUpperCase()
-        };
-        
-        // প্রেরক ও প্রাপকের হিস্ট্রি আলাদা ট্রাই-ক্যাচে রাখুন
-        try {
-            await db.ref(`users/${senderUid}/history/${txId}`).set({ 
-                ...histData, method: 'Transfer Out', address: `To: ${data.receiverName}` 
-            });
-            await db.ref(`users/${data.receiverUid}/history/${txId}`).set({ 
-                ...histData, method: 'Transfer In', address: `From: ${senderSmatID}` 
-            });
-        } catch (histErr) {
-            console.error("History push failed:", histErr);
-        }
-
-        showNotify('success', 'Transfer Success', `Sent ${data.amt} ${data.coin}`);
-        hidePopup();
-    } catch (e) {
-        console.error("Final Transfer Error:", e);
-        showNotify('error', 'Error', 'Transaction failed.');
-    }
-}
 
 function hidePopup() { document.getElementById('actionOverlay').style.display = 'none'; }
 function closeHistory() { document.getElementById('historyPopup').style.display = 'none'; }
