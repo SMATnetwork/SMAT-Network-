@@ -72,6 +72,26 @@ const GLOBAL_COINS = [
         contract: '0x123...smat', 
         vol: '1.2M' 
     },
+  { 
+        sym: 'paxg', 
+        name: 'PAX Gold', 
+        price: 4700.00, 
+        decimal: 18, 
+        key: 'paxg_balance', 
+        networks: ['SMAT Chain', 'BEP20'], 
+        contract: '0x123...smat', 
+        vol: '1.2M' 
+    },
+  { 
+        sym: 'ltc', 
+        name: 'Litecoin', 
+        price: 55.00, 
+        decimal: 18, 
+        key: 'ltc_balance', 
+        networks: ['SMAT Chain', 'BEP20'], 
+        contract: '0x123...smat', 
+        vol: '1.2M' 
+    },
 { 
         sym: 'xlm', 
         name: 'Monoro', 
