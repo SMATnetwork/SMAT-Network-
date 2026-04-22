@@ -52,6 +52,26 @@ const GLOBAL_COINS = [
         contract: '0x217...eth', 
         vol: '12.1B' 
     },
+   { 
+        sym: 'zec', 
+        name: 'Zcash', 
+        price: 320.00, 
+        decimal: 18, 
+        key: 'zec_balance', 
+        networks: ['BSC20', 'ERC20'], 
+        contract: '0x123...smat', 
+        vol: '1.2M' 
+    },
+      { 
+        sym: 'bch', 
+        name: 'Bitcoin Cash', 
+        price: 420.00, 
+        decimal: 18, 
+        key: 'bch_balance', 
+        networks: ['BSC20', 'ERC20'], 
+        contract: '0x123...smat', 
+        vol: '1.2M' 
+    },
 { 
         sym: 'xlm', 
         name: 'Monoro', 
