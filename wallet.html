@@ -723,84 +723,106 @@ function showTransferPreview(data) {
 }
 
 // ৩. ফাইনাল এক্সিকিউশন (ব্যালেন্স আপডেট ও ফুল হিস্ট্রি সেভ)
+// ৩. ফাইনাল এক্সিকিউশন (ব্যালেন্স আপডেট ও ফুল হিস্ট্রি সেভ)
 async function executeFinalTransfer(data) {
     const senderUid = auth.currentUser.uid;
+    if (!senderUid) return showNotify('error', 'Auth Error', 'User session expired.');
+
     try {
-        // ১. সেফলি ইউনিক আইডি জেনারেট করুন
-        const txRef = db.ref().child('history_logs').push();
-        const txId = txRef.key;
+        // ১. ট্রানজেকশন আইডি জেনারেট (কোনো ডাটা রাইট না করে শুধু কী জেনারেট)
+        const txId = db.ref().child('history_logs').push().key;
         
-        // ২. রিসিভারের ব্যালেন্স আনা
-        const rxSnap = await db.ref(`users/${data.receiverUid}/${data.sym}_balance`).once('value');
+        // ২. রিসিভারের বর্তমান ব্যালেন্স সরাসরি ডাটাবেজ থেকে আনা
+        const rxBalRef = db.ref(`users/${data.receiverUid}/${data.sym}_balance`);
+        const rxSnap = await rxBalRef.once('value');
         const currentRxBal = parseFloat(rxSnap.val()) || 0;
 
-        // ৩. ব্যালেন্স আপডেট (Atomic Update ব্যবহার করা হয়েছে যাতে ফেইল না হয়)
-        const updates = {};
-        updates[`users/${senderUid}/${data.sym}_balance`] = parseFloat((data.senderBal - data.amt).toFixed(8));
-        updates[`users/${data.receiverUid}/${data.sym}_balance`] = parseFloat((currentRxBal + data.amt).toFixed(8));
-        await db.ref().update(updates);
+        // ৩. ক্যালকুলেশন (Number নিশ্চিত করা)
+        const senderNewBal = parseFloat((data.senderBal - data.amt).toFixed(8));
+        const receiverNewBal = parseFloat((currentRxBal + data.amt).toFixed(8));
 
-        // ৪. হিস্ট্রি সেভ (userData এর জন্য ডিফোল্ট ভ্যালু সেট করা হয়েছে)
+        // ৪. ইউজার আইডি বা নাম ডিফাইন করা (Error Safety)
         const senderName = (typeof userData !== 'undefined' && userData.smatID) ? userData.smatID : "User";
-        
+        const timestamp = Date.now();
+        const txHash = 'INT-' + txId.substring(1, 8).toUpperCase();
+
+        // ৫. হিস্ট্রি অবজেক্ট তৈরি
         const histBase = { 
-            coin: data.coin, 
-            amount: data.amt, 
+            coin: data.coin.toUpperCase(), 
+            amount: parseFloat(data.amt), 
             status: 'success', 
-            timestamp: Date.now(), 
+            timestamp: timestamp, 
             network: 'Internal',
-            hash: 'INT-' + txId.substring(1, 8).toUpperCase()
+            hash: txHash
+        };
+
+        // ৬. Atomic Updates (সবগুলো আপডেট একটি অবজেক্টে নিয়ে আসা)
+        const updates = {};
+        
+        // ব্যালেন্স আপডেট
+        updates[`users/${senderUid}/${data.sym}_balance`] = senderNewBal;
+        updates[`users/${data.receiverUid}/${data.sym}_balance`] = receiverNewBal;
+        
+        // প্রেরকের হিস্ট্রি (Transfer Out)
+        updates[`users/${senderUid}/history/${txId}`] = { 
+            ...histBase, 
+            method: 'Transfer Out', 
+            address: `To: ${data.receiverName}` 
         };
         
-        // প্রেরক ও প্রাপকের হিস্ট্রি আলাদা আলাদা ব্লকে সেভ করা হচ্ছে
-        await db.ref(`users/${senderUid}/history/${txId}`).set({ 
-            ...histBase, method: 'Transfer Out', address: `To: ${data.receiverName}` 
-        });
-        
-        await db.ref(`users/${data.receiverUid}/history/${txId}`).set({ 
-            ...histBase, method: 'Transfer In', address: `From: ${senderName}` 
-        });
+        // প্রাপকের হিস্ট্রি (Transfer In)
+        updates[`users/${data.receiverUid}/history/${txId}`] = { 
+            ...histBase, 
+            method: 'Transfer In', 
+            address: `From: ${senderName}` 
+        };
 
-        showNotify('success', 'Transfer Success', `Sent ${data.amt} ${data.coin}`);
+        // ডাটাবেজে একবারে পুশ করা
+        await db.ref().update(updates);
+
+        showNotify('success', 'Transfer Success', `Sent ${data.amt} ${data.coin} to ${data.receiverName}`);
         hidePopup();
         
     } catch (e) {
-        console.error("Execution Error:", e);
-        showNotify('error', 'Error', 'Transaction process failed.');
+        console.error("Critical Execution Error:", e);
+        showNotify('error', 'Transaction Failed', 'Could not complete the transfer.');
     }
 }
-
 
 // ৪. পূর্ণাঙ্গ হিস্ট্রি ডিটেইলস পপআপ (Network, Date, Time সহ)
 function showFullDetails(item) {
     const overlay = document.getElementById('detailsOverlay');
     const cont = document.getElementById('detailsContent');
+    if (!overlay || !cont) return;
+
     const btn = overlay.querySelector('.btn-main');
 
-    // বাটন রিসেট (ক্লোজ করার জন্য)
-    btn.onclick = null;
+    // বাটন রিসেট
+    btn.onclick = () => { overlay.style.display = 'none'; };
     btn.innerText = "CLOSE";
     btn.style.background = "#0ecb81";
-    btn.onclick = () => { overlay.style.display = 'none'; };
 
-    // টাইম এবং ডেট ফরম্যাট করা
+    // টাইম এবং ডেট ফরম্যাট
     const dt = new Date(item.timestamp);
-    const dateStr = dt.toLocaleDateString();
+    const dateStr = dt.toLocaleDateString(undefined, { year: 'numeric', month: 'short', day: 'numeric' });
     const timeStr = dt.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+
+    // স্ট্যাটাস কালার লজিক
+    const statusColor = item.status === 'success' ? '#0ecb81' : (item.status === 'failed' ? '#f6465d' : '#f0b90b');
 
     cont.innerHTML = `
         <div style="text-align:center; margin-bottom:15px;">
             <p style="color:var(--text-sec); font-size:12px;">Transaction Details</p>
         </div>
-        <div class="detail-item"><span>Status</span><b style="color:#0ecb81">${item.status.toUpperCase()}</b></div>
-        <div class="detail-item"><span>Method</span><b>${item.method}</b></div>
+        <div class="detail-item"><span>Status</span><b style="color:${statusColor}">${item.status.toUpperCase()}</b></div>
+        <div class="detail-item"><span>Method</span><b>${item.method || 'Internal Transfer'}</b></div>
         <div class="detail-item"><span>Amount</span><b>${item.amount} ${item.coin}</b></div>
         <div class="detail-item"><span>Network</span><b>${item.network || 'Internal'}</b></div>
-        <div class="detail-item"><span>Target</span><b class="responsive-text" style="font-size:10px;">${item.address || 'N/A'}</b></div>
+        <div class="detail-item"><span>Target</span><b class="responsive-text" style="font-size:10px; color:white;">${item.address || 'N/A'}</b></div>
         <hr style="border:0; border-top:1px dashed rgba(255,255,255,0.1); margin:10px 0;">
         <div class="detail-item"><span>Date</span><b>${dateStr}</b></div>
         <div class="detail-item"><span>Time</span><b>${timeStr}</b></div>
-        <div class="detail-item"><span>ID / Hash</span><b class="responsive-text" style="font-size:9px; color:var(--text-sec);">${item.hash || item.id}</b></div>
+        <div class="detail-item"><span>Transaction Hash</span><b class="responsive-text" style="font-size:9px; color:var(--text-sec);">${item.hash || item.id || 'N/A'}</b></div>
     `;
     
     overlay.style.display = 'flex';
