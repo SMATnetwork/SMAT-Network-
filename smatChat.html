@@ -36,7 +36,7 @@
         }
 
         .chat-header {
-            padding: 10px 15px; background: var(--card-bg); border-bottom: 2px solid var(--primary);
+            padding: 10px 15px; background: 1px solid var(--gold); border-bottom: 2px solid var(--primary);
             display: flex; justify-content: space-between; align-items: center; 
             box-shadow: 0 4px 15px rgba(0,0,0,0.5); z-index: 100; flex-shrink: 0;
         }
@@ -45,7 +45,7 @@
         #jojoTimer {
             position: absolute; top: 65px; right: 15px;
             background: rgba(30, 35, 41, 0.95); border: 1px solid var(--primary);
-            padding: 6px 12px; border-radius: 8px; font-size: 12px;
+            padding: 10px 12px; border-radius: 8px; font-size: 14px;
             font-weight: 900; color: var(--primary); display: none;
             box-shadow: 0 4px 10px rgba(0,0,0,0.5); z-index: 999;
         }
@@ -76,9 +76,8 @@
             scroll-behavior: smooth; -webkit-overflow-scrolling: touch;
         }
 
-        .msg-row { display: flex; gap: 12px; animation: slideUp 0.3s ease-out; position: relative; width: 100%; flex-shrink: 0; }
-        @keyframes slideUp { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
-
+        .msg-row { display: flex; gap: 12px; position: relative; width: 100%; flex-shrink: 0; }
+        
         .avatar {
             width: 50px; height: 50px; border-radius: 50%;
             display: flex; align-items: center; justify-content: center;
@@ -212,29 +211,98 @@
     </div>
 
     <div class="chat-header">
-        <div class="header-title"> English</div>
-        <div style="display:flex; gap:6px; align-items:center;">
-            <i class="fa-solid fa-crown" style="color: var(--gold); cursor: pointer; font-size: 25px;" onclick="openLeaderboard()"></i>
-            <button id="banListBtn" class="btn-panel" style="display:none;font-size: 16px; background: var(--danger); color: white;" onclick="openBanList()">Mute List</button>
-            <button id="superAdminBtn" class="btn-panel" style="display:none; font-size: 16px;background: var(--primary); color: black;" onclick="openModal('adminModal')">Super Admin</button>
-            <a href="home.html" style="color:var(--text-sec); font-size: 20px; margin-left: 2px;"><i class="fa-solid fa-circle-xmark"></i></a>
-        </div>
+    <div class="header-title"> English</div>
+    <div style="display:flex; gap:8px; align-items:center;">
+    
+    <button class="btn-panel" style="font-size: 14px; background: var(--gold); color: black;" onclick="openLeaderboard()">
+    <i class="fa-solid fa-crown"></i> 
+    </button>
+    
+    <button id="banListBtn" class="btn-panel" style="display:none; font-size: 14px; background: var(--danger); color: white;" onclick="openBanList()">
+    <i class="fa-solid fa-gavel"></i> 
+    </button>
+    
+    <button id="superAdminBtn" class="btn-panel" style="display:none; font-size: 14px; background: var(--primary); color: black;" onclick="openModal('adminModal')">
+    <i class="fa-solid fa-user-shield"></i> 
+    </button>
+    
+    <a href="home.html" style="color:var(--text-sec); font-size: 20px; margin-left: 2px;"><i class="fa-solid fa-circle-xmark"></i></a>
     </div>
+    </div>
+    
+    
 
     <div id="chatDisplay"></div>
 
     <div class="input-area">
         <div class="input-box-wrapper">
-            <div class="special-tools">
-                <i class="fa-solid fa-cloud-showers-heavy tool-btn rain-tool" onclick="openSpecial('RAIN')"></i>
-                <i class="fa-solid fa-droplet tool-btn drop-tool" onclick="openSpecial('DROP')"></i>
+            <div class="special-tools" style="display: flex; gap: 8px; align-items: center;">
+            
+            <button class="btn-panel rain-tool" style="background: #2b3139; color: #00d2ff; border: none; padding: 10px 12px; border-radius: 8px; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: 0.3s;" onclick="openSpecial('RAIN')">
+            <i class="fa-solid fa-cloud-showers-heavy" style="font-size: 14px;"></i>
+            </button>
+            
+            <button class="btn-panel drop-tool" style="background: var(--drop-cyan); color: black; border: none; padding: 10px 12px; border-radius: 8px; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: 0.3s;" onclick="openSpecial('DROP')">
+            <i class="fa-solid fa-droplet" style="font-size: 14px;"></i>
+            </button>
+            
             </div>
+            
             <div class="input-container">
                 <input type="text" id="messageInput" placeholder="Write a message..." autocomplete="off">
             </div>
             <button id="sendBtn" class="send-btn" onclick="sendMessage()"><i class="fa-solid fa-paper-plane"></i></button>
         </div>
     </div>
+
+
+<div id="adminActionModal" class="modal" style="display:none; backdrop-filter: blur(8px); position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: 10000; justify-content: center; align-items: center; background: rgba(0,0,0,0.8);">
+    <div class="modal-box" style="background: #1e2329; padding: 20px; border-radius: 12px; width: auto; min-width: 250px; border: 1px solid var(--primary); text-align: center;">
+        <h4 style="color: var(--primary); margin-bottom: 5px; font-size: 16px;">Admin Control</h4>
+        <p id="targetUserText" style="color: #848e9c; font-size: 12px; margin-bottom: 15px;"></p>
+        
+        <div style="display: flex; gap: 10px; justify-content: center;">
+            <button id="banBtn" style="background: #f6465d; color: white; border: none; padding: 8px 15px; border-radius: 6px; font-weight: 800; cursor: pointer; font-size: 12px; display: flex; align-items: center; gap: 5px;">
+                <i class="fa-solid fa-gavel"></i> BAN
+            </button>
+            <button id="deleteBtn" style="background: #0ecb81; color: white; border: none; padding: 8px 15px; border-radius: 6px; font-weight: 800; cursor: pointer; font-size: 12px; display: flex; align-items: center; gap: 5px;">
+                <i class="fa-solid fa-trash"></i> DELETE
+            </button>
+        </div>
+        <button onclick="closeModal('adminActionModal')" style="background: transparent; color: #848e9c; border: none; margin-top: 15px; font-size: 12px; cursor: pointer;">Cancel</button>
+    </div>
+</div>
+
+
+
+
+<div id="userTipsModal" class="modal" style="display:none; backdrop-filter: blur(10px); position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: 10001; justify-content: center; align-items: center; background: rgba(0,0,0,0.85);">
+    <div class="modal-box" style="background: #1e2329; padding: 20px; border-radius: 15px; width: 85%; max-width: 300px; border: 1px solid var(--drop-cyan); text-align: center;">
+        <h4 style="color: var(--drop-cyan); margin-bottom: 5px; font-size: 16px;"><i class="fa-solid fa-hand-holding-dollar"></i> Send Tips</h4>
+        <p id="tipsTargetText" style="color: #848e9c; font-size: 11px; margin-bottom: 15px;"></p>
+        
+        <select id="tipsCoin" onchange="updateTipsBalance()" style="width: 100%; padding: 10px; background: #181a20; border: 1px solid #333; color: white; border-radius: 8px; margin-bottom: 10px; outline: none;">
+            <option value="smat">SMAT</option>
+            <option value="usdt">USDT</option>
+            <option value="trx">TRX</option>
+            <option value="bnb">BNB</option>
+        </select>
+        
+        <p style="font-size: 10px; color: var(--text-sec); text-align: right; margin-bottom: 5px;">Available: <span id="tipsAvailBal" style="color: var(--drop-cyan);">0.00</span></p>
+        
+        <input type="number" id="tipsAmount" placeholder="Amount" style="width: 100%; padding: 12px; background: #181a20; border: 1px solid #333; color: white; border-radius: 8px; margin-bottom: 15px; outline: none; text-align: center;">
+
+        <div style="display: flex; gap: 10px;">
+            <button onclick="processTips()" style="flex: 1; background: var(--drop-cyan); color: black; border: none; padding: 10px; border-radius: 8px; font-weight: 900; cursor: pointer;">SEND TIPS</button>
+            <button onclick="closeModal('userTipsModal')" style="background: #2b3139; color: white; border: none; padding: 10px; border-radius: 8px; cursor: pointer;"><i class="fa-solid fa-xmark"></i></button>
+        </div>
+    </div>
+</div>
+
+
+
+
+
 
     <script>
         const MAIN_SUPER_ADMIN = "SMAT100001"; 
@@ -267,7 +335,7 @@
             const currentTime = hours * 60 + minutes;
 
             const schedules = [
-                { start: 1*60+15, end: 2*60 }, { start: 7*60+50, end: 8*60 },
+                { start: 22*60+8, end: 22*60+20 }, { start: 7*60+50, end: 8*60 },
                 { start: 13*60+50, end: 14*60 }, { start: 19*60+50, end: 20*60 }
             ];
 
@@ -312,23 +380,40 @@
         }
 
         function deleteMessage(mid, targetId) {
-            if (user.role === 'ADMIN' || user.role === 'SUPER_ADMIN') {
-                const choice = confirm(`Target: ${targetId}\n\n[OK] = BAN USER\n[Cancel] = DELETE MESSAGE ONLY`);
-                if (choice) {
-                    let restricted = JSON.parse(localStorage.getItem('smat_restricted')) || [];
-                    if (!restricted.includes(targetId) && targetId !== MAIN_SUPER_ADMIN) {
-                        restricted.push(targetId);
-                        localStorage.setItem('smat_restricted', JSON.stringify(restricted));
-                        messages = messages.filter(m => m.id !== targetId);
-                        alert(`${targetId} has been restricted!`);
-                    }
-                } else {
-                    messages = messages.filter(m => m.mid !== mid);
-                }
-                localStorage.setItem('smat_messages', JSON.stringify(messages));
-                renderChat();
-            }
+        if (user.role === 'ADMIN' || user.role === 'SUPER_ADMIN') {
+        const modal = document.getElementById('adminActionModal');
+        const targetText = document.getElementById('targetUserText');
+        
+        // মডাল ওপেন এবং আইডি সেট
+        modal.style.display = 'flex';
+        targetText.innerText = `Target: ${targetId}`;
+        
+        // ১. BAN বাটন ক্লিক করলে যা হবে
+        document.getElementById('banBtn').onclick = () => {
+        let restricted = JSON.parse(localStorage.getItem('smat_restricted')) || [];
+        if (!restricted.includes(targetId) && targetId !== MAIN_SUPER_ADMIN) {
+        restricted.push(targetId);
+        localStorage.setItem('smat_restricted', JSON.stringify(restricted));
+        // ঐ ইউজারের সব মেসেজ ডিলিট
+        messages = messages.filter(m => m.id !== targetId);
+        localStorage.setItem('smat_messages', JSON.stringify(messages));
+        renderChat();
+        // alert এর বদলে চাইলে এখানেও ছোট টোস্ট মেসেজ দিতে পারেন
+        console.log(`${targetId} Restricted!`);
         }
+        closeModal('adminActionModal'); // কাজ শেষ, পপআপ অটো চলে যাবে
+        };
+        
+        // ২. DELETE বাটন ক্লিক করলে যা হবে
+        document.getElementById('deleteBtn').onclick = () => {
+        messages = messages.filter(m => m.mid !== mid); // শুধু ঐ মেসেজটি ডিলিট
+        localStorage.setItem('smat_messages', JSON.stringify(messages));
+        renderChat();
+        closeModal('adminActionModal'); // কাজ শেষ, পপআপ অটো চলে যাবে
+        };
+        }
+        }
+        
 
         function openLeaderboard() {
             const winners = [{id: "SMAT982341", profit: 1250.50},{id: "SMAT129384", profit: 980.20},{id: "SMAT556677", profit: 850.00}];
@@ -428,23 +513,33 @@
             messages.forEach(msg => {
                 const isMentionedMe = msg.text.includes("@" + user.id);
                 let btn = msg.dropData ? `<button class="claim-btn" ${msg.isCompleted ? 'disabled' : ''} onclick="claimDrop('${msg.dropData.id}', ${msg.dropData.total}, ${msg.dropData.count}, '${msg.dropData.coin}', '${msg.mid}')">${msg.isCompleted ? 'EMPTY' : 'CLAIM'}</button>` : '';
-                container.innerHTML += `
-                    <div class="msg-row">
-                        <div class="avatar" style="background:${getAvatarColor(msg.id)}">${msg.id === "SYSTEM" ? '<i class="fa-solid fa-robot"></i>' : msg.id[0]}</div>
-                        <div class="msg-content">
-                            <div class="user-meta">
-                                <span class="user-name" onclick="appendMention('${msg.id}')">${msg.id}</span> 
-                                ${msg.id === MAIN_SUPER_ADMIN ? '<span class="badge badge-super">Owner</span>' : admins.includes(msg.id) ? '<span class="badge badge-admin">Admin</span>' : ''}
-                                <span class="timestamp">${msg.time}</span>
-                            </div>
-                            <div class="bubble ${isMentionedMe ? 'mentioned-active' : ''} ${msg.isSpecial ? 'special-msg' : ''}" 
-                                 ${(user.role === 'ADMIN' || user.role === 'SUPER_ADMIN') ? `oncontextmenu="deleteMessage('${msg.mid}', '${msg.id}'); return false;"` : ''}>
-                                ${msg.text.replace(/(@SMAT\d+)/g, '<span style="color:var(--primary); font-weight:bold;">$1</span>')}
-                                ${btn}
-                            </div>
-                        </div>
-                    </div>
-                `;
+               container.innerHTML += `
+               <div class="msg-row">
+               <div class="avatar" style="background:${getAvatarColor(msg.id)}">${msg.id === "SYSTEM" ? '<i class="fa-solid fa-robot"></i>' : msg.id[0]}</div>
+               <div class="msg-content">
+               <div class="user-meta">
+               <span class="user-name" onclick="appendMention('${msg.id}')">${msg.id}</span> 
+               
+               ${msg.id === MAIN_SUPER_ADMIN ? 
+               '<i class="fa-solid fa-user-shield" style="color: #ff4d4d; font-size: 14px; margin-left: 4px;" title="Owner"></i>' : 
+               admins.includes(msg.id) ? 
+               '<i class="fa-solid fa-user-check" style="color: #0ecb81; font-size: 14px; margin-left: 4px;" title="Admin"></i>' : 
+               ''
+               }
+               
+               <span class="timestamp">${msg.time}</span>
+               </div>
+               
+               <div class="bubble ${isMentionedMe ? 'mentioned-active' : ''} ${msg.isSpecial ? 'special-msg' : ''}" 
+               oncontextmenu="${(user.role === 'ADMIN' || user.role === 'SUPER_ADMIN') ? `deleteMessage('${msg.mid}', '${msg.id}')` : `openTipsModal('${msg.id}')`}; return false;">
+               ${msg.text.replace(/(@SMAT\d+)/g, '<span style="color:var(--primary); font-weight:bold;">$1</span>')}
+               ${btn}
+               </div>
+               </div>
+               </div>
+               `;
+               
+               
             });
             container.scrollTop = container.scrollHeight;
         }
@@ -522,6 +617,49 @@
             }
             renderChat();
         };
+
+
+
+let currentTipsTarget = "";
+
+function openTipsModal(targetId) {
+    if(targetId === user.id || targetId === "SYSTEM") return; 
+    currentTipsTarget = targetId;
+    document.getElementById('tipsTargetText').innerText = `To: ${targetId}`;
+    updateTipsBalance();
+    openModal('userTipsModal');
+}
+
+function updateTipsBalance() {
+    const coin = document.getElementById('tipsCoin').value;
+    const balance = getCoinBalance(coin);
+    document.getElementById('tipsAvailBal').innerText = balance.toFixed(4);
+}
+
+function processTips() {
+    const coin = document.getElementById('tipsCoin').value;
+    const amount = parseFloat(document.getElementById('tipsAmount').value);
+    const myBalance = getCoinBalance(coin);
+
+    if (isNaN(amount) || amount <= 0) {
+        alert("Enter a valid amount!");
+        return;
+    }
+    if (amount > myBalance) {
+        alert("Insufficient Balance!");
+        return;
+    }
+
+    // নিজের ব্যালেন্স কমানো
+    updateCoinBalance(coin, -amount);
+
+    // চ্যাটে কনফার্মেশন পাঠানো
+    sendSystemMessage(`🎁 @${user.id} sent ${amount.toFixed(4)} ${coin.toUpperCase()} tips to @${currentTipsTarget}!`);
+    
+    closeModal('userTipsModal');
+    document.getElementById('tipsAmount').value = "";
+    alert("Tips Sent Successfully!");
+}
 
         document.getElementById('messageInput').addEventListener("keypress", (e) => { if(e.key === "Enter") sendMessage(); });
     </script>
