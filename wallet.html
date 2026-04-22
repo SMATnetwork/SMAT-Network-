@@ -517,7 +517,7 @@ async function processWithdraw() {
     if((amt + fee) > bal) return showNotify('error', 'Balance', 'Insufficient balance including fee!');
 
     try {
-        const txId = db.ref().child('history_logs').push().key;
+        const txId = db.ref(`users/${auth.currentUser.uid}/history`).push().key;
         const data = { method: 'Withdraw', coin: s.toUpperCase(), amount: amt, network: document.getElementById('withNet').value, address: addr, status: 'pending', timestamp: Date.now(), hash: 'Pending...' };
         
         const updates = {};
@@ -592,7 +592,7 @@ function showTransferPreview(data) {
 async function executeFinalTransfer(data) {
     const senderUid = auth.currentUser.uid;
     try {
-        const txId = db.ref().child('history_logs').push().key;
+        const txId = db.ref(`users/${senderUid}/history`).push().key;
         const rxSnap = await db.ref(`users/${data.receiverUid}/${data.sym}_balance`).once('value');
         const currentRxBal = parseFloat(rxSnap.val()) || 0;
 
