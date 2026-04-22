@@ -143,6 +143,16 @@ const GLOBAL_COINS = [
         vol: '1.1B' 
     },
 { 
+        sym: '1000dogs', 
+        name: '1000DOGS', 
+        price: 0.0336, 
+        decimal: 18, 
+        key: '1000dogs_balance', 
+        networks: ['TON'], 
+        contract: 'Native', 
+        vol: '1.1B' 
+    },
+{ 
         sym: 'XRP', 
         name: 'Ripple', 
         price: 1.15, 
