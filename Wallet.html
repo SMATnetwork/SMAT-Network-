@@ -431,30 +431,65 @@ function switchMode(m) {
 }
 
 function openHistory() {
-    document.getElementById('historyPopup').style.display = 'flex';
+    const historyPopup = document.getElementById('historyPopup');
+    if(historyPopup) historyPopup.style.display = 'flex';
+    
     const cont = document.getElementById('histContent');
     const header = `<div class="hist-table-header"><span>Name</span><span>Amount</span><span>Method</span><span class="hist-time-col">Time</span><span style="text-align:right">Action</span></div>`;
+    
+    if (!auth.currentUser) return;
 
+    // Firebase লিসেনার
     db.ref('users/' + auth.currentUser.uid + '/history').on('value', snap => {
         const data = snap.val();
-        if(!data) { cont.innerHTML = header + "<p style='text-align:center; color:var(--text-sec); padding:40px;'>No history found.</p>"; return; }
-        const items = Object.keys(data).map(key => ({ id: key, ...data[key] })).sort((a,b) => b.timestamp - a.timestamp);
         
-        cont.innerHTML = header + items.map(item => {
-            const coinSym = (item.coin || 'SMAT').toLowerCase();
-            const statusClass = item.status === 'success' ? 'status-success' : (item.status === 'failed' ? 'status-failed' : 'status-pending');
-            const statusText = item.status === 'pending' ? '<i class="fas fa-spinner fa-spin"></i>' : item.status.toUpperCase();
+        if (!data) {
+            cont.innerHTML = header + "<p style='text-align:center; color:var(--text-sec); padding:40px;'>No history found in database.</p>";
+            return;
+        }
+
+        // ডাটা যদি অবজেক্ট আকারে থাকে (Firebase default), তাকে অ্যারেতে রূপান্তর
+        let items = [];
+        if (Array.isArray(data)) {
+            items = data.filter(i => i !== null);
+        } else {
+            items = Object.keys(data).map(key => ({ id: key, ...data[key] }));
+        }
+
+        // লেটেস্ট ট্রানজ্যাকশন উপরে রাখার জন্য সর্টিং
+        items.sort((a, b) => (b.timestamp || 0) - (a.timestamp || 0));
+
+        const rows = items.map(item => {
+            // কয়েন সিম্বল ডাইনামিক করা (যদি ছোট হাতের থাকে তবে বড় হাতের লোগো পাথ ঠিক রাখা)
+            const sym = item.coin ? item.coin.toLowerCase() : 'generic';
+            const statusClass = (item.status && item.status.toLowerCase() === 'success') ? 'status-success' : 'status-failed';
+            
+            // টাইম ফরম্যাট ফিক্স
+            let timeStr = item.time || "";
+            if (item.timestamp && !timeStr) {
+                timeStr = new Date(item.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+            }
+
             return `
-                <div class="hist-row" onclick='showFullDetails(${JSON.stringify(item)})'>
-                    <div class="name-col"><img src="assets/logos/${coinSym}.png" class="small-logo" onerror="this.src='assets/logos/generic.png'"><b>${item.coin}</b></div>
-                    <b style="font-family: monospace;">${formatAmt(item.amount)}</b>
-                    <span style="color:var(--text-sec)">${item.method ? item.method.split(' ')[0] : 'Transfer'}</span>
-                    <span class="hist-time-col" style="color:var(--text-sec)">${new Date(item.timestamp).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}</span>
-                    <div style="text-align:right"><span class="status-badge ${statusClass}">${statusText}</span></div>
+                <div class="hist-row" onclick='showFullDetails(${JSON.stringify(item)})' style="cursor:pointer">
+                    <div class="name-col">
+                        <img src="assets/logos/${sym}.png" class="small-logo" onerror="this.src='assets/logos/generic.png'">
+                        <b style="font-size: 11px;">${item.coin || 'UNKNOWN'}</b>
+                    </div>
+                    <b style="font-family: monospace; font-size: 11px;">${item.amount || '0.00'}</b>
+                    <span style="color: var(--text-sec); font-size: 10px;">${item.method || 'TX'}</span>
+                    <span class="hist-time-col" style="color: var(--text-sec); font-size: 10px;">${timeStr}</span>
+                    <div style="text-align:right"><span class="status-badge ${statusClass}">${(item.status || 'PENDING').toUpperCase()}</span></div>
                 </div>`;
         }).join('');
+
+        cont.innerHTML = header + rows;
+    }, error => {
+        console.error("Firebase History Error:", error);
+        cont.innerHTML = header + `<p style='color:red; text-align:center;'>Database Error: ${error.message}</p>`;
     });
 }
+
 
 async function processWithdraw() {
     const amt = parseFloat(document.getElementById('withAmt').value);
