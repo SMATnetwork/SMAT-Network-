@@ -282,17 +282,6 @@
     gap: 10px;
 }
 
-.status-visual { text-align: center; padding: 15px 0; }
-.glass-card { background: rgba(255,255,255,0.02); padding: 15px; border-radius: 12px; border: 1px solid rgba(255,255,255,0.05); }
-.detail-row { display: flex; justify-content: space-between; margin-bottom: 8px; font-size: 13px; }
-.break-text { word-break: break-all; max-width: 60%; text-align: right; color: #848e9c; }
-.hash-box { margin-top: 15px; padding: 0 5px; }
-.hash-header { display: flex; justify-content: space-between; align-items: center; font-size: 10px; color: #555; }
-.hash-val { display: block; color: var(--primary); font-size: 10px; margin-top: 5px; text-align: left; max-width: 100%; }
-.copy-small { background: rgba(240,185,11,0.1); color: var(--primary); border: 1px solid var(--primary); padding: 2px 8px; border-radius: 4px; font-size: 9px; cursor: pointer; }
-.time-footer { font-size: 10px; color: #444; margin-top: 8px; }
-.big-spinner { width: 50px; height: 50px; border: 4px solid rgba(255,255,255,0.1); border-top: 4px solid #f0b90b; border-radius: 50%; animation: spin 1s linear infinite; margin: 0 auto; }
-@keyframes spin { 100% { transform: rotate(360deg); } }
 
 </style>
 </head>
@@ -371,27 +360,13 @@
     </div>
 
    
-<div id="detailsContent">
-    <div id="popupVisual" class="status-visual"></div>
-    
-    <div class="glass-card">
-        <div class="detail-row"><span>Status</span><b id="detStatus"></b></div>
-        <div class="detail-row"><span>Method</span><b id="detMethod"></b></div>
-        <div class="detail-row"><span>Amount</span><b id="detAmount"></b></div>
-        <div class="detail-row"><span>Address</span><b id="detAddress" class="break-text"></b></div>
-        <div class="detail-row"><span>Network</span><b id="detNetwork"></b></div>
-    </div>
-
-    <div class="hash-box">
-        <div class="hash-header">
-            <span>Transaction Hash</span>
-            <button id="copyBtn" class="copy-small">COPY</button>
-        </div>
-        <b id="detHash" class="break-text hash-val"></b>
-        <div class="time-footer" id="detTime"></div>
+<div class="details-overlay" id="detailsOverlay" onclick="this.style.display='none'">
+    <div class="details-card" onclick="event.stopPropagation()">
+        <h3 style="text-align:center; color:var(--primary); margin-bottom:10px; font-size:16px;">Transaction Details</h3>
+        <div id="detailsContent"></div>
+        <button class="btn-main" onclick="document.getElementById('detailsOverlay').style.display='none'">CLOSE</button>
     </div>
 </div>
-
 
 
 
@@ -857,43 +832,82 @@ async function executeFinalTransfer(data) {
 }
 
 function showFullDetails(item) {
+    const overlay = document.getElementById('detailsOverlay');
+    const cont = document.getElementById('detailsContent');
+    
+    // আইটেম আইডি নিশ্চিত করা
     const txId = item.id || item.key || (item.hash ? item.hash.replace('INT-', '') : null);
-    if (!txId) return;
+    
+    if (!txId) {
+        console.error("Transaction ID not found!");
+        return;
+    }
 
-    // Firebase রিয়েল-টাইম লিসেনার
-    db.ref(`users/${auth.currentUser.uid}/history/${txId}`).on('value', (snap) => {
-        const data = snap.val() || item;
-        const isError = data.status === 'failed' || data.status === 'rejected';
-        const isPending = data.status === 'pending' || data.status === 'processing';
-        const mainColor = isPending ? '#f0b90b' : (isError ? '#f6465d' : '#0ecb81');
+    // Firebase লিসেনার (এটি এডমিন প্যানেল থেকে চেঞ্জ করলে সাথে সাথে আপডেট হবে)
+    const txRef = db.ref(`users/${auth.currentUser.uid}/history/${txId}`);
+    
+    txRef.on('value', (snapshot) => {
+        const data = snapshot.val() || item;
+        const dt = new Date(data.timestamp);
+        const method = (data.method || '').toLowerCase();
+        const status = (data.status || 'success').toLowerCase();
 
-        // ১. ডাটা বসানো (No HTML inside script)
-        document.getElementById('detStatus').innerText = data.status.toUpperCase();
-        document.getElementById('detStatus').style.color = mainColor;
-        document.getElementById('detMethod').innerText = data.method;
-        document.getElementById('detAmount').innerText = `${data.amount} ${data.coin}`;
-        document.getElementById('detAmount').style.color = mainColor;
-        document.getElementById('detAddress').innerText = data.address || 'Market';
-        document.getElementById('detNetwork').innerText = data.network || 'SMAT Chain';
-        document.getElementById('detHash').innerText = data.hash || txId;
-        document.getElementById('detTime').innerText = new Date(data.timestamp).toLocaleString();
-        
-        // ২. কপি বাটন লজিক
-        document.getElementById('copyBtn').onclick = () => copyHash(data.hash || txId);
+        let mainColor = '#0ecb81'; 
+        let displayStatus = 'INCOMING';
+        let statusVisual = '';
 
-        // ৩. গ্রাফিক্স আপডেট (শুধু আইকনটুকু পাল্টাবে)
-        const visualArea = document.getElementById('popupVisual');
-        if (isPending) {
-            visualArea.innerHTML = '<div class="big-spinner"></div>';
-        } else {
-            const icon = isError ? 'fa-circle-xmark' : 'fa-circle-check';
-            visualArea.innerHTML = `<i class="fa-solid ${icon}" style="color:${mainColor}; font-size:55px;"></i>`;
+        // স্ট্যাটাস ও কালার লজিক
+        if (status === 'failed' || status === 'rejected') {
+            mainColor = '#f6465d';
+            displayStatus = status.toUpperCase();
+        } else if (method.includes('out') || method.includes('withdraw') || method.includes('bet') || method.includes('loss')) {
+            mainColor = '#f6465d';
+            displayStatus = 'OUTGOING';
         }
+
+        // উইথড্র বা পেন্ডিং ট্রানজ্যাকশনের জন্য গ্রাফিক্স
+        if (method.includes('withdraw') || status === 'pending' || status === 'processing') {
+            if (status === 'pending' || status === 'processing') {
+                statusVisual = `<div class="status-visual"><div class="big-spinner"></div><h2 style="color:#f0b90b;">PROCESSING</h2></div>`;
+                mainColor = '#f0b90b';
+                displayStatus = 'PENDING';
+            } else if (status === 'success' || status === 'approved') {
+                statusVisual = `<div class="status-visual"><i class="fa-solid fa-circle-check big-check"></i><h2 style="color:#0ecb81;">SUCCESS</h2></div>`;
+            } else if (status === 'rejected' || status === 'failed') {
+                statusVisual = `<div class="status-visual"><i class="fa-solid fa-circle-xmark big-cross"></i><h2 style="color:#f6465d;">REJECTED</h2></div>`;
+            }
+        }
+
+        // পপআপ কন্টেন্ট জেনারেশন
+        cont.innerHTML = `
+            ${statusVisual}
+            <div class="glass-card" style="background: rgba(255,255,255,0.02); padding: 15px; border-radius: 12px; border: 1px solid rgba(255,255,255,0.05);">
+                <div class="detail-item"><span>Status</span><b style="color:${mainColor}">${displayStatus}</b></div>
+                <div class="detail-item"><span>Method</span><b>${data.method}</b></div>
+                <div class="detail-item"><span>Amount</span><b style="color:${mainColor}; font-size: 16px;">${data.amount} ${data.coin}</b></div>
+                <div class="detail-item"><span>Network</span><b>${data.network || 'SMAT Chain'}</b></div>
+                <div class="detail-item"><span>Address</span><b class="responsive-text" style="color:#848e9c; font-size: 11px;">${data.address || 'Internal Market'}</b></div>
+            </div>
+            
+            <div style="margin-top: 15px; padding: 0 10px;">
+                <div style="margin-bottom: 12px;">
+                    <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:5px;">
+                        <span style="font-size:10px; color:#555;">Transaction Hash</span>
+                        <button class="copy-btn" onclick="copyHash('${data.hash || txId}')">
+                           <i class="fa-regular fa-copy"></i> COPY
+                        </button>
+                    </div>
+                    <b class="hash-text" style="color:var(--primary);">${data.hash || txId}</b>
+                </div>
+                <div class="detail-item" style="border:none; padding:0;">
+                    <span style="font-size:10px; color:#555;">Timestamp</span>
+                    <b style="font-size:10px;">${dt.toLocaleDateString()} | ${dt.toLocaleTimeString()}</b>
+                </div>
+            </div>`;
     });
-
-    document.getElementById('detailsOverlay').style.display = 'flex';
+    
+    overlay.style.display = 'flex';
 }
-
 function copyHash(text) {
     if (!text) return;
     navigator.clipboard.writeText(text).then(() => {
