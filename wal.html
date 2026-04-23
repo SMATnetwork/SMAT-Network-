@@ -242,6 +242,43 @@
     text-align: right;
 }
 
+/* পপআপ রেসপনসিভ ডিজাইন */
+#detailsOverlay {
+    padding: 10px;
+    align-items: center;
+    justify-content: center;
+}
+
+#detailsContent {
+    width: 95%;
+    max-width: 400px; /* বড় ডিসপ্লের জন্য */
+    max-height: 90vh;
+    overflow-y: auto;
+    border-radius: 20px;
+    position: relative;
+}
+
+/* কপি বাটন স্টাইল */
+.copy-btn {
+    background: rgba(240, 185, 11, 0.1);
+    color: var(--primary);
+    border: 1px solid var(--primary);
+    padding: 2px 8px;
+    border-radius: 4px;
+    font-size: 10px;
+    cursor: pointer;
+    margin-left: 10px;
+    transition: 0.3s;
+}
+.copy-btn:active { transform: scale(0.9); }
+
+/* হ্যাশ কন্টেইনার */
+.hash-container {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 10px;
+}
 
 
 </style>
@@ -793,69 +830,76 @@ async function executeFinalTransfer(data) {
 }
 
 
+// কপি ফাংশন
+function copyHash(text) {
+    navigator.clipboard.writeText(text).then(() => {
+        showToast("Hash Copied!", "success");
+    });
+}
+
 function showFullDetails(item) {
     const overlay = document.getElementById('detailsOverlay');
     const cont = document.getElementById('detailsContent');
-    const dt = new Date(item.timestamp);
-    const method = (item.method || '').toLowerCase();
-    const status = (item.status || 'success').toLowerCase();
+    const db = getDatabase(); // Firebase DB রেফারেন্স
+    
+    // রিয়েল-টাইম লিসেনার সেট করা যাতে রিফ্রেশ ছাড়া স্ট্যাটাস আপডেট হয়
+    const txRef = ref(db, `users/${auth.currentUser.uid}/history/${item.id || item.key}`);
+    
+    onValue(txRef, (snapshot) => {
+        const data = snapshot.val() || item; // ডাটাবেসে আপডেট থাকলে সেটা নিবে, নয়তো পুরাতনটা
+        const dt = new Date(data.timestamp);
+        const method = (data.method || '').toLowerCase();
+        const status = (data.status || 'success').toLowerCase();
 
-    let mainColor = '#0ecb81'; 
-    let displayStatus = 'INCOMING';
-    let statusVisual = '';
+        let mainColor = '#0ecb81'; 
+        let displayStatus = 'INCOMING';
+        let statusVisual = '';
 
-    if (status === 'failed' || status === 'rejected') {
-        mainColor = '#f6465d';
-        displayStatus = status.toUpperCase();
-    } else if (method.includes('out') || method.includes('withdraw') || method.includes('bet') || method.includes('loss')) {
-        mainColor = '#f6465d';
-        displayStatus = 'OUTGOING';
-    }
-
-    if (method.includes('withdraw') || status === 'pending' || status === 'processing') {
-        if (status === 'pending' || status === 'processing') {
-            statusVisual = `
-                <div class="status-visual">
-                    <div class="big-spinner"></div>
-                    <h2 style="color:#f0b90b; letter-spacing:2px;">PROCESSING</h2>
-                </div>`;
-            mainColor = '#f0b90b';
-            displayStatus = 'PENDING';
-        } else if (status === 'success' || status === 'approved') {
-            statusVisual = `
-                <div class="status-visual" style="background: radial-gradient(circle, rgba(14,203,129,0.1) 0%, transparent 70%);">
-                    <i class="fa-solid fa-circle-check big-check"></i>
-                    <h2 style="color:#0ecb81; letter-spacing:2px;">SUCCESS</h2>
-                </div>`;
-        } else if (status === 'rejected' || status === 'failed') {
-            statusVisual = `
-                <div class="status-visual" style="background: radial-gradient(circle, rgba(246,70,93,0.1) 0%, transparent 70%);">
-                    <i class="fa-solid fa-circle-xmark big-cross"></i>
-                    <h2 style="color:#f6465d; letter-spacing:2px;">REJECTED</h2>
-                </div>`;
+        if (status === 'failed' || status === 'rejected') {
+            mainColor = '#f6465d';
+            displayStatus = status.toUpperCase();
+        } else if (method.includes('out') || method.includes('withdraw') || method.includes('bet') || method.includes('loss')) {
+            mainColor = '#f6465d';
+            displayStatus = 'OUTGOING';
         }
-    }
 
-    cont.innerHTML = `
-        ${statusVisual}
-        <div style="background: rgba(255,255,255,0.02); padding: 15px; border-radius: 12px; border: 1px solid rgba(255,255,255,0.05);">
-            <div class="detail-item"><span>Status</span><b style="color:${mainColor}">${displayStatus}</b></div>
-            <div class="detail-item"><span>Method</span><b>${item.method}</b></div>
-            <div class="detail-item"><span>Amount</span><b style="color:${mainColor}; font-size: 16px;">${item.amount} ${item.coin}</b></div>
-            <div class="detail-item"><span>Network</span><b>${item.network || 'SMAT Chain'}</b></div>
-            <div class="detail-item"><span>Address</span><b class="responsive-text" style="color:#848e9c; font-size: 11px;">${item.address || 'Internal Market'}</b></div>
-        </div>
-        
-        <div style="margin-top: 15px; padding: 0 10px;">
-            <div style="margin-bottom: 10px;">
-                <span style="font-size:10px; color:#555; display:block; margin-bottom:4px;">Transaction Hash</span>
-                <b class="hash-text" style="color:var(--primary);">${item.hash || item.id}</b>
+        // গ্রাফিক্স লজিক
+        if (method.includes('withdraw') || status === 'pending' || status === 'processing') {
+            if (status === 'pending' || status === 'processing') {
+                statusVisual = `<div class="status-visual"><div class="big-spinner"></div><h2 style="color:#f0b90b;">PROCESSING</h2></div>`;
+                mainColor = '#f0b90b';
+                displayStatus = 'PENDING';
+            } else if (status === 'success' || status === 'approved') {
+                statusVisual = `<div class="status-visual"><i class="fa-solid fa-circle-check big-check"></i><h2 style="color:#0ecb81;">SUCCESS</h2></div>`;
+            } else if (status === 'rejected' || status === 'failed') {
+                statusVisual = `<div class="status-visual"><i class="fa-solid fa-circle-xmark big-cross"></i><h2 style="color:#f6465d;">REJECTED</h2></div>`;
+            }
+        }
+
+        cont.innerHTML = `
+            ${statusVisual}
+            <div style="background: rgba(255,255,255,0.02); padding: 15px; border-radius: 12px; border: 1px solid rgba(255,255,255,0.05);">
+                <div class="detail-item"><span>Status</span><b style="color:${mainColor}">${displayStatus}</b></div>
+                <div class="detail-item"><span>Method</span><b>${data.method}</b></div>
+                <div class="detail-item"><span>Amount</span><b style="color:${mainColor}; font-size: 16px;">${data.amount} ${data.coin}</b></div>
+                <div class="detail-item"><span>Network</span><b>${data.network || 'SMAT Chain'}</b></div>
+                <div class="detail-item"><span>Address</span><b class="responsive-text" style="color:#848e9c; font-size: 11px;">${data.address || 'Internal Market'}</b></div>
             </div>
-            <div class="detail-item" style="border:none; padding:0;">
-                <span style="font-size:10px; color:#555;">Timestamp</span>
-                <b style="font-size:10px;">${dt.toLocaleDateString()} | ${dt.toLocaleTimeString()}</b>
-            </div>
-        </div>`;
+            
+            <div style="margin-top: 15px; padding: 0 10px;">
+                <div style="margin-bottom: 10px;">
+                    <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:5px;">
+                        <span style="font-size:10px; color:#555;">Transaction Hash</span>
+                        <button class="copy-btn" onclick="copyHash('${data.hash || data.id}')">COPY</button>
+                    </div>
+                    <b class="hash-text" style="color:var(--primary);">${data.hash || data.id}</b>
+                </div>
+                <div class="detail-item" style="border:none; padding:0;">
+                    <span style="font-size:10px; color:#555;">Timestamp</span>
+                    <b style="font-size:10px;">${dt.toLocaleDateString()} | ${dt.toLocaleTimeString()}</b>
+                </div>
+            </div>`;
+    });
     
     overlay.style.display = 'flex';
 }
