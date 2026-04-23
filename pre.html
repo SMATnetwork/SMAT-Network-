@@ -332,8 +332,8 @@
                     await set(hRef, { 
                         method: "Prediction Win", amount: winAmt.toFixed(4), coin: "USDT", 
                         status: 'success', color: 'green', timestamp: Date.now(), 
-                        address: "Market", network: assets[key].name, 
-                        hash: "WIN-" + Math.random().toString(36).substr(2,9).toUpperCase() 
+                        address: "Prediction Market", network: assets[key].name, 
+                        hash: "Prediction-" + Math.random().toString(36).substr(2,9).toUpperCase() 
                     });
                 }
                 await update(ref(db, `history/${user.uid}/${key}/${rid}`), { isPending: false, resultPrice: resPrice, status: status, finalWin: winAmt });
@@ -437,9 +437,9 @@
         coin: "USDT", 
         status: 'success', 
         timestamp: Date.now(), 
-        address: "Market", 
+        address: "Prediction Market", 
         network: assets[activeKey].name, 
-        hash: "BET-" + Math.random().toString(36).substr(2,9).toUpperCase() 
+        hash: "Prediction-" + Math.random().toString(36).substr(2,9).toUpperCase() 
     });
 
     assets[activeKey].pending = { side: document.getElementById('betModal').dataset.side, amount: amt };
