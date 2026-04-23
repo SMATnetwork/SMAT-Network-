@@ -326,13 +326,13 @@
 
             const logKey = db.ref(`users/${userUID}/history`).push().key;
             up[`users/${userUID}/history/${logKey}`] = {
-                method: `SWAP ${f} TO ${t}`,
+                method: `${f} TO ${t}`,
                 amount: tAmt.toFixed(6),
                 coin: t,
                 status: 'success',
                 timestamp: Date.now(),
-                address: "Internal System",
-                network: "DexSwap",
+                address: "Internal Swap",
+                network: "SMAT Swap",
                 hash: "SWAP-" + Math.random().toString(36).substr(2, 9).toUpperCase()
             };
 
