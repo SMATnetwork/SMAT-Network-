@@ -171,7 +171,63 @@
         .fab-label { font-weight: 900;position: absolute; left: 60px; background: var(--card); color: white; padding: 4px 10px; border-radius: 6px; font-size: 11px; font-weight: bold; border: 1px solid var(--border); white-space: nowrap; }
         
         @keyframes popIn { from { transform: scale(0) translateY(50px); opacity: 0; } to { transform: scale(1) translateY(0); opacity: 1; } }
-    </style>
+    
+/* বড় ভিজ্যুয়াল কন্টেইনার */
+.status-visual {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 25px 0;
+    background: radial-gradient(circle, rgba(240, 185, 11, 0.05) 0%, transparent 70%);
+    border-radius: 20px;
+    margin-bottom: 20px;
+}
+
+/* হাই-টেক স্পিনার */
+.big-spinner {
+    width: 70px;
+    height: 70px;
+    border: 6px solid rgba(255, 255, 255, 0.05);
+    border-top: 6px solid var(--primary);
+    border-right: 6px solid var(--primary);
+    border-radius: 50%;
+    animation: spin 1s cubic-bezier(0.4, 0, 0.2, 1) infinite;
+    filter: drop-shadow(0 0 10px var(--primary));
+    margin-bottom: 15px;
+}
+
+/* গ্লোয়িং আইকনস */
+.big-check { 
+    font-size: 65px; 
+    color: #0ecb81; 
+    filter: drop-shadow(0 0 15px rgba(14, 203, 129, 0.5));
+    animation: popIn 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+.big-cross { 
+    font-size: 65px; 
+    color: #f6465d; 
+    filter: drop-shadow(0 0 15px rgba(246, 70, 93, 0.5));
+    animation: popIn 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+/* অ্যানিমেশনস */
+@keyframes spin { 100% { transform: rotate(360deg); } }
+@keyframes popIn { 0% { transform: scale(0); opacity: 0; } 100% { transform: scale(1); opacity: 1; } }
+
+/* ডিটেইলস রো ডিজাইন */
+.detail-item {
+    display: flex;
+    justify-content: space-between;
+    padding: 12px 5px;
+    border-bottom: 1px solid rgba(255,255,255,0.03);
+}
+
+
+
+
+</style>
 </head>
 <body>
 
@@ -725,32 +781,72 @@ function showFullDetails(item) {
     const cont = document.getElementById('detailsContent');
     const dt = new Date(item.timestamp);
     const method = (item.method || '').toLowerCase();
-    const status = (item.status || '').toLowerCase();
+    const status = (item.status || 'success').toLowerCase();
 
-    // কালার সিলেকশন লজিক
-    let mainColor = '#0ecb81'; // Default Green
+    // কালার এবং লেবেল লজিক
+    let mainColor = '#0ecb81'; 
     let displayStatus = 'INCOMING';
+    let statusVisual = '';
 
+    // ১. স্ট্যাটাস অনুযায়ী কালার কোডিং
     if (status === 'failed' || status === 'rejected') {
         mainColor = '#f6465d';
         displayStatus = status.toUpperCase();
     } else if (method.includes('out') || method.includes('withdraw') || method.includes('bet') || method.includes('loss')) {
-        mainColor = '#f6465d'; // Red for Outgoing
+        mainColor = '#f6465d';
         displayStatus = 'OUTGOING';
     }
 
+    // ২. অ্যাডভান্সড গ্রাফিক্স লজিক (উইথড্র বা পেন্ডিং ট্রানজ্যাকশনের জন্য)
+    if (method.includes('withdraw') || status === 'pending' || status === 'processing') {
+        if (status === 'pending' || status === 'processing') {
+            statusVisual = `
+                <div class="status-visual">
+                    <div class="big-spinner"></div>
+                    <h2 style="color:#f0b90b; letter-spacing:2px;">PROCESSING</h2>
+                </div>`;
+            mainColor = '#f0b90b';
+            displayStatus = 'PENDING';
+        } else if (status === 'success' || status === 'approved') {
+            statusVisual = `
+                <div class="status-visual" style="background: radial-gradient(circle, rgba(14,203,129,0.1) 0%, transparent 70%);">
+                    <i class="fa-solid fa-circle-check big-check"></i>
+                    <h2 style="color:#0ecb81; letter-spacing:2px;">SUCCESS</h2>
+                </div>`;
+        } else if (status === 'rejected' || status === 'failed') {
+            statusVisual = `
+                <div class="status-visual" style="background: radial-gradient(circle, rgba(246,70,93,0.1) 0%, transparent 70%);">
+                    <i class="fa-solid fa-circle-xmark big-cross"></i>
+                    <h2 style="color:#f6465d; letter-spacing:2px;">REJECTED</h2>
+                </div>`;
+        }
+    }
+
+    // ৩. ফাইনাল গ্রাফিক্স আউটপুট
     cont.innerHTML = `
-        <div class="detail-item"><span>Status</span><b style="color:${mainColor}">${displayStatus}</b></div>
-        <div class="detail-item"><span>Method</span><b>${item.method}</b></div>
-        <div class="detail-item"><span>Amount</span><b style="color:${mainColor}">${item.amount} ${item.coin}</b></div>
-        <div class="detail-item"><span>Network</span><b>${item.network || 'Internal'}</b></div>
-        <div class="detail-item"><span>Details</span><b class="responsive-text">${item.address || 'N/A'}</b></div>
-        <hr style="border:0; border-top:1px dashed rgba(255,255,255,0.1); margin:10px 0;">
-        <div class="detail-item"><span>Tx Hash</span><b class="responsive-text" style="color:var(--text-sec);">${item.hash || item.id}</b></div>
-        <div class="detail-item"><span>Date/Time</span><b>${dt.toLocaleDateString()} ${dt.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}</b></div>`;
+        ${statusVisual}
+        <div style="background: rgba(255,255,255,0.02); padding: 15px; border-radius: 12px; border: 1px solid rgba(255,255,255,0.05);">
+            <div class="detail-item"><span>Status</span><b style="color:${mainColor}">${displayStatus}</b></div>
+            <div class="detail-item"><span>Method</span><b>${item.method}</b></div>
+            <div class="detail-item"><span>Amount</span><b style="color:${mainColor}; font-size: 16px;">${item.amount} ${item.coin}</b></div>
+            <div class="detail-item"><span>Network</span><b>${item.network || 'SMAT Chain'}</b></div>
+            <div class="detail-item"><span>Details</span><b style="color:#848e9c; font-size: 11px;">${item.address || 'Internal Market'}</b></div>
+        </div>
+        
+        <div style="margin-top: 15px; padding: 0 10px;">
+            <div class="detail-item" style="border:none;">
+                <span style="font-size:10px; color:#555;">Transaction Hash</span>
+                <b style="font-size:9px; color:var(--primary); font-family:monospace;">${item.hash || item.id}</b>
+            </div>
+            <div class="detail-item" style="border:none;">
+                <span style="font-size:10px; color:#555;">Timestamp</span>
+                <b style="font-size:10px;">${dt.toLocaleDateString()} | ${dt.toLocaleTimeString()}</b>
+            </div>
+        </div>`;
     
     overlay.style.display = 'flex';
 }
+
 
 
 function hidePopup() { document.getElementById('actionOverlay').style.display = 'none'; }
