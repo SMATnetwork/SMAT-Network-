@@ -37,18 +37,18 @@
         .hist-logo {   width: 12px;   height: 12px;   border-radius: 50%;   vertical-align: middle;   margin-right: 2px; }
         .sub-text {  display: block;   font-size: 7px;  color: #848e9c;  margin-top: 1px; }
         .chart-section { position: relative;  width: 100%; overflow: hidden;}
-        .pools-container { background:none; position: absolute;  bottom: 2px; left: 50%; transform: translateX(-50%);   width: 80%;  display: flex;  justify-content: center;   gap: 8px; pointer-events: none;}
-        .pool-box { background:none;backdrop-filter: blur(6px);  border-radius: 8px; padding: 6px 6px;  min-width: 110px;  flex: 1;   max-width: 120px; box-shadow: 0 4px 12px rgba(0,0,0,0.2);}
-        .up-bg {background:none; }
-        .down-bg {background:none;}
-        .pool-label {background :none; font-size: 8px; font-weight: 800; color: #848e9c; margin-bottom: 3px; }
-        .pool-content {background :none; display: flex; align-items: center; gap: 8px; }
-        .progress-track { background :none;width: 4px; height: 24px; background: rgba(255, 255, 255, 0.1); border-radius: 4px; overflow: hidden; display: flex; flex-direction: column; justify-content: flex-end;}
+       .pools-container {  position: absolute;  bottom: 2px; left: 50%; transform: translateX(-50%);   width: 80%;  display: flex;  justify-content: center;   gap: 8px; pointer-events: none;}
+        .pool-box { backdrop-filter: blur(6px);  border-radius: 8px; padding: 6px 6px;  min-width: 110px;  flex: 1;   max-width: 120px; box-shadow: 0 4px 12px rgba(0,0,0,0.2);}
+        .up-bg {  background:none;}
+        .down-bg {  background:none;}
+        .pool-label { font-size: 8px; font-weight: 800; color: #848e9c; margin-bottom: 3px; }
+        .pool-content { display: flex; align-items: center; gap: 8px; }
+        .progress-track { width: 4px; height: 24px; background: rgba(255, 255, 255, 0.1); border-radius: 4px; overflow: hidden; display: flex; flex-direction: column; justify-content: flex-end;}
         .progress-fill-up { background: #0ecb81; box-shadow: 0 0 8px #0ecb81; transition: height 0.5s; }
         .progress-fill-down { background: #f6465d; box-shadow: 0 0 8px #f6465d; transition: height 0.5s; }
-        .pool-values span { background :none;font-size: 11px; font-weight: 900; color: white; display: block; }
-        .pool-values small {background :none; font-size: 9px; font-weight: 700; }
-                          @media (max-width: 350px) {  .pool-box { padding: 4px 6px; } .pool-values span { background :none;font-size: 10px; } .progress-track { background :none;height: 20px; }}
+        .pool-values span { font-size: 11px; font-weight: 900; color: white; display: block; }
+        .pool-values small { font-size: 9px; font-weight: 700; }
+                          @media (max-width: 350px) {  .pool-box { padding: 4px 6px; } .pool-values span { font-size: 10px; } .progress-track { height: 20px; }}
          canvas#liveChart { background-color: transparent !important; }
          .action-area { position: fixed; bottom: 0; width: 100%; padding: 15px; background: #12161c; border-top: 1px solid var(--border); z-index: 2000; }
         .t-btn { flex: 1; padding: 16px; border: none; border-radius: 10px; font-weight: 900; font-size: 16px; color: white; cursor: pointer; text-transform: uppercase; }
