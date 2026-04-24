@@ -625,13 +625,13 @@ function openHistory() {
             } 
             // --- Outgoing (টাকা বের হওয়া) চেক ---
             // মেথডে যদি Out, Withdraw, Bet, Loss বা Spend থাকে তবে সেটা লাল
-            else if (method.includes('out') || method.includes('withdraw') || method.includes('bet') || method.includes('loss') || method.includes('spend')) {
+            else if (method.includes('out') || method.includes('withdraw') || method.includes('bet') || method.includes('Stake oxSMAT') || method.includes('loss') || method.includes('spend')) {
                 actionText = 'OUTGOING';
                 actionClass = 'status-failed';
             } 
             // --- Incoming (টাকা আসা) চেক ---
             // মেথডে যদি In, Win, Deposit, Reward বা Mining থাকে তবে সেটা সবুজ
-            else if (method.includes('in') || method.includes('win') || method.includes('deposit') || method.includes('reward') || method.includes('swap') || method.includes('mining')) {
+            else if (method.includes('in') || method.includes('win') || method.includes('deposit') || method.includes('reward') || method.includes('Unstake') || method.includes('swap') || method.includes('mining')) {
                 actionText = 'INCOMING';
                 actionClass = 'status-success';
             }
