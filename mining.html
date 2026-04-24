@@ -242,58 +242,81 @@
     };
 
     async function handleStaking(mode) {
-        const amount = parseFloat(document.getElementById('amountInput').value);
-        if(!amount || amount <= 0) return showToast("Enter valid amount", "error");
+    const amount = parseFloat(document.getElementById('amountInput').value);
+    if(!amount || amount <= 0) return showToast("Enter valid amount", "error");
+    
+    const uRef = ref(db, `users/${user.uid}`);
+    const historyRef = push(ref(db, `users/${user.uid}/history`));
+
+    if(mode === 'stake') {
+        if(amount > uData.oxBalance) return showToast("Insufficient oxSMAT", "error");
         
-        const uRef = ref(db, `users/${user.uid}`);
-        const historyRef = push(ref(db, `users/${user.uid}/history`));
+        const updates = {};
+        updates[`users/${user.uid}/oxsmat_balance`] = (uData.oxBalance - amount).toFixed(8);
+        updates[`users/${user.uid}/oxStaked`] = (uData.oxStaked + amount).toFixed(8);
+        updates[`users/${user.uid}/lastStakeTime`] = Date.now();
+        
+        // মাইনিং স্টাইলে হিস্টোরি পুশ
+        updates[`users/${user.uid}/history/${historyRef.key}`] = {
+            method: "Stake oxSMAT",
+            amount: amount.toFixed(4), 
+            coin: "oxSMAT", 
+            status: "success",
+            network: " Mining Boost Pool",
+            hash: "oxSMAT-Stake-" + Math.random().toString(36).substr(2, 9).toUpperCase(),
+            timestamp: Date.now(), 
+            address: "Internal Mining Boost", // address লেবেলে এটা দেখাবে
+            date: new Date().toLocaleDateString(), 
+            target: "To Mining Boost"
+        };
 
-        if(mode === 'stake') {
-            if(amount > uData.oxBalance) return showToast("Insufficient oxSMAT", "error");
+        await update(ref(db), updates);
+        showToast("Staked Successfully!");
+        closeModals();
+    } else {
+        if(amount > uData.oxStaked) return showToast("Insufficient Staked Amount", "error");
+        
+        let receive = amount;
+        let fee = 0;
+        const isEarly = (Date.now() - (uData.lastStakeTime || 0) < 604800000);
+
+        const processUnstake = async () => {
             const updates = {};
-            updates[`users/${user.uid}/oxsmat_balance`] = (uData.oxBalance - amount).toFixed(8);
-            updates[`users/${user.uid}/oxStaked`] = (uData.oxStaked + amount).toFixed(8);
-            updates[`users/${user.uid}/lastStakeTime`] = Date.now();
-            updates[`users/${user.uid}/history/${historyRef.key}`] = {
-                method: "Stake oxSMAT", amount: amount.toFixed(2), coin: "oxSMAT", status: "success",
-                timestamp: Date.now(), date: new Date().toLocaleDateString(), target: "To Mining Boost"
-            };
-            await update(ref(db), updates);
-            showToast("Staked Successfully!");
-            closeModals();
-        } else {
-            if(amount > uData.oxStaked) return showToast("Insufficient Staked Amount", "error");
+            updates[`users/${user.uid}/oxsmat_balance`] = (uData.oxBalance + receive).toFixed(8);
+            updates[`users/${user.uid}/oxStaked`] = (uData.oxStaked - amount).toFixed(8);
             
-            let receive = amount;
-            let fee = 0;
-            const isEarly = (Date.now() - (uData.lastStakeTime || 0) < 604800000);
-
-            const processUnstake = async () => {
-                const updates = {};
-                updates[`users/${user.uid}/oxsmat_balance`] = (uData.oxBalance + receive).toFixed(8);
-                updates[`users/${user.uid}/oxStaked`] = (uData.oxStaked - amount).toFixed(8);
-                updates[`users/${user.uid}/history/${historyRef.key}`] = {
-                    method: isEarly ? "Unstake (Early)" : "Unstake",
-                    amount: receive.toFixed(4), coin: "oxSMAT", status: "success",
-                    fee: fee > 0 ? fee.toFixed(4) : "0.00", timestamp: Date.now(),
-                    date: new Date().toLocaleDateString(), target: "To Wallet"
-                };
-                await update(ref(db), updates);
-                showToast(isEarly ? `Unstaked with 1% fee` : "Unstaked Successfully!");
-                closeModals();
+            // মাইনিং স্টাইলে হিস্টোরি পুশ (Unstake এর জন্য)
+            updates[`users/${user.uid}/history/${historyRef.key}`] = {
+                method: isEarly ? "Unstake (Early)" : "Unstake",
+                amount: receive.toFixed(4), 
+                coin: "oxSMAT", 
+                status: "success",
+                network: " Mininig Boost Pool",
+                hash: "oxSMAT-Unstake-" + Math.random().toString(36).substr(2, 9).toUpperCase(),
+                fee: fee > 0 ? fee.toFixed(4) : "0.00", 
+                timestamp: Date.now(),
+                address: "Internal Mininig Boost", // address লেবেলে এটা দেখাবে
+                date: new Date().toLocaleDateString(), 
+                target: "To Wallet"
             };
 
-            if(isEarly) {
-                fee = amount * 0.01;
-                receive = amount - fee;
-                showConfirm(
-                    "Early Unstake", 
-                    `Fee: ${fee.toFixed(4)} oxSMAT (1%)<br>You will receive: <b>${receive.toFixed(4)} oxSMAT</b>`, 
-                    processUnstake
-                );
-            } else { processUnstake(); }
-        }
+            await update(ref(db), updates);
+            showToast(isEarly ? `Unstaked with 1% fee` : "Unstaked Successfully!");
+            closeModals();
+        };
+
+        if(isEarly) {
+            fee = amount * 0.01;
+            receive = amount - fee;
+            showConfirm(
+                "Early Unstake", 
+                `Fee: ${fee.toFixed(4)} oxSMAT (1%)<br>You will receive: <b>${receive.toFixed(4)} oxSMAT</b>`, 
+                processUnstake
+            );
+        } else { processUnstake(); }
     }
+}
+
 
     window.closeModals = () => {
         document.getElementById('actionModal').style.display = 'none';
