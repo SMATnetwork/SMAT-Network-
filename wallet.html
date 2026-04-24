@@ -623,18 +623,31 @@ function openHistory() {
                 actionText = status.toUpperCase();
                 actionClass = 'status-failed';
             } 
-            // --- Outgoing (টাকা বের হওয়া) চেক ---
-            // মেথডে যদি Out, Withdraw, Bet, Loss বা Spend থাকে তবে সেটা লাল
-            else if (method.includes('out') || method.includes('withdraw') || method.includes('bet') || method.includes('loss') || method.includes('spend')) {
-                actionText = 'OUTGOING';
-                actionClass = 'status-failed';
-            } 
-            // --- Incoming (টাকা আসা) চেক ---
-            // মেথডে যদি In, Win, Deposit, Reward বা Mining থাকে তবে সেটা সবুজ
-            else if (method.includes('in') || method.includes('win') || method.includes('deposit') || method.includes('reward') || method.includes('swap') || method.includes('mining')) {
-                actionText = 'INCOMING';
-                actionClass = 'status-success';
-            }
+            // ৩. --- Outgoing (টাকা বের হওয়া) চেক ---
+// 'spend' শব্দটি থাকলে সেটা ১০০% আউটগোয়িং, তাই এটি সবার আগে থাকবে
+else if (
+    method.includes('spend') || 
+    method.includes('out') || 
+    method.includes('withdraw') || 
+    method.includes('bet') || 
+    method.includes('loss')
+) {
+    actionText = 'OUTGOING';
+    actionClass = 'status-failed'; // লাল রঙ
+} 
+// ৪. --- Incoming (টাকা আসা) চেক ---
+else if (
+    method.includes('win') || 
+    method.includes('deposit') || 
+    method.includes('reward') || 
+    method.includes('mining') || 
+    method.includes('swap') ||
+    method.includes(' in') || // স্পেসসহ ' in' চেক করা নিরাপদ যাতে শব্দের মাঝখানের 'in' না ধরে
+    method === 'in'
+) {
+    actionText = 'INCOMING';
+    actionClass = 'status-success'; // সবুজ রঙ
+}
 
             let timeStr = item.time || new Date(item.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
 
