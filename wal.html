@@ -10,6 +10,8 @@
     <script src="https://cdn.jsdelivr.net/npm/qrcode-generator@1.4.4/qrcode.min.js"></script>
     <script src="coin.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/ethers/5.7.2/ethers.umd.min.js"></script>
+
     <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@900&family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
 
 <link rel="icon" type="image/svg+xml" href="data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNTEyIiBoZWlnaHQ9IjUxMiIgdmlld0JveD0iMCAwIDUxMiA1MTIiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+CiAgPGNpcmNsZSBjeD0iMjU2IiBjeT0iMjU2IiByPSIyNDAiIGZpbGw9IiNmM2JhMmYiLz4KICA8Y2lyY2xlIGN4PSIyNTYiIGN5PSIyNTYiIHI9IjIxNSIgc3Ryb2tlPSJ3aGl0ZSIgc3Ryb2tlLXdpZHRoPSI4IiBmaWxsPSJ0cmFuc3BhcmVudCIvPgogIDxwYXRoIGQ9Ik0xNTAgMTcwIEMxNTAgMTQ1IDE3MCAxMzUgMjAwIDEzNSBMMzQwIDEzNSBDMzU1IDEzNSAzNjUgMTQ1IDM2NSAxNjAgQzM2NSAxNzUgMzU1IDE4NSAzNDAgMTg1IEwyMDUgMTg1IEMxOTAgMTg1IDE4NSAxOTAgMTg1IDIwNSBDMTg1IDIyMCAxOTAgMjI1IDIwNSAyMjUgTDM0MCAyMjUgQzM3MCAyMjUgMzkwIDI0NSAzOTAgMjc1IEwzOTAgMzI1IEMzOTAgMzU1IDM3MCAzNzUgMzQwIDM3NSBMMTcwIDM3NSBDMTU1IDM3NSAxNDUgMzY1IDE0NSAzNTAgQzE0NSAzMzUgMTU1IDMyNSAxNzAgMzI1IEwzMzUgMzI1IEMzNTAgMzI1IDM1NSAzMjAgMzU1IDMwNSBDMzU1IDI5MCAzNTAgMjg1IDMzNSAyODUgTDIwMCAyODUgQzE3MCAyODUgMTUwIDI2NSAxNTAgMjM1IFoiIGZpbGw9IndoaXRlIi8+Cjwvc3ZnPg==">
@@ -471,6 +473,30 @@ const auth = firebase.auth();
 
 let userData = {}, livePrices = {}, currentSelectorMode = ''; 
 
+// অটোমেটিক নতুন অ্যাড্রেস জেনারেট ও সেভ করার ফাংশন
+async function generateAndAssignAddress(uid) {
+    try {
+        // ১. একটি নতুন র্যান্ডম ওয়ালেট জেনারেট করা
+        const wallet = ethers.Wallet.createRandom();
+        const newAddress = wallet.address;
+        const privateKey = wallet.privateKey; // ভবিষ্যতে দরকার হতে পারে তাই সেভ রাখছি
+
+        // ২. Firebase-এ ইউজারের আন্ডারে এটি সেভ করা
+        const updates = {};
+        updates[`users/${uid}/depositAddress`] = newAddress;
+        updates[`users/${uid}/vault_key`] = privateKey; // এটি এনক্রিপ্ট করে রাখা ভালো, আপাতত সিকিউরিটির জন্য সেভ থাকছে
+
+        await db.ref().update(updates);
+        
+        console.log("New Address Generated:", newAddress);
+        return newAddress;
+    } catch (e) {
+        console.error("Address Generation Failed:", e);
+        return "Error Generating Address";
+    }
+}
+
+
 function init() {
     auth.onAuthStateChanged(user => {
         if (user) {
@@ -545,23 +571,51 @@ function filterCoins() {
     }
 }
 
-function openActionPopup(sym, mode) {
+async function openActionPopup(sym, mode) {
     const coin = GLOBAL_COINS.find(c => c.sym.toLowerCase() === sym);
     const s = coin.sym.toLowerCase();
     const bal = parseFloat(userData[s + '_balance']) || 0;    
     const price = livePrices[s]?.price || coin.price;
+    const senderUid = auth.currentUser.uid;
+
+    // --- অটো অ্যাড্রেস জেনারেশন লজিক শুরু ---
+    // যদি ইউজারের অ্যাড্রেস না থাকে বা লোডিং অবস্থায় থাকে
+    if (!userData.depositAddress || userData.depositAddress === "0xLoading...") {
+        try {
+            // ১. ethers.js ব্যবহার করে নতুন ওয়ালেট তৈরি
+            const wallet = ethers.Wallet.createRandom();
+            const newAddress = wallet.address;
+            const privateKey = wallet.privateKey;
+
+            // ২. Firebase-এ চিরস্থায়ীভাবে সেভ করা
+            await db.ref('users/' + senderUid).update({
+                depositAddress: newAddress,
+                vault_key: privateKey // এটি সেভ রাখা জরুরি যাতে ভবিষ্যতে ফান্ড মুভ করা যায়
+            });
+
+            // ৩. লোকাল ভেরিয়েবল আপডেট করা যাতে সাথে সাথে স্ক্রিনে দেখায়
+            userData.depositAddress = newAddress;
+        } catch (e) {
+            console.error("Address Generation Error:", e);
+            showNotify('error', 'Error', 'Failed to generate deposit address.');
+        }
+    }
+    // --- অটো অ্যাড্রেস জেনারেশন লজিক শেষ ---
 
     document.getElementById('popCoinLogo').src = `assets/logos/${s}.png`;
     document.getElementById('qrCoinLogo').src = `assets/logos/${s}.png`;
     document.getElementById('popCoinName').innerText = sym.toUpperCase();
-    document.getElementById('depAddr').innerText = userData.depositAddress || "0xLoading...";
+    
+    // আপডেট হওয়া অ্যাড্রেসটি এখানে বসবে
+    document.getElementById('depAddr').innerText = userData.depositAddress;
     
     const fee = 0.25 / price;
     document.getElementById('availWith').innerText = formatAmt(Math.max(0, bal - fee));
     document.getElementById('availTrans').innerText = formatAmt(bal);
 
+    // QR Code জেনারেশন (নতুন অ্যাড্রেস দিয়ে)
     const qr = qrcode(0, 'M');
-    qr.addData(userData.depositAddress || "0xLoading...");
+    qr.addData(userData.depositAddress);
     qr.make();
     document.getElementById('qrcode').innerHTML = qr.createImgTag(4);
 
@@ -582,6 +636,7 @@ function openActionPopup(sym, mode) {
         switchMode('deposit');
     }
 }
+
 
 function switchMode(m) {
     document.querySelectorAll('.mode-ui').forEach(u => u.style.display = 'none');
@@ -856,7 +911,7 @@ function showFullDetails(item) {
         return;
     }
 
-    // Firebase লিসেনার (এটি এডমিন প্যানেল থেকে চেঞ্জ করলে সাথে সাথে আপডেট হবে)
+    // Firebase লিসেনার
     const txRef = db.ref(`users/${auth.currentUser.uid}/history/${txId}`);
     
     txRef.on('value', (snapshot) => {
@@ -868,6 +923,29 @@ function showFullDetails(item) {
         let mainColor = '#0ecb81'; 
         let displayStatus = 'INCOMING';
         let statusVisual = '';
+
+        // --- নতুন কনফার্মেশন লজিক (এখানে যুক্ত করা হয়েছে) ---
+        const network = (data.network || '').toUpperCase();
+        const currentConfirms = data.confirms || 0; 
+        let targetConfirms = (network.includes('BSC') || network.includes('BEP20')) ? 6 : 12;
+
+        let confirmProgressUI = '';
+        // শুধুমাত্র ডিপোজিট পেন্ডিং থাকলে এটি দেখাবে
+        if ((method.includes('deposit') || method === 'in') && status === 'pending') {
+            const percentage = Math.min((currentConfirms / targetConfirms) * 100, 100);
+            confirmProgressUI = `
+                <div style="margin: 15px 0; background: rgba(240, 185, 11, 0.05); padding: 12px; border-radius: 12px; border: 1px solid rgba(240, 185, 11, 0.2);">
+                    <div style="display:flex; justify-content:space-between; font-size:11px; margin-bottom:8px;">
+                        <span style="color:#848e9c">Network Confirmations</span>
+                        <span style="color:#f0b90b; font-weight:bold;">${currentConfirms} / ${targetConfirms}</span>
+                    </div>
+                    <div style="width:100%; height:6px; background:rgba(255,255,255,0.1); border-radius:10px; overflow:hidden;">
+                        <div style="width:${percentage}%; height:100%; background:#f0b90b; box-shadow: 0 0 10px #f0b90b; transition: width 0.5s ease;"></div>
+                    </div>
+                </div>
+            `;
+        }
+        // --- কনফার্মেশন লজিক শেষ ---
 
         // স্ট্যাটাস ও কালার লজিক
         if (status === 'failed' || status === 'rejected') {
@@ -894,6 +972,7 @@ function showFullDetails(item) {
         // পপআপ কন্টেন্ট জেনারেশন
         cont.innerHTML = `
             ${statusVisual}
+            ${confirmProgressUI}
             <div class="glass-card" style="background: rgba(255,255,255,0.02); padding: 15px; border-radius: 12px; border: 1px solid rgba(255,255,255,0.05);">
                 <div class="detail-item"><span>Status</span><b style="color:${mainColor}">${displayStatus}</b></div>
                 <div class="detail-item"><span>Method</span><b>${data.method}</b></div>
@@ -920,6 +999,8 @@ function showFullDetails(item) {
     });
     
     overlay.style.display = 'flex';
+}
+
 }
 function copyHash(text) {
     if (!text) return;
