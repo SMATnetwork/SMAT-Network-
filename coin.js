@@ -35,7 +35,7 @@ const GLOBAL_COINS = [
 { 
         sym: 'tbnb', 
         name: 'tBNB', 
-        price: 0.00, 
+        price: 1.00, 
         decimal: 18, 
         key: 'tbnb_balance', 
         networks: ['No Transferable Token'], 
