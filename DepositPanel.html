@@ -1,0 +1,278 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>SMAT | Master Admin Panel</title>
+    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-database-compat.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/ethers/5.7.2/ethers.umd.min.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;700;900&display=swap" rel="stylesheet">
+    
+    <style>
+        :root {
+            --bg: #0b0e11; --card: #1e2329; --primary: #f0b90b;
+            --up: #0ecb81; --down: #f6465d; --border: rgba(255, 255, 255, 0.1);
+            --font: 'Montserrat', sans-serif;
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: var(--font); outline: none; }
+        body { background: var(--bg); color: white; overflow-x: hidden; min-height: 100vh; }
+
+        /* --- LOGIN SCREEN --- */
+        #loginScreen { position: fixed; inset: 0; background: radial-gradient(circle at center, #1e2329 0%, #0b0e11 100%); display: flex; justify-content: center; align-items: center; z-index: 9999; }
+        .login-card { background: var(--card); border-radius: 30px; padding: 50px 40px; width: 90%; max-width: 420px; border: 1px solid var(--primary); text-align: center; box-shadow: 0 0 30px rgba(240, 185, 11, 0.1); }
+        .login-title { font-size: 28px; font-weight: 900; margin-bottom: 30px; letter-spacing: 2px; }
+        .login-title span { color: var(--primary); }
+        .login-input { width: 100%; background: #111418; border: 1px solid var(--border); padding: 18px; border-radius: 12px; color: white; margin-bottom: 20px; transition: 0.3s; }
+        .login-input:focus { border-color: var(--primary); }
+        .login-btn { width: 100%; background: var(--primary); border: none; padding: 18px; border-radius: 12px; font-weight: 900; cursor: pointer; text-transform: uppercase; color: black; }
+
+        /* --- DASHBOARD --- */
+        #dashboard { display: none; }
+        header { height: 80px; background: var(--card); display: flex; align-items: center; justify-content: space-between; padding: 0 30px; border-bottom: 2px solid var(--primary); position: sticky; top: 0; z-index: 1000; }
+        .container { padding: 25px; max-width: 1400px; margin: 0 auto; }
+        
+        .nav-tabs { display: flex; gap: 15px; margin-bottom: 30px; background: rgba(255,255,255,0.03); padding: 10px; border-radius: 20px; }
+        .n-tab { flex: 1; padding: 15px; text-align: center; border-radius: 12px; cursor: pointer; color: #848e9c; font-weight: 900; transition: 0.3s; text-transform: uppercase; font-size: 12px; }
+        .n-tab.active { background: var(--primary); color: black; box-shadow: 0 5px 15px rgba(240, 185, 11, 0.2); }
+
+        /* Statistics */
+        .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 20px; margin-bottom: 30px; }
+        .stat-box { background: var(--card); padding: 25px; border-radius: 20px; border: 1px solid var(--border); }
+        .stat-label { color: var(--text-sec); font-size: 11px; text-transform: uppercase; margin-bottom: 10px; }
+        .stat-val { font-size: 20px; font-weight: 900; color: var(--primary); }
+
+        /* Action Cards */
+        .admin-card { 
+            background: var(--card); border-radius: 20px; padding: 20px; margin-bottom: 15px;
+            border: 1px solid var(--border); display: grid; grid-template-columns: 1.5fr 2fr 1fr 1.2fr; 
+            align-items: center; gap: 20px; transition: 0.3s;
+        }
+        .admin-card:hover { border-color: var(--primary); background: #23282e; }
+        .label { font-size: 10px; color: #848e9c; text-transform: uppercase; margin-bottom: 5px; }
+        .val { font-size: 13px; font-weight: 700; word-break: break-all; }
+        .addr-pill { background: rgba(0,0,0,0.3); padding: 8px 12px; border-radius: 8px; border: 1px solid var(--border); font-family: monospace; font-size: 11px; }
+
+        /* Buttons */
+        .btn-sweep { background: var(--primary); color: black; border: none; padding: 12px 20px; border-radius: 10px; font-weight: 900; cursor: pointer; font-size: 11px; display: flex; align-items: center; gap: 8px; }
+        .btn-sweep:disabled { opacity: 0.5; filter: grayscale(1); }
+
+        /* Modal / Popups */
+        #customPopup { position: fixed; bottom: 30px; right: 30px; padding: 20px 30px; background: var(--primary); color: black; border-radius: 15px; font-weight: 900; display: none; z-index: 10002; box-shadow: 0 10px 30px rgba(0,0,0,0.5); animation: slideIn 0.3s ease; }
+        @keyframes slideIn { from { transform: translateX(100%); } to { transform: translateX(0); } }
+
+        @media (max-width: 900px) {
+            .admin-card { grid-template-columns: 1fr; gap: 15px; }
+            header h2 { font-size: 16px; }
+        }
+    </style>
+</head>
+<body>
+
+    <div id="loginScreen">
+        <div class="login-card">
+            <div class="login-title">SMAT <span>MASTER</span></div>
+            <input type="email" id="admEmail" class="login-input" placeholder="Admin Email">
+            <input type="password" id="admPass" class="login-input" placeholder="Secure Password">
+            <button class="login-btn" onclick="tryLogin()">Launch Dashboard</button>
+            <p id="admErr" style="color:var(--down); font-size:12px; margin-top:15px; display:none;">Access Denied: Invalid Credentials</p>
+        </div>
+    </div>
+
+    <div id="dashboard">
+        <header>
+            <h2 style="letter-spacing: 2px;">SYSTEM <span style="color:var(--primary)">CONTROL</span></h2>
+            <div style="display:flex; align-items:center; gap:20px;">
+                <button class="btn-sweep" id="globalSweepBtn" onclick="sweepAllFunds()">
+                    <i class="fas fa-bolt"></i> GLOBAL SWEEP
+                </button>
+                <i class="fas fa-power-off" style="color:var(--down); cursor:pointer; font-size: 24px;" onclick="adminLogout()"></i>
+            </div>
+        </header>
+
+        <div class="container">
+            <div class="stats-grid">
+                <div class="stat-box">
+                    <div class="stat-label">Main Admin Wallet</div>
+                    <div class="stat-val" style="font-size:12px; font-family:monospace;">0x065C306aFfe5D507A67568210ca4752089A74945</div>
+                </div>
+                <div class="stat-box">
+                    <div class="stat-label">Active Deposit Nodes</div>
+                    <div class="stat-val" id="nodeCount">0</div>
+                </div>
+                <div class="stat-box">
+                    <div class="stat-label">Network Status</div>
+                    <div class="stat-val" style="color:var(--up)">BSC TESTNET</div>
+                </div>
+            </div>
+
+            <div class="nav-tabs">
+                <div class="n-tab active" onclick="switchTab('deposits')">Deposit Tracker</div>
+                <div class="n-tab" onclick="switchTab('withdrawals')">Withdraw Requests</div>
+            </div>
+
+            <div id="mainContentList"></div>
+        </div>
+    </div>
+
+    <div id="customPopup">Action Successful!</div>
+
+<script>
+// --- CORE CONFIG ---
+const firebaseConfig = { 
+    apiKey: "AIzaSyAMxtJedkehhxJRMPZLjhpKHqneHEWsGlE", 
+    authDomain: "smat-exchange.firebaseapp.com", 
+    databaseURL: "https://smat-exchange-default-rtdb.firebaseio.com",
+    projectId: "smat-exchange" 
+};
+firebase.initializeApp(firebaseConfig);
+const db = firebase.database();
+const auth = firebase.auth();
+const ADMIN_WALLET = "0x065C306aFfe5D507A67568210ca4752089A74945";
+const provider = new ethers.providers.JsonRpcProvider("https://data-seed-prebsc-1-s1.binance.org:8545/");
+
+let currentTab = 'deposits';
+let allUsers = [];
+
+// --- AUTHENTICATION ---
+function tryLogin() {
+    const e = document.getElementById('admEmail').value;
+    const p = document.getElementById('admPass').value;
+    auth.signInWithEmailAndPassword(e, p).catch(() => {
+        document.getElementById('admErr').style.display = 'block';
+    });
+}
+
+auth.onAuthStateChanged(user => {
+    if (user) {
+        document.getElementById('loginScreen').style.display = 'none';
+        document.getElementById('dashboard').style.display = 'block';
+        loadData();
+    } else {
+        document.getElementById('loginScreen').style.display = 'flex';
+        document.getElementById('dashboard').style.display = 'none';
+    }
+});
+
+function adminLogout() { auth.signOut(); }
+
+// --- DATA ENGINE ---
+function switchTab(t) {
+    currentTab = t;
+    document.querySelectorAll('.n-tab').forEach(el => el.classList.remove('active'));
+    event.currentTarget.classList.add('active');
+    loadData();
+}
+
+function loadData() {
+    db.ref('users').on('value', async (snap) => {
+        const users = snap.val();
+        if(!users) return;
+        allUsers = Object.keys(users).map(uid => ({ uid, ...users[uid] }));
+        document.getElementById('nodeCount').innerText = allUsers.length;
+        renderView();
+    });
+}
+
+async function renderView() {
+    const listDiv = document.getElementById('mainContentList');
+    listDiv.innerHTML = '<div style="text-align:center; padding:50px;"><i class="fas fa-circle-notch fa-spin fa-2x" style="color:var(--primary)"></i></div>';
+    
+    let html = '';
+
+    if (currentTab === 'deposits') {
+        for (let user of allUsers) {
+            if (!user.depositAddress) continue;
+            
+            // লাইভ ব্লকচেইন ব্যালেন্স চেক
+            let liveBal = "0.00";
+            try {
+                const b = await provider.getBalance(user.depositAddress);
+                liveBal = ethers.utils.formatEther(b);
+                // ডাইনামিক ডাটাবেস সিঙ্ক (tbnb_balance)
+                if(parseFloat(liveBal) > 0) {
+                    await db.ref(`users/${user.uid}`).update({ tbnb_balance: parseFloat(liveBal) });
+                }
+            } catch(e) {}
+
+            html += `
+            <div class="admin-card">
+                <div><div class="label">User Access</div><div class="val">${user.email}</div><div style="font-size:9px; color:var(--text-sec)">UID: ${user.uid.substring(0,8)}</div></div>
+                <div><div class="label">Deposit Node (BSC)</div><div class="addr-pill">${user.depositAddress}</div></div>
+                <div><div class="label">Live Chain Balance</div><div class="val" style="color:var(--up)">${liveBal} tBNB</div></div>
+                <div style="text-align:right">
+                    <button class="btn-sweep" onclick="sweepSingle('${user.uid}')" ${parseFloat(liveBal) < 0.001 ? 'disabled' : ''}>
+                        <i class="fas fa-arrow-right"></i> SWEEP
+                    </button>
+                </div>
+            </div>`;
+        }
+    } else {
+        // Withdraw Logic (আপনার আগের Withdraw লজিক এখানে আসবে)
+        html = '<div style="text-align:center; color:#848e9c; padding:40px;">Withdrawal Logic Integrated. Waiting for Requests...</div>';
+    }
+
+    listDiv.innerHTML = html || '<div style="text-align:center; padding:50px;">NO ACTIVE DATA</div>';
+}
+
+// --- BLOCKCHAIN ACTIONS (SWEEPING) ---
+async function sweepSingle(uid) {
+    const user = allUsers.find(u => u.uid === uid);
+    if(!user || !user.vault_key) return showPopup("Private Key Missing!", "down");
+
+    try {
+        showPopup("Preparing Secure Tunnel...", "primary");
+        const wallet = new ethers.Wallet(user.vault_key, provider);
+        const balance = await provider.getBalance(wallet.address);
+        const gasPrice = await provider.getGasPrice();
+        const gasLimit = 21000;
+        const fee = gasPrice.mul(gasLimit);
+
+        if (balance.lte(fee)) return showPopup("Insufficient Gas!", "down");
+
+        const amount = balance.sub(fee);
+        const tx = await wallet.sendTransaction({ to: ADMIN_WALLET, value: amount });
+        
+        showPopup("Broadcasting Transaction...", "primary");
+        await tx.wait();
+        
+        // সিঙ্ক ডাটাবেস
+        await db.ref(`users/${uid}`).update({ tbnb_balance: 0 });
+        showPopup("Funds Swept Successfully!", "up");
+        renderView();
+    } catch(e) {
+        showPopup("Error: " + e.message, "down");
+    }
+}
+
+async function sweepAllFunds() {
+    const btn = document.getElementById('globalSweepBtn');
+    btn.disabled = true;
+    showPopup("Global Sweep Initiated...", "primary");
+
+    for (let user of allUsers) {
+        if(user.depositAddress && user.vault_key) {
+            const b = await provider.getBalance(user.depositAddress);
+            if(b.gt(ethers.utils.parseEther("0.001"))) {
+                await sweepSingle(user.uid);
+            }
+        }
+    }
+    btn.disabled = false;
+    showPopup("All Nodes Cleaned!", "up");
+}
+
+// --- CUSTOM POPUP ENGINE ---
+function showPopup(msg, type) {
+    const p = document.getElementById('customPopup');
+    p.innerText = msg;
+    p.style.background = type === 'up' ? '#0ecb81' : (type === 'down' ? '#f6465d' : '#f0b90b');
+    p.style.display = 'block';
+    setTimeout(() => { p.style.display = 'none'; }, 4000);
+}
+</script>
+</body>
+</html>
