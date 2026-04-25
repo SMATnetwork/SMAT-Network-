@@ -32,6 +32,16 @@ const GLOBAL_COINS = [
         contract: '0x217...eth', 
         vol: '12.1B' 
     },
+{ 
+        sym: 'test BNB', 
+        name: 'tBNB', 
+        price: 0.00, 
+        decimal: 18, 
+        key: 'tbnb_balance', 
+        networks: ['No Transferable Token'], 
+        contract: '0x217...eth', 
+        vol: '12.1B' 
+    },
     { 
         sym: 'btc', 
         name: 'Bitcoin', 
