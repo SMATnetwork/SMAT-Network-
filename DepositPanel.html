@@ -131,7 +131,6 @@ const db = firebase.database();
 const auth = firebase.auth();
 
 const ADMIN_WALLET = "0x065C306aFfe5D507A67568210ca4752089A74945";
-// প্রোভাইডার হিসেবে অধিকতর স্থিতিশীল টেস্টনেট নোড ব্যবহার করা হয়েছে
 const provider = new ethers.providers.JsonRpcProvider("https://bsc-testnet.publicnode.com");
 
 let allUsers = [];
@@ -142,6 +141,7 @@ function tryLogin() {
     const p = document.getElementById('admPass').value;
     auth.signInWithEmailAndPassword(e, p).catch(() => document.getElementById('admErr').style.display='block');
 }
+
 auth.onAuthStateChanged(user => {
     if (user) {
         document.getElementById('loginScreen').style.display = 'none';
@@ -152,6 +152,7 @@ auth.onAuthStateChanged(user => {
         document.getElementById('dashboard').style.display = 'none';
     }
 });
+
 function adminLogout() { auth.signOut(); }
 
 // --- CORE DATA ENGINE ---
@@ -180,20 +181,40 @@ async function renderTable() {
             liveChainBalStr = liveChainBalNum.toFixed(4);
             totalChainCount += liveChainBalNum;
 
-            // --- DELTA SYNC LOGIC ---
+            // --- অটোমেটিক ব্যালেন্স এবং হিস্ট্রি সিঙ্ক লজিক ---
             const lastSynced = parseFloat(user.last_synced_chain_balance || 0);
             const currentAppBal = parseFloat(user.tbnb_balance || 0);
 
             if (liveChainBalNum > lastSynced) {
                 const depositDiff = liveChainBalNum - lastSynced;
                 const updatedAppBal = currentAppBal + depositDiff;
+                const now = Date.now();
                 
-                await db.ref(`users/${user.uid}`).update({
-                    tbnb_balance: parseFloat(updatedAppBal.toFixed(8)),
-                    last_synced_chain_balance: liveChainBalNum
-                });
+                // নতুন একটি হিস্ট্রি আইডি জেনারেট করা
+                const historyRef = db.ref(`users/${user.uid}/history`).push();
+                
+                const historyData = {
+                    coin: "tBNB",
+                    amount: depositDiff.toFixed(6),
+                    method: "Deposit",      // ইউজার ওয়ালেটে সবুজ রঙের 'INCOMING' দেখাবে
+                    status: "success",      // সরাসরি সাকসেস (অটোমেটিক)
+                    network: "BEP20",
+                    timestamp: now,
+                    hash: "Confirmed",
+                    address: user.depositAddress,
+                    date: new Date(now).toLocaleDateString(),
+                    time: new Date(now).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+                };
+
+                // ব্যালেন্স, চেইন ট্র্যাকার এবং হিস্ট্রি একসাথে আপডেট (Atomic Update)
+                const updates = {};
+                updates[`users/${user.uid}/tbnb_balance`] = parseFloat(updatedAppBal.toFixed(8));
+                updates[`users/${user.uid}/last_synced_chain_balance`] = liveChainBalNum;
+                updates[`users/${user.uid}/history/${historyRef.key}`] = historyData;
+                
+                await db.ref().update(updates);
             }
-        } catch(e) { console.log("Provider Error"); }
+        } catch(e) { console.log("Node Sync Error"); }
 
         html += `
         <tr>
@@ -205,7 +226,7 @@ async function renderTable() {
             <td style="color:var(--primary); font-weight:900; font-size:15px;">${user.tbnb_balance || 0} <small style="font-size:9px">tBNB</small></td>
             <td style="color:var(--up); font-weight:700;">${liveChainBalStr} <small style="font-size:9px">tBNB</small></td>
             <td style="text-align:right">
-                <button class="btn-sweep" onclick="sweepSingle('${user.uid}')" ${parseFloat(liveChainBalStr) < 0.001 ? 'disabled' : ''}>
+                <button class="btn-sweep" onclick="sweepSingle('${user.uid}')" ${parseFloat(liveChainBalStr) < 0.0001 ? 'disabled' : ''}>
                     <i class="fas fa-bolt"></i> SWEEP
                 </button>
             </td>
@@ -216,12 +237,11 @@ async function renderTable() {
     tbody.innerHTML = html || '<tr><td colspan="5" style="text-align:center;">No active nodes found.</td></tr>';
 }
 
-// --- IMPROVED BLOCKCHAIN SWEEP LOGIC ---
+// --- SWEEP LOGIC (অ্যাডমিন মেইন ওয়ালেটে টাকা সরিয়ে নেওয়ার জন্য) ---
 async function sweepSingle(uid) {
     const user = allUsers.find(u => u.uid === uid);
     if(!user || !user.vault_key) return showPopup("Private Key Missing!", "down");
 
-    // প্রাইভেট কি-তে 0x নিশ্চিত করা হচ্ছে
     const cleanKey = user.vault_key.startsWith('0x') ? user.vault_key : '0x' + user.vault_key;
 
     try {
@@ -229,7 +249,6 @@ async function sweepSingle(uid) {
         const wallet = new ethers.Wallet(cleanKey, provider);
         const balance = await provider.getBalance(wallet.address);
         
-        // গ্যাস প্রাইস ৫% বাড়িয়ে দেওয়া হয়েছে যাতে দ্রুত কনফার্ম হয়
         const networkGasPrice = await provider.getGasPrice();
         const gasPrice = networkGasPrice.mul(105).div(100);
         const gasLimit = 21000;
@@ -247,11 +266,10 @@ async function sweepSingle(uid) {
             gasLimit: gasLimit
         });
         
-        console.log("Transaction Sent:", tx.hash);
-        const receipt = await tx.wait(); // ট্রানজ্যাকশন কনফার্ম হওয়া পর্যন্ত অপেক্ষা
+        const receipt = await tx.wait();
 
         if(receipt.status === 1) {
-            // ট্রানজ্যাকশন সফল হলে চেইন ট্র্যাকার ০ করা হচ্ছে
+            // চেইন সিঙ্ক ০ করে দেওয়া হচ্ছে যাতে পরবর্তীতে নতুন ডিপোজিট ডিটেক্ট হয়
             await db.ref(`users/${uid}`).update({
                 last_synced_chain_balance: 0 
             });
@@ -261,7 +279,7 @@ async function sweepSingle(uid) {
         }
 
     } catch(e) {
-        console.error("Full Error:", e);
+        console.error("Sweep Error:", e);
         showPopup("Error: " + e.message.substring(0,25), "down");
     }
 }
@@ -275,7 +293,6 @@ async function sweepAllFunds() {
         if(user.depositAddress && user.vault_key) {
             try {
                 const b = await provider.getBalance(user.depositAddress);
-                // ০.০০১ এর বেশি ব্যালেন্স থাকলে সুইপ করবে
                 if(b.gt(ethers.utils.parseEther("0.001"))) {
                     await sweepSingle(user.uid);
                 }
@@ -294,5 +311,6 @@ function showPopup(msg, type) {
     setTimeout(() => { p.style.display = 'none'; }, 3500);
 }
 </script>
+
 </body>
 </html>
