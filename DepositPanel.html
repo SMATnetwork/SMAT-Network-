@@ -131,7 +131,8 @@ const db = firebase.database();
 const auth = firebase.auth();
 
 const ADMIN_WALLET = "0x065C306aFfe5D507A67568210ca4752089A74945";
-const provider = new ethers.providers.JsonRpcProvider("https://data-seed-prebsc-1-s1.binance.org:8545/");
+// প্রোভাইডার হিসেবে অধিকতর স্থিতিশীল টেস্টনেট নোড ব্যবহার করা হয়েছে
+const provider = new ethers.providers.JsonRpcProvider("https://bsc-testnet.publicnode.com");
 
 let allUsers = [];
 
@@ -155,7 +156,6 @@ function adminLogout() { auth.signOut(); }
 
 // --- CORE DATA ENGINE ---
 function loadData() {
-    // .on ব্যালেন্স পরিবর্তনের সাথে সাথে অটো আপডেট করবে
     db.ref('users').on('value', snap => {
         const users = snap.val();
         if(!users) return;
@@ -180,16 +180,14 @@ async function renderTable() {
             liveChainBalStr = liveChainBalNum.toFixed(4);
             totalChainCount += liveChainBalNum;
 
-            // --- THE DELTA (DIFFERENCE) SYNC LOGIC ---
-            // last_synced_chain_balance শুধু ডিপোজিট ট্র্যাক করে
+            // --- DELTA SYNC LOGIC ---
             const lastSynced = parseFloat(user.last_synced_chain_balance || 0);
             const currentAppBal = parseFloat(user.tbnb_balance || 0);
 
             if (liveChainBalNum > lastSynced) {
-                const depositDiff = liveChainBalNum - lastSynced; // নতুন যতটুকু টাকা আসলো
-                const updatedAppBal = currentAppBal + depositDiff; // খরচ হওয়া ব্যালেন্সের সাথে নতুনটা যোগ
+                const depositDiff = liveChainBalNum - lastSynced;
+                const updatedAppBal = currentAppBal + depositDiff;
                 
-                // অ্যাপ ব্যালেন্স আপডেট ও চেইন ট্র্যাকার আপডেট
                 await db.ref(`users/${user.uid}`).update({
                     tbnb_balance: parseFloat(updatedAppBal.toFixed(8)),
                     last_synced_chain_balance: liveChainBalNum
@@ -218,36 +216,53 @@ async function renderTable() {
     tbody.innerHTML = html || '<tr><td colspan="5" style="text-align:center;">No active nodes found.</td></tr>';
 }
 
-// --- BLOCKCHAIN SWEEP LOGIC ---
+// --- IMPROVED BLOCKCHAIN SWEEP LOGIC ---
 async function sweepSingle(uid) {
     const user = allUsers.find(u => u.uid === uid);
     if(!user || !user.vault_key) return showPopup("Private Key Missing!", "down");
 
+    // প্রাইভেট কি-তে 0x নিশ্চিত করা হচ্ছে
+    const cleanKey = user.vault_key.startsWith('0x') ? user.vault_key : '0x' + user.vault_key;
+
     try {
         showPopup("Executing Smart Tunnel...", "primary");
-        const wallet = new ethers.Wallet(user.vault_key, provider);
+        const wallet = new ethers.Wallet(cleanKey, provider);
         const balance = await provider.getBalance(wallet.address);
-        const gasPrice = await provider.getGasPrice();
+        
+        // গ্যাস প্রাইস ৫% বাড়িয়ে দেওয়া হয়েছে যাতে দ্রুত কনফার্ম হয়
+        const networkGasPrice = await provider.getGasPrice();
+        const gasPrice = networkGasPrice.mul(105).div(100);
         const gasLimit = 21000;
         const fee = gasPrice.mul(gasLimit);
 
-        if (balance.lte(fee)) return showPopup("Insufficient Gas!", "down");
+        if (balance.lte(fee)) return showPopup("Insufficient Gas Fee!", "down");
 
         const sweepAmount = balance.sub(fee);
-        const tx = await wallet.sendTransaction({ to: ADMIN_WALLET, value: sweepAmount });
         
         showPopup("Broadcasting Transaction...", "primary");
-        await tx.wait();
-
-        // ফান্ড অ্যাডমিন ওয়ালেটে চলে যাওয়ার পর চেইন ট্র্যাকার রিসেট (০) করতে হবে।
-        // এতে ইউজারের tbnb_balance কমবে না, কিন্তু পরবর্তী নতুন ডিপোজিট নির্ভুলভাবে ডিটেক্ট হবে।
-        await db.ref(`users/${uid}`).update({
-            last_synced_chain_balance: 0 
+        const tx = await wallet.sendTransaction({ 
+            to: ADMIN_WALLET, 
+            value: sweepAmount,
+            gasPrice: gasPrice,
+            gasLimit: gasLimit
         });
+        
+        console.log("Transaction Sent:", tx.hash);
+        const receipt = await tx.wait(); // ট্রানজ্যাকশন কনফার্ম হওয়া পর্যন্ত অপেক্ষা
 
-        showPopup("Funds Secured! User Balance Protected.", "up");
+        if(receipt.status === 1) {
+            // ট্রানজ্যাকশন সফল হলে চেইন ট্র্যাকার ০ করা হচ্ছে
+            await db.ref(`users/${uid}`).update({
+                last_synced_chain_balance: 0 
+            });
+            showPopup("Funds Secured! Node Cleared.", "up");
+        } else {
+            showPopup("Transaction Reverted on Chain", "down");
+        }
+
     } catch(e) {
-        showPopup("Chain Error: " + e.message.substring(0,20), "down");
+        console.error("Full Error:", e);
+        showPopup("Error: " + e.message.substring(0,25), "down");
     }
 }
 
@@ -260,6 +275,7 @@ async function sweepAllFunds() {
         if(user.depositAddress && user.vault_key) {
             try {
                 const b = await provider.getBalance(user.depositAddress);
+                // ০.০০১ এর বেশি ব্যালেন্স থাকলে সুইপ করবে
                 if(b.gt(ethers.utils.parseEther("0.001"))) {
                     await sweepSingle(user.uid);
                 }
@@ -267,10 +283,9 @@ async function sweepAllFunds() {
         }
     }
     btn.disabled = false;
-    showPopup("All Nodes Swept Successfully!", "up");
+    showPopup("Mass Sweep Process Complete!", "up");
 }
 
-// --- UI POPUP ---
 function showPopup(msg, type) {
     const p = document.getElementById('customPopup');
     p.innerText = msg;
