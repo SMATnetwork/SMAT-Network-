@@ -33,7 +33,7 @@ const GLOBAL_COINS = [
         vol: '12.1B' 
     },
 { 
-        sym: 'test BNB', 
+        sym: 'tbnb', 
         name: 'tBNB', 
         price: 0.00, 
         decimal: 18, 
