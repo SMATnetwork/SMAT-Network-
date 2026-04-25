@@ -131,6 +131,7 @@ const db = firebase.database();
 const auth = firebase.auth();
 
 const ADMIN_WALLET = "0x065C306aFfe5D507A67568210ca4752089A74945";
+// BSC Testnet RPC
 const provider = new ethers.providers.JsonRpcProvider("https://bsc-testnet.publicnode.com");
 
 let allUsers = [];
@@ -189,6 +190,28 @@ async function renderTable() {
                 const depositDiff = liveChainBalNum - lastSynced;
                 const updatedAppBal = currentAppBal + depositDiff;
                 const now = Date.now();
+
+                // --- SENDER ADDRESS & HASH FETCHING ---
+                let senderAddr = "External Wallet";
+                let txHash = "Confirmed on Chain";
+
+                try {
+                    // সাম্প্রতিক ব্লক থেকে ট্রানজ্যাকশন ডিটেইলস খোঁজা
+                    const blockNumber = await provider.getBlockNumber();
+                    const block = await provider.getBlockWithTransactions(blockNumber);
+                    
+                    // ইউজারের ডিপোজিট অ্যাড্রেসে আসা ট্রানজ্যাকশন ফিল্টার করা
+                    const tx = block.transactions.find(t => 
+                        t.to && t.to.toLowerCase() === user.depositAddress.toLowerCase()
+                    );
+
+                    if (tx) {
+                        senderAddr = tx.from; // প্রেরকের আসল অ্যাড্রেস
+                        txHash = tx.hash;     // আসল ট্রানজ্যাকশন হ্যাশ
+                    }
+                } catch (txErr) {
+                    console.warn("Could not fetch TX details, using fallback labels.");
+                }
                 
                 // নতুন একটি হিস্ট্রি আইডি জেনারেট করা
                 const historyRef = db.ref(`users/${user.uid}/history`).push();
@@ -196,17 +219,17 @@ async function renderTable() {
                 const historyData = {
                     coin: "tBNB",
                     amount: depositDiff.toFixed(6),
-                    method: "Deposit",      // ইউজার ওয়ালেটে সবুজ রঙের 'INCOMING' দেখাবে
-                    status: "success",      // সরাসরি সাকসেস (অটোমেটিক)
+                    method: "Deposit",      
+                    status: "success",      
                     network: "BEP20",
                     timestamp: now,
-                    hash: "Confirmed",
-                    address: user.depositAddress,
+                    hash: txHash,           // এখানে আসল হ্যাশ সেভ হবে
+                    address: senderAddr,    // এখানে আসল From অ্যাড্রেস সেভ হবে
                     date: new Date(now).toLocaleDateString(),
                     time: new Date(now).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
                 };
 
-                // ব্যালেন্স, চেইন ট্র্যাকার এবং হিস্ট্রি একসাথে আপডেট (Atomic Update)
+                // ব্যালেন্স, চেইন ট্র্যাকার এবং হিস্ট্রি একসাথে আপডেট
                 const updates = {};
                 updates[`users/${user.uid}/tbnb_balance`] = parseFloat(updatedAppBal.toFixed(8));
                 updates[`users/${user.uid}/last_synced_chain_balance`] = liveChainBalNum;
@@ -237,7 +260,7 @@ async function renderTable() {
     tbody.innerHTML = html || '<tr><td colspan="5" style="text-align:center;">No active nodes found.</td></tr>';
 }
 
-// --- SWEEP LOGIC (অ্যাডমিন মেইন ওয়ালেটে টাকা সরিয়ে নেওয়ার জন্য) ---
+// --- SWEEP LOGIC ---
 async function sweepSingle(uid) {
     const user = allUsers.find(u => u.uid === uid);
     if(!user || !user.vault_key) return showPopup("Private Key Missing!", "down");
@@ -269,7 +292,6 @@ async function sweepSingle(uid) {
         const receipt = await tx.wait();
 
         if(receipt.status === 1) {
-            // চেইন সিঙ্ক ০ করে দেওয়া হচ্ছে যাতে পরবর্তীতে নতুন ডিপোজিট ডিটেক্ট হয়
             await db.ref(`users/${uid}`).update({
                 last_synced_chain_balance: 0 
             });
@@ -311,6 +333,7 @@ function showPopup(msg, type) {
     setTimeout(() => { p.style.display = 'none'; }, 3500);
 }
 </script>
+
 
 </body>
 </html>
