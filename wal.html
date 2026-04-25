@@ -969,7 +969,9 @@ function showFullDetails(item) {
             }
         }
 
-        // পপআপ কন্টেন্ট জেনারেশন
+       // --- এই অংশটুকু থেকে পরিবর্তন করুন ---
+
+        // পপআপ কন্টেন্ট জেনারেশন (এখানে আপনার আগের কোড ঠিক আছে, শুধু নিচের ব্র্যাকেটগুলো দেখুন)
         cont.innerHTML = `
             ${statusVisual}
             ${confirmProgressUI}
@@ -996,16 +998,14 @@ function showFullDetails(item) {
                     <b style="font-size:10px;">${dt.toLocaleDateString()} | ${dt.toLocaleTimeString()}</b>
                 </div>
             </div>`;
-    });
+    }); // txRef.on এর ক্লোজিং
     
     overlay.style.display = 'flex';
-}
+} // showFullDetails এর ক্লোজিং
 
-}
 function copyHash(text) {
     if (!text) return;
     navigator.clipboard.writeText(text).then(() => {
-        // আপনার সিস্টেমে যদি showNotify বা showToast থাকে সেটা ব্যবহার করুন
         if (typeof showNotify === "function") {
             showNotify('success', 'Copied', 'Hash copied to clipboard');
         } else {
@@ -1016,9 +1016,6 @@ function copyHash(text) {
     });
 }
 
-
-
-
 function hidePopup() { document.getElementById('actionOverlay').style.display = 'none'; }
 function closeHistory() { document.getElementById('historyPopup').style.display = 'none'; }
 function closeSelector() { document.getElementById('coinSelector').style.display = 'none'; }
@@ -1026,6 +1023,7 @@ function copyValueText(t) { navigator.clipboard.writeText(t); showNotify('succes
 function copyValue(id) { copyValueText(document.getElementById(id).innerText); }
 
 window.onload = init;
+
 </script>
 
 
