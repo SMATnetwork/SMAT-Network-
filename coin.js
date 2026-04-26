@@ -62,56 +62,8 @@ const GLOBAL_COINS = [
         contract: '0x217...eth', 
         vol: '12.1B' 
     },
-   { 
-        sym: 'zec', 
-        name: 'Zcash', 
-        price: 320.00, 
-        decimal: 18, 
-        key: 'zec_balance', 
-        networks: ['BSC20', 'ERC20'], 
-        contract: '0x123...smat', 
-        vol: '1.2M' 
-    },
-      { 
-        sym: 'bch', 
-        name: 'Bitcoin Cash', 
-        price: 420.00, 
-        decimal: 18, 
-        key: 'bch_balance', 
-        networks: ['BSC20', 'ERC20'], 
-        contract: '0x123...smat', 
-        vol: '1.2M' 
-    },
-  { 
-        sym: 'paxg', 
-        name: 'PAX Gold', 
-        price: 4700.00, 
-        decimal: 18, 
-        key: 'paxg_balance', 
-        networks: ['SMAT Chain', 'BEP20'], 
-        contract: '0x123...smat', 
-        vol: '1.2M' 
-    },
-  { 
-        sym: 'ltc', 
-        name: 'Litecoin', 
-        price: 55.00, 
-        decimal: 18, 
-        key: 'ltc_balance', 
-        networks: ['SMAT Chain', 'BEP20'], 
-        contract: '0x123...smat', 
-        vol: '1.2M' 
-    },
-{ 
-        sym: 'xlm', 
-        name: 'Monoro', 
-        price: .150, 
-        decimal: 18, 
-        key: 'xlm_balance', 
-        networks: ['ERC20', 'BEP20'], 
-        contract: '0x217...eth', 
-        vol: '12.1B' 
-    },
+   
+  
     { 
         sym: 'bnb', 
         name: 'Binance Coin', 
@@ -132,36 +84,8 @@ const GLOBAL_COINS = [
         contract: '0x55d...usdt', 
         vol: '65.2B' 
     },
-    { 
-        sym: 'sol', 
-        name: 'Solana', 
-        price: 145.00, 
-        decimal: 9, 
-        key: 'sol_balance', 
-        networks: ['Mainnet'], 
-        contract: 'Native', 
-        vol: '3.4B' 
-    },
-    { 
-        sym: 'trx', 
-        name: 'TRON', 
-        price: 0.15, 
-        decimal: 6, 
-        key: 'trx_balance', 
-        networks: ['TRC20'], 
-        contract: 'Native', 
-        vol: '1.1B' 
-    },
-{ 
-        sym: '1000dogs', 
-        name: '1000DOGS', 
-        price: 0.0336, 
-        decimal: 18, 
-        key: '1000dogs_balance', 
-        networks: ['TON'], 
-        contract: 'Native', 
-        vol: '1.1B' 
-    },
+    
+    
 { 
         sym: 'XRP', 
         name: 'Ripple', 
