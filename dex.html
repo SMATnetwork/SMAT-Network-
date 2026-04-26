@@ -1,93 +1,83 @@
 <!DOCTYPE html>
-<html lang="bn">
+<html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>SMAT-DEX | Advanced Multi-Chain Swap</title>
+    <title>SMAT-DEX | Multi-Chain Swap</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/ethers/6.7.0/ethers.umd.min.js"></script>
+    
     <style>
-        :root { --accent: #3b82f6; --bg-dark: #0d1117; }
-        body { background-color: var(--bg-dark); font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; color: white; }
-        .glass-morphism { background: rgba(22, 27, 34, 0.8); backdrop-filter: blur(10px); border: 1px solid #30363d; border-radius: 24px; }
-        .token-input { background: #161b22; border: 1px solid #30363d; border-radius: 16px; padding: 16px; transition: 0.3s; }
-        .token-input:focus-within { border-color: var(--accent); }
+        :root { --main-bg: #0d1117; --card-bg: #161b22; --accent: #3b82f6; }
+        body { background-color: var(--main-bg); color: white; font-family: 'Inter', sans-serif; }
+        .dex-card { background: var(--card-bg); border: 1px solid #30363d; border-radius: 24px; box-shadow: 0 20px 50px rgba(0,0,0,0.5); }
+        .input-box { background: #0d1117; border: 1px solid #30363d; border-radius: 16px; padding: 15px; transition: 0.3s; }
+        .input-box:focus-within { border-color: var(--accent); }
+        input::-webkit-outer-spin-button, input::-webkit-inner-spin-button { -webkit-appearance: none; }
     </style>
 </head>
 <body class="flex flex-col items-center justify-center min-h-screen p-4">
 
     <div class="w-full max-w-lg flex justify-between items-center mb-6">
-        <h1 class="text-2xl font-bold text-blue-500">SMAT-DEX</h1>
-        <select id="networkSelect" class="bg-gray-800 text-sm p-2 rounded-xl outline-none border border-gray-600">
-            <option value="0x38">Binance Smart Chain</option>
-            <option value="0x1">Ethereum Mainnet</option>
-            <option value="0x89">Polygon</option>
-        </select>
-        <button id="connectBtn" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-xl font-semibold transition">
-            Connect Wallet
-        </button>
+        <h2 class="text-2xl font-bold text-blue-500">SMAT-DEX</h2>
+        <div class="flex gap-2">
+            <select id="networkSelector" class="bg-gray-800 text-xs p-2 rounded-xl outline-none border border-gray-700">
+                <option value="0x38">BSC Mainnet</option>
+                <option value="0x1">Ethereum</option>
+                <option value="0x89">Polygon</option>
+                <option value="0xfa">Fantom</option>
+                <option value="0xa4b1">Arbitrum</option>
+            </select>
+            <button id="connectBtn" class="bg-blue-600 hover:bg-blue-700 px-4 py-2 rounded-xl text-xs font-bold transition">Connect</button>
+        </div>
     </div>
 
-    <div class="glass-morphism w-full max-w-lg p-6 shadow-2xl">
-        <div class="flex justify-between items-center mb-4">
-            <span class="font-medium text-gray-400">Swap</span>
-            <button class="text-gray-400 hover:text-white">⚙️</button>
-        </div>
-
-        <div class="token-input mb-2">
-            <div class="flex justify-between text-sm text-gray-400 mb-2">
-                <span>From</span>
-                <span id="balanceFrom">Balance: 0.0</span>
-            </div>
+    <div class="dex-card w-full max-w-lg p-6">
+        <div class="input-box mb-2">
+            <span class="text-xs text-gray-400">You Pay</span>
             <div class="flex items-center">
-                <input type="number" id="amountIn" placeholder="0.0" class="bg-transparent text-2xl outline-none w-full font-bold">
-                <div class="bg-gray-800 px-3 py-1 rounded-full flex items-center gap-2 cursor-pointer">
-                    <span id="fromCurrency">BNB</span>
-                </div>
+                <input type="number" id="amountIn" placeholder="0.0" class="bg-transparent text-2xl font-bold outline-none w-full">
+                <span class="font-bold text-lg">Native</span>
             </div>
         </div>
 
         <div class="flex justify-center -my-4 relative z-10">
-            <button class="bg-gray-900 border border-gray-700 p-2 rounded-xl hover:text-blue-500 transition">
-                ⬇️
-            </button>
+            <button class="bg-gray-900 border border-gray-700 p-2 rounded-xl hover:text-blue-400 transition">↓</button>
         </div>
 
-        <div class="token-input mt-2">
-            <div class="flex justify-between text-sm text-gray-400 mb-2">
-                <span>To</span>
-                <span id="balanceTo">Balance: 0.0</span>
-            </div>
-            <div class="flex flex-col gap-2">
-                <div class="flex items-center">
-                    <input type="number" id="amountOut" placeholder="0.0" class="bg-transparent text-2xl outline-none w-full font-bold" readonly>
-                    <div id="selectedTokenDisplay" class="bg-gray-800 px-3 py-1 rounded-full text-sm font-semibold">Select Token</div>
-                </div>
-                <input type="text" id="contractSearch" placeholder="Paste Contract Address (0x...)" 
-                       class="w-full bg-black/30 text-xs p-2 rounded-lg border border-gray-700 outline-none focus:border-blue-500">
+        <div class="input-box mt-2 mb-4">
+            <span class="text-xs text-gray-400">You Receive (Search by Contract)</span>
+            <input type="text" id="tokenAddress" placeholder="0x... (Paste Token Address)" class="w-full bg-black/20 text-xs p-2 my-2 rounded border border-gray-800 outline-none">
+            <div class="flex justify-between items-center">
+                <input type="number" id="amountOut" placeholder="0.0" class="bg-transparent text-2xl font-bold outline-none w-full" readonly>
+                <span id="targetSymbol" class="text-blue-500 font-bold">TOKEN</span>
             </div>
         </div>
 
-        <div id="riskBox" class="hidden mt-4 p-3 bg-red-900/20 border border-red-500/50 rounded-xl">
-            <p class="text-xs text-red-400">⚠️ <strong>Risk Warning:</strong> This token isn't in our verified list. Anyone can create tokens. Check the contract before swapping.</p>
+        <div id="riskWarning" class="hidden bg-red-900/20 border border-red-500/50 p-3 rounded-xl mb-4 text-[10px] text-red-400">
+            ⚠️ <b>RISK:</b> This token is not on the verified list. We are fetching liquidity directly from the chain.
         </div>
 
-        <div class="mt-6 space-y-2 text-sm text-gray-400">
-            <div class="flex justify-between">
-                <span>Price Accuracy</span>
-                <span class="text-green-500">100.00%</span>
-            </div>
-            <div class="flex justify-between">
-                <span>Platform Fee (SMAT)</span>
-                <span>0.025%</span>
-            </div>
-        </div>
-
-        <button id="actionBtn" class="w-full mt-6 bg-blue-600 hover:bg-blue-800 disabled:bg-gray-700 py-4 rounded-2xl font-bold text-lg transition shadow-lg">
-            Connect Wallet
-        </button>
+        <button id="swapBtn" class="w-full bg-blue-600 hover:bg-blue-700 py-4 rounded-2xl font-bold text-lg shadow-lg transition">Connect Wallet</button>
     </div>
 
-    <script src="dex-logic.js"></script>
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-app.js";
+        import { getFirestore } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore.js";
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyAMxtJedkehhxJRMPZLjhpKHqneHEWsGlE",
+            authDomain: "smat-exchange.firebaseapp.com",
+            projectId: "smat-exchange",
+            storageBucket: "smat-exchange.firebasestorage.app",
+            messagingSenderId: "836334569396",
+            appId: "1:836334569396:web:679effe640b3453412d4e1"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        window.db = getFirestore(app); // Global Access for dex-logic.js
+    </script>
+
+    <script type="module" src="dex-logic.js"></script>
 </body>
 </html>
