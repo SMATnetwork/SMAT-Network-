@@ -3,97 +3,131 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>SMAT AGGREGATOR | Professional DEX</title>
+    <title>SMAT Exchange | Next-Gen Swap</title>
+    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNTEyIiBoZWlnaHQ9IjUxMiIgdmlld0JveD0iMCAwIDUxMiA1MTIiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+CiAgPGNpcmNsZSBjeD0iMjU2IiBjeT0iMjU2IiByPSIyNDAiIGZpbGw9IiNmM2JhMmYiLz4KICA8Y2lyY2xlIGN4PSIyNTYiIGN5PSIyNTYiIHI9IjIxNSIgc3Ryb2tlPSJ3aGl0ZSIgc3Ryb2tlLXdpZHRoPSI4IiBmaWxsPSJ0cmFuc3BhcmVudCIvPgogIDxwYXRoIGQ9Ik0xNTAgMTcwIEMxNTAgMTQ1IDE3MCAxMzUgMjAwIDEzNSBMMzQwIDEzNSBDMzU1IDEzNSAzNjUgMTQ1IDM2NSAxNjAgQzM2NSAxNzUgMzU1IDE4NSAzNDAgMTg1IEwyMDUgMTg1IEMxOTAgMTg1IDE4NSAxOTAgMTg1IDIwNSBDMTg1IDIyMCAxOTAgMjI1IDIwNSAyMjUgTDM0MCAyMjUgQzM3MCAyMjUgMzkwIDI0NSAzOTAgMjc1IEwzOTAgMzI1IEMzOTAgMzU1IDM3MCAzNzUgMzQwIDM3NSBMMTcwIDM3NSBDMTU1IDM3NSAxNDUgMzY1IDE0NSAzNTAgQzE0NSAzMzUgMTU1IDMyNSAxNzAgMzI1IEwzMzUgMzI1IEMzNTAgMzI1IDM1NSAzMjAgMzU1IDMwNSBDMzU1IDI5MCAzNTAgMjg1IDMzNSAyODUgTDIwMCAyODUgQzE3MCAyODUgMTUwIDI2NSAxNTAgMjM1IFoiIGZpbGw9IndoaXRlIi8+Cjwvc3ZnPg==">
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/ethers/6.7.0/ethers.umd.min.js"></script>
-    <link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/toastify-js/src/toastify.min.css">
-    <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/toastify-js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/toastify-js/src/toastify.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/toastify-js"></script>
 
     <style>
-        body { background: #0b0e11; color: white; font-family: 'Inter', sans-serif; }
-        .dex-container { background: #161b22; border: 1px solid #30363d; border-radius: 24px; padding: 24px; }
-        .input-box { background: #0d1117; border: 1px solid #30363d; border-radius: 16px; padding: 16px; transition: 0.2s; }
-        .input-box:hover { border-color: #3b82f6; }
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&display=swap');
+        body { background: #080a0c; color: white; font-family: 'Inter', sans-serif; overflow-x: hidden; }
+        .glass { background: rgba(17, 25, 40, 0.75); backdrop-filter: blur(16px); border: 1px solid rgba(255, 255, 255, 0.1); }
+        .swap-card { border-radius: 32px; box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5); }
         
-        /* ডার্ক কাস্টম ড্রপডাউন স্টাইল */
-        select {
-            appearance: none;
-            background: #21262d;
-            color: white;
-            border: 1px solid #30363d;
-            padding: 8px 12px;
-            border-radius: 10px;
-            outline: none;
-            cursor: pointer;
-        }
+        /* Custom Network Dropdown */
+        .net-dropdown { position: relative; cursor: pointer; }
+        .net-options { display: none; position: absolute; right: 0; top: 120%; width: 200px; z-index: 50; border-radius: 16px; overflow: hidden; animation: slideDown 0.3s ease; }
+        @keyframes slideDown { from { opacity: 0; transform: translateY(-10px); } to { opacity: 1; transform: translateY(0); } }
 
-        /* Token Modal */
-        #tokenModal { background: rgba(0,0,0,0.85); backdrop-filter: blur(5px); }
-        .modal-content { background: #161b22; border: 1px solid #30363d; width: 100%; max-width: 400px; border-radius: 24px; }
-        .token-item { cursor: pointer; transition: 0.2s; border-radius: 12px; }
-        .token-item:hover { background: #21262d; }
+        /* Slide to Confirm */
+        .slider-container { position: relative; width: 100%; height: 60px; background: #1a1f26; border-radius: 30px; display: flex; align-items: center; justify-content: center; overflow: hidden; }
+        .slider-handle { position: absolute; left: 5px; width: 50px; height: 50px; background: #3b82f6; border-radius: 25px; cursor: pointer; z-index: 10; transition: transform 0.1s; display: flex; align-items: center; justify-content: center; }
+        .slider-text { color: #4b5563; font-weight: 600; pointer-events: none; }
+
+        /* Modal */
+        #confirmModal { background: rgba(0,0,0,0.9); }
     </style>
 </head>
-<body class="flex flex-col items-center justify-center min-h-screen p-4">
+<body>
 
-    <div class="w-full max-w-lg flex justify-between items-center mb-6">
-        <h1 class="text-2xl font-black text-blue-500 italic">SMATDEX</h1>
-        <div class="flex gap-2">
-            <select id="chainId">
-                <option value="0x38">BSC Mainnet</option>
-                <option value="0x1">Ethereum</option>
-                <option value="0x89">Polygon</option>
-                <option value="0xfa">Fantom</option>
-            </select>
-            <button id="connectBtn" class="bg-blue-600 px-4 py-2 rounded-xl text-xs font-bold">Connect</button>
+    <header class="p-6 flex justify-between items-center max-w-7xl mx-auto">
+        <div class="flex items-center gap-2">
+            <img src="data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNTEyIiBoZWlnaHQ9IjUxMiIgdmlld0JveD0iMCAwIDUxMiA1MTIiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+CiAgPGNpcmNsZSBjeD0iMjU2IiBjeT0iMjU2IiByPSIyNDAiIGZpbGw9IiNmM2JhMmYiLz4KICA8Y2lyY2xlIGN4PSIyNTYiIGN5PSIyNTYiIHI9IjIxNSIgc3Ryb2tlPSJ3aGl0ZSIgc3Ryb2tlLXdpZHRoPSI4IiBmaWxsPSJ0cmFuc3BhcmVudCIvPgogIDxwYXRoIGQ9Ik0xNTAgMTcwIEMxNTAgMTQ1IDE3MCAxMzUgMjAwIDEzNSBMMzQwIDEzNSBDMzU1IDEzNSAzNjUgMTQ1IDM2NSAxNjAgQzM2NSAxNzUgMzU1IDE4NSAzNDAgMTg1IEwyMDUgMTg1IEMxOTAgMTg1IDE4NSAxOTAgMTg1IDIwNSBDMTg1IDIyMCAxOTAgMjI1IDIwNSAyMjUgTDM0MCAyMjUgQzM3MCAyMjUgMzkwIDI0NSAzOTAgMjc1IEwzOTAgMzI1IEMzOTAgMzU1IDM3MCAzNzUgMzQwIDM3NSBMMTcwIDM3NSBDMTU1IDM3NSAxNDUgMzY1IDE0NSAzNTAgQzE0NSAzMzUgMTU1IDMyNSAxNzAgMzI1IEwzMzUgMzI1IEMzNTAgMzI1IDM1NSAzMjAgMzU1IDMwNSBDMzU1IDI5MCAzNTAgMjg1IDMzNSAyODUgTDIwMCAyODUgQzE3MCAyODUgMTUwIDI2NSAxNTAgMjM1IFoiIGZpbGw9IndoaXRlIi8+Cjwvc3ZnPg==" class="w-10 h-10">
+            <span class="text-2xl font-extrabold tracking-tighter">SMAT EXCHANGE</span>
         </div>
-    </div>
-
-    <div class="dex-container w-full max-w-lg shadow-2xl">
-        <div class="input-box mb-2">
-            <label class="text-xs text-gray-400">You Sell</label>
-            <div class="flex justify-between items-center mt-2">
-                <input type="number" id="inputAmount" placeholder="0.0" class="bg-transparent text-2xl font-bold outline-none w-full">
-                <button class="bg-gray-800 px-3 py-1 rounded-full text-sm font-bold flex items-center gap-2">
-                    NATIVE
-                </button>
-            </div>
-        </div>
-
-        <div class="flex justify-center -my-4 relative z-10">
-            <div class="bg-gray-900 p-2 rounded-xl border border-gray-700">⬇️</div>
-        </div>
-
-        <div class="input-box mt-2 mb-6">
-            <label class="text-xs text-gray-400">You Buy</label>
-            <div class="flex justify-between items-center mt-2">
-                <input type="number" id="outputAmount" placeholder="0.0" class="bg-transparent text-2xl font-bold outline-none w-full" readonly>
-                <button id="selectTokenBtn" class="bg-blue-600/20 text-blue-400 px-4 py-2 rounded-xl text-sm font-bold border border-blue-500/30 transition hover:bg-blue-600 hover:text-white">
-                    SELECT COIN
-                </button>
-            </div>
-            <div id="selectedTokenInfo" class="text-[10px] text-gray-500 mt-2 truncate">No token selected</div>
-        </div>
-
-        <button id="mainActionBtn" class="w-full bg-blue-600 py-4 rounded-2xl font-black text-lg transition shadow-blue-500/20 shadow-lg">Connect Wallet</button>
-    </div>
-
-    <div id="tokenModal" class="fixed inset-0 hidden flex items-center justify-center z-50 p-4">
-        <div class="modal-content p-6">
-            <div class="flex justify-between items-center mb-4">
-                <h3 class="text-lg font-bold">Select a Token</h3>
-                <button onclick="closeModal()" class="text-gray-400">✕</button>
-            </div>
-            <input type="text" id="tokenSearchInput" placeholder="Search by name or paste address" class="w-full bg-gray-900 border border-gray-700 p-3 rounded-xl text-sm mb-4 outline-none focus:border-blue-500">
-            
-            <div id="tokenList" class="max-h-60 overflow-y-auto space-y-2">
+        
+        <div class="flex items-center gap-4">
+            <div class="net-dropdown">
+                <div id="activeNet" class="glass px-4 py-2 rounded-2xl text-sm font-semibold flex items-center gap-2">
+                    <span class="w-2 h-2 rounded-full bg-green-500"></span> Ethereum
                 </div>
+                <div id="netList" class="net-options glass p-2 mt-2 space-y-1">
+                    <div class="net-item p-2 hover:bg-blue-600/20 rounded-xl" data-id="0x1">Ethereum</div>
+                    <div class="net-item p-2 hover:bg-blue-600/20 rounded-xl" data-id="0x38">BSC</div>
+                    <div class="net-item p-2 hover:bg-blue-600/20 rounded-xl" data-id="0x89">Polygon</div>
+                    <div class="net-item p-2 hover:bg-blue-600/20 rounded-xl" data-id="0xa4b1">Arbitrum</div>
+                    <div class="net-item p-2 hover:bg-blue-600/20 rounded-xl" data-id="0xe1">CoreDao</div>
+                </div>
+            </div>
+            <button id="walletBtn" class="bg-blue-600 hover:bg-blue-700 px-6 py-2 rounded-2xl font-bold transition">Connect Wallet</button>
+        </div>
+    </header>
+
+    <main class="flex justify-center items-center py-12 px-4">
+        <div class="swap-card glass w-full max-w-[480px] p-6">
+            <h2 class="text-xl font-bold mb-6">Swap</h2>
+            
+            <div class="bg-[#0d1117] p-4 rounded-2xl mb-2">
+                <div class="flex justify-between text-gray-400 text-sm mb-2"><span>Pay</span> <span id="userBal">Balance: 0.00</span></div>
+                <div class="flex justify-between items-center">
+                    <input id="payInput" type="number" placeholder="0.0" class="bg-transparent text-3xl font-bold outline-none w-1/2">
+                    <div id="payCoin" class="flex items-center gap-2 bg-gray-800 px-4 py-2 rounded-2xl cursor-pointer">
+                        <span id="payCoinName">ETH</span> ▾
+                    </div>
+                </div>
+            </div>
+
+            <div class="flex justify-center -my-4 relative z-10">
+                <button class="bg-[#1a1f26] border-4 border-[#080a0c] p-2 rounded-2xl text-blue-500 hover:scale-110 transition">↓</button>
+            </div>
+
+            <div class="bg-[#0d1117] p-4 rounded-2xl mt-2 mb-6">
+                <div class="flex justify-between text-gray-400 text-sm mb-2"><span>Receive</span></div>
+                <div class="flex justify-between items-center">
+                    <input id="receiveInput" type="number" placeholder="0.0" class="bg-transparent text-3xl font-bold outline-none w-1/2" readonly>
+                    <div id="receiveCoin" class="flex items-center gap-2 bg-gray-800 px-4 py-2 rounded-2xl cursor-pointer">
+                        <span id="receiveCoinName">USDT</span> ▾
+                    </div>
+                </div>
+            </div>
+
+            <div class="space-y-2 px-2 mb-6">
+                <div class="flex justify-between text-sm text-gray-400"><span>Platform Fee (0.25%)</span> <span id="feeDisplay">0.00</span></div>
+                <div class="flex justify-between text-sm text-gray-400"><span>Slippage (0.1%)</span> <span>0.1%</span></div>
+            </div>
+
+            <button id="swapMainBtn" class="w-full bg-blue-600/20 text-blue-500 py-4 rounded-2xl font-black text-xl border border-blue-500/30">Connect Wallet</button>
+        </div>
+    </main>
+
+    <div id="confirmModal" class="fixed inset-0 hidden flex items-center justify-center p-4 z-[100]">
+        <div class="glass w-full max-w-md p-8 rounded-[40px] relative">
+            <div id="timer" class="absolute top-6 right-6 w-8 h-8 rounded-full border-2 border-blue-500 flex items-center justify-center text-[10px]">5</div>
+            <h3 class="text-2xl font-bold mb-6 text-center">Swap Summary</h3>
+            
+            <div class="space-y-4 mb-8">
+                <div class="flex justify-between items-center p-4 bg-white/5 rounded-2xl">
+                    <span class="text-gray-400">Selling</span>
+                    <span id="sumPay" class="font-bold">0.00 ETH</span>
+                </div>
+                <div class="flex justify-center text-blue-500">↓</div>
+                <div class="flex justify-between items-center p-4 bg-white/5 rounded-2xl">
+                    <span class="text-gray-400">Buying</span>
+                    <span id="sumRec" class="font-bold text-green-400">0.00 USDT</span>
+                </div>
+            </div>
+
+            <div class="slider-container mb-4">
+                <span class="slider-text">Slide to Confirm</span>
+                <div id="slider" class="slider-handle">→</div>
+            </div>
+            <button onclick="closeModal()" class="w-full text-gray-500 font-semibold">Cancel</button>
         </div>
     </div>
+
+    <footer class="fixed bottom-0 left-0 right-0 p-4 flex justify-around items-center glass border-t border-white/5">
+        <button class="flex flex-col items-center gap-1 text-xs text-gray-500 hover:text-white transition">🏠<span>Home</span></button>
+        <button class="flex flex-col items-center gap-1 text-xs text-blue-500">🔄<span>Swap</span></button>
+        <button class="flex flex-col items-center gap-1 text-xs text-gray-500 hover:text-white transition">📊<span>Stats</span></button>
+        <button class="flex flex-col items-center gap-1 text-xs text-gray-500 hover:text-white transition">💼<span>Portfolio</span></button>
+        <button class="flex flex-col items-center gap-1 text-xs text-gray-500 hover:text-white transition">⚙️<span>Settings</span></button>
+    </footer>
 
     <script type="module">
-        import { initializeApp } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-app.js";
-        import { getFirestore } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore.js";
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+        import { getFirestore } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
         const firebaseConfig = {
             apiKey: "AIzaSyAMxtJedkehhxJRMPZLjhpKHqneHEWsGlE",
             authDomain: "smat-exchange.firebaseapp.com",
@@ -105,10 +139,6 @@
         const app = initializeApp(firebaseConfig);
         window.db = getFirestore(app);
     </script>
-    <script type="module" src="dex-logic.js"></script>
-    
-    <script>
-        function closeModal() { document.getElementById('tokenModal').classList.add('hidden'); }
-    </script>
+    <script type="module" src="swap.js"></script>
 </body>
 </html>
