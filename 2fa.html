@@ -206,8 +206,10 @@
         <div class="side-menu">
 <a href="javascript:void(0)" onclick="open2FAPopup()" class="menu-item">
     <i class="fa-solid fa-shield-halved"></i>
-    <div class="menu-text"><b>2FA Security</b><span id="tfaStatusLabel">Enable Protection</span></div>
-</a>
+    <div class="menu-text">
+        <b>2FA Security</b>
+        <span id="tfaStatusLabel" style="color: #f6465d; font-weight: 800;">Unlinked</span>
+    </div> </a>
   
             <a href="javascript:void(0)" onclick="openRefPopup()" class="menu-item"><i class="fa-solid fa-user-plus"></i><div class="menu-text"><b>Invited Friends</b><span>Referral Earnings</span></div></a>
             <a href="mining.html" class="menu-item"><i class="fa-solid fa-microchip"></i><div class="menu-text"><b>Mining</b><span>Active Session</span></div></a>
@@ -297,9 +299,7 @@
             <div id="referralList" style="margin-top:15px; font-size:11px"></div>
         </div>
     </div>
-    </div> ```
-**ঠিক তার নিচে এই নতুন পপআপ কোডটি বসান:**
-```html
+    </div>
     <div class="popup-overlay" id="2faPopup">
         <div class="popup-content">
             <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px">
@@ -438,6 +438,19 @@
                     const userData = snap.val();
                     if(userData) {
                         const sid = userData.smatID || "Assigning...";
+const tfaLabel = document.getElementById('tfaStatusLabel');
+        if(userData.twoFactorEnabled === true) {
+            tfaLabel.innerText = "Linked";
+            tfaLabel.style.color = "#0ecb81"; // সবুজ কালার
+        } else {
+            tfaLabel.innerText = "Unlinked";
+            tfaLabel.style.color = "#f6465d"; // লাল কালার
+        }
+    }
+});
+
+
+
                         document.getElementById('displaySmatID').innerText = sid;
                         
                         calculateTotalPortfolio(userData);
@@ -674,32 +687,45 @@
         };
 
         window.verifyAndEnable2FA = async () => {
-            const code = document.getElementById('tfaVerifyInput').value;
-            if(code.length !== 6) return alert("Enter 6-digit code.");
+    const code = document.getElementById('tfaVerifyInput').value;
+    if(code.length !== 6) return alert("Enter 6-digit code.");
 
-            const user = auth.currentUser;
-            const btn = document.getElementById('activate2FABtn');
-            btn.disabled = true;
-            btn.innerText = "VERIFYING...";
+    const user = auth.currentUser;
+    const btn = document.getElementById('activate2FABtn');
+    const tfaLabel = document.getElementById('tfaStatusLabel'); // লেবেলটি সিলেক্ট করা হলো
 
-            try {
-                // Firebase এ ডাটা সেভ
-                await update(ref(db, 'users/' + user.uid), {
-                    twoFactorEnabled: true,
-                    twoFactorSecret: tempSecret
-                });
+    btn.disabled = true;
+    btn.innerText = "VERIFYING...";
 
-                alert("2FA Enabled Successfully!");
-                window.close2FAPopup();
-                document.getElementById('tfaStatusLabel').innerText = "Protected (Active)";
-                document.getElementById('tfaStatusLabel').style.color = "var(--up)";
-            } catch (e) {
-                alert("Error: " + e.message);
-                btn.disabled = false;
-                btn.innerText = "ACTIVATE PROTECTION";
-            }
-        };
-        // --- 2FA LOGIC END ---
+    try {
+        // Firebase এ ডাটা সেভ
+        await update(ref(db, 'users/' + user.uid), {
+            twoFactorEnabled: true,
+            twoFactorSecret: tempSecret
+        });
+
+        alert("2FA Enabled Successfully!");
+        window.close2FAPopup();
+
+        // সফল হলে টেক্সট Linked হবে এবং কালার সবুজ (#0ecb81) হবে
+        if (tfaLabel) {
+            tfaLabel.innerText = "Linked";
+            tfaLabel.style.color = "#0ecb81"; 
+        }
+
+    } catch (e) {
+        alert("Error: " + e.message);
+        btn.disabled = false;
+        btn.innerText = "ACTIVATE PROTECTION";
+
+        // কোনো কারণে ফেইল করলে বা আগে থেকে এনাবল না থাকলে Unlinked এবং লাল থাকবে
+        if (tfaLabel) {
+            tfaLabel.innerText = "Unlinked";
+            tfaLabel.style.color = "#f6465d";
+        }
+    }
+};
+// --- 2FA LOGIC END ---
 
     </script>
 
