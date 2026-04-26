@@ -1,106 +1,119 @@
-import { doc, setDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
-
 let provider, signer, userAddress;
-let activeSide = 'pay';
-const OWNER_ADDR = "0x065C306aFfe5D507A67568210ca4752089A74945";
+let currentModalSide = 'pay';
 
-// BSC-তে সরাসরি লিকুইডিটি চেক করার জন্য টোকেন ডেটা
-const BSC_TOKENS = [
-    { symbol: 'BNB', address: '0xbb4CdB9CBd36B01bD1cBaEBF2De08d9173bc095c', decimals: 18 }, // WBNB
-    { symbol: 'USDT', address: '0x55d398326f99059fF775485246999027B3197955', decimals: 18 },
-    { symbol: 'BUSD', address: '0xe9e7cea3dedca5984780bafc599bd69add087d56', decimals: 18 },
-    { symbol: 'CAKE', address: '0x0E09FaBB73Bd3Ade0a17ECC321fD13a19e81cE82', decimals: 18 }
+const TOKENS = [
+    { symbol: 'BNB', address: '0xbb4CdB9CBd36B01bD1cBaEBF2De08d9173bc095c', price: 600 },
+    { symbol: 'USDT', address: '0x55d398326f99059fF775485246999027B3197955', price: 1 },
+    { symbol: 'ETH', address: '0x2170Ed0880ac9A755fd29B2688956BD959F933F8', price: 3200 }
 ];
 
 const PANCAKE_ROUTER = "0x10ED43C718714eb63d5aA57B78B54704E256024E";
 const ROUTER_ABI = ["function getAmountsOut(uint amountIn, address[] memory path) public view returns (uint[] memory amounts)"];
 
-// ১. ওয়ালেট কানেক্ট এবং ব্যালেন্স চেক
-async function connect() {
-    if (!window.ethereum) return notify("Install MetaMask", "error");
-    provider = new ethers.BrowserProvider(window.ethereum);
-    const accounts = await provider.send("eth_requestAccounts", []);
-    signer = await provider.getSigner();
-    userAddress = accounts[0];
-    
-    const bal = await provider.getBalance(userAddress);
-    document.getElementById('userBal').innerText = ethers.formatEther(bal).slice(0, 6);
-    document.getElementById('walletBtn').innerText = userAddress.slice(0, 6) + "...";
-    updateButtonStatus();
-}
-
-// ২. অরিজিনাল রিয়াল টাইম দাম ক্যালকুলেশন (Direct from Blockchain)
-async function getLivePrice() {
-    const val = document.getElementById('payInput').value;
-    if (!val || val <= 0) return;
-
-    const payToken = BSC_TOKENS.find(t => t.symbol === document.getElementById('payCoin').innerText).address;
-    const recToken = BSC_TOKENS.find(t => t.symbol === document.getElementById('receiveCoin').innerText).address;
-
-    try {
-        const router = new ethers.Contract(PANCAKE_ROUTER, ROUTER_ABI, provider || new ethers.JsonRpcProvider("https://bsc-dataseed.binance.org/"));
-        const amountIn = ethers.parseEther(val);
-        
-        // ব্লকচেইন থেকে অরিজিনাল আউটপুট টেনে আনা
-        const amounts = await router.getAmountsOut(amountIn, [payToken, recToken]);
-        const rawOutput = ethers.formatEther(amounts[1]);
-        
-        // ০.২৫% প্ল্যাটফর্ম ফি এবং ০.১% স্লিপেজ সমন্বয়
-        const finalOutput = rawOutput * (1 - 0.0035); 
-        document.getElementById('receiveInput').value = finalOutput.toFixed(6);
-        document.getElementById('feeVal').innerText = (val * 0.0025).toFixed(6);
-    } catch (e) {
-        console.error("Price fetch failed", e);
+// ১. কানেক্ট ওয়ালেট ফাংশন
+async function connectWallet() {
+    if (typeof window.ethereum !== 'undefined') {
+        try {
+            provider = new ethers.BrowserProvider(window.ethereum);
+            const accounts = await provider.send("eth_requestAccounts", []);
+            signer = await provider.getSigner();
+            userAddress = accounts[0];
+            
+            document.getElementById('walletBtn').innerText = userAddress.slice(0, 6) + "..." + userAddress.slice(-4);
+            document.getElementById('mainBtn').innerText = "Swap Now";
+            document.getElementById('mainBtn').classList.replace('bg-blue-600/20', 'bg-blue-600');
+            document.getElementById('mainBtn').classList.replace('text-blue-500', 'text-white');
+            
+            updateBalance();
+        } catch (error) {
+            console.error("Connection failed", error);
+        }
+    } else {
+        alert("Please install MetaMask!");
     }
 }
 
-// ৩. ম্যাক্স বাটন লজিক
-document.getElementById('maxBtn').onclick = () => {
-    const bal = parseFloat(document.getElementById('userBal').innerText);
-    const safeMax = bal - (bal * 0.005); // Gas buffer
-    document.getElementById('payInput').value = safeMax > 0 ? safeMax.toFixed(6) : 0;
-    getLivePrice();
-};
+// ২. ব্যালেন্স আপডেট
+async function updateBalance() {
+    if (!userAddress) return;
+    const balance = await provider.getBalance(userAddress);
+    document.getElementById('userBal').innerText = parseFloat(ethers.formatEther(balance)).toFixed(4);
+}
 
-// ৪. টোকেন সিলেকশন মডাল
-window.toggleTokenModal = (side) => {
-    activeSide = side || activeSide;
+// ৩. রিয়েল টাইম দাম (PancakeSwap Router থেকে)
+async function fetchRealPrice() {
+    const amount = document.getElementById('payInput').value;
+    if (!amount || amount <= 0) return;
+
+    try {
+        const tempProvider = new ethers.JsonRpcProvider("https://bsc-dataseed.binance.org/");
+        const router = new ethers.Contract(PANCAKE_ROUTER, ROUTER_ABI, tempProvider);
+        
+        const paySymbol = document.getElementById('payCoin').innerText;
+        const recSymbol = document.getElementById('receiveCoin').innerText;
+        
+        const path = [
+            TOKENS.find(t => t.symbol === paySymbol).address,
+            TOKENS.find(t => t.symbol === recSymbol).address
+        ];
+
+        const amounts = await router.getAmountsOut(ethers.parseEther(amount), path);
+        const output = ethers.formatEther(amounts[1]);
+        
+        // ০.২৫% ফি এবং ০.১% স্লিপেজ বাদ দিয়ে
+        const finalValue = output * 0.9965;
+        document.getElementById('receiveInput').value = finalValue.toFixed(6);
+    } catch (e) {
+        console.error("Price fetch error", e);
+    }
+}
+
+// ৪. ইভেন্ট লিসেনার ফর ইনপুট
+document.getElementById('payInput').addEventListener('input', fetchRealPrice);
+
+// ৫. ম্যাক্স বাটন
+function setMax() {
+    const bal = document.getElementById('userBal').innerText;
+    document.getElementById('payInput').value = (bal * 0.99).toFixed(6); // Gas buffer
+    fetchRealPrice();
+}
+
+// ৬. মডাল হ্যান্ডলিং
+function openModal(side) {
+    currentModalSide = side;
     const modal = document.getElementById('tokenModal');
-    modal.classList.toggle('hidden');
-    
     const list = document.getElementById('tokenList');
+    modal.style.display = 'flex';
     list.innerHTML = "";
-    BSC_TOKENS.forEach(t => {
+    
+    TOKENS.forEach(t => {
         const div = document.createElement('div');
-        div.className = "p-4 flex items-center justify-between hover:bg-white/5 rounded-2xl cursor-pointer transition";
-        div.innerHTML = `<span class="font-bold">${t.symbol}</span> <span class="text-[10px] text-gray-600">${t.address.slice(0,10)}...</span>`;
+        div.className = "p-4 hover:bg-white/5 rounded-2xl cursor-pointer flex justify-between";
+        div.innerHTML = `<span>${t.symbol}</span> <span class="text-xs text-gray-500">${t.price} USD</span>`;
         div.onclick = () => {
-            document.getElementById(activeSide + 'Coin').innerText = t.symbol;
-            toggleTokenModal();
-            getLivePrice();
+            document.getElementById(currentModalSide + 'Coin').innerText = t.symbol;
+            closeModal();
+            fetchRealPrice();
         };
         list.appendChild(div);
     });
-};
+}
 
-function updateButtonStatus() {
-    const btn = document.getElementById('mainBtn');
+function closeModal() {
+    document.getElementById('tokenModal').style.display = 'none';
+}
+
+async function handleSwap() {
     if (!userAddress) {
-        btn.innerText = "Connect Wallet";
+        await connectWallet();
     } else {
-        btn.innerText = "Swap Now";
-        btn.className = "w-full bg-blue-600 text-white py-4 rounded-2xl font-black text-lg shadow-lg shadow-blue-500/20";
+        alert("Confirming Swap for " + document.getElementById('payInput').value + " " + document.getElementById('payCoin').innerText);
     }
 }
 
-function notify(m, type) {
-    Toastify({ text: m, backgroundColor: type === "success" ? "#10b981" : "#ef4444" }).showToast();
-}
-
-// ইভেন্ট লিসেনার
-document.getElementById('walletBtn').onclick = connect;
-document.getElementById('payInput').oninput = getLivePrice;
-document.getElementById('mainBtn').onclick = () => {
-    if (!userAddress) connect();
-    else notify("Transaction Initialized...", "success");
-};
+// গ্লোবাল এক্সেস দেওয়া যাতে HTML এর onclick কাজ করে
+window.connectWallet = connectWallet;
+window.setMax = setMax;
+window.openModal = openModal;
+window.closeModal = closeModal;
+window.handleSwap = handleSwap;
