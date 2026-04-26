@@ -1,64 +1,85 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="bn">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>SMAT-DEX | Multi-Chain Swap</title>
+    <title>SMAT AGGREGATOR | Multi-Chain DEX</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/ethers/6.7.0/ethers.umd.min.js"></script>
-    
+    <link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/toastify-js/src/toastify.min.css">
+    <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/toastify-js"></script>
+
     <style>
-        :root { --main-bg: #0d1117; --card-bg: #161b22; --accent: #3b82f6; }
-        body { background-color: var(--main-bg); color: white; font-family: 'Inter', sans-serif; }
-        .dex-card { background: var(--card-bg); border: 1px solid #30363d; border-radius: 24px; box-shadow: 0 20px 50px rgba(0,0,0,0.5); }
-        .input-box { background: #0d1117; border: 1px solid #30363d; border-radius: 16px; padding: 15px; transition: 0.3s; }
-        .input-box:focus-within { border-color: var(--accent); }
-        input::-webkit-outer-spin-button, input::-webkit-inner-spin-button { -webkit-appearance: none; }
+        body { background: radial-gradient(circle at top right, #1e293b, #0f172a); color: #f8fafc; font-family: 'Segoe UI', sans-serif; min-height: 100vh; }
+        .glass-box { background: rgba(30, 41, 59, 0.7); backdrop-filter: blur(12px); border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 28px; }
+        .token-card { background: #0f172a; border: 1px solid #334155; border-radius: 20px; padding: 18px; transition: 0.3s; }
+        .token-card:focus-within { border-color: #3b82f6; box-shadow: 0 0 15px rgba(59, 130, 246, 0.3); }
+        .swap-btn { background: linear-gradient(90deg, #3b82f6, #2563eb); transition: 0.3s; box-shadow: 0 4px 15px rgba(37, 99, 235, 0.4); }
+        .swap-btn:hover { transform: translateY(-2px); filter: brightness(1.1); }
+        input { background: transparent; border: none; outline: none; color: white; font-size: 1.5rem; font-weight: 700; width: 100%; }
+        .toastify { border-radius: 12px; font-weight: bold; }
     </style>
 </head>
-<body class="flex flex-col items-center justify-center min-h-screen p-4">
+<body class="flex flex-col items-center justify-center p-4">
 
-    <div class="w-full max-w-lg flex justify-between items-center mb-6">
-        <h2 class="text-2xl font-bold text-blue-500">SMAT-DEX</h2>
+    <div class="w-full max-w-lg flex justify-between items-center mb-8">
+        <h1 class="text-3xl font-black text-blue-500 tracking-tighter">SMAT<span class="text-white">DEX</span></h1>
         <div class="flex gap-2">
-            <select id="networkSelector" class="bg-gray-800 text-xs p-2 rounded-xl outline-none border border-gray-700">
+            <select id="chainId" class="bg-slate-800 border border-slate-700 text-xs rounded-xl px-3 py-2 outline-none">
                 <option value="0x38">BSC Mainnet</option>
                 <option value="0x1">Ethereum</option>
                 <option value="0x89">Polygon</option>
-                <option value="0xfa">Fantom</option>
                 <option value="0xa4b1">Arbitrum</option>
+                <option value="0xfa">Fantom</option>
+                <option value="0xa">Optimism</option>
+                <option value="0x2105">Base</option>
             </select>
-            <button id="connectBtn" class="bg-blue-600 hover:bg-blue-700 px-4 py-2 rounded-xl text-xs font-bold transition">Connect</button>
+            <button id="connectBtn" class="bg-blue-600 hover:bg-blue-700 px-5 py-2 rounded-xl text-sm font-bold transition">Connect</button>
         </div>
     </div>
 
-    <div class="dex-card w-full max-w-lg p-6">
-        <div class="input-box mb-2">
-            <span class="text-xs text-gray-400">You Pay</span>
-            <div class="flex items-center">
-                <input type="number" id="amountIn" placeholder="0.0" class="bg-transparent text-2xl font-bold outline-none w-full">
-                <span class="font-bold text-lg">Native</span>
+    <div class="glass-box w-full max-w-lg p-6 shadow-2xl">
+        <div class="flex justify-between items-center mb-6">
+            <span class="text-slate-400 font-medium">Swap Tokens</span>
+            <div class="text-xs bg-slate-800 px-3 py-1 rounded-full text-blue-400">Slippage: 0.5%</div>
+        </div>
+
+        <div class="token-card mb-2">
+            <label class="text-xs text-slate-500 uppercase tracking-widest">You Sell</label>
+            <div class="flex items-center gap-4 mt-2">
+                <input type="number" id="inputAmount" placeholder="0.0">
+                <span class="font-bold text-lg bg-slate-800 px-4 py-1 rounded-full">NATIVE</span>
             </div>
         </div>
 
-        <div class="flex justify-center -my-4 relative z-10">
-            <button class="bg-gray-900 border border-gray-700 p-2 rounded-xl hover:text-blue-400 transition">↓</button>
+        <div class="flex justify-center -my-5 relative z-10">
+            <div class="bg-slate-900 border border-slate-700 p-3 rounded-2xl text-blue-500 shadow-xl">
+                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" viewBox="0 0 16 16">
+                  <path fill-rule="evenodd" d="M8 1a.5.5 0 0 1 .5.5v11.793l3.146-3.147a.5.5 0 0 1 .708.708l-4 4a.5.5 0 0 1-.708 0l-4-4a.5.5 0 0 1 .708-.708L7.5 13.293V1.5A.5.5 0 0 1 8 1z"/>
+                </svg>
+            </div>
         </div>
 
-        <div class="input-box mt-2 mb-4">
-            <span class="text-xs text-gray-400">You Receive (Search by Contract)</span>
-            <input type="text" id="tokenAddress" placeholder="0x... (Paste Token Address)" class="w-full bg-black/20 text-xs p-2 my-2 rounded border border-gray-800 outline-none">
+        <div class="token-card mt-2 mb-6">
+            <label class="text-xs text-slate-500 uppercase tracking-widest">You Buy</label>
+            <input type="text" id="targetTokenAddress" placeholder="Paste Contract Address (0x...)" 
+                   class="text-xs font-normal text-blue-300 mt-2 block w-full border-b border-slate-800 pb-2 mb-4">
             <div class="flex justify-between items-center">
-                <input type="number" id="amountOut" placeholder="0.0" class="bg-transparent text-2xl font-bold outline-none w-full" readonly>
-                <span id="targetSymbol" class="text-blue-500 font-bold">TOKEN</span>
+                <input type="number" id="outputAmount" placeholder="0.0" readonly>
+                <span id="targetSymbol" class="font-bold text-lg text-blue-500">SELECT</span>
             </div>
         </div>
 
-        <div id="riskWarning" class="hidden bg-red-900/20 border border-red-500/50 p-3 rounded-xl mb-4 text-[10px] text-red-400">
-            ⚠️ <b>RISK:</b> This token is not on the verified list. We are fetching liquidity directly from the chain.
+        <div id="riskWarning" class="hidden mb-4 p-4 bg-orange-500/10 border border-orange-500/40 rounded-2xl">
+            <p class="text-[10px] text-orange-400 leading-tight">⚠️ <b>EXTERNAL LIQUIDITY:</b> This token is being routed from external DEX pools. Ensure the contract is correct.</p>
         </div>
 
-        <button id="swapBtn" class="w-full bg-blue-600 hover:bg-blue-700 py-4 rounded-2xl font-bold text-lg shadow-lg transition">Connect Wallet</button>
+        <button id="mainActionBtn" class="swap-btn w-full py-5 rounded-2xl font-black text-xl tracking-tight">Connect Wallet</button>
+        
+        <div class="mt-6 flex justify-between text-[11px] text-slate-500 px-2">
+            <span>Aggregator Fee: 0.025%</span>
+            <span id="routeInfo">Route: Auto-routing enabled</span>
+        </div>
     </div>
 
     <script type="module">
@@ -75,7 +96,7 @@
         };
 
         const app = initializeApp(firebaseConfig);
-        window.db = getFirestore(app); // Global Access for dex-logic.js
+        window.db = getFirestore(app); 
     </script>
 
     <script type="module" src="dex-logic.js"></script>
