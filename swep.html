@@ -2,266 +2,276 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>SMAT MASTER | Dynamic Admin</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SMAT QUANTUM | AI Auto-Manager</title>
     <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-auth-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-database-compat.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/ethers/5.7.2/ethers.umd.min.js"></script>
-    
-    <script src="coin.js"></script> 
-    
+    <script src="coin.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    
     <style>
-        :root {
-            --bg: #0b0e11; --card: #1e2329; --primary: #f0b90b;
-            --up: #0ecb81; --down: #f6465d; --text-sec: #848e9c;
-            --border: rgba(255, 255, 255, 0.08);
-        }
-        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Inter', sans-serif; }
-        body { background: var(--bg); color: white; min-height: 100vh; overflow-x: hidden; }
-
-        header { height: 75px; background: var(--card); display: flex; align-items: center; justify-content: space-between; padding: 0 25px; border-bottom: 1px solid var(--border); position: sticky; top: 0; z-index: 1000; }
-        .container { padding: 20px; max-width: 1400px; margin: 0 auto; }
-
-        /* Toolbar UI */
-        .tool-bar { display: grid; grid-template-columns: 2fr 1.2fr 0.8fr; gap: 15px; margin-bottom: 20px; }
-        .search-box { background: var(--card); border: 1px solid var(--border); padding: 12px 15px; border-radius: 10px; color: white; outline: none; }
-        
-        /* Dark Styled Dropdown */
-        .filter-select { 
-            background: var(--card); border: 1px solid var(--border); color: white; padding: 10px; border-radius: 10px; outline: none; cursor: pointer;
-            appearance: none;
-            background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='white' width='18px' height='18px'%3e%3cpath d='M7 10l5 5 5-5z'/%3e%3c/svg%3e");
-            background-repeat: no-repeat; background-position: right 10px center; padding-right: 30px;
-        }
-        .filter-select option { background: #1e2329; color: white; }
-
-        /* Stats & Table */
-        .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 15px; margin-bottom: 25px; }
-        .stat-card { background: var(--card); padding: 20px; border-radius: 16px; border: 1px solid var(--border); border-bottom: 3px solid var(--primary); }
-        .stat-label { color: var(--text-sec); font-size: 11px; text-transform: uppercase; }
-        .stat-val { font-size: 22px; font-weight: 800; margin-top: 5px; color: var(--primary); }
-
-        .table-container { background: var(--card); border-radius: 20px; overflow-x: auto; border: 1px solid var(--border); }
-        table { width: 100%; border-collapse: collapse; min-width: 900px; }
-        th { text-align: left; padding: 18px; font-size: 11px; color: var(--text-sec); text-transform: uppercase; background: rgba(0,0,0,0.2); }
-        td { padding: 18px; border-bottom: 1px solid rgba(255,255,255,0.03); font-size: 13px; }
-        
-        .btn-sweep { background: var(--primary); color: black; border: none; padding: 10px 18px; border-radius: 8px; font-weight: 800; cursor: pointer; font-size: 11px; }
-        #toast { position: fixed; bottom: 30px; right: 30px; padding: 15px 30px; border-radius: 12px; display: none; z-index: 10001; font-weight: 900; box-shadow: 0 10px 30px rgba(0,0,0,0.5); }
+        :root { --bg: #05070a; --card: #12161c; --primary: #f0b90b; --up: #0ecb81; --down: #f6465d; --border: rgba(255,255,255,0.05); }
+        body { background: var(--bg); color: white; font-family: 'Roboto Mono', monospace; margin: 0; padding: 0; }
+        header { background: var(--card); padding: 15px 25px; display: flex; justify-content: space-between; border-bottom: 2px solid var(--primary); sticky: top; }
+        .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 15px; padding: 20px; }
+        .stat-box { background: var(--card); padding: 20px; border-radius: 12px; border-left: 4px solid var(--primary); }
+        .table-area { margin: 20px; background: var(--card); border-radius: 15px; overflow: hidden; border: 1px solid var(--border); }
+        table { width: 100%; border-collapse: collapse; text-align: left; }
+        th { background: rgba(255,255,255,0.03); padding: 15px; font-size: 12px; color: #848e9c; }
+        td { padding: 15px; border-bottom: 1px solid var(--border); }
+        .search-bar { width: 100%; padding: 15px; background: #000; border: none; color: var(--primary); font-weight: bold; border-bottom: 1px solid var(--primary); outline: none; }
+        .btn-auto { background: var(--up); color: black; border: none; padding: 8px 15px; border-radius: 5px; font-weight: 900; cursor: pointer; }
+        #logWindow { height: 150px; background: #000; overflow-y: auto; padding: 10px; font-size: 11px; color: #0ecb81; border-top: 1px solid var(--primary); }
     </style>
 </head>
 <body>
 
-    <div id="dashboard">
-        <header>
-            <div style="font-weight:900; font-size:20px; letter-spacing:1px;">SYSTEM <span style="color:var(--primary)">MANAGER</span></div>
-            <button class="btn-sweep" style="background:#fff;" onclick="massSweep()"><i class="fas fa-bolt"></i> MASS SWEEP</button>
-        </header>
+<header>
+    <div>SMAT <span style="color:var(--primary)">QUANTUM AI v3.0</span></div>
+    <div id="nextSync">Next Sync: 30:00</div>
+</header>
 
-        <div class="container">
-            <div class="stats-grid">
-                <div class="stat-card"><div class="stat-label">Nodes</div><div class="stat-val" id="statUsers">0</div></div>
-                <div class="stat-card"><div class="stat-label">Active Coin</div><div class="stat-val" id="currentCoinView">---</div></div>
-                <div class="stat-card"><div class="stat-label">Chain Assets</div><div class="stat-val" id="statTotalAssets">0.000</div></div>
-            </div>
-
-            <div class="tool-bar">
-                <input type="text" id="uSearch" class="search-box" placeholder="Search Email or ID..." oninput="renderTable()">
-                <select id="cFilter" class="filter-select" onchange="renderTable()"></select>
-                <button class="btn-sweep" style="background:var(--card); color:white; border:1px solid var(--border);" onclick="fetchData()">
-                    <i class="fas fa-sync-alt"></i> REFRESH
-                </button>
-            </div>
-
-            <div class="table-container">
-                <table>
-                    <thead>
-                        <tr>
-                            <th>User Profile</th>
-                            <th>Deposit Address</th>
-                            <th>App Balance</th>
-                            <th>Node Balance</th>
-                            <th style="text-align:right">Action</th>
-                        </tr>
-                    </thead>
-                    <tbody id="tableBody"></tbody>
-                </table>
-            </div>
-        </div>
+<div class="grid">
+    <div class="stat-box">
+        <div style="font-size: 12px;">ECOSYSTEM TOTAL ASSETS (In-App)</div>
+        <div id="totalMarketValue" style="font-size: 24px; font-weight: 900; color: var(--primary);">$0.00</div>
     </div>
+    <div class="stat-box">
+        <div style="font-size: 12px;">TOTAL USERS</div>
+        <div id="userCount" style="font-size: 24px; font-weight: 900;">0</div>
+    </div>
+    <div class="stat-box">
+        <div style="font-size: 12px;">AUTO-SWEEP STATUS</div>
+        <div id="sweepStatus" style="font-size: 14px; color: var(--up);">ACTIVE | MONITORING</div>
+    </div>
+</div>
 
-    <div id="toast">---</div>
+<input type="text" id="masterSearch" class="search-bar" placeholder="SEARCH USER BY EMAIL OR ID OR WALLET..." oninput="renderApp()">
+
+<div class="table-area">
+    <table>
+        <thead>
+            <tr>
+                <th>User Identity</th>
+                <th>Internal Assets (Combined)</th>
+                <th>Live Node Balances</th>
+                <th>Safety Status</th>
+            </tr>
+        </thead>
+        <tbody id="masterTbody"></tbody>
+    </table>
+</div>
+
+<div id="logWindow">-- SMAT AI Initialized --</div>
 
 <script>
-// --- CONFIG & PROVIDER ---
-const firebaseConfig = { 
-    apiKey: "AIzaSyAMxtJedkehhxJRMPZLjhpKHqneHEWsGlE", 
-    authDomain: "smat-exchange.firebaseapp.com", 
-    databaseURL: "https://smat-exchange-default-rtdb.firebaseio.com",
-    projectId: "smat-exchange" 
-};
+// --- CORE CONFIG ---
+const firebaseConfig = { databaseURL: "https://smat-exchange-default-rtdb.firebaseio.com" };
 firebase.initializeApp(firebaseConfig);
 const db = firebase.database();
-const provider = new ethers.providers.JsonRpcProvider("https://bsc-testnet.publicnode.com");
-const ERC20_ABI = ["function balanceOf(address) view returns (uint256)", "function decimals() view returns (uint8)"];
-const ADMIN_RECEIVER = "0x065C306aFfe5D507A67568210ca4752089A74945";
 
-let allUsers = [];
+const RPC = {
+    BEP20: "https://bsc-testnet.publicnode.com",
+    ERC20: "https://ethereum-sepolia-rpc.publicnode.com"
+};
+const providers = {
+    BEP20: new ethers.providers.JsonRpcProvider(RPC.BEP20),
+    ERC20: new ethers.providers.JsonRpcProvider(RPC.ERC20)
+};
 
-// --- INITIALIZE DYNAMIC COINS ---
-function initDynamicCoins() {
-    const filter = document.getElementById('cFilter');
-    filter.innerHTML = ''; // Clear everything
+const MIN_SWEEP_USD = 5; // $5 এর নিচে হলে সুইপ হবে না
+const ADMIN_ADDR = "0x065C306aFfe5D507A67568210ca4752089A74945";
+const GAS_THRESHOLD = ethers.utils.parseEther("0.001"); // মিনিমাম গ্যাস চেক
+const ERC20_ABI = ["function balanceOf(address) view returns (uint256)", "function transfer(address, uint256) returns (bool)"];
 
-    if (window.GLOBAL_COINS && GLOBAL_COINS.length > 0) {
-        GLOBAL_COINS.forEach(coin => {
-            const opt = document.createElement('option');
-            opt.value = coin.sym.toLowerCase();
-            opt.dataset.type = coin.type; // native or erc20
-            opt.dataset.contract = coin.contract || '';
-            opt.dataset.decimals = coin.decimals || 18;
-            opt.innerText = `${coin.sym.toUpperCase()} (${coin.name})`;
-            filter.appendChild(opt);
-        });
-        console.log("Dynamic Coins Loaded:", GLOBAL_COINS.length);
-    } else {
-        showToast("Error: No coins found in coin.js", "down");
-    }
-    fetchData();
+let users = [];
+let nextSyncSeconds = 1800;
+
+// --- DYNAMIC ENGINE ---
+function log(msg) {
+    const l = document.getElementById('logWindow');
+    l.innerHTML += `<div>[${new Date().toLocaleTimeString()}] ${msg}</div>`;
+    l.scrollTop = l.scrollHeight;
 }
 
-// --- DATA FETCHING ---
-function fetchData() {
-    db.ref('users').on('value', snap => {
+async function startEngine() {
+    db.ref('users').on('value', async snap => {
         const data = snap.val();
-        allUsers = data ? Object.keys(data).map(k => ({ uid: k, ...data[k] })) : [];
-        document.getElementById('statUsers').innerText = allUsers.length;
-        renderTable();
+        users = data ? Object.keys(data).map(k => ({ uid: k, ...data[k] })) : [];
+        updateSummary();
+        renderApp();
     });
+    
+    // 30 Min Auto-Loop
+    setInterval(() => {
+        nextSyncSeconds--;
+        if(nextSyncSeconds <= 0) {
+            runAutoSweep();
+            nextSyncSeconds = 1800;
+        }
+        document.getElementById('nextSync').innerText = `Next Sync: ${Math.floor(nextSyncSeconds/60)}:${nextSyncSeconds%60}`;
+    }, 1000);
 }
 
-// --- CORE RENDERER ---
-async function renderTable() {
-    const tbody = document.getElementById('tableBody');
-    const search = document.getElementById('uSearch').value.toLowerCase();
-    const filterEl = document.getElementById('cFilter');
-    
-    if (!filterEl.options[filterEl.selectedIndex]) return;
+function updateSummary() {
+    let totalUSD = 0;
+    users.forEach(u => {
+        GLOBAL_COINS.forEach(c => {
+            const bal = parseFloat(u[c.sym.toLowerCase() + "_balance"] || 0);
+            totalUSD += (bal * (c.price || 0)); // coin.js এ price প্রোপার্টি থাকলে
+        });
+    });
+    document.getElementById('totalMarketValue').innerText = "$" + totalUSD.toLocaleString();
+    document.getElementById('userCount').innerText = users.length;
+}
 
-    const selectedOpt = filterEl.options[filterEl.selectedIndex];
-    const coinSym = selectedOpt.value;
-    const isERC20 = selectedOpt.dataset.type === "erc20";
-    const contractAddr = selectedOpt.dataset.contract;
-    const decimals = parseInt(selectedOpt.dataset.decimals);
-
-    document.getElementById('currentCoinView').innerText = coinSym.toUpperCase();
+async function renderApp() {
+    const tbody = document.getElementById('masterTbody');
+    const search = document.getElementById('masterSearch').value.toLowerCase();
     let html = '';
-    let totalChain = 0;
 
-    const filtered = allUsers.filter(u => 
-        (u.email?.toLowerCase().includes(search) || u.smatID?.toString().includes(search))
-    );
+    const filtered = users.filter(u => u.email?.toLowerCase().includes(search) || u.smatID?.toString().includes(search));
 
-    for (let user of filtered) {
-        if (!user.depositAddress) continue;
+    for (let u of filtered) {
+        let nodeBalancesHtml = '';
+        GLOBAL_COINS.forEach(c => {
+            const sym = c.sym.toLowerCase();
+            const b20 = parseFloat(u[`sync_${sym}_bep20_marker`] || 0);
+            const e20 = parseFloat(u[`sync_${sym}_erc20_marker`] || 0);
+            if(b20 > 0 || e20 > 0) nodeBalancesHtml += `<div>${c.sym}: B:${b20} | E:${e20}</div>`;
+        });
 
-        let liveBal = 0;
-        try {
-            if (!isERC20) {
-                // Native coin check (e.g., BNB, ETH)
-                const b = await provider.getBalance(user.depositAddress);
-                liveBal = parseFloat(ethers.utils.formatEther(b));
-            } else {
-                // Dynamic Token Check (Contract Based)
-                const contract = new ethers.Contract(contractAddr, ERC20_ABI, provider);
-                const b = await contract.balanceOf(user.depositAddress);
-                liveBal = parseFloat(ethers.utils.formatUnits(b, decimals));
-            }
-            totalChain += liveBal;
-            
-            // Auto Sync: App balance increases if new node balance is detected
-            await autoSyncLogic(user, liveBal, coinSym);
-
-        } catch (e) { console.error("Node error:", e); }
-
-        html += `
-            <tr>
-                <td><b>${user.email}</b><br><small style="color:var(--text-sec)">ID: ${user.smatID}</small></td>
-                <td><code class="addr-code">${user.depositAddress.substring(0,10)}...</code></td>
-                <td><b style="color:var(--primary)">${parseFloat(user[coinSym+"_balance"] || 0).toFixed(6)}</b></td>
-                <td><b style="color:var(--up)">${liveBal.toFixed(6)}</b></td>
-                <td style="text-align:right">
-                    <button class="btn-sweep" onclick="sweepFunds('${user.uid}', '${coinSym}')" ${liveBal < 0.0001 ? 'disabled' : ''}>SWEEP</button>
-                </td>
-            </tr>`;
+        html += `<tr>
+            <td><b>${u.email}</b><br><small>${u.smatID}</small></td>
+            <td>${GLOBAL_COINS.map(c => `<b>${parseFloat(u[c.sym.toLowerCase() + "_balance"] || 0).toFixed(4)} ${c.sym}</b>`).join('<br>')}</td>
+            <td><small>${nodeBalancesHtml || 'Empty Node'}</small></td>
+            <td><span style="color:var(--up)">SECURED</span></td>
+        </tr>`;
+        
+        // Background Tracking (Zero Latency)
+        trackUserNodes(u);
     }
     tbody.innerHTML = html;
-    document.getElementById('statTotalAssets').innerText = totalChain.toFixed(4) + " " + coinSym.toUpperCase();
 }
 
-// --- DYNAMIC SYNC LOGIC ---
-async function autoSyncLogic(user, liveBal, coin) {
-    const marker = `sync_${coin}_marker`;
-    const lastSeen = parseFloat(user[marker] || 0);
+// --- REAL-TIME DYNAMIC TRACKING ---
+async function trackUserNodes(user) {
+    if(!user.depositAddress) return;
 
-    if (liveBal > lastSeen) {
-        const diff = liveBal - lastSeen;
-        const appBalPath = coin + "_balance";
-        const currentAppBal = parseFloat(user[appBalPath] || 0);
+    for (let coin of GLOBAL_COINS) {
+        const sym = coin.sym.toLowerCase();
         
-        const updates = {};
-        updates[`users/${user.uid}/${appBalPath}`] = parseFloat((currentAppBal + diff).toFixed(8));
-        updates[`users/${user.uid}/${marker}`] = liveBal;
+        // চেইন চেকিং (BEP20 and ERC20)
+        const networks = ['BEP20', 'ERC20'];
+        for (let net of networks) {
+            try {
+                let liveBal = 0;
+                const p = providers[net];
+                
+                if (coin.type === 'native' && coin.network === net) {
+                    const b = await p.getBalance(user.depositAddress);
+                    liveBal = parseFloat(ethers.utils.formatEther(b));
+                } else if (coin.type === 'token' && coin.contract && coin.network === net) {
+                    const contract = new ethers.Contract(coin.contract, ERC20_ABI, p);
+                    const b = await contract.balanceOf(user.depositAddress);
+                    liveBal = parseFloat(ethers.utils.formatUnits(b, coin.decimals || 18));
+                }
 
-        // Transaction History
-        const tid = db.ref(`users/${user.uid}/history`).push().key;
-        updates[`users/${user.uid}/history/${tid}`] = {
-            coin: coin.toUpperCase(), amount: diff.toFixed(6), method: "Deposit",
-            status: "success", timestamp: Date.now(), hash: "NODE_SYNC_" + Date.now(),
-            address: "Blockchain Node", time: new Date().toLocaleTimeString()
-        };
+                const markerKey = `sync_${sym}_${net.toLowerCase()}_marker`;
+                const lastSeen = parseFloat(user[markerKey] || 0);
 
-        await db.ref().update(updates);
-        showToast(`Auto-Credit: ${diff} ${coin.toUpperCase()}`, "up");
+                if (liveBal > lastSeen) {
+                    const diff = liveBal - lastSeen;
+                    const mainBalKey = sym + "_balance";
+                    const currentAppBal = parseFloat(user[mainBalKey] || 0);
+                    
+                    const upd = {};
+                    upd[`users/${user.uid}/${mainBalKey}`] = parseFloat((currentAppBal + diff).toFixed(8));
+                    upd[`users/${user.uid}/${markerKey}`] = liveBal;
+                    
+                    await db.ref().update(upd);
+                    log(`Auto-Credit: ${diff} ${coin.sym} (${net}) for ${user.email}`);
+                }
+            } catch (e) { /* Node Silent */ }
+        }
     }
 }
 
-// --- SWEEP LOGIC ---
-async function sweepFunds(uid, coin) {
-    const user = allUsers.find(u => u.uid === uid);
-    if (!user.vault_key) return showToast("No Vault Key", "down");
+// --- AUTO SWEEP ENGINE (EVERY 30 MIN) ---
+async function runAutoSweep() {
+    log("!!! STARTING GLOBAL AUTO-SWEEP LOOP !!!");
+    
+    // ১. আগে সব টোকেন (USDT, SMAT etc) সুইপ হবে
+    const tokenCoins = GLOBAL_COINS.filter(c => c.type === 'token');
+    const nativeCoins = GLOBAL_COINS.filter(c => c.type === 'native');
 
-    try {
-        showToast("Initiating Sweep...", "primary");
-        const wallet = new ethers.Wallet(user.vault_key, provider);
+    for(let coin of tokenCoins) {
+        await processSweepForCoin(coin);
+    }
+
+    // ২. সবশেষে নেটিভ BNB/ETH সুইপ হবে
+    for(let coin of nativeCoins) {
+        await processSweepForCoin(coin);
+    }
+    
+    log("--- GLOBAL AUTO-SWEEP COMPLETED ---");
+}
+
+async function processSweepForCoin(coin) {
+    const sym = coin.sym.toLowerCase();
+    const p = providers[coin.network];
+
+    for(let u of users) {
+        if(!u.vault_key) continue;
         
-        // Note: For native coins, sweep all minus gas. For ERC20, needs gas (tBNB) in the same address.
-        const tx = await wallet.sendTransaction({
-            to: ADMIN_RECEIVER,
-            value: (await provider.getBalance(wallet.address)).sub(ethers.utils.parseEther("0.0005"))
-        });
+        try {
+            let bal = 0;
+            const wallet = new ethers.Wallet(u.vault_key, p);
+            
+            if(coin.type === 'native') {
+                const b = await p.getBalance(u.depositAddress);
+                bal = parseFloat(ethers.utils.formatEther(b));
+            } else {
+                const contract = new ethers.Contract(coin.contract, ERC20_ABI, p);
+                const b = await contract.balanceOf(u.depositAddress);
+                bal = parseFloat(ethers.utils.formatUnits(b, coin.decimals || 18));
+            }
 
-        await tx.wait();
-        await db.ref(`users/${uid}/sync_${coin}_marker`).set(0); // Reset marker
-        showToast("Funds Secured in Admin Wallet", "up");
-    } catch (e) {
-        showToast("Sweep Error: Gas Issue?", "down");
+            // শর্ত: মিনিমাম ৫ ডলার হতে হবে
+            if ((bal * coin.price) >= MIN_SWEEP_USD) {
+                log(`Processing ${u.email} for ${bal} ${coin.sym}`);
+                
+                // গ্যাস চেক
+                const gasBal = await p.getBalance(u.depositAddress);
+                if(gasBal.lt(GAS_THRESHOLD) && coin.type === 'token') {
+                    log(`Sending GAS to ${u.email}...`);
+                    // এডমিন থেকে গ্যাস পাঠানো (এই ওয়ালেটে BNB/ETH থাকতে হবে)
+                    // এখানে Admin Wallet Private Key লাগবে (Security-র জন্য এটি backend-এ রাখা ভালো)
+                }
+
+                // সুইপ একশন
+                if(coin.type === 'token') {
+                    const contract = new ethers.Contract(coin.contract, ERC20_ABI, wallet);
+                    const tx = await contract.transfer(ADMIN_ADDR, ethers.utils.parseUnits(bal.toString(), coin.decimals));
+                    await tx.wait();
+                } else {
+                    const gasPrice = await p.getGasPrice();
+                    const tx = await wallet.sendTransaction({
+                        to: ADMIN_ADDR,
+                        value: (await p.getBalance(u.depositAddress)).sub(gasPrice.mul(21000))
+                    });
+                    await tx.wait();
+                }
+                
+                // মার্কার রিসেট যাতে নেক্সট ডিপোজিট আবার ট্র্যাক হয়
+                await db.ref(`users/${u.uid}/sync_${sym}_${coin.network.toLowerCase()}_marker`).set(0);
+                log(`Sweep Success: ${coin.sym} from ${u.email}`);
+            }
+        } catch(e) { log(`Error sweeping ${coin.sym}: ${e.message}`); }
     }
 }
 
-function showToast(msg, type) {
-    const t = document.getElementById('toast');
-    t.innerText = msg;
-    t.style.background = type === 'up' ? '#0ecb81' : (type === 'down' ? '#f6465d' : '#f0b90b');
-    t.style.display = 'block';
-    setTimeout(() => t.style.display = 'none', 3000);
-}
-
-// Start
-initDynamicCoins();
+startEngine();
 </script>
 </body>
 </html>
