@@ -9,11 +9,12 @@
     <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-database-compat.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@900&family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
-    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNTEyIiBoZWlnaHQ9IjUxMiIgdmlld0JveD0iMCAwIDUxMiA1MTIiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+CiAgPGNpcmNsZSBjeD0iMjU2IiBjeT0iMjU2IiByPSIyNDAiIGZpbGw9IiNmM2JhMmYiLz4KICA8Y2lyY2xlIGN4PSIyNTYiIGN5PSIyNTYiIHI9IjIxNSIgc3Ryb2tlPSJ3aGl0ZSIgc3Ryb2tlLXdpZHRoPSI4IiBmaWxsPSJtransGFyZW50Ii8+CiAgIDxwYXRoIGQ9Ik0xNTAgMTcwIEMxNTAgMTQ1IDE3MCAxMzUgMjAwIDEzNSBMMzQwIDEzNSBDMzU1IDEzNSAzNjUgMTQ1IDM2NSAxNjAgQzM2NSAxNzUgMzU1IDE4NSAzNDAgMTg1IEwyMDUgMTg1IEMxOTAgMTg1IDE4NSAxOTAgMTg1IDIwNSBDMTg1IDIyMCAxOTAgMjI1IDIwNSAyMjUgTDM0MCAyMjUgQzM3MCAyMjUgMzkwIDI0NSAzOTAgMjc1IEwzOTAgMzI1IEMzOTAgMzU1IDM3MCAzNzUgMzQwIDM3NSBMMTcwIDM3NSBDMTU1IDM3NSAxNDUgMzY1IDE0NSAxNTAgQzE0NSAzMzUgMTU1IDMyNSAxNzAgMzI1IEwzMzUgMzI1IEMzNTAgMzI1IDM1NSAzMjAgMzU1IDMwNSBDMzU1IDI5MCAzNTAgMjg1IDMzNSAyODUgTDIwMCAyODUgQzE3MCAyODUgMTUwIDI2NSAxNTAgMjM1IFoiIGZpbGw9IndoaXRlIi8+Cjwvc3ZnPg==">
+    
+    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNTEyIiBoZWlnaHQ9IjUxMiIgdmlld0JveD0iMCAwIDUxMiA1MTIiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+CiAgPGNpcmNsZSBjeD0iMjU2IiBjeT0iMjU2Ii rPSIyNDAiIGZpbGw9IiNmM2JhMmYiLz4KICA8Y2lyY2xlIGN4PSIyNTYiIGN5PSIyNTYiIHI9IjIxNSIgc3Ryb2tlPSJ3aGl0ZSIgc3Ryb2tlLXdpZHRoPSI4IiBmaWxsPSJ0cmFuc3BhcmVudCIvPgogIDxwYXRoIGQ9Ik0xNTAgMTcwIEMxNTAgMTQ1IDE3MCAxMzUgMjAwIDEzNSBMMzQwIDEzNSBDMzU1IDEzNSAzNjUgMTQ1IDM2NSAxNjAgQzM2NSAxNzUgMzU1IDE4NSAzNDAgMTg1IEwyMDUgMTg1IEMxOTAgMTg1IDE4NSAxOTAgMTg1IDIwNSBDMTg1IDIyMCAxOTAgMjI1IDIwNSAyMjUgTDM0MCAyMjUgQzM3MCAyMjUgMzkwIDI0NSAzOTAgMjc1IEwzOTAgMzI1IEMzOTAgMzU1IDM3MCAzNzUgMzQwIDM3NSBMMTcwIDM3NSBDMTU1IDM3NSAxNDUgMzY1IDE0NSAzNTAgQzE0NSAzMzUgMTU1IDMyNSAxNzAgMzI1IEwzMzUgMzI1IEMzNTAgMzI1IDM1NSAzMjAgMzU1IDMwNSBDMzU1IDI5MCAzNTAgMjg1IDMzNSAyODUgTDIwMCAyODUgQzE3MCAyODUgMTUwIDI2NSAxNTAgMjM1IFoiIGZpbGw9IndoaXRlIi8+Cjwvc3ZnPg==">
 
     <style>
         :root {
-            --bg: #0b0e11; --card: #1e2329; --primary: #f3ba2f; /* BNB Yellow */
+            --bg: #0b0e11; --card: #1e2329; --primary: #f3ba2f; /* Yellow */
             --cyan: #00ffff; --text-sec: #848e9c; --border: rgba(255, 255, 255, 0.08);
             --up: #0ecb81; --font-bold: 'Montserrat', sans-serif;
         }
@@ -21,77 +22,93 @@
         body { background: var(--bg); color: white; padding-bottom: 100px; }
 
         .header { padding: 40px 20px; text-align: center; background: linear-gradient(180deg, rgba(243, 186, 47, 0.1) 0%, var(--bg) 100%); }
-        .token-val { font-family: var(--font-bold); font-size: 30px; color: var(--primary); }
-        .cyan-text { color: var(--cyan); }
+        .token-val { font-family: var(--font-bold); font-size: 32px; color: var(--primary); }
         
         .stats-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; padding: 15px; }
         .stat-card { background: var(--card); padding: 15px; border-radius: 12px; border: 1px solid var(--border); }
-        .label { font-size: 10px; color: var(--text-sec); margin-bottom: 5px; }
+        .label { font-size: 10px; color: var(--text-sec); margin-bottom: 5px; text-transform: uppercase; }
 
-        .presale-card { background: var(--card); margin: 0 15px; border-radius: 20px; padding: 25px; border: 1px solid var(--border); box-shadow: 0 15px 35px rgba(0,0,0,0.4); }
-        .input-box { background: var(--bg); border: 1px solid var(--border); border-radius: 12px; padding: 15px; display: flex; align-items: center; margin-top: 10px; }
-        .input-box input { background: transparent; border: none; color: white; flex: 1; outline: none; font-size: 18px; }
+        .presale-card { background: var(--card); margin: 0 15px; border-radius: 20px; padding: 20px; border: 1px solid var(--border); }
         
-        .btn { width: 100%; padding: 16px; border-radius: 12px; border: none; font-size: 15px; cursor: pointer; margin-top: 10px; transition: 0.2s; }
-        .btn:active { transform: scale(0.98); }
-        .btn-bnb { background: var(--primary); color: black; }
-        .btn-eth { background: #627eea; color: white; }
-        .btn-claim { background: transparent; border: 2px dashed var(--border); color: var(--text-sec); margin-top: 20px; cursor: not-allowed; }
-        .btn-claim.active { background: var(--up); color: white; border: none; cursor: pointer; box-shadow: 0 5px 15px rgba(14,203,129,0.3); }
+        /* Asset Switcher Bar */
+        .asset-switcher { display: flex; background: var(--bg); border-radius: 12px; padding: 5px; margin-bottom: 15px; border: 1px solid var(--border); }
+        .switch-btn { flex: 1; padding: 10px; border: none; border-radius: 10px; background: transparent; color: var(--text-sec); cursor: pointer; font-size: 12px; transition: 0.3s; }
+        .switch-btn.active { background: var(--card); color: white; border: 1px solid var(--border); }
+        .switch-btn.active.bnb { color: var(--primary); }
+        .switch-btn.active.eth { color: #627eea; }
 
-        .footer { position: fixed; bottom: 0; width: 100%; height: 75px; background: #0b0e11; display: flex; justify-content: space-around; align-items: center; border-top: 1px solid var(--border); z-index: 1000; }
-        .f-nav { text-decoration: none; color: var(--text-sec); font-size: 11px; display: flex; flex-direction: column; align-items: center; gap: 4px; }
+        .input-box { background: var(--bg); border: 1px solid var(--border); border-radius: 12px; padding: 15px; display: flex; align-items: center; }
+        .input-box input { background: transparent; border: none; color: white; flex: 1; outline: none; font-size: 20px; }
+        
+        .valuation-bar { background: rgba(255,255,255,0.03); padding: 15px; border-radius: 12px; margin: 15px 0; border: 1px dashed var(--border); }
+        
+        .btn-main { width: 100%; padding: 18px; border-radius: 15px; border: none; font-size: 16px; cursor: pointer; transition: 0.2s; background: var(--primary); color: black; }
+        .btn-main:active { transform: scale(0.97); }
+
+        .btn-claim { width: 100%; padding: 18px; border-radius: 15px; margin-top: 15px; border: 2px dashed var(--border); background: transparent; color: var(--text-sec); cursor: not-allowed; }
+        .btn-claim.active { background: var(--up); color: white; border: none; cursor: pointer; box-shadow: 0 5px 20px rgba(14,203,129,0.3); }
+
+        .footer { position: fixed; bottom: 0; width: 100%; height: 75px; background: #0b0e11; display: flex; justify-content: space-around; align-items: center; border-top: 1px solid var(--border); }
+        .f-nav { text-decoration: none; color: var(--text-sec); font-size: 12px; display: flex; flex-direction: column; align-items: center; gap: 4px; }
         .f-nav.active { color: var(--primary); }
     </style>
 </head>
 <body>
 
     <div class="header">
-        <p style="font-size: 12px; color: var(--text-sec);">SmatBit <span class="cyan-text">OFFICIAL PRESALE</span></p>
+        <p style="font-size: 11px; color: var(--cyan); letter-spacing: 2px;">SmatBit PRESALE PHASE</p>
         <div class="token-val">750,000 SMAT</div>
-        <p style="font-size: 10px; color: var(--text-sec);">OVERFLOW COMMITMENT METHOD</p>
+        <p style="font-size: 10px; color: var(--text-sec);">1 SMAT = <span id="smatRateDisplay">$0.00</span> USDT</p>
     </div>
 
     <div class="stats-grid">
         <div class="stat-card">
-            <div class="label">POOL VALUE (USDT)</div>
-            <div style="font-size: 16px;">$<span id="totalPoolUSD">0.00</span></div>
+            <div class="label">Total Pool Value</div>
+            <div style="font-size: 18px;">$<span id="totalPoolUSD">0.00</span></div>
         </div>
         <div class="stat-card">
-            <div class="label">SMAT RATE (EST.)</div>
-            <div style="font-size: 16px;">$<span id="smatRate">0.00</span></div>
+            <div class="label">My Commit USD</div>
+            <div style="font-size: 18px; color: var(--cyan);">$<span id="myTotalUSD">0.00</span></div>
         </div>
     </div>
 
     <div class="presale-card">
-        <div style="display:flex; justify-content:space-between; font-size:11px;">
-            <span style="color:var(--text-sec)">Commit Assets</span>
-            <span id="assetBalance">Bal: 0.00</span>
+        <div class="asset-switcher">
+            <button class="switch-btn active bnb" id="bnbSwitch" onclick="toggleAsset('bnb')">BNB</button>
+            <button class="switch-btn eth" id="ethSwitch" onclick="toggleAsset('eth')">ETH</button>
         </div>
+
+        <div style="display:flex; justify-content:space-between; font-size:11px; margin-bottom:8px;">
+            <span style="color:var(--text-sec)">Commit Amount</span>
+            <span id="currentBalance" style="color:var(--primary)">Bal: 0.00</span>
+        </div>
+
         <div class="input-box">
             <input type="number" id="commitInput" placeholder="0.00" oninput="calcValuation()">
-            <span id="activeAssetLabel" style="color:var(--primary)">BNB</span>
-        </div>
-        <p style="text-align:right; font-size:10px; color:var(--text-sec); margin-top:5px;">
-            ≈ $<span id="inputUSD">0.00</span> USDT
-        </p>
-
-        <div style="background:rgba(255,255,255,0.03); padding:12px; border-radius:10px; margin:15px 0; font-size:11px; text-align:center;">
-            My Valuation: <span id="myTotalUSD" class="cyan-text">$0.00</span> | 
-            Allocation: <span id="mySmatAlloc" style="color:var(--up)">0.00 SMAT</span>
+            <span id="selectedAssetTag" style="color:var(--primary); font-size:14px;">BNB</span>
         </div>
 
-        <button class="btn btn-bnb" onclick="setAsset('bnb')">COMMIT BNB</button>
-        <button class="btn btn-eth" onclick="setAsset('eth')">COMMIT ETH</button>
+        <div class="valuation-bar">
+            <div style="display:flex; justify-content:space-between; font-size:12px; margin-bottom:10px;">
+                <span style="color:var(--text-sec)">Input Valuation:</span>
+                <span style="color:white">$<span id="inputUsdVal">0.00</span> USDT</span>
+            </div>
+            <div style="display:flex; justify-content:space-between; font-size:12px;">
+                <span style="color:var(--text-sec)">Expected SMAT:</span>
+                <span style="color:var(--up)"><span id="expectedSmat">0.00</span> SMAT</span>
+            </div>
+        </div>
 
-        <button id="claimBtn" class="btn btn-claim" disabled onclick="claimTokens()">
-            <i class="fas fa-lock"></i> CLAIM SMAT
+        <button class="btn-main" id="commitBtn" onclick="processCommitment()">CONFIRM COMMITMENT</button>
+
+        <div style="margin-top:20px; padding-top:15px; border-top:1px solid var(--border); display:flex; justify-content:space-between; font-size:11px;">
+            <span>Committed BNB: <b id="dispBnb">0.00</b></span>
+            <span>Committed ETH: <b id="dispEth">0.00</b></span>
+        </div>
+
+        <button id="claimBtn" class="btn-claim" disabled onclick="processClaim()">
+            <i class="fas fa-lock"></i> CLAIM SMAT TO WALLET
         </button>
-
-        <div style="margin-top:20px; display:flex; justify-content:space-between; font-size:11px; color:var(--text-sec);">
-            <span>My BNB: <b id="myBnb" style="color:white">0</b></span>
-            <span>My ETH: <b id="myEth" style="color:white">0</b></span>
-        </div>
     </div>
 
     <footer class="footer">
@@ -101,7 +118,7 @@
     </footer>
 
     <script>
-        // --- CONFIG & FIREBASE ---
+        // --- DATA & CONFIG ---
         const firebaseConfig = { 
             apiKey: "AIzaSyAMxtJedkehhxJRMPZLjhpKHqneHEWsGlE", 
             authDomain: "smat-exchange.firebaseapp.com", 
@@ -115,15 +132,14 @@
         const db = firebase.database();
         const auth = firebase.auth();
 
-        let userData = {};
+        let userData = {}, poolData = { totalUsd: 0, claimEnabled: false };
         let livePrices = { bnb: 0, eth: 0 };
-        let poolData = { totalUsd: 0, claimEnabled: false };
+        let currentAsset = 'bnb';
         const TOTAL_SMAT = 750000;
 
-        // --- BINANCE LIVE WEB SOCKET ---
+        // --- BINANCE SOCKET ---
         const streams = ['bnbusdt@ticker', 'ethusdt@ticker'];
         const socket = new WebSocket(`wss://stream.binance.com:9443/stream?streams=${streams.join('/')}`);
-
         socket.onmessage = (e) => {
             const msg = JSON.parse(e.data);
             if(msg.stream === 'bnbusdt@ticker') livePrices.bnb = parseFloat(msg.data.c);
@@ -131,7 +147,7 @@
             updateUI();
         };
 
-        // --- CORE LOGIC ---
+        // --- INITIALIZE ---
         function init() {
             auth.onAuthStateChanged(user => {
                 if(user) {
@@ -141,76 +157,82 @@
             });
         }
 
+        function toggleAsset(asset) {
+            currentAsset = asset;
+            document.querySelectorAll('.switch-btn').forEach(b => b.classList.remove('active'));
+            document.getElementById(asset + 'Switch').classList.add('active');
+            
+            const tag = document.getElementById('selectedAssetTag');
+            tag.innerText = asset.toUpperCase();
+            tag.style.color = (asset === 'bnb') ? 'var(--primary)' : '#627eea';
+            
+            updateUI();
+        }
+
         function updateUI() {
+            const bal = userData[currentAsset + '_balance'] || 0;
+            document.getElementById('currentBalance').innerText = `Bal: ${parseFloat(bal).toFixed(4)}`;
+            
             const myBnb = parseFloat(userData.presale_bnb || 0);
             const myEth = parseFloat(userData.presale_eth || 0);
             const myUsd = (myBnb * livePrices.bnb) + (myEth * livePrices.eth);
-            
-            // SMAT Rate = Total Pool / Total Supply
+
             const rate = poolData.totalUsd > 0 ? (poolData.totalUsd / TOTAL_SMAT) : 0.0001;
             const myAlloc = rate > 0 ? (myUsd / rate) : 0;
 
-            document.getElementById('totalPoolUSD').innerText = poolData.totalUsd.toLocaleString(undefined,{minimumFractionDigits:2});
-            document.getElementById('smatRate').innerText = rate.toFixed(6);
-            document.getElementById('myTotalUSD').innerText = "$" + myUsd.toFixed(2);
-            document.getElementById('mySmatAlloc').innerText = myAlloc.toFixed(2) + " SMAT";
-            document.getElementById('myBnb').innerText = myBnb.toFixed(4);
-            document.getElementById('myEth').innerText = myEth.toFixed(4);
+            document.getElementById('totalPoolUSD').innerText = poolData.totalUsd.toLocaleString(undefined, {minimumFractionDigits:2});
+            document.getElementById('smatRateDisplay').innerText = rate.toFixed(6);
+            document.getElementById('myTotalUSD').innerText = myUsd.toFixed(2);
+            document.getElementById('dispBnb').innerText = myBnb.toFixed(4);
+            document.getElementById('dispEth').innerText = myEth.toFixed(4);
 
-            // Button Control
-            const btn = document.getElementById('claimBtn');
+            // Claim Status
+            const cBtn = document.getElementById('claimBtn');
             if(poolData.claimEnabled && myAlloc > 0) {
-                btn.disabled = false; btn.classList.add('active');
-                btn.innerHTML = '<i class="fas fa-unlock"></i> CLAIM NOW';
+                cBtn.disabled = false; cBtn.classList.add('active');
+                cBtn.innerHTML = '<i class="fas fa-unlock"></i> CLAIM SMAT NOW';
             }
             calcValuation();
         }
 
-        function setAsset(a) {
-            document.getElementById('activeAssetLabel').innerText = a.toUpperCase();
-            document.getElementById('activeAssetLabel').style.color = (a === 'bnb') ? 'var(--primary)' : '#627eea';
-            const bal = userData[a + '_balance'] || 0;
-            document.getElementById('assetBalance').innerText = "Bal: " + parseFloat(bal).toFixed(4);
-            handleCommit(a);
-        }
-
         function calcValuation() {
             const amt = parseFloat(document.getElementById('commitInput').value) || 0;
-            const asset = document.getElementById('activeAssetLabel').innerText.toLowerCase();
-            const val = amt * livePrices[asset];
-            document.getElementById('inputUSD').innerText = val.toFixed(2);
+            const usd = amt * livePrices[currentAsset];
+            document.getElementById('inputUsdVal').innerText = usd.toFixed(2);
+            
+            const rate = poolData.totalUsd > 0 ? (poolData.totalUsd / TOTAL_SMAT) : 0.0001;
+            const expected = rate > 0 ? (usd / rate) : 0;
+            document.getElementById('expectedSmat').innerText = expected.toFixed(2);
         }
 
-        async function handleCommit(asset) {
+        async function processCommitment() {
             const amt = parseFloat(document.getElementById('commitInput').value);
-            const userBal = parseFloat(userData[asset + '_balance'] || 0);
+            const userBal = parseFloat(userData[currentAsset + '_balance'] || 0);
 
-            if(!amt || amt <= 0 || isNaN(amt)) return; // শুধু ভ্যালু থাকলে প্রসেস হবে
-            if(amt > userBal) { alert("Insufficient Balance"); return; }
+            if(!amt || amt <= 0) return alert("Enter amount");
+            if(amt > userBal) return alert("Insufficient Balance");
 
-            const usdVal = amt * livePrices[asset];
+            const usdVal = amt * livePrices[currentAsset];
             const uid = auth.currentUser.uid;
             const updates = {};
 
-            updates[`users/${uid}/${asset}_balance`] = userBal - amt;
-            updates[`users/${uid}/presale_${asset}`] = (parseFloat(userData['presale_'+asset] || 0)) + amt;
+            updates[`users/${uid}/${currentAsset}_balance`] = userBal - amt;
+            updates[`users/${uid}/presale_${currentAsset}`] = (parseFloat(userData['presale_'+currentAsset] || 0)) + amt;
             updates[`presale_global/totalUsd`] = (poolData.totalUsd || 0) + usdVal;
 
             try {
                 await db.ref().update(updates);
                 document.getElementById('commitInput').value = "";
-                alert("Commitment Added!");
-            } catch(e) { alert("Error: " + e.message); }
+                alert("Commitment Successful!");
+            } catch(e) { alert(e.message); }
         }
 
-        async function claimTokens() {
+        async function processClaim() {
             const myBnb = parseFloat(userData.presale_bnb || 0);
             const myEth = parseFloat(userData.presale_eth || 0);
             const myUsd = (myBnb * livePrices.bnb) + (myEth * livePrices.eth);
             const rate = poolData.totalUsd / TOTAL_SMAT;
             const alloc = myUsd / rate;
-
-            if(alloc <= 0) return;
 
             const updates = {};
             const uid = auth.currentUser.uid;
@@ -220,7 +242,7 @@
 
             try {
                 await db.ref().update(updates);
-                alert("Claimed " + alloc.toFixed(2) + " SMAT successfully!");
+                alert(`Claimed ${alloc.toFixed(2)} SMAT!`);
             } catch(e) { alert(e.message); }
         }
 
