@@ -172,26 +172,47 @@
         }
 
         function updateUI() {
-            const bal = parseFloat(userData[currentAsset + '_balance'] || 0);
-            document.getElementById('currentBalance').innerText = bal.toFixed(8);
-            
-            const totalPoolUsd = parseFloat(poolData.totalUsd || 0);
-            const smatRate = totalPoolUsd > 0 ? (totalPoolUsd / TOTAL_SMAT_SUPPLY) : 0;
-            
-            // Accumulated amounts from database
-            const accBnb = parseFloat(userData.presale_bnb || 0);
-            const accEth = parseFloat(userData.presale_eth || 0);
-            
-            // Total valuation in USDT (Live)
-            const myLiveUsdVal = (accBnb * livePrices.bnb) + (accEth * livePrices.eth);
-            const myAlloc = smatRate > 0 ? (myLiveUsdVal / smatRate) : 0;
+    const bal = parseFloat(userData[currentAsset + '_balance'] || 0);
+    document.getElementById('currentBalance').innerText = bal.toFixed(8);
+    
+    const totalPoolUsd = parseFloat(poolData.totalUsd || 0);
+    const accBnb = parseFloat(userData.presale_bnb || 0);
+    const accEth = parseFloat(userData.presale_eth || 0);
+    const myLiveUsdVal = (accBnb * livePrices.bnb) + (accEth * livePrices.eth);
 
-            document.getElementById('totalPoolUSD').innerText = totalPoolUsd.toLocaleString(undefined, {minimumFractionDigits:2});
-            document.getElementById('smatRateDisplay').innerText = "$" + smatRate.toFixed(8);
-            document.getElementById('myTotalUSD').innerText = myLiveUsdVal.toFixed(2);
-            document.getElementById('dispBnb').innerText = accBnb.toFixed(8);
-            document.getElementById('dispEth').innerText = accEth.toFixed(8);
-            document.getElementById('mySmatAlloc').innerText = myAlloc.toFixed(8) + " SMAT";
+    // SMAT Rate calculation with Fallback logic
+    let smatRate = totalPoolUsd > 0 ? (totalPoolUsd / TOTAL_SMAT_SUPPLY) : 0;
+
+    document.getElementById('totalPoolUSD').innerText = totalPoolUsd.toLocaleString(undefined, {minimumFractionDigits:2});
+    document.getElementById('smatRateDisplay').innerText = "$" + smatRate.toFixed(8);
+    document.getElementById('myTotalUSD').innerText = myLiveUsdVal.toFixed(2);
+    document.getElementById('dispBnb').innerText = accBnb.toFixed(8);
+    document.getElementById('dispEth').innerText = accEth.toFixed(8);
+
+    calcValuation(); // UI আপডেট হওয়ার সময় ক্যালকুলেশন কল হবে
+}
+
+function calcValuation() {
+    const amt = parseFloat(document.getElementById('commitInput').value) || 0;
+    const inputUsdVal = amt * livePrices[currentAsset];
+    
+    const totalPoolUsd = parseFloat(poolData.totalUsd || 0);
+    const accBnb = parseFloat(userData.presale_bnb || 0);
+    const accEth = parseFloat(userData.presale_eth || 0);
+    const myExistingUsd = (accBnb * livePrices.bnb) + (accEth * livePrices.eth);
+
+    // নতুন ইনপুট + আগের কমিটমেন্ট + পুলের অন্য সবার ডলার = টোটাল প্রজেক্ট ভ্যালু
+    const hypotheticalTotalUsd = totalPoolUsd + inputUsdVal;
+    const myTotalHypotheticalUsd = myExistingUsd + inputUsdVal;
+
+    let expectedSmat = 0;
+    if (hypotheticalTotalUsd > 0) {
+        // আপনার অংশ = (আপনার মোট ডলার / প্রজেক্টের মোট ডলার) * মোট সাপ্লাই
+        expectedSmat = (myTotalHypotheticalUsd / hypotheticalTotalUsd) * TOTAL_SMAT_SUPPLY;
+    }
+
+    document.getElementById('mySmatAlloc').innerText = expectedSmat.toFixed(8) + " SMAT";
+
 
             const cBtn = document.getElementById('claimBtn');
             if(poolData.claimEnabled && myAlloc > 0) {
