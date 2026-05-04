@@ -82,8 +82,33 @@
     margin-bottom: 5px;
 }
 
-        .stats-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 5px; padding: 10px; }
-        .stat-card { background: var(--card); padding: 10px; border-radius: 12px; border: 1px solid var(--border); }
+        .stats-grid { 
+    display: grid; 
+    grid-template-columns: repeat(2, 1fr); /* ফিক্সড ২ কলাম */
+    gap: 8px; 
+    padding: 10px; 
+    width: 100%; /* ফুল উইথ নিশ্চিত করা */
+}
+
+.stat-card { 
+    background: var(--card); 
+    padding: 12px 8px; /* প্যাডিং একটু কমিয়ে সেভ করা */
+    border-radius: 12px; 
+    border: 1px solid var(--border); 
+    display: flex; 
+    flex-direction: column; 
+    justify-content: center;
+    min-width: 0; /* কন্টেন্ট ওভারফ্লো রোধ করতে */
+}
+
+/* টাকার ফন্ট সাইজ রেসপনসিভ করা */
+.stat-card div:last-child {
+    font-size: clamp(12px, 4vw, 16px) !important; /* স্ক্রিন ছোট হলে ফন্ট ছোট হবে */
+    white-space: nowrap; /* এক লাইনে রাখবে */
+    overflow: hidden;
+    text-overflow: ellipsis; /* খুব বড় হলে ... দেখাবে */
+}
+
         .label { font-size: 10px; color: var(--text-sec); margin-bottom: 5px; text-transform: uppercase; }
 
         .presale-card { background: var(--card); margin: 0 15px; border-radius: 20px; padding: 20px; border: 1px solid var(--border); }
