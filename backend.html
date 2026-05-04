@@ -1,0 +1,318 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>SMAT | Presale</title>
+    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-database-compat.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@900&family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNTEyIiBoZWlnaHQ9IjUxMiIgdmlld0JveD0iMCAwIDUxMiA1MTIiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+CiAgPGNpcmNsZSBjeD0iMjU2IiBjeT0iMjU2IiByPSIyNDAiIGZpbGw9IiNmM2JhMmYiLz4KICA8Y2lyY2xlIGN4PSIyNTYiIGN5PSIyNTYiIHI9IjIxNSIgc3Ryb2tlPSJ3aGl0ZSIgc3Ryb2tlLXdpZHRoPSI4IiBmaWxsPSJ0cmFuc3BhcmVudCIvPgogIDxwYXRoIGQ9Ik0xNTAgMTcwIEMxNTAgMTQ1IDE3MCAxMzUgMjAwIDEzNSBMMzQwIDEzNSBDMzU1IDEzNSAzNjUgMTQ1IDM2NSAxNjAgQzM2NSAxNzUgMzU1IDE4NSAzNDAgMTg1IEwyMDUgMTg1IEMxOTAgMTg1IDE4NSAxOTAgMTg1IDIwNSBDMTg1IDIyMCAxOTAgMjI1IDIwNSAyMjUgTDM0MCAyMjUgQzM3MCAyMjUgMzkwIDI0NSAzOTAgMjc1IEwzOTAgMzI1IEMzOTAgMzU1IDM3MCAzNzUgMzQwIDM3NSBMMTcwIDM3NSBDMTU1IDM3NSAxNDUgMzY1IDE0NSAzNTAgQzE0NSAzMzUgMTU1IDMyNSAxNzAgMzI1IEwzMzUgMzI1IEMzNTAgMzI1IDM1NSAzMjAgMzU1IDMwNSBDMzU1IDI5MCAzNTAgMjg1IDMzNSAyODUgTDIwMCAyODUgQzE3MCAyODUgMTUwIDI2NSAxNTAgMjM1IFoiIGZpbGw9IndoaXRlIi8+Cjwvc3ZnPg==">   
+    <style>
+        :root {
+    --bg: #0b0e11; --card: #1e2329; --primary: #f3ba2f; 
+    --cyan: #00ffff; --text-sec: #848e9c; --border: rgba(255, 255, 255, 0.08);
+    --up: #0ecb81; --err: #f6465d;
+}
+
+* { 
+    box-sizing: border-box; 
+    margin: 0; padding: 0; 
+    font-family: 'Inter', sans-serif; 
+    font-weight: 700; 
+}
+
+body { 
+    background: var(--bg); 
+    color: white; 
+    padding-bottom: 100px; 
+    overflow-x: hidden; /* স্ক্রিন যাতে ডানে-বামে না নড়ে */
+}
+
+/* Header & Token Info */
+.header { 
+    padding: 30px 15px 15px 15px; 
+    text-align: center; 
+    background: linear-gradient(180deg, rgba(243, 186, 47, 0.1) 0%, var(--bg) 100%); 
+}
+
+.token-val { 
+    font-family: 'Montserrat', sans-serif; 
+    font-size: clamp(24px, 8vw, 32px); /* রেসপনসিভ ফন্ট */
+    color: var(--primary); 
+    margin: 10px 0;
+}
+
+/* Blinking Dot */
+.status-dot {
+    height: 18px; width: 18px;
+    background-color: #0ecb81;
+    border-radius: 50%;
+    display: inline-block;
+    margin-left: 6px;
+    vertical-align: middle;
+    animation: blinker 1s linear infinite;
+}
+@keyframes blinker { 50% { opacity: 0; } }
+
+/* Timer Logic */
+.timer-grid { 
+    display: flex; 
+    justify-content: center; 
+    gap: 6px; 
+    margin: 10px 0; 
+}
+.timer-unit { 
+    background: var(--card); 
+    border: 1px solid var(--border); 
+    padding: 6px; 
+    border-radius: 8px; 
+    flex: 1; /* সমান জায়গা নিবে */
+    max-width: 60px;
+    text-align: center; 
+}
+.timer-unit span { display: block; font-size: 14px; color: var(--primary); }
+.timer-unit label { font-size: 8px; color: var(--text-sec); text-transform: uppercase; }
+
+/* Progress Bar - Improved */
+.progress-box { 
+    margin: 15px; 
+}
+.progress-bar-bg { 
+    background: #12161c; 
+    height: 10px; 
+    border-radius: 10px; 
+    border: 1px solid var(--border); 
+    overflow: hidden; 
+    margin-top: 5px;
+}
+.progress-bar-fill { 
+    height: 100%; 
+    background: linear-gradient(90deg, var(--primary), var(--cyan)); 
+    width: 0%; 
+    transition: width 0.8s ease-in-out; 
+}
+
+/* Marquee - Moved Up */
+.marquee-wrapper {
+    background: rgba(243, 186, 47, 0.05);
+    border-top: 1px solid var(--border);
+    border-bottom: 1px solid var(--border);
+    padding: 5px 0;
+    margin: -8px 0 15px 0; /* নেগেটিভ মার্জিন দিয়ে প্রগ্রেস বারের কাছে আনা হয়েছে */
+}
+
+/* Stats Grid - 100% Responsive */
+.stats-grid { 
+    display: flex; 
+    flex-wrap: nowrap; /* এক লাইনে রাখার জন্য */
+    gap: 8px; 
+    padding: 5px 10px; 
+    width: 100%;
+}
+
+.stat-card { 
+    background: var(--card); 
+    padding: 12px 10px; 
+    border-radius: 12px; 
+    border: 1px solid var(--border); 
+    flex: 1; /* উভয় কার্ড সমান জায়গা নিবে */
+    min-width: 0; /* কন্টেন্ট বড় হলেও বক্স ভাঙবে না */
+}
+
+.stat-card .label { 
+    font-size: 9px; 
+    color: var(--text-sec); 
+    margin-bottom: 4px; 
+    text-transform: uppercase; 
+    white-space: nowrap;
+}
+
+.stat-card .val {
+    font-size: clamp(13px, 4vw, 16px); /* স্ক্রিন ছোট হলে ফন্ট ছোট হবে */
+    color: white;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis; /* বড় সংখ্যা হলে ... দেখাবে */
+}
+#toast-container { 
+    position: fixed; 
+    top: 120px; 
+    left: 50%; 
+    transform: translateX(-50%); 
+    z-index: 9999; 
+    width: 90%; 
+    max-width: 350px; 
+}
+
+.toast { 
+    background: var(--card); 
+    border-left: 4px solid var(--primary); 
+    padding: 15px; 
+    border-radius: 8px; 
+    margin-bottom: 10px; 
+    display: flex; 
+    align-items: center; 
+    gap: 12px; 
+    animation: slideIn 0.3s ease-out; 
+    box-shadow: 0 10px 30px rgba(0,0,0,0.5); 
+    color: white;
+    font-size: 14px;
+}
+
+.toast.success { border-left-color: var(--up); }
+.toast.error { border-left-color: var(--err); }
+
+@keyframes slideIn { 
+    from { transform: translateY(-100%); opacity: 0; } 
+    to { transform: translateY(0); opacity: 1; } 
+}
+
+
+        .presale-card { background: var(--card); margin: 0 15px; border-radius: 20px; padding: 20px; border: 1px solid var(--border); }
+        .asset-switcher { display: flex; background: var(--bg); border-radius: 12px; padding: 5px; margin-bottom: 15px; border: 1px solid var(--border); }
+        .switch-btn { flex: 1; padding: 10px; border: none; border-radius: 10px; background: transparent; color: var(--text-sec); cursor: pointer; font-size: 12px; transition: 0.3s; }
+        .switch-btn.active { background: var(--card); color: white; border: 1px solid var(--border); }
+        .switch-btn.active.bnb { color: var(--primary); }
+        .switch-btn.active.eth { color: #627eea; }
+
+        .input-box { background: var(--bg); border: 1px solid var(--border); border-radius: 12px; padding: 15px; display: flex; align-items: center; }
+        .input-box input { background: transparent; border: none; color: white; flex: 1; outline: none; font-size: 20px; font-weight: bold; }
+        
+        .user-report { margin-top: 15px; padding: 15px; background: rgba(255,255,255,0.02); border-radius: 12px; border: 1px solid var(--border); }
+        .report-line { display: flex; justify-content: space-between; font-size: 12px; margin-bottom: 8px; color: var(--text-sec); }
+        .report-line b { color: white; font-family: monospace; }
+
+        .btn-main { width: 100%; padding: 18px; border-radius: 15px; border: none; font-size: 16px; cursor: pointer; background: var(--primary); color: black; text-transform: uppercase; margin-top: 10px; transition: 0.2s; }
+        .btn-main:active { transform: scale(0.98); opacity: 0.9; }
+        .btn-claim { width: 100%; padding: 18px; border-radius: 15px; margin-top: 15px; border: 2px dashed var(--border); background: transparent; color: var(--text-sec); cursor: not-allowed; }
+        .btn-claim.active { background: var(--up); color: white; border: none; cursor: pointer; }
+
+        .footer { position: fixed; bottom: 0; width: 100%; height: 75px; background: #0b0e11; display: flex; justify-content: space-around; align-items: center; border-top: 1px solid var(--border); }
+        .f-nav { text-decoration: none; color: var(--text-sec); font-size: 12px; display: flex; flex-direction: column; align-items: center; gap: 4px; }
+        .f-nav.active { color: var(--primary); }
+    </style>
+</head>
+<body>
+
+    <div id="toast-container"></div>
+
+    <div class="header">
+    <p style="font-size: 11px; color: var(--cyan); letter-spacing: 2px; display: flex; align-items: center; justify-content: center;">
+        SMAT PRESALE Live <span class="status-dot"></span>
+    </p>
+
+    <div class="timer-grid">
+        <div class="timer-unit"><span id="days">00</span><label>Days</label></div>
+        <div class="timer-unit"><span id="hours">00</span><label>Hrs</label></div>
+        <div class="timer-unit"><span id="mins">00</span><label>Min</label></div>
+        <div class="timer-unit"><span id="secs">00</span><label>Sec</label></div>
+    </div>
+
+    <div class="token-val">750,000 SMAT</div>
+    
+    <p style="font-size: 10px; color: var(--text-sec);">
+        Live SMAT Rate: <span id="smatRateDisplay" style="color:white">$0.00000000</span>
+    </p>
+
+    <div class="progress-box">
+        <div style="display: flex; justify-content: space-between; font-size: 10px;">
+            <span style="color: var(--text-sec);">Progress: <span id="progressPercent" style="color:var(--cyan)">0.00%</span></span>
+            <span style="color: var(--text-sec);">Max: <b style="color:var(--primary)">$3,000,000</b></span>
+        </div>
+        <div class="progress-bar-bg">
+            <div class="progress-bar-fill" id="progressBar"></div>
+        </div>
+    </div>
+</div>
+
+<div class="marquee-wrapper">
+    <marquee behavior="scroll" direction="left" style="font-size: 10px; color: var(--primary);">
+        🔥 First Come, First Served! Max Committed Goal: $3,000,000. Participate now before the time runs out!
+    </marquee>
+</div>
+
+<div class="stats-grid">
+    <div class="stat-card">
+        <div class="label">Pool Total USD</div>
+        <div class="val">$<span id="totalPoolUSD">0.00</span></div>
+    </div>
+    <div class="stat-card">
+        <div class="label">My Total Shares</div>
+        <div class="val" style="color:var(--cyan)">$<span id="myTotalUSD">0.00</span></div>
+    </div>
+</div>
+
+
+    <div class="presale-card">
+        <div class="asset-switcher">
+            <button class="switch-btn active bnb" id="bnbSwitch" onclick="toggleAsset('bnb')">BNB</button>
+            <button class="switch-btn eth" id="ethSwitch" onclick="toggleAsset('eth')">ETH</button>
+        </div>
+
+        <div style="display:flex; justify-content:space-between; font-size:11px; margin-bottom:8px;">
+            <span style="color:var(--text-sec)">Available Balance</span>
+            <span id="currentBalance" style="color:var(--primary)">0.00000000</span>
+        </div>
+
+        <div class="input-box">
+            <input type="number" id="commitInput" placeholder="0.00" oninput="calcValuation()">
+            <span id="selectedAssetTag" style="color:var(--primary); font-size:14px;">BNB</span>
+        </div>
+
+        <div class="user-report">
+            <div class="report-line"><span>Total Accumulated BNB:</span> <b id="dispBnb">0.00000000</b></div>
+            <div class="report-line"><span>Total Accumulated ETH:</span> <b id="dispEth">0.00000000</b></div>
+            <div class="report-line" style="border-top: 1px solid var(--border); padding-top: 8px; margin-top: 8px;">
+                <span style="color:var(--cyan)">Est. SMAT Reward:</span> 
+                <b id="mySmatAlloc" style="color:var(--up)">0.00000000 SMAT</b>
+            </div>
+        </div>
+
+        <button class="btn-main" onclick="processCommitment()">CONFIRM COMMIT</button>
+
+        <button id="claimBtn" class="btn-claim" disabled onclick="processClaim()">
+            <i class="fas fa-lock"></i> CLAIM TO WALLET
+        </button>
+    </div>
+
+    <footer class="footer">
+        <a href="home.html" class="f-nav"><i class="fas fa-home"></i>Home</a>
+        <a href="presale.html" class="f-nav active"><i class="fas fa-gem"></i>Presale</a>
+        <a href="wallet.html" class="f-nav"><i class="fas fa-wallet"></i>Wallet</a>
+    </footer>
+
+    <script>
+        // এই ফাংশনগুলো আপনার <script> ট্যাগের ভিতর রাখুন
+async function processCommitment() {
+    const amt = parseFloat(document.getElementById('commitInput').value);
+    const userBal = parseFloat(userData[currentAsset + '_balance'] || 0);
+    
+    if(!amt || amt <= 0) return showToast("Enter valid amount", "error");
+    if(amt > userBal) return showToast("Insufficient Balance", "error");
+
+    const callCloud = firebase.functions().httpsCallable('processCommitment');
+    try {
+        showToast("Processing on server...");
+        await callCloud({ amount: amt, asset: currentAsset, livePrice: livePrices[currentAsset] });
+        document.getElementById('commitInput').value = "";
+        showToast("Done! Balance updated.");
+    } catch(e) { showToast(e.message, "error"); }
+}
+
+async function processClaim() {
+    const callClaim = firebase.functions().httpsCallable('processClaim');
+    try {
+        showToast("Claiming...");
+        const res = await callClaim({ bnbPrice: livePrices.bnb, ethPrice: livePrices.eth });
+        if(res.data.success) showToast(`Claimed ${res.data.amount.toFixed(4)} SMAT!`);
+    } catch(e) { showToast(e.message, "error"); }
+}
+
+// UI এবং টাইমার লজিক আপনার আগের কোড অনুযায়ী অপরিবর্তিত থাকবে।
+
+    </script>
+</body>
+</html>
