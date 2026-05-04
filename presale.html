@@ -42,6 +42,45 @@
 @keyframes blinker {
     50% { opacity: 0; }
 }
+/* সলিড ব্লিংকিং ডট */
+.status-dot {
+    height: 8px; width: 8px;
+    background-color: #0ecb81;
+    border-radius: 50%;
+    display: inline-block;
+    margin-left: 6px;
+    animation: blinker 1s linear infinite;
+}
+@keyframes blinker { 50% { opacity: 0; } }
+
+/* টাইমার ডিজাইন */
+.timer-grid { display: flex; justify-content: center; gap: 8px; margin: 15px 0; }
+.timer-unit { 
+    background: var(--card); border: 1px solid var(--border); 
+    padding: 8px; border-radius: 8px; min-width: 45px; text-align: center; 
+}
+.timer-unit span { display: block; font-size: 16px; color: var(--primary); }
+.timer-unit label { font-size: 8px; color: var(--text-sec); text-transform: uppercase; }
+
+/* প্রগ্রেস বার ডিজাইন */
+.progress-box { margin: 0 15px 20px 15px; }
+.progress-bar-bg { 
+    background: #12161c; height: 10px; border-radius: 10px; 
+    border: 1px solid var(--border); overflow: hidden; margin-top: 5px;
+}
+.progress-bar-fill { 
+    height: 100%; background: linear-gradient(90deg, var(--primary), var(--cyan)); 
+    width: 0%; transition: width 0.8s ease-in-out; 
+}
+
+/* Marquee ডিজাইন */
+.marquee-wrapper {
+    background: rgba(243, 186, 47, 0.05);
+    border-top: 1px solid var(--border);
+    border-bottom: 1px solid var(--border);
+    padding: 6px 0;
+    margin-bottom: 15px;
+}
 
         .stats-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; padding: 15px; }
         .stat-card { background: var(--card); padding: 15px; border-radius: 12px; border: 1px solid var(--border); }
@@ -79,18 +118,43 @@
     <p style="font-size: 11px; color: var(--cyan); letter-spacing: 2px; display: flex; align-items: center; justify-content: center;">
         SMAT PRESALE Live <span class="status-dot"></span>
     </p>
+
+    <div class="timer-grid">
+        <div class="timer-unit"><span id="days">00</span><label>Days</label></div>
+        <div class="timer-unit"><span id="hours">00</span><label>Hrs</label></div>
+        <div class="timer-unit"><span id="mins">00</span><label>Min</label></div>
+        <div class="timer-unit"><span id="secs">00</span><label>Sec</label></div>
+    </div>
+
     <div class="token-val">750,000 SMAT</div>
-    <p style="font-size: 10px; color: var(--text-sec);">
+    <p style="font-size: 10px; color: var(--text-sec); margin-bottom: 15px;">
         Live SMAT Rate: <span id="smatRateDisplay">$0.00000000</span>
     </p>
+
+    <div class="progress-box">
+        <div style="display: flex; justify-content: space-between; font-size: 11px;">
+            <span style="color: var(--text-sec);">Progress: <span id="progressPercent">0.00%</span></span>
+            <span style="color: var(--primary);">Max: $3,000,000</span>
+        </div>
+        <div class="progress-bar-bg">
+            <div class="progress-bar-fill" id="progressBar"></div>
+        </div>
+    </div>
 </div>
 
+<div class="marquee-wrapper">
+    <marquee behavior="scroll" direction="left" style="font-size: 11px; color: var(--primary);">
+        🔥 First Come, First Served! Max Committed Goal: $3,000,000. Participate now before the time runs out!
+    </marquee>
+</div>
 
-    <div class="stats-grid">
-        <div class="stat-card">
-            <div class="label">Pool Total USD</div>
-            <div style="font-size: 16px;">$<span id="totalPoolUSD">0.00</span></div>
-        </div>
+<div class="stats-grid">
+    <div class="stat-card">
+        <div class="label">Pool Total USD</div>
+        <div style="font-size: 16px;">$<span id="totalPoolUSD">0.00</span></div>
+    </div>
+    </div>
+
         <div class="stat-card">
             <div class="label">My Total Shares</div>
             <div style="font-size: 16px; color: var(--cyan);">$<span id="myTotalUSD">0.00</span></div>
@@ -191,34 +255,80 @@
         }
 
         function updateUI() {
-            const bal = parseFloat(userData[currentAsset + '_balance'] || 0);
-            document.getElementById('currentBalance').innerText = bal.toFixed(8);
-            
-            const totalPoolUsd = parseFloat(poolData.totalUsd || 0);
-            const accBnb = parseFloat(userData.presale_bnb || 0);
-            const accEth = parseFloat(userData.presale_eth || 0);
-            const myLiveUsdVal = (accBnb * livePrices.bnb) + (accEth * livePrices.eth);
+    // ১. ইউজারের বর্তমান ওয়ালেট ব্যালেন্স (BNB বা ETH)
+    const bal = parseFloat(userData[currentAsset + '_balance'] || 0);
+    document.getElementById('currentBalance').innerText = bal.toFixed(8);
+    
+    // ২. গ্লোবাল পুল এবং ইউজারের ইনভেস্টমেন্ট ডেটা
+    const totalPoolUsd = parseFloat(poolData.totalUsd || 0);
+    const accBnb = parseFloat(userData.presale_bnb || 0);
+    const accEth = parseFloat(userData.presale_eth || 0);
+    
+    // ৩. ইউজারের মোট ইনভেস্টমেন্টের বর্তমান ডলার ভ্যালু
+    const myLiveUsdVal = (accBnb * livePrices.bnb) + (accEth * livePrices.eth);
 
-            let smatRate = totalPoolUsd > 0 ? (totalPoolUsd / TOTAL_SMAT_SUPPLY) : 0;
+    // ৪. SMAT Rate ক্যালকুলেশন (পুলের মোট ডলার / মোট সাপ্লাই)
+    const TOTAL_SMAT_SUPPLY = 750000;
+    let smatRate = totalPoolUsd > 0 ? (totalPoolUsd / TOTAL_SMAT_SUPPLY) : 0;
 
-            document.getElementById('totalPoolUSD').innerText = totalPoolUsd.toLocaleString(undefined, {minimumFractionDigits:2});
-            document.getElementById('smatRateDisplay').innerText = "$" + smatRate.toFixed(8);
-            document.getElementById('myTotalUSD').innerText = myLiveUsdVal.toFixed(2);
-            document.getElementById('dispBnb').innerText = accBnb.toFixed(8);
-            document.getElementById('dispEth').innerText = accEth.toFixed(8);
+    // ৫. UI এলিমেন্ট আপডেট
+    document.getElementById('totalPoolUSD').innerText = totalPoolUsd.toLocaleString(undefined, {minimumFractionDigits:2});
+    document.getElementById('smatRateDisplay').innerText = "$" + smatRate.toFixed(8);
+    document.getElementById('myTotalUSD').innerText = myLiveUsdVal.toFixed(2);
+    document.getElementById('dispBnb').innerText = accBnb.toFixed(8);
+    document.getElementById('dispEth').innerText = accEth.toFixed(8);
 
-            calcValuation(); // টাইপ না করলেও এক্যুমুলেটেড ভ্যালু অনুযায়ী টোকেন দেখাবে
+    // ================= [ প্রগ্রেস বার লজিক ] =================
+    const maxGoal = 3000000; // আপনার টার্গেট ৩ মিলিয়ন ডলার
+    let percentage = (totalPoolUsd / maxGoal) * 100;
+    if (percentage > 100) percentage = 100; // ১০০% এর বেশি দেখাবে না
 
-            const cBtn = document.getElementById('claimBtn');
-            const myAlloc = smatRate > 0 ? (myLiveUsdVal / smatRate) : 0;
-            if(poolData.claimEnabled && myAlloc > 0) {
-                cBtn.disabled = false; cBtn.classList.add('active');
-                cBtn.innerHTML = `<i class="fas fa-unlock"></i> CLAIM TO WALLET`;
-            } else {
-                cBtn.disabled = true; cBtn.classList.remove('active');
-                cBtn.innerHTML = `<i class="fas fa-lock"></i> CLAIM TO WALLET`;
-            }
+    document.getElementById('progressBar').style.width = percentage + "%";
+    document.getElementById('progressPercent').innerText = percentage.toFixed(2) + "%";
+    // ========================================================
+
+    // ৬. ইনপুট বক্সের এস্টিমেশন আপডেট
+    calcValuation(); 
+
+    // ৭. ক্লেম বাটনের অবস্থা চেক
+    const cBtn = document.getElementById('claimBtn');
+    const myAlloc = smatRate > 0 ? (myLiveUsdVal / smatRate) : 0;
+
+    if(poolData.claimEnabled && myAlloc > 0) {
+        cBtn.disabled = false; 
+        cBtn.classList.add('active');
+        cBtn.innerHTML = `<i class="fas fa-unlock"></i> CLAIM TO WALLET`;
+    } else {
+        cBtn.disabled = true; 
+        cBtn.classList.remove('active');
+        cBtn.innerHTML = `<i class="fas fa-lock"></i> CLAIM TO WALLET`;
+    }
+}
+
+// টাইমার ফাংশন (এটি একবার init এ কল করলেই হবে)
+function startTimer() {
+    // বর্তমান সময় থেকে ৭ দিন যোগ করা হলো
+    const targetTime = new Date().getTime() + (7 * 24 * 60 * 60 * 1000);
+
+    const timerInt = setInterval(() => {
+        const now = new Date().getTime();
+        const diff = targetTime - now;
+
+        if (diff <= 0) {
+            clearInterval(timerInt);
+            return;
         }
+
+        document.getElementById('days').innerText = Math.floor(diff / (1000 * 60 * 60 * 24)).toString().padStart(2, '0');
+        document.getElementById('hours').innerText = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60)).toString().padStart(2, '0');
+        document.getElementById('mins').innerText = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60)).toString().padStart(2, '0');
+        document.getElementById('secs').innerText = Math.floor((diff % (1000 * 60)) / 1000).toString().padStart(2, '0');
+    }, 1000);
+}
+
+// উইন্ডো লোড হলে টাইমার শুরু হবে
+startTimer();
+
 
         function calcValuation() {
             const amt = parseFloat(document.getElementById('commitInput').value) || 0;
