@@ -12,104 +12,132 @@
   <link rel="icon" type="image/svg+xml" href="data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNTEyIiBoZWlnaHQ9IjUxMiIgdmlld0JveD0iMCAwIDUxMiA1MTIiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+CiAgPGNpcmNsZSBjeD0iMjU2IiBjeT0iMjU2IiByPSIyNDAiIGZpbGw9IiNmM2JhMmYiLz4KICA8Y2lyY2xlIGN4PSIyNTYiIGN5PSIyNTYiIHI9IjIxNSIgc3Ryb2tlPSJ3aGl0ZSIgc3Ryb2tlLXdpZHRoPSI4IiBmaWxsPSJ0cmFuc3BhcmVudCIvPgogIDxwYXRoIGQ9Ik0xNTAgMTcwIEMxNTAgMTQ1IDE3MCAxMzUgMjAwIDEzNSBMMzQwIDEzNSBDMzU1IDEzNSAzNjUgMTQ1IDM2NSAxNjAgQzM2NSAxNzUgMzU1IDE4NSAzNDAgMTg1IEwyMDUgMTg1IEMxOTAgMTg1IDE4NSAxOTAgMTg1IDIwNSBDMTg1IDIyMCAxOTAgMjI1IDIwNSAyMjUgTDM0MCAyMjUgQzM3MCAyMjUgMzkwIDI0NSAzOTAgMjc1IEwzOTAgMzI1IEMzOTAgMzU1IDM3MCAzNzUgMzQwIDM3NSBMMTcwIDM3NSBDMTU1IDM3NSAxNDUgMzY1IDE0NSAzNTAgQzE0NSAzMzUgMTU1IDMyNSAxNzAgMzI1IEwzMzUgMzI1IEMzNTAgMzI1IDM1NSAzMjAgMzU1IDMwNSBDMzU1IDI5MCAzNTAgMjg1IDMzNSAyODUgTDIwMCAyODUgQzE3MCAyODUgMTUwIDI2NSAxNTAgMjM1IFoiIGZpbGw9IndoaXRlIi8+Cjwvc3ZnPg==">   
     <style>
         :root {
-            --bg: #0b0e11; --card: #1e2329; --primary: #f3ba2f; 
-            --cyan: #00ffff; --text-sec: #848e9c; --border: rgba(255, 255, 255, 0.08);
-            --up: #0ecb81; --err: #f6465d;
-        }
-        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Inter', sans-serif; font-weight: 700; }
-        body { background: var(--bg); color: white; padding-bottom: 100px; }
-
-        #toast-container { position: fixed; top: 20px; left: 50%; transform: translateX(-50%); z-index: 9999; width: 90%; max-width: 350px; }
-        .toast { background: var(--card); border-left: 4px solid var(--primary); padding: 15px; border-radius: 8px; margin-bottom: 10px; display: flex; align-items: center; gap: 12px; animation: slideIn 0.3s ease-out; box-shadow: 0 10px 30px rgba(0,0,0,0.5); }
-        .toast.success { border-left-color: var(--up); }
-        .toast.error { border-left-color: var(--err); }
-        @keyframes slideIn { from { transform: translateY(-100%); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
-
-        .header { padding: 40px 20px; text-align: center; background: linear-gradient(180deg, rgba(243, 186, 47, 0.1) 0%, var(--bg) 100%); }
-        .token-val { font-family: 'Montserrat', sans-serif; font-size: 32px; color: var(--primary); }
-        /* সলিড ব্লিংকিং ডট */
-.status-dot {
-    height: 25px;
-    width: 25px;
-    background-color: #0ecb81; /* সলিড গ্রিন */
-    border-radius: 50%;
-    display: inline-block;
-    margin-left: 5px; /* লেখা থেকে ডটের দূরত্ব */
-    vertical-align: middle; /* লেখার সাথে এলাইনমেন্ট ঠিক রাখার জন্য */
-    animation: blinker 1s linear infinite;
+    --bg: #0b0e11; --card: #1e2329; --primary: #f3ba2f; 
+    --cyan: #00ffff; --text-sec: #848e9c; --border: rgba(255, 255, 255, 0.08);
+    --up: #0ecb81; --err: #f6465d;
 }
 
-@keyframes blinker {
-    50% { opacity: 0; }
+* { 
+    box-sizing: border-box; 
+    margin: 0; padding: 0; 
+    font-family: 'Inter', sans-serif; 
+    font-weight: 700; 
 }
-/* সলিড ব্লিংকিং ডট */
+
+body { 
+    background: var(--bg); 
+    color: white; 
+    padding-bottom: 100px; 
+    overflow-x: hidden; /* স্ক্রিন যাতে ডানে-বামে না নড়ে */
+}
+
+/* Header & Token Info */
+.header { 
+    padding: 30px 15px 15px 15px; 
+    text-align: center; 
+    background: linear-gradient(180deg, rgba(243, 186, 47, 0.1) 0%, var(--bg) 100%); 
+}
+
+.token-val { 
+    font-family: 'Montserrat', sans-serif; 
+    font-size: clamp(24px, 8vw, 32px); /* রেসপনসিভ ফন্ট */
+    color: var(--primary); 
+    margin: 10px 0;
+}
+
+/* Blinking Dot */
 .status-dot {
     height: 8px; width: 8px;
     background-color: #0ecb81;
     border-radius: 50%;
     display: inline-block;
     margin-left: 6px;
+    vertical-align: middle;
     animation: blinker 1s linear infinite;
 }
 @keyframes blinker { 50% { opacity: 0; } }
 
-/* টাইমার ডিজাইন */
-.timer-grid { display: flex; justify-content: center; gap: 8px; margin: 15px 0; }
-.timer-unit { 
-    background: var(--card); border: 1px solid var(--border); 
-    padding: 8px; border-radius: 8px; min-width: 45px; text-align: center; 
+/* Timer Logic */
+.timer-grid { 
+    display: flex; 
+    justify-content: center; 
+    gap: 6px; 
+    margin: 10px 0; 
 }
-.timer-unit span { display: block; font-size: 16px; color: var(--primary); }
+.timer-unit { 
+    background: var(--card); 
+    border: 1px solid var(--border); 
+    padding: 6px; 
+    border-radius: 8px; 
+    flex: 1; /* সমান জায়গা নিবে */
+    max-width: 60px;
+    text-align: center; 
+}
+.timer-unit span { display: block; font-size: 14px; color: var(--primary); }
 .timer-unit label { font-size: 8px; color: var(--text-sec); text-transform: uppercase; }
 
-/* প্রগ্রেস বার ডিজাইন */
-.progress-box { margin: 0 15px 20px 15px; }
+/* Progress Bar - Improved */
+.progress-box { 
+    margin: 15px; 
+}
 .progress-bar-bg { 
-    background: #12161c; height: 10px; border-radius: 10px; 
-    border: 1px solid var(--border); overflow: hidden; margin-top: 5px;
+    background: #12161c; 
+    height: 10px; 
+    border-radius: 10px; 
+    border: 1px solid var(--border); 
+    overflow: hidden; 
+    margin-top: 5px;
 }
 .progress-bar-fill { 
-    height: 100%; background: linear-gradient(90deg, var(--primary), var(--cyan)); 
-    width: 0%; transition: width 0.8s ease-in-out; 
+    height: 100%; 
+    background: linear-gradient(90deg, var(--primary), var(--cyan)); 
+    width: 0%; 
+    transition: width 0.8s ease-in-out; 
 }
 
-/* Marquee ডিজাইন */
+/* Marquee - Moved Up */
 .marquee-wrapper {
     background: rgba(243, 186, 47, 0.05);
     border-top: 1px solid var(--border);
     border-bottom: 1px solid var(--border);
-    padding: 6px 0;
-    margin-bottom: 5px;
+    padding: 5px 0;
+    margin: -5px 0 15px 0; /* নেগেটিভ মার্জিন দিয়ে প্রগ্রেস বারের কাছে আনা হয়েছে */
 }
 
-        .stats-grid { 
-    display: grid; 
-    grid-template-columns: repeat(2, 1fr); /* ফিক্সড ২ কলাম */
+/* Stats Grid - 100% Responsive */
+.stats-grid { 
+    display: flex; 
+    flex-wrap: nowrap; /* এক লাইনে রাখার জন্য */
     gap: 8px; 
-    padding: 10px; 
-    width: 100%; /* ফুল উইথ নিশ্চিত করা */
+    padding: 0 15px; 
+    width: 100%;
 }
 
 .stat-card { 
     background: var(--card); 
-    padding: 12px 8px; /* প্যাডিং একটু কমিয়ে সেভ করা */
+    padding: 12px 10px; 
     border-radius: 12px; 
     border: 1px solid var(--border); 
-    display: flex; 
-    flex-direction: column; 
-    justify-content: center;
-    min-width: 0; /* কন্টেন্ট ওভারফ্লো রোধ করতে */
+    flex: 1; /* উভয় কার্ড সমান জায়গা নিবে */
+    min-width: 0; /* কন্টেন্ট বড় হলেও বক্স ভাঙবে না */
 }
 
-/* টাকার ফন্ট সাইজ রেসপনসিভ করা */
-.stat-card div:last-child {
-    font-size: clamp(12px, 4vw, 16px) !important; /* স্ক্রিন ছোট হলে ফন্ট ছোট হবে */
-    white-space: nowrap; /* এক লাইনে রাখবে */
+.stat-card .label { 
+    font-size: 9px; 
+    color: var(--text-sec); 
+    margin-bottom: 4px; 
+    text-transform: uppercase; 
+    white-space: nowrap;
+}
+
+.stat-card .val {
+    font-size: clamp(13px, 4vw, 16px); /* স্ক্রিন ছোট হলে ফন্ট ছোট হবে */
+    color: white;
+    white-space: nowrap;
     overflow: hidden;
-    text-overflow: ellipsis; /* খুব বড় হলে ... দেখাবে */
+    text-overflow: ellipsis; /* বড় সংখ্যা হলে ... দেখাবে */
 }
 
-        .label { font-size: 10px; color: var(--text-sec); margin-bottom: 5px; text-transform: uppercase; }
 
         .presale-card { background: var(--card); margin: 0 15px; border-radius: 20px; padding: 20px; border: 1px solid var(--border); }
         .asset-switcher { display: flex; background: var(--bg); border-radius: 12px; padding: 5px; margin-bottom: 15px; border: 1px solid var(--border); }
@@ -152,14 +180,15 @@
     </div>
 
     <div class="token-val">750,000 SMAT</div>
-    <p style="font-size: 10px; color: var(--text-sec); margin-bottom: 15px;">
-        Live SMAT Rate: <span id="smatRateDisplay">$0.00000000</span>
+    
+    <p style="font-size: 10px; color: var(--text-sec);">
+        Live SMAT Rate: <span id="smatRateDisplay" style="color:white">$0.00000000</span>
     </p>
 
     <div class="progress-box">
-        <div style="display: flex; justify-content: space-between; font-size: 11px;">
-            <span style="color: var(--text-sec);">Progress: <span id="progressPercent">0.00%</span></span>
-            <span style="color: var(--primary);">Max: $3,000,000</span>
+        <div style="display: flex; justify-content: space-between; font-size: 10px;">
+            <span style="color: var(--text-sec);">Progress: <span id="progressPercent" style="color:var(--cyan)">0.00%</span></span>
+            <span style="color: var(--text-sec);">Max: <b style="color:var(--primary)">$3,000,000</b></span>
         </div>
         <div class="progress-bar-bg">
             <div class="progress-bar-fill" id="progressBar"></div>
@@ -168,7 +197,7 @@
 </div>
 
 <div class="marquee-wrapper">
-    <marquee behavior="scroll" direction="left" style="font-size: 11px; color: var(--primary);">
+    <marquee behavior="scroll" direction="left" style="font-size: 10px; color: var(--primary);">
         🔥 First Come, First Served! Max Committed Goal: $3,000,000. Participate now before the time runs out!
     </marquee>
 </div>
@@ -176,15 +205,14 @@
 <div class="stats-grid">
     <div class="stat-card">
         <div class="label">Pool Total USD</div>
-        <div style="font-size: 16px;">$<span id="totalPoolUSD">0.00</span></div>
+        <div class="val">$<span id="totalPoolUSD">0.00</span></div>
     </div>
+    <div class="stat-card">
+        <div class="label">My Total Shares</div>
+        <div class="val" style="color:var(--cyan)">$<span id="myTotalUSD">0.00</span></div>
     </div>
+</div>
 
-        <div class="stat-card">
-            <div class="label">My Total Shares</div>
-            <div style="font-size: 16px; color: var(--cyan);">$<span id="myTotalUSD">0.00</span></div>
-        </div>
-    </div>
 
     <div class="presale-card">
         <div class="asset-switcher">
