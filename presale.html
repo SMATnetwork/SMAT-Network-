@@ -137,6 +137,38 @@ body {
     overflow: hidden;
     text-overflow: ellipsis; /* বড় সংখ্যা হলে ... দেখাবে */
 }
+#toast-container { 
+    position: fixed; 
+    top: 20px; 
+    left: 50%; 
+    transform: translateX(-50%); 
+    z-index: 9999; 
+    width: 90%; 
+    max-width: 350px; 
+}
+
+.toast { 
+    background: var(--card); 
+    border-left: 4px solid var(--primary); 
+    padding: 15px; 
+    border-radius: 8px; 
+    margin-bottom: 10px; 
+    display: flex; 
+    align-items: center; 
+    gap: 12px; 
+    animation: slideIn 0.3s ease-out; 
+    box-shadow: 0 10px 30px rgba(0,0,0,0.5); 
+    color: white;
+    font-size: 14px;
+}
+
+.toast.success { border-left-color: var(--up); }
+.toast.error { border-left-color: var(--err); }
+
+@keyframes slideIn { 
+    from { transform: translateY(-100%); opacity: 0; } 
+    to { transform: translateY(0); opacity: 1; } 
+}
 
 
         .presale-card { background: var(--card); margin: 0 15px; border-radius: 20px; padding: 20px; border: 1px solid var(--border); }
