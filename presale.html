@@ -19,7 +19,6 @@
         * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Inter', sans-serif; font-weight: 700; }
         body { background: var(--bg); color: white; padding-bottom: 100px; }
 
-        /* Graphic Toast */
         #toast-container { position: fixed; top: 20px; left: 50%; transform: translateX(-50%); z-index: 9999; width: 90%; max-width: 350px; }
         .toast { background: var(--card); border-left: 4px solid var(--primary); padding: 15px; border-radius: 8px; margin-bottom: 10px; display: flex; align-items: center; gap: 12px; animation: slideIn 0.3s ease-out; box-shadow: 0 10px 30px rgba(0,0,0,0.5); }
         .toast.success { border-left-color: var(--up); }
@@ -35,20 +34,20 @@
 
         .presale-card { background: var(--card); margin: 0 15px; border-radius: 20px; padding: 20px; border: 1px solid var(--border); }
         .asset-switcher { display: flex; background: var(--bg); border-radius: 12px; padding: 5px; margin-bottom: 15px; border: 1px solid var(--border); }
-        .switch-btn { flex: 1; padding: 10px; border: none; border-radius: 10px; background: transparent; color: var(--text-sec); cursor: pointer; font-size: 12px; }
+        .switch-btn { flex: 1; padding: 10px; border: none; border-radius: 10px; background: transparent; color: var(--text-sec); cursor: pointer; font-size: 12px; transition: 0.3s; }
         .switch-btn.active { background: var(--card); color: white; border: 1px solid var(--border); }
         .switch-btn.active.bnb { color: var(--primary); }
         .switch-btn.active.eth { color: #627eea; }
 
         .input-box { background: var(--bg); border: 1px solid var(--border); border-radius: 12px; padding: 15px; display: flex; align-items: center; }
-        .input-box input { background: transparent; border: none; color: white; flex: 1; outline: none; font-size: 20px; }
+        .input-box input { background: transparent; border: none; color: white; flex: 1; outline: none; font-size: 20px; font-weight: bold; }
         
-        /* Accumulated Report Section */
         .user-report { margin-top: 15px; padding: 15px; background: rgba(255,255,255,0.02); border-radius: 12px; border: 1px solid var(--border); }
         .report-line { display: flex; justify-content: space-between; font-size: 12px; margin-bottom: 8px; color: var(--text-sec); }
         .report-line b { color: white; font-family: monospace; }
 
-        .btn-main { width: 100%; padding: 18px; border-radius: 15px; border: none; font-size: 16px; cursor: pointer; background: var(--primary); color: black; text-transform: uppercase; margin-top: 10px; }
+        .btn-main { width: 100%; padding: 18px; border-radius: 15px; border: none; font-size: 16px; cursor: pointer; background: var(--primary); color: black; text-transform: uppercase; margin-top: 10px; transition: 0.2s; }
+        .btn-main:active { transform: scale(0.98); opacity: 0.9; }
         .btn-claim { width: 100%; padding: 18px; border-radius: 15px; margin-top: 15px; border: 2px dashed var(--border); background: transparent; color: var(--text-sec); cursor: not-allowed; }
         .btn-claim.active { background: var(--up); color: white; border: none; cursor: pointer; }
 
@@ -172,71 +171,68 @@
         }
 
         function updateUI() {
-    const bal = parseFloat(userData[currentAsset + '_balance'] || 0);
-    document.getElementById('currentBalance').innerText = bal.toFixed(8);
-    
-    const totalPoolUsd = parseFloat(poolData.totalUsd || 0);
-    const accBnb = parseFloat(userData.presale_bnb || 0);
-    const accEth = parseFloat(userData.presale_eth || 0);
-    const myLiveUsdVal = (accBnb * livePrices.bnb) + (accEth * livePrices.eth);
+            const bal = parseFloat(userData[currentAsset + '_balance'] || 0);
+            document.getElementById('currentBalance').innerText = bal.toFixed(8);
+            
+            const totalPoolUsd = parseFloat(poolData.totalUsd || 0);
+            const accBnb = parseFloat(userData.presale_bnb || 0);
+            const accEth = parseFloat(userData.presale_eth || 0);
+            const myLiveUsdVal = (accBnb * livePrices.bnb) + (accEth * livePrices.eth);
 
-    // SMAT Rate calculation with Fallback logic
-    let smatRate = totalPoolUsd > 0 ? (totalPoolUsd / TOTAL_SMAT_SUPPLY) : 0;
+            let smatRate = totalPoolUsd > 0 ? (totalPoolUsd / TOTAL_SMAT_SUPPLY) : 0;
 
-    document.getElementById('totalPoolUSD').innerText = totalPoolUsd.toLocaleString(undefined, {minimumFractionDigits:2});
-    document.getElementById('smatRateDisplay').innerText = "$" + smatRate.toFixed(8);
-    document.getElementById('myTotalUSD').innerText = myLiveUsdVal.toFixed(2);
-    document.getElementById('dispBnb').innerText = accBnb.toFixed(8);
-    document.getElementById('dispEth').innerText = accEth.toFixed(8);
+            document.getElementById('totalPoolUSD').innerText = totalPoolUsd.toLocaleString(undefined, {minimumFractionDigits:2});
+            document.getElementById('smatRateDisplay').innerText = "$" + smatRate.toFixed(8);
+            document.getElementById('myTotalUSD').innerText = myLiveUsdVal.toFixed(2);
+            document.getElementById('dispBnb').innerText = accBnb.toFixed(8);
+            document.getElementById('dispEth').innerText = accEth.toFixed(8);
 
-    calcValuation(); // UI আপডেট হওয়ার সময় ক্যালকুলেশন কল হবে
-}
-
-function calcValuation() {
-    const amt = parseFloat(document.getElementById('commitInput').value) || 0;
-    const inputUsdVal = amt * livePrices[currentAsset];
-    
-    const totalPoolUsd = parseFloat(poolData.totalUsd || 0);
-    const accBnb = parseFloat(userData.presale_bnb || 0);
-    const accEth = parseFloat(userData.presale_eth || 0);
-    const myExistingUsd = (accBnb * livePrices.bnb) + (accEth * livePrices.eth);
-
-    // নতুন ইনপুট + আগের কমিটমেন্ট + পুলের অন্য সবার ডলার = টোটাল প্রজেক্ট ভ্যালু
-    const hypotheticalTotalUsd = totalPoolUsd + inputUsdVal;
-    const myTotalHypotheticalUsd = myExistingUsd + inputUsdVal;
-
-    let expectedSmat = 0;
-    if (hypotheticalTotalUsd > 0) {
-        // আপনার অংশ = (আপনার মোট ডলার / প্রজেক্টের মোট ডলার) * মোট সাপ্লাই
-        expectedSmat = (myTotalHypotheticalUsd / hypotheticalTotalUsd) * TOTAL_SMAT_SUPPLY;
-    }
-
-    document.getElementById('mySmatAlloc').innerText = expectedSmat.toFixed(8) + " SMAT";
-
+            calcValuation(); // টাইপ না করলেও এক্যুমুলেটেড ভ্যালু অনুযায়ী টোকেন দেখাবে
 
             const cBtn = document.getElementById('claimBtn');
+            const myAlloc = smatRate > 0 ? (myLiveUsdVal / smatRate) : 0;
             if(poolData.claimEnabled && myAlloc > 0) {
                 cBtn.disabled = false; cBtn.classList.add('active');
                 cBtn.innerHTML = `<i class="fas fa-unlock"></i> CLAIM TO WALLET`;
+            } else {
+                cBtn.disabled = true; cBtn.classList.remove('active');
+                cBtn.innerHTML = `<i class="fas fa-lock"></i> CLAIM TO WALLET`;
             }
         }
 
         function calcValuation() {
-            // Live estimation based on input
             const amt = parseFloat(document.getElementById('commitInput').value) || 0;
+            const inputUsdVal = amt * (livePrices[currentAsset] || 0);
+            
+            const totalPoolUsd = parseFloat(poolData.totalUsd || 0);
+            const accBnb = parseFloat(userData.presale_bnb || 0);
+            const accEth = parseFloat(userData.presale_eth || 0);
+            const myExistingUsd = (accBnb * livePrices.bnb) + (accEth * livePrices.eth);
+
+            // গাণিতিক লজিক: (ইউজারের মোট সম্ভাব্য ডলার / পুলের মোট সম্ভাব্য ডলার) * মোট সাপ্লাই
+            const hypotheticalTotalUsd = totalPoolUsd + inputUsdVal;
+            const myTotalHypotheticalUsd = myExistingUsd + inputUsdVal;
+
+            let expectedSmat = 0;
+            if (hypotheticalTotalUsd > 0) {
+                expectedSmat = (myTotalHypotheticalUsd / hypotheticalTotalUsd) * TOTAL_SMAT_SUPPLY;
+            }
+
+            document.getElementById('mySmatAlloc').innerText = expectedSmat.toFixed(8) + " SMAT";
         }
 
         async function processCommitment() {
             const amt = parseFloat(document.getElementById('commitInput').value);
             const userBal = parseFloat(userData[currentAsset + '_balance'] || 0);
+            
             if(!amt || amt <= 0) return showToast("Enter a valid amount", "error");
             if(amt > userBal) return showToast("Insufficient Balance", "error");
+            if(livePrices[currentAsset] <= 0) return showToast("Waiting for live price...", "error");
 
             const usdValAdded = amt * livePrices[currentAsset];
             const uid = auth.currentUser.uid;
             
             const updates = {};
-            // Balance logic: Deduct from wallet, Add to accumulated presale keys
             updates[`users/${uid}/${currentAsset}_balance`] = userBal - amt;
             updates[`users/${uid}/presale_${currentAsset}`] = (parseFloat(userData['presale_'+currentAsset] || 0)) + amt;
             updates[`presale_global/totalUsd`] = (parseFloat(poolData.totalUsd || 0)) + usdValAdded;
@@ -252,8 +248,12 @@ function calcValuation() {
             const accBnb = parseFloat(userData.presale_bnb || 0);
             const accEth = parseFloat(userData.presale_eth || 0);
             const totalPoolUsd = parseFloat(poolData.totalUsd || 0);
+            
+            if(totalPoolUsd <= 0) return;
+
             const myLiveUsd = (accBnb * livePrices.bnb) + (accEth * livePrices.eth);
-            const finalAlloc = (myLiveUsd / (totalPoolUsd / TOTAL_SMAT_SUPPLY));
+            const smatRate = totalPoolUsd / TOTAL_SMAT_SUPPLY;
+            const finalAlloc = myLiveUsd / smatRate;
 
             const uid = auth.currentUser.uid;
             const updates = {};
@@ -263,7 +263,7 @@ function calcValuation() {
 
             try {
                 await db.ref().update(updates);
-                showToast(`Claimed ${finalAlloc.toFixed(8)} SMAT!`);
+                showToast(`Successfully claimed ${finalAlloc.toFixed(4)} SMAT!`);
             } catch(e) { showToast(e.message, "error"); }
         }
 
