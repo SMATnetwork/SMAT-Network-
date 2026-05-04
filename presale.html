@@ -27,7 +27,22 @@
 
         .header { padding: 40px 20px; text-align: center; background: linear-gradient(180deg, rgba(243, 186, 47, 0.1) 0%, var(--bg) 100%); }
         .token-val { font-family: 'Montserrat', sans-serif; font-size: 32px; color: var(--primary); }
-        
+        /* সলিড ব্লিংকিং ডট */
+.status-dot {
+    height: 8px;
+    width: 8px;
+    background-color: #0ecb81; /* সলিড গ্রিন */
+    border-radius: 50%;
+    display: inline-block;
+    margin-left: 5px; /* লেখা থেকে ডটের দূরত্ব */
+    vertical-align: middle; /* লেখার সাথে এলাইনমেন্ট ঠিক রাখার জন্য */
+    animation: blinker 1s linear infinite;
+}
+
+@keyframes blinker {
+    50% { opacity: 0; }
+}
+
         .stats-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; padding: 15px; }
         .stat-card { background: var(--card); padding: 15px; border-radius: 12px; border: 1px solid var(--border); }
         .label { font-size: 10px; color: var(--text-sec); margin-bottom: 5px; text-transform: uppercase; }
@@ -61,10 +76,15 @@
     <div id="toast-container"></div>
 
     <div class="header">
-        <p style="font-size: 11px; color: var(--cyan); letter-spacing: 2px;">SMAT PRESALE Live</p>
-        <div class="token-val">750,000 SMAT</div>
-        <p style="font-size: 10px; color: var(--text-sec);">Live SMAT Rate: <span id="smatRateDisplay">$0.00000000</span></p>
-    </div>
+    <p style="font-size: 11px; color: var(--cyan); letter-spacing: 2px; display: flex; align-items: center; justify-content: center;">
+        SMAT PRESALE Live <span class="status-dot"></span>
+    </p>
+    <div class="token-val">750,000 SMAT</div>
+    <p style="font-size: 10px; color: var(--text-sec);">
+        Live SMAT Rate: <span id="smatRateDisplay">$0.00000000</span>
+    </p>
+</div>
+
 
     <div class="stats-grid">
         <div class="stat-card">
