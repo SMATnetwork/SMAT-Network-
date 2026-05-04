@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>SMAT | PRESALE</title>
+    <title>SmatBit | Presale</title>
     <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-auth-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-database-compat.js"></script>
@@ -14,13 +14,20 @@
         :root {
             --bg: #0b0e11; --card: #1e2329; --primary: #f3ba2f; 
             --cyan: #00ffff; --text-sec: #848e9c; --border: rgba(255, 255, 255, 0.08);
-            --up: #0ecb81; --font-bold: 'Montserrat', sans-serif;
+            --up: #0ecb81; --err: #f6465d;
         }
-        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Inter', sans-serif; font-weight: 900; }
-        body { background: var(--bg); color: white; padding-bottom: 100px; }
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Inter', sans-serif; font-weight: 700; }
+        body { background: var(--bg); color: white; padding-bottom: 100px; overflow-x: hidden; }
+
+        /* Custom Toast Notification */
+        #toast-container { position: fixed; top: 20px; left: 50%; transform: translateX(-50%); z-index: 9999; width: 90%; max-width: 350px; }
+        .toast { background: var(--card); border-left: 4px solid var(--primary); padding: 15px; border-radius: 8px; margin-bottom: 10px; box-shadow: 0 10px 30px rgba(0,0,0,0.5); display: flex; align-items: center; gap: 12px; animation: slideIn 0.3s ease-out; }
+        .toast.success { border-left-color: var(--up); }
+        .toast.error { border-left-color: var(--err); }
+        @keyframes slideIn { from { transform: translateY(-100%); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
 
         .header { padding: 40px 20px; text-align: center; background: linear-gradient(180deg, rgba(243, 186, 47, 0.1) 0%, var(--bg) 100%); }
-        .token-val { font-family: var(--font-bold); font-size: 32px; color: var(--primary); }
+        .token-val { font-family: 'Montserrat', sans-serif; font-size: 32px; color: var(--primary); }
         
         .stats-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; padding: 15px; }
         .stat-card { background: var(--card); padding: 15px; border-radius: 12px; border: 1px solid var(--border); }
@@ -29,7 +36,7 @@
         .presale-card { background: var(--card); margin: 0 15px; border-radius: 20px; padding: 20px; border: 1px solid var(--border); }
         
         .asset-switcher { display: flex; background: var(--bg); border-radius: 12px; padding: 5px; margin-bottom: 15px; border: 1px solid var(--border); }
-        .switch-btn { flex: 1; padding: 10px; border: none; border-radius: 10px; background: transparent; color: var(--text-sec); cursor: pointer; font-size: 12px; transition: 0.3s; }
+        .switch-btn { flex: 1; padding: 10px; border: none; border-radius: 10px; background: transparent; color: var(--text-sec); cursor: pointer; font-size: 12px; }
         .switch-btn.active { background: var(--card); color: white; border: 1px solid var(--border); }
         .switch-btn.active.bnb { color: var(--primary); }
         .switch-btn.active.eth { color: #627eea; }
@@ -39,7 +46,7 @@
         
         .valuation-bar { background: rgba(255,255,255,0.03); padding: 15px; border-radius: 12px; margin: 15px 0; border: 1px dashed var(--border); }
         
-        .btn-main { width: 100%; padding: 18px; border-radius: 15px; border: none; font-size: 16px; cursor: pointer; background: var(--primary); color: black; }
+        .btn-main { width: 100%; padding: 18px; border-radius: 15px; border: none; font-size: 16px; cursor: pointer; background: var(--primary); color: black; text-transform: uppercase; }
         .btn-claim { width: 100%; padding: 18px; border-radius: 15px; margin-top: 15px; border: 2px dashed var(--border); background: transparent; color: var(--text-sec); cursor: not-allowed; }
         .btn-claim.active { background: var(--up); color: white; border: none; cursor: pointer; }
 
@@ -50,20 +57,22 @@
 </head>
 <body>
 
+    <div id="toast-container"></div>
+
     <div class="header">
-        <p style="font-size: 11px; color: var(--cyan); letter-spacing: 2px;">SMAT PRESALE PHASE</p>
+        <p style="font-size: 11px; color: var(--cyan); letter-spacing: 2px;">SmatBit PRESALE PHASE</p>
         <div class="token-val">750,000 SMAT</div>
-        <p style="font-size: 10px; color: var(--text-sec);">Live SMAT Price: <span id="smatRateDisplay">$0.00</span> USDT</p>
+        <p style="font-size: 10px; color: var(--text-sec);">Live SMAT Price: <span id="smatRateDisplay">$0.00000000</span> USDT</p>
     </div>
 
     <div class="stats-grid">
         <div class="stat-card">
             <div class="label">Total Assets Committed</div>
-            <div style="font-size: 18px;">$<span id="totalPoolUSD">0.00</span></div>
+            <div style="font-size: 16px;">$<span id="totalPoolUSD">0.00</span></div>
         </div>
         <div class="stat-card">
             <div class="label">My Total Valuation</div>
-            <div style="font-size: 18px; color: var(--cyan);">$<span id="myTotalUSD">0.00</span></div>
+            <div style="font-size: 16px; color: var(--cyan);">$<span id="myTotalUSD">0.00</span></div>
         </div>
     </div>
 
@@ -74,8 +83,8 @@
         </div>
 
         <div style="display:flex; justify-content:space-between; font-size:11px; margin-bottom:8px;">
-            <span style="color:var(--text-sec)">Amount to Commit</span>
-            <span id="currentBalance" style="color:var(--primary)">Bal: 0.00</span>
+            <span style="color:var(--text-sec)">Commit Amount</span>
+            <span id="currentBalance" style="color:var(--primary)">Bal: 0.00000000</span>
         </div>
 
         <div class="input-box">
@@ -84,17 +93,17 @@
         </div>
 
         <div class="valuation-bar">
-            <div style="display:flex; justify-content:space-between; font-size:12px; margin-bottom:10px;">
+            <div style="display:flex; justify-content:space-between; font-size:11px; margin-bottom:8px;">
                 <span style="color:var(--text-sec)">Valuation:</span>
                 <span style="color:white">$<span id="inputUsdVal">0.00</span> USDT</span>
             </div>
-            <div style="display:flex; justify-content:space-between; font-size:12px;">
-                <span style="color:var(--text-sec)">Approx. Allocation:</span>
-                <span style="color:var(--up)"><span id="expectedSmat">0.00</span> SMAT</span>
+            <div style="display:flex; justify-content:space-between; font-size:11px;">
+                <span style="color:var(--text-sec)">Est. Allocation:</span>
+                <span style="color:var(--up)"><span id="expectedSmat">0.00000000</span> SMAT</span>
             </div>
         </div>
 
-        <button class="btn-main" id="commitBtn" onclick="processCommitment()">CONFIRM COMMIT</button>
+        <button class="btn-main" onclick="processCommitment()">CONFIRM COMMIT</button>
 
         <button id="claimBtn" class="btn-claim" disabled onclick="processClaim()">
             <i class="fas fa-lock"></i> CLAIM TO WALLET
@@ -126,7 +135,17 @@
         let currentAsset = 'bnb';
         const TOTAL_SMAT_SUPPLY = 750000;
 
-        // --- BINANCE SOCKET FOR REAL PRICES ---
+        // Custom Toast Function
+        function showToast(msg, type = 'success') {
+            const container = document.getElementById('toast-container');
+            const toast = document.createElement('div');
+            toast.className = `toast ${type}`;
+            const icon = type === 'success' ? 'fa-check-circle' : 'fa-exclamation-triangle';
+            toast.innerHTML = `<i class="fas ${icon}"></i> <span>${msg}</span>`;
+            container.appendChild(toast);
+            setTimeout(() => { toast.style.opacity = '0'; setTimeout(() => toast.remove(), 500); }, 3000);
+        }
+
         const streams = ['bnbusdt@ticker', 'ethusdt@ticker'];
         const socket = new WebSocket(`wss://stream.binance.com:9443/stream?streams=${streams.join('/')}`);
         socket.onmessage = (e) => {
@@ -155,34 +174,25 @@
         }
 
         function updateUI() {
-            const bal = userData[currentAsset + '_balance'] || 0;
-            document.getElementById('currentBalance').innerText = `Bal: ${parseFloat(bal).toFixed(4)}`;
+            const bal = parseFloat(userData[currentAsset + '_balance'] || 0);
+            document.getElementById('currentBalance').innerText = `Bal: ${bal.toFixed(8)}`;
             
-            // ১. মোট পুল ভ্যালু (USD)
             const totalPoolUsd = parseFloat(poolData.totalUsd || 0);
-            
-            // ২. SMAT PRICE LOGIC: (Total Pool USD / 750,000)
-            // যদি পুলে ১ ডলারও না থাকে, তবে ০ দেখাবে।
             const currentSmatPrice = totalPoolUsd > 0 ? (totalPoolUsd / TOTAL_SMAT_SUPPLY) : 0;
             
-            // ৩. ইউজারের নিজের কমিটমেন্ট হিসাব
             const myBnb = parseFloat(userData.presale_bnb || 0);
             const myEth = parseFloat(userData.presale_eth || 0);
             const myUsdValuation = (myBnb * livePrices.bnb) + (myEth * livePrices.eth);
-
-            // ৪. ইউজারের কত SMAT পাবে (My USD / Current Smat Price)
-            // এটি আসলে গাণিতিকভাবে (My USD / Total Pool USD) * 750,000 এর সমান
             const myAllocation = currentSmatPrice > 0 ? (myUsdValuation / currentSmatPrice) : 0;
 
-            // UI Update
             document.getElementById('totalPoolUSD').innerText = totalPoolUsd.toLocaleString(undefined, {minimumFractionDigits:2});
-            document.getElementById('smatRateDisplay').innerText = "$" + currentSmatPrice.toFixed(6);
+            document.getElementById('smatRateDisplay').innerText = "$" + currentSmatPrice.toFixed(8);
             document.getElementById('myTotalUSD').innerText = myUsdValuation.toFixed(2);
 
             const cBtn = document.getElementById('claimBtn');
             if(poolData.claimEnabled && myAllocation > 0) {
                 cBtn.disabled = false; cBtn.classList.add('active');
-                cBtn.innerHTML = `<i class="fas fa-unlock"></i> CLAIM ${myAllocation.toFixed(2)} SMAT`;
+                cBtn.innerHTML = `<i class="fas fa-unlock"></i> CLAIM ${myAllocation.toFixed(8)} SMAT`;
             }
             calcValuation(currentSmatPrice);
         }
@@ -191,18 +201,16 @@
             const amt = parseFloat(document.getElementById('commitInput').value) || 0;
             const inputUsd = amt * livePrices[currentAsset];
             document.getElementById('inputUsdVal').innerText = inputUsd.toFixed(2);
-            
-            // ইনপুট দেওয়ার সময় ইউজার কত পেতে পারে তার একটা ধারণা
             const expected = currentSmatPrice > 0 ? (inputUsd / currentSmatPrice) : 0;
-            document.getElementById('expectedSmat').innerText = expected.toFixed(2);
+            document.getElementById('expectedSmat').innerText = expected.toFixed(8);
         }
 
         async function processCommitment() {
             const amt = parseFloat(document.getElementById('commitInput').value);
             const userBal = parseFloat(userData[currentAsset + '_balance'] || 0);
 
-            if(!amt || amt <= 0) return alert("অ্যামাউন্ট লিখুন");
-            if(amt > userBal) return alert("ব্যালেন্স নেই!");
+            if(!amt || amt <= 0) { showToast("Enter a valid amount", "error"); return; }
+            if(amt > userBal) { showToast("Insufficient Balance", "error"); return; }
 
             const usdAdded = amt * livePrices[currentAsset];
             const uid = auth.currentUser.uid;
@@ -215,8 +223,8 @@
             try {
                 await db.ref().update(updates);
                 document.getElementById('commitInput').value = "";
-                alert("Commitment সফল হয়েছে!");
-            } catch(e) { alert(e.message); }
+                showToast("Commitment Successful!");
+            } catch(e) { showToast(e.message, "error"); }
         }
 
         async function processClaim() {
@@ -234,8 +242,8 @@
 
             try {
                 await db.ref().update(updates);
-                alert(`${finalAlloc.toFixed(2)} SMAT আপনার ওয়ালেটে পাঠানো হয়েছে!`);
-            } catch(e) { alert(e.message); }
+                showToast("Tokens Claimed Successfully!");
+            } catch(e) { showToast(e.message, "error"); }
         }
 
         window.onload = init;
