@@ -285,34 +285,119 @@ body {
     </footer>
 
     <script>
-        // এই ফাংশনগুলো আপনার <script> ট্যাগের ভিতর রাখুন
-async function processCommitment() {
-    const amt = parseFloat(document.getElementById('commitInput').value);
-    const userBal = parseFloat(userData[currentAsset + '_balance'] || 0);
-    
-    if(!amt || amt <= 0) return showToast("Enter valid amount", "error");
-    if(amt > userBal) return showToast("Insufficient Balance", "error");
+    const firebaseConfig = { 
+        apiKey: "AIzaSyAMxtJedkehhxJRMPZLjhpKHqneHEWsGlE", 
+        authDomain: "smat-exchange.firebaseapp.com", 
+        projectId: "smat-exchange", 
+        databaseURL: "https://smat-exchange-default-rtdb.firebaseio.com", 
+        storageBucket: "smat-exchange.appspot.com", 
+        messagingSenderId: "836334569396", 
+        appId: "1:836334569396:web:679effe640b3453412d4e1" 
+    };
+    firebase.initializeApp(firebaseConfig);
+    const db = firebase.database();
+    const auth = firebase.auth();
 
-    const callCloud = firebase.functions().httpsCallable('processCommitment');
-    try {
-        showToast("Processing on server...");
-        await callCloud({ amount: amt, asset: currentAsset, livePrice: livePrices[currentAsset] });
-        document.getElementById('commitInput').value = "";
-        showToast("Done! Balance updated.");
-    } catch(e) { showToast(e.message, "error"); }
-}
+    // Termux/Local testing এর জন্য এমুলেটর কানেকশন (স্বয়ংক্রিয়)
+    if (location.hostname === "localhost" || location.hostname === "127.0.0.1") {
+        firebase.functions().useEmulator("localhost", 5001);
+    }
 
-async function processClaim() {
-    const callClaim = firebase.functions().httpsCallable('processClaim');
-    try {
-        showToast("Claiming...");
-        const res = await callClaim({ bnbPrice: livePrices.bnb, ethPrice: livePrices.eth });
-        if(res.data.success) showToast(`Claimed ${res.data.amount.toFixed(4)} SMAT!`);
-    } catch(e) { showToast(e.message, "error"); }
-}
+    let userData = {}, poolData = { totalUsd: 0, claimEnabled: false };
+    let livePrices = { bnb: 0, eth: 0 };
+    let currentAsset = 'bnb';
+    const TOTAL_SMAT_SUPPLY = 750000;
 
-// UI এবং টাইমার লজিক আপনার আগের কোড অনুযায়ী অপরিবর্তিত থাকবে।
+    // Toast, Binance Socket, Init, Toggle functions আগের মতোই থাকবে (পরিবর্তনহীন)
+    function showToast(msg, type = 'success') {
+        const container = document.getElementById('toast-container');
+        const toast = document.createElement('div');
+        toast.className = `toast ${type}`;
+        toast.innerHTML = `<i class="fas ${type === 'success' ? 'fa-check-circle' : 'fa-exclamation-triangle'}"></i> <span>${msg}</span>`;
+        container.appendChild(toast);
+        setTimeout(() => { toast.style.opacity = '0'; setTimeout(() => toast.remove(), 500); }, 3000);
+    }
 
-    </script>
+    const streams = ['bnbusdt@ticker', 'ethusdt@ticker'];
+    const socket = new WebSocket(`wss://stream.binance.com:9443/stream?streams=${streams.join('/')}`);
+    socket.onmessage = (e) => {
+        const msg = JSON.parse(e.data);
+        if(msg.stream === 'bnbusdt@ticker') livePrices.bnb = parseFloat(msg.data.c);
+        if(msg.stream === 'ethusdt@ticker') livePrices.eth = parseFloat(msg.data.c);
+        updateUI();
+    };
+
+    function init() {
+        auth.onAuthStateChanged(user => {
+            if(user) {
+                db.ref('presale_global').on('value', s => { poolData = s.val() || {totalUsd:0, claimEnabled:false}; updateUI(); });
+                db.ref('users/' + user.uid).on('value', s => { userData = s.val() || {}; updateUI(); });
+            } else { window.location.href = "logIn.html"; }
+        });
+    }
+
+    function updateUI() {
+        const bal = parseFloat(userData[currentAsset + '_balance'] || 0);
+        document.getElementById('currentBalance').innerText = bal.toFixed(8);
+        const totalPoolUsd = parseFloat(poolData.totalUsd || 0);
+        const accBnb = parseFloat(userData.presale_bnb || 0);
+        const accEth = parseFloat(userData.presale_eth || 0);
+        const myLiveUsdVal = (accBnb * livePrices.bnb) + (accEth * livePrices.eth);
+        let smatRate = totalPoolUsd > 0 ? (totalPoolUsd / TOTAL_SMAT_SUPPLY) : 0;
+
+        document.getElementById('totalPoolUSD').innerText = totalPoolUsd.toLocaleString(undefined, {minimumFractionDigits:2});
+        document.getElementById('smatRateDisplay').innerText = "$" + smatRate.toFixed(8);
+        document.getElementById('myTotalUSD').innerText = myLiveUsdVal.toFixed(2);
+        document.getElementById('dispBnb').innerText = accBnb.toFixed(8);
+        document.getElementById('dispEth').innerText = accEth.toFixed(8);
+
+        const maxGoal = 3000000;
+        let percentage = (totalPoolUsd / maxGoal) * 100;
+        if (percentage > 100) percentage = 100;
+        document.getElementById('progressBar').style.width = percentage + "%";
+        document.getElementById('progressPercent').innerText = percentage.toFixed(2) + "%";
+
+        calcValuation();
+        updateClaimButton(smatRate, myLiveUsdVal);
+    }
+
+    function updateClaimButton(smatRate, myLiveUsdVal) {
+        const cBtn = document.getElementById('claimBtn');
+        const myAlloc = smatRate > 0 ? (myLiveUsdVal / smatRate) : 0;
+        if(poolData.claimEnabled && myAlloc > 0) {
+            cBtn.disabled = false; cBtn.classList.add('active');
+            cBtn.innerHTML = `<i class="fas fa-unlock"></i> CLAIM TO WALLET`;
+        } else {
+            cBtn.disabled = true; cBtn.classList.remove('active');
+            cBtn.innerHTML = `<i class="fas fa-lock"></i> CLAIM TO WALLET`;
+        }
+    }
+
+    // --- [ BACKEND CALL FUNCTIONS ] ---
+    async function processCommitment() {
+        const amt = parseFloat(document.getElementById('commitInput').value);
+        if(!amt || amt <= 0) return showToast("Enter a valid amount", "error");
+
+        const callFunc = firebase.functions().httpsCallable('processCommitment');
+        try {
+            showToast("Processing securely...");
+            await callFunc({ amount: amt, asset: currentAsset, livePrice: livePrices[currentAsset] });
+            document.getElementById('commitInput').value = "";
+            showToast("Commitment added successfully!");
+        } catch(e) { showToast(e.message, "error"); }
+    }
+
+    async function processClaim() {
+        const callClaim = firebase.functions().httpsCallable('processClaim');
+        try {
+            showToast("Claiming SMAT...");
+            const res = await callClaim({ bnbPrice: livePrices.bnb, ethPrice: livePrices.eth });
+            if(res.data.success) showToast(`Successfully claimed ${res.data.amount.toFixed(4)} SMAT!`);
+        } catch(e) { showToast(e.message, "error"); }
+    }
+
+    window.onload = init;
+</script>
+
 </body>
 </html>
