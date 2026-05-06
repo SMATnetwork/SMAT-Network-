@@ -482,15 +482,106 @@ box-shadow: rgba(0, 0, 0, 0.17) 0px -23px 25px 0px inset, rgba(0, 0, 0, 0.15) 0p
             <div class="menu-item-theme"><i class="fa-solid fa-screwdriver-wrench"></i><span>Mining</span></div>
         </div>
 
-        
 <h3 class="section-title-theme">Running Development</h3>
-        <div class="menu-grid-theme">
-            <div class="menu-item-theme"><i class="fa-solid fa-crystal-ball"></i><span>Prediction</span></div>
-<div class="loader-container"> <div class="dot dot-1"></div> <div class="dot dot-2"></div><div class="dot dot-3"></div></div>
-<style>.loader-container { position: relative; width: 40px;   height: 40px;  display: flex; justify-content: center; align-items: center; animation: spin 1.5s linear infinite;}.dot {position: absolute;  width: 10px;  height: 10px; border-radius: 50%; animation: blink 1.2s ease-in-out infinite;}.dot-1 { top: 0; background-color: #FFD700;box-shadow: 0 0 10px #FFD700; animation-delay: 0s;}.dot-2 {bottom: 2px;left: 2px; background-color: #00FFFF; box-shadow: 0 0 10px #00FFFF;animation-delay: 0.4s;}.dot-3 { bottom: 2px; right: 2px; background-color: #FFFFFF; box-shadow: 0 0 10px #FFFFFF; animation-delay: 0.8s;}@keyframes spin {0% { transform: rotate(0deg); }100% { transform: rotate(360deg); }}@keyframes blink { 0%, 100% {  opacity: 0.3;  transform: scale(0.8); }50% { opacity: 1; transform: scale(1.2); }}</style>
-      
+<div class="menu-grid-theme">
+    <div class="menu-item-theme prediction-wrapper">
+        <span class="prediction-text">
+            <i class="fa-solid fa-crystal-ball"></i> Prediction
+        </span>
+        
+        <div class="loader-container"> 
+            <div class="dot dot-1"></div> 
+            <div class="dot dot-2"></div>
+            <div class="dot dot-3"></div>
         </div>
+    </div>
+</div>
 
+<style>
+/* মেইন কন্টেইনার যা টেক্সটকে মাঝখানে রাখবে */
+.prediction-wrapper {
+    position: relative;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    width: 150px; /* আপনার প্রয়োজনমতো বাড়িয়ে কমিয়ে নিন */
+    height: 80px;
+    overflow: visible;
+}
+
+.prediction-text {
+    font-size: 14px;
+    font-weight: 500;
+    z-index: 2;
+    color: #fff;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 5px;
+}
+
+/* লোডার কন্টেইনার যা টেক্সটের চারদিকে থাকবে */
+.loader-container { 
+    position: absolute; 
+    width: 100px;  /* টেক্সটের চেয়ে বড় হবে যাতে বাইরে ঘোরে */
+    height: 100px;  
+    display: flex; 
+    justify-content: center; 
+    align-items: center; 
+    animation: spin 3s linear infinite; /* ঘূর্ণন গতি */
+}
+
+.dot {
+    position: absolute;  
+    width: 8px;  
+    height: 8px; 
+    border-radius: 50%; 
+    animation: blink 1.2s ease-in-out infinite;
+}
+
+/* ডটগুলোকে বৃত্তের পরিধিতে সেট করা */
+.dot-1 { 
+    top: 0; 
+    background-color: #FFD700;
+    box-shadow: 0 0 12px #FFD700; 
+    animation-delay: 0s;
+}
+
+.dot-2 {
+    bottom: 15px;
+    left: 0px; 
+    background-color: #00FFFF; 
+    box-shadow: 0 0 12px #00FFFF;
+    animation-delay: 0.4s;
+}
+
+.dot-3 { 
+    bottom: 15px; 
+    right: 0px; 
+    background-color: #FFFFFF; 
+    box-shadow: 0 0 12px #FFFFFF; 
+    animation-delay: 0.8s;
+}
+
+/* ঘূর্ণন অ্যানিমেশন */
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+/* উজ্জ্বলতা ও সাইজ অ্যানিমেশন */
+@keyframes blink { 
+    0%, 100% {  
+        opacity: 0.4;  
+        transform: scale(0.8); 
+    }
+    50% { 
+        opacity: 1; 
+        transform: scale(1.3); 
+        filter: brightness(1.2);
+    }
+}
+</style>
 
 
         <h3 class="section-title-theme">Upcoming Feature</h3>
