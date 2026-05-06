@@ -136,110 +136,81 @@
         .fab-wrapper { position: relative; width: 75px; display: flex; justify-content: center; }
 
 /* বাটন গ্রিড স্টাইল */
+
 .action-grid {
-    display: grid;
-    grid-template-columns: repeat(4, 1 max-content);
+    display: flex; /* বাটনগুলো এক লাইনে আনার জন্য */
     justify-content: space-around;
-    margin: 20px 0;
-    text-align: center;
+    align-items: center;
+    margin: 20px 10px;
+    padding: 0;
 }
 
 .action-item {
+    flex: 1; /* সমান জায়গা নেওয়ার জন্য */
     display: flex;
     flex-direction: column;
     align-items: center;
     cursor: pointer;
+    gap: 8px; /* আইকন এবং টেক্সটের দূরত্ব */
 }
 
 .action-icon {
     width: 50px;
     height: 50px;
-    background: #f0f0f0; /* হালকা শ্যাডো কালার */
+    background: #ffffff; /* আইকনের ব্যাকগ্রাউন্ড সাদা */
     border-radius: 50%;
     display: flex;
     align-items: center;
     justify-content: center;
     font-size: 20px;
-    color: #333;
-    margin-bottom: 8px;
-    transition: 0.3s;
+    color: #f3ba2f; /* SMAT এর থিম কালার (গোল্ডেন/হলুদ) */
+    box-shadow: 0 4px 10px rgba(0,0,0,0.3); /* হালকা শ্যাডো */
 }
 
 .action-item span {
     font-size: 12px;
-    color: var(--text-sec);
+    color: #ffffff; /* টেক্সট সাদা */
     font-weight: 500;
 }
 
-/* ফুল স্ক্রিন পপআপ স্টাইল */
+/* More Menu Popup Design Fix */
 .full-popup {
     position: fixed;
     top: 0;
     left: 0;
     width: 100%;
     height: 100%;
-    background: #fff; /* আপনার থিম ডার্ক হলে এখানে ডার্ক কালার দিন */
-    z-index: 9999;
-    display: none; /* শুরুতে লুকানো থাকবে */
+    background: #121212; /* ডার্ক ব্যাকগ্রাউন্ড */
+    z-index: 10000;
+    display: none;
     flex-direction: column;
 }
 
 .popup-header {
-    padding: 15px 20px;
+    padding: 20px;
+    background: #1e1e1e;
+    color: #fff;
     display: flex;
     align-items: center;
+    gap: 15px;
     font-size: 18px;
-    font-weight: bold;
-    border-bottom: 1px solid #eee;
-}
-
-.popup-header i {
-    margin-right: 20px;
-    cursor: pointer;
-}
-
-.popup-content {
-    padding: 20px;
-    overflow-y: auto;
-}
-
-.section-title {
-    font-size: 14px;
-    color: #888;
-    margin: 20px 0 15px 0;
 }
 
 .menu-grid {
     display: grid;
-    grid-template-columns: repeat(4, 1fr);
-    gap: 20px 10px;
+    grid-template-columns: repeat(4, 1fr); /* এক লাইনে ৪টা আইকন */
+    gap: 25px 10px;
+    padding: 20px;
     text-align: center;
 }
 
-.menu-item {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
+.section-title {
+    color: #888;
+    font-size: 13px;
+    margin: 20px 20px 10px;
+    border-left: 3px solid #f3ba2f;
+    padding-left: 10px;
 }
-
-.menu-item i {
-    width: 45px;
-    height: 45px;
-    background: #f8f8f8;
-    border-radius: 50%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 18px;
-    margin-bottom: 5px;
-}
-
-.menu-item span {
-    font-size: 11px;
-    color: #333;
-}
-
-
 
 
         
@@ -425,7 +396,7 @@
         <span>Spot</span>
     </div>
     <div class="action-item">
-        <div class="action-icon"><i class="fa-solid fa-burst"></i></div>
+        <div class="action-icon"><i class="fa-solid fa-bolt"></i></div>
         <span>Crash</span>
     </div>
     <div class="action-item">
@@ -437,6 +408,7 @@
         <span>More</span>
     </div>
 </div>
+
 
 <div id="moreMenuPopup" class="full-popup">
     <div class="popup-header">
