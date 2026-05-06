@@ -486,93 +486,11 @@ box-shadow: rgba(0, 0, 0, 0.17) 0px -23px 25px 0px inset, rgba(0, 0, 0, 0.15) 0p
 <h3 class="section-title-theme">Running Development</h3>
         <div class="menu-grid-theme">
             <div class="menu-item-theme"><i class="fa-solid fa-crystal-ball"></i><span>Prediction</span></div>
-<div class="menu-grid-theme">
-            <div class="menu-item-theme"><i class="fa-solid fa-crystal-ball"></i><span class="glowing-dot"></span>
-        <span>Prediction</span></div>
-<div class="menu-item-theme"><i class="fa-solid fa-crystal-ball"></i><span id="countdownTimer"></span> 
-        <span>Prediction</span></div>
+
         </div>
 
 
-<style>
-/* আইকন এবং ডট/টাইমার রাখার জন্য পজিশন */
-.icon-wrapper {
-    position: relative;
-    display: inline-block;
-}
 
-/* জ্বলজ্বলে ডট (Glowing Dot) */
-.glowing-dot {
-    position: absolute;
-    top: 5px;
-    right: 5px;
-    width: 10px;
-    height: 10px;
-    background-color: #00ff00; /* সবুজ আলো */
-    border-radius: 50%;
-    box-shadow: 0 0 10px #00ff00;
-    animation: blink 1s infinite ease-in-out;
-}
-
-@keyframes blink {
-    0% { opacity: 1; transform: scale(1); }
-    50% { opacity: 0.3; transform: scale(0.8); }
-    100% { opacity: 1; transform: scale(1); }
-}
-
-/* টাইমার ওভারলে স্টাইল */
-.timer-overlay {
-    position: absolute;
-    bottom: -5px;
-    right: -5px;
-    background: #f3ba2f; /* Smat Yellow কালার */
-    color: #000;
-    font-size: 9px;
-    font-weight: bold;
-    padding: 2px 4px;
-    border-radius: 4px;
-    border: 1px solid #1a1a1a;
-}
-
-/* মেনু আইকন কালার সামঞ্জস্য */
-.menu-item-theme i {
-    width: 48px;
-    height: 48px;
-    background: #252525;
-    border: 1px solid #333;
-    border-radius: 50%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    color: #f3ba2f;
-}
-</style>
-<script>
-function startTimer(days) {
-    let distance = days * 24 * 60 * 60 * 1000; // ৯০ দিন মিলিসেকেন্ডে
-    
-    const timerElement = document.getElementById("countdownTimer");
-
-    const x = setInterval(function() {
-        distance -= 1000;
-
-        let d = Math.floor(distance / (1000 * 60 * 60 * 24));
-        let h = Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
-        let m = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
-
-        // ডিসপ্লে ফরম্যাট: 90d 12h (খুব বেশি বড় যেন না হয়)
-        timerElement.innerHTML = d + "d " + h + "h";
-
-        if (distance < 0) {
-            clearInterval(x);
-            timerElement.innerHTML = "Live";
-        }
-    }, 1000);
-}
-
-// টাইমার শুরু করুন
-startTimer(90);
-</script>
         <h3 class="section-title-theme">Upcoming Feature</h3>
         <div class="menu-grid-theme">
             <div class="menu-item-theme"><i class="fa-solid fa-bolt"></i><span>Crash</span></div>
