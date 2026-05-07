@@ -1,0 +1,475 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GogoGroup Official Application</title>
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;700;900&display=swap" rel="stylesheet">
+    <style>
+    :root {
+    /* Day Mode Colors */
+    --cyan: #008c95;           /* ডার্ক সায়ান (সাদা ব্যাকগ্রাউন্ডে ভালো দেখানোর জন্য) */
+    --dark-bg: #f5f7fa;        /* হালকা গ্রে ব্যাকগ্রাউন্ড */
+    --card-bg: #ffffff;        /* পিওর হোয়াইট কার্ড */
+    --border: #dee2e6;        /* হালকা বর্ডার */
+    --text-main: #212529;      /* মেইন টেক্সট কালার (ডার্ক) */
+    --input-bg: #ffffff;       /* ইনপুট ব্যাকগ্রাউন্ড */
+    --modal-bg: rgba(0,0,0,0.5); /* হালকা ট্রান্সপারেন্ট ব্ল্যাক */
+    }
+    
+    body {
+    background-color: var(--dark-bg);
+    color: var(--text-main);
+    font-family: 'Montserrat', sans-serif;
+    margin: 0;
+    padding: 20px;
+    }
+    
+    .main-container {
+    max-width: 900px;
+    margin: 0 auto;
+    background: var(--card-bg);
+    padding: 40px;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.05); /* হালকা শ্যাডো */
+    }
+    
+    .form-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 40px;
+    border-bottom: 2px solid var(--cyan);
+    padding-bottom: 20px;
+    }
+    
+    .brand-info h1 { 
+    font-weight: 900; 
+    font-size: 2.5rem; 
+    margin: 0; 
+    text-transform: uppercase; 
+    color: #000;
+    }
+    .brand-info p { 
+    color: var(--cyan); 
+    margin: 5px 0; 
+    letter-spacing: 2px; 
+    font-weight: 700; 
+    }
+    
+    .photo-upload-container {
+    width: 120px;
+    height: 140px;
+    border: 2px dashed #adb5bd;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    background: #f8f9fa;
+    position: relative;
+    overflow: hidden;
+    }
+    
+    .photo-upload-container img {
+    width: 100%; height: 100%; object-fit: cover; display: none; position: absolute;
+    }
+    
+    .photo-upload-container span { 
+    font-size: 10px; 
+    font-weight: 900; 
+    color: #6c757d; 
+    text-align: center; 
+    z-index: 1; 
+    }
+    
+    .section-title {
+    background: var(--cyan);
+    color: #fff; /* টাইটেল টেক্সট সাদা */
+    padding: 10px 20px;
+    font-weight: 900;
+    text-transform: uppercase;
+    margin: 30px 0 20px 0;
+    font-size: 14px;
+    }
+    
+    .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 20px; }
+    .field { display: flex; flex-direction: column; }
+    label { 
+    font-size: 11px; 
+    font-weight: 700; 
+    color: #495057; 
+    margin-bottom: 5px; 
+    text-transform: uppercase; 
+    }
+    
+    input, select, textarea {
+    background: var(--input-bg);
+    border: 1px solid var(--border);
+    color: #000;
+    padding: 12px;
+    font-family: 'Montserrat', sans-serif;
+    font-size: 13px;
+    outline: none;
+    transition: border 0.3s;
+    }
+    
+    input:focus, select:focus {
+    border-color: var(--cyan);
+    }
+    
+    select option { background: #fff; color: #000; }
+    
+    .edu-table { width: 100%; border-collapse: collapse; margin-top: 10px; }
+    .edu-table th { 
+    background: #f1f3f5; 
+    color: #495057; 
+    font-size: 10px; 
+    text-align: left; 
+    padding: 10px; 
+    border: 1px solid var(--border);
+    }
+    .edu-table td { 
+    padding: 5px; 
+    border: 1px solid var(--border); 
+    color: #000;
+    }
+    .edu-table input { width: 100%; box-sizing: border-box; border: none; background: transparent; }
+    
+    .lang-select-area { 
+    background: #f8f9fa; 
+    padding: 15px; 
+    border: 1px solid var(--border); 
+    }
+    #langList { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 10px; }
+    .lang-tag { 
+    background: var(--cyan); 
+    color: #fff; 
+    padding: 4px 12px; 
+    border-radius: 20px; 
+    font-size: 11px; 
+    font-weight: 900; 
+    }
+    
+    .btn-submit {
+    width: 100%;
+    padding: 20px;
+    background: #000; /* ডে মোডে বাটন কালো হলে প্রিমিয়াম লাগে */
+    border: 2px solid #000;
+    color: #fff;
+    font-weight: 900;
+    font-size: 1.2rem;
+    text-transform: uppercase;
+    margin-top: 40px;
+    cursor: pointer;
+    transition: 0.3s;
+    }
+    
+    .btn-submit:hover { 
+    background: var(--cyan); 
+    border-color: var(--cyan);
+    color: #fff; 
+    box-shadow: 0 5px 15px rgba(0, 140, 149, 0.3); 
+    }
+    
+    /* Modal / Preview Style */
+    .modal {
+    display: none;
+    position: fixed;
+    top: 0; left: 0; width: 100%; height: 100%;
+    background: var(--modal-bg);
+    z-index: 1000;
+    overflow-y: auto;
+    padding: 20px;
+    }
+    
+    .preview-content {
+    background: #fff;
+    color: #000;
+    max-width: 800px;
+    margin: 0 auto;
+    padding: 40px;
+    border-radius: 5px;
+    position: relative;
+    font-family: Arial, sans-serif;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+    }
+    
+    .preview-content h2 { border-bottom: 2px solid #000; padding-bottom: 10px; text-align: center; }
+    .p-section-header { background: #f1f3f5; padding: 5px 10px; font-weight: bold; margin-top: 20px; border-left: 5px solid var(--cyan); }
+    .preview-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 10px; }
+    .preview-grid div { border-bottom: 1px solid #eee; padding: 5px 0; font-size: 13px; color: #333; }
+    .preview-grid b { font-size: 11px; color: #666; text-transform: uppercase; margin-right: 10px; }
+    
+    .confirmation-box {
+    margin-top: 30px;
+    padding: 20px;
+    background: #fff9db; /* হালকা হলুদ ওয়ার্নিং বক্স */
+    border: 1px solid #ffe066;
+    text-align: center;
+    }
+    
+    .modal-btns { display: flex; gap: 20px; margin-top: 20px; }
+    .btn-confirm { flex: 1; padding: 15px; background: #000; color: #fff; border: none; cursor: pointer; font-weight: bold; text-transform: uppercase; }
+    .btn-close { flex: 1; padding: 15px; background: #e9ecef; color: #000; border: none; cursor: pointer; font-weight: bold; text-transform: uppercase; }
+    .btn-confirm:disabled { background: #adb5bd; cursor: not-allowed; }
+    </style>
+    
+</head>
+<body>
+
+<div class="main-container">
+    <form id="applicationForm" onsubmit="handleShowPreview(event)">
+        <div class="form-header">
+            <div class="brand-info">
+                <h1>GOGOGROUP</h1>
+                <p>BEYOND BOUNDARIES</p>
+            </div>
+            <div class="photo-upload-container" onclick="document.getElementById('pInput').click()">
+                <span id="pTxt">ATTACH<br>PHOTO</span>
+                <img id="pPreview">
+                <input type="file" id="pInput" hidden accept="image/*" onchange="previewFile(event)">
+            </div>
+        </div>
+
+        <div class="section-title">Personal Data</div>
+        <div class="grid">
+            <div class="field"><label>First Name</label><input type="text" id="firstName" required></div>
+            <div class="field"><label>Last Name</label><input type="text" id="lastName" required></div>
+            <div class="field"><label>Father's Name</label><input type="text" id="fatherName" required></div>
+            <div class="field"><label>Mother's Name</label><input type="text" id="motherName" required></div>
+            <div class="field"><label>Date of Birth</label><input type="date" id="dob" required></div>
+            <div class="field">
+                <label>Gender</label>
+                <select id="gender" required>
+                    <option value="" disabled selected>Select</option>
+                    <option>Male</option><option>Female</option><option>Other</option>
+                </select>
+            </div>
+            <div class="field">
+                <label>Religion</label>
+                <select id="religion" required>
+                    <option value="" disabled selected>Select</option>
+                    <option>Islam</option><option>Hinduism</option><option>Christianity</option>
+                    <option>Buddhism</option><option>Other</option>
+                </select>
+            </div>
+            <div class="field">
+                <label>Marital Status</label>
+                <select id="maritalStatus" required>
+                    <option value="" disabled selected>Select</option>
+                    <option>Single</option><option>Married</option><option>Divorced</option>
+                </select>
+            </div>
+            <div class="field">
+                <label>Nationality</label>
+                <select id="nationality" required>
+                    <option value="" disabled selected>Select Country</option>
+                    <option value="Bangladesh">Bangladesh</option>
+                    <option value="USA">USA</option>
+                    <option value="UK">UK</option>
+                    <option value="Canada">Canada</option>
+                    <option value="Saudi Arabia">Saudi Arabia</option>
+                    <option value="UAE">UAE</option>
+                    <option value="India">India</option>
+                    <option value="Other">Other...</option>
+                </select>
+            </div>
+            <div class="field">
+                <label>Profession</label>
+                <select id="profession" required>
+                    <option value="" disabled selected>Select</option>
+                    <option>Software Developer</option><option>Engineer</option><option>Doctor</option>
+                    <option>Student</option><option>Businessman</option><option>Freelancer</option>
+                </select>
+            </div>
+            <div class="field">
+                <label>Blood Group</label>
+                <select id="bloodGroup" required>
+                    <option value="" disabled selected>Select</option>
+                    <option>A+</option><option>A-</option><option>B+</option><option>B-</option>
+                    <option>O+</option><option>O-</option><option>AB+</option><option>AB-</option>
+                </select>
+            </div>
+        </div>
+
+        <div class="section-title">Contact & Legal</div>
+        <div class="grid">
+            <div class="field" style="grid-column: span 2;"><label>Legal Address</label><input type="text" id="address" required></div>
+            <div class="field"><label>Zip Code</label><input type="text" id="zip" required></div>
+            <div class="field"><label>City/Town</label><input type="text" id="city" required></div>
+            <div class="field"><label>Country</label><input type="text" id="country" required></div>
+            <div class="field"><label>Mobile</label><input type="tel" id="mobile" required></div>
+            <div class="field"><label>Email</label><input type="email" id="email" required></div>
+            <div class="field"><label>NID Number</label><input type="text" id="nid" required></div>
+            <div class="field"><label>Passport No</label><input type="text" id="passport"></div>
+        </div>
+
+        <div class="section-title">Languages</div>
+        <div class="lang-select-area">
+            <select id="langInput" onchange="addLanguage()">
+                <option value="">-- Choose Language --</option>
+                <option>Bengali</option><option>English</option><option>Arabic</option><option>Hindi</option><option>Urdu</option><option>French</option>
+            </select>
+            <div id="langList"></div>
+        </div>
+
+        <div class="section-title">Education Qualification</div>
+        <table class="edu-table">
+            <thead>
+                <tr><th>LEVEL</th><th>SCALE</th><th>GRADE</th><th>POINT</th></tr>
+            </thead>
+            <tbody id="eduTbody">
+                <tr><td>SSC</td><td>GPA 5.0</td><td><input type="text" class="e-grade" placeholder="A+"></td><td><input type="text" class="e-point" placeholder="5.00"></td></tr>
+                <tr><td>HSC</td><td>GPA 5.0</td><td><input type="text" class="e-grade" placeholder="A+"></td><td><input type="text" class="e-point" placeholder="5.00"></td></tr>
+                <tr><td>Honors</td><td>CGPA 4.0</td><td><input type="text" class="e-grade" placeholder="A"></td><td><input type="text" class="e-point" placeholder="3.80"></td></tr>
+                <tr><td>Masters</td><td>CGPA 4.0</td><td><input type="text" class="e-grade" placeholder="B+"></td><td><input type="text" class="e-point" placeholder="3.50"></td></tr>
+            </tbody>
+        </table>
+
+        <div class="section-title">Employment Experience</div>
+        <div class="grid">
+            <div class="field"><label>Company Name</label><input type="text" id="expCompany"></div>
+            <div class="field"><label>Type of Contract</label><input type="text" id="expContract"></div>
+            <div class="field">
+                <label>Duration</label>
+                <select id="expDuration">
+                    <option>None</option><option>1 Year</option><option>2 Year</option><option>3 Year</option>
+                </select>
+            </div>
+        </div>
+
+        <button type="submit" class="btn-submit">Preview Application</button>
+    </form>
+</div>
+
+<div id="previewModal" class="modal">
+    <div class="preview-content">
+        <div style="display:flex; justify-content: space-between; align-items:center;">
+            <div style="text-align:left">
+                <h1 style="margin:0; font-size:24px">GOGOGROUP</h1>
+                <p style="margin:0; color:cyan; font-weight:bold; background:#000; padding:2px 5px; display:inline-block">OFFICIAL RECORD</p>
+            </div>
+            <img id="modalPhoto" style="width:100px; height:120px; border:1px solid #000; object-fit:cover">
+        </div>
+        
+        <h2>PREVIEW APPLICATION</h2>
+        
+        <div id="previewData">
+            </div>
+
+        <div class="confirmation-box">
+            <label style="color:#000; font-size:14px; cursor:pointer">
+                <input type="checkbox" id="confirmTick" onchange="toggleConfirmBtn()"> 
+                <b>Yes, All the information is Correct.</b>
+            </label>
+        </div>
+
+        <div class="modal-btns">
+            <button class="btn-close" onclick="closeModal()">Edit Info</button>
+            <button class="btn-confirm" id="finalSubmitBtn" disabled onclick="finalSubmit()">Confirm & Submit</button>
+        </div>
+    </div>
+</div>
+
+<script>
+    let photoData = "";
+    let languages = [];
+
+    function previewFile(e) {
+        const file = e.target.files[0];
+        if (file) {
+            const reader = new FileReader();
+            reader.onload = function() {
+                photoData = reader.result;
+                document.getElementById('pPreview').src = photoData;
+                document.getElementById('pPreview').style.display = 'block';
+                document.getElementById('pTxt').style.display = 'none';
+            }
+            reader.readAsDataURL(file);
+        }
+    }
+
+    function addLanguage() {
+        const input = document.getElementById('langInput');
+        const val = input.value;
+        if (val && !languages.includes(val)) {
+            languages.push(val);
+            renderLangs();
+        }
+        input.value = "";
+    }
+
+    function renderLangs() {
+        document.getElementById('langList').innerHTML = languages.map(l => `<span class="lang-tag">${l}</span>`).join('');
+    }
+
+    function handleShowPreview(event) {
+        event.preventDefault();
+        
+        // Personal & Contact Data
+        const pInfo = {
+            "First Name": document.getElementById('firstName').value,
+            "Last Name": document.getElementById('lastName').value,
+            "Father Name": document.getElementById('fatherName').value,
+            "Mother Name": document.getElementById('motherName').value,
+            "DOB": document.getElementById('dob').value,
+            "Gender": document.getElementById('gender').value,
+            "Religion": document.getElementById('religion').value,
+            "Marital Status": document.getElementById('maritalStatus').value,
+            "Nationality": document.getElementById('nationality').value,
+            "Profession": document.getElementById('profession').value,
+            "Blood Group": document.getElementById('bloodGroup').value,
+            "Email": document.getElementById('email').value,
+            "Mobile": document.getElementById('mobile').value,
+            "NID": document.getElementById('nid').value,
+            "Address": document.getElementById('address').value
+        };
+
+        let html = `<div class="p-section-header">Personal & Contact Info</div><div class="preview-grid">`;
+        for (const [key, value] of Object.entries(pInfo)) {
+            html += `<div><b>${key}:</b> ${value}</div>`;
+        }
+        html += `</div>`;
+
+        // Language
+        html += `<div class="p-section-header">Languages</div><div style="padding:10px; font-size:13px">${languages.join(', ') || 'None'}</div>`;
+
+        // Education Table extraction
+        html += `<div class="p-section-header">Education Details</div><div class="preview-grid">`;
+        const eduRows = document.querySelectorAll("#eduTbody tr");
+        eduRows.forEach(row => {
+            const level = row.cells[0].innerText;
+            const grade = row.querySelector('.e-grade').value || '-';
+            const point = row.querySelector('.e-point').value || '-';
+            html += `<div><b>${level}:</b> Grade: ${grade}, Point: ${point}</div>`;
+        });
+        html += `</div>`;
+
+        // Experience
+        html += `<div class="p-section-header">Experience</div><div class="preview-grid">
+            <div><b>Company:</b> ${document.getElementById('expCompany').value || 'N/A'}</div>
+            <div><b>Duration:</b> ${document.getElementById('expDuration').value}</div>
+        </div>`;
+
+        document.getElementById('previewData').innerHTML = html;
+        document.getElementById('modalPhoto').src = photoData || "";
+        document.getElementById('previewModal').style.display = 'block';
+    }
+
+    function toggleConfirmBtn() {
+        document.getElementById('finalSubmitBtn').disabled = !document.getElementById('confirmTick').checked;
+    }
+
+    function closeModal() {
+        document.getElementById('previewModal').style.display = 'none';
+    }
+
+    function finalSubmit() {
+        alert("Application Submitted Successfully!");
+        location.reload();
+    }
+</script>
+</body>
+</html>
