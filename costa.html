@@ -1,0 +1,353 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Costa Group Leadership & News</title>
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body {
+            font-family: 'Montserrat', sans-serif;
+            background-color: #005633; /* Costa Signature Green */
+            color: white;
+            text-align: center;
+        }
+
+        /* --- Fixed Costa Header with Signature Curve --- */
+        .fixed-header {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 110px;
+            background-color: #ffffff;
+            z-index: 1000;
+        }
+        .header-svg {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+        }
+        .costa-logo-fixed {
+            position: absolute;
+            top: 25px;
+            left: 40px;
+            font-size: 44px;
+            font-weight: 800;
+            color: white;
+            letter-spacing: -2px;
+            z-index: 1001;
+        }
+
+        .main-wrapper { padding-top: 130px; }
+
+        /* --- Section 1: Costa News --- */
+        .news-section { padding: 40px 20px; }
+        h1 { font-size: 52px; font-weight: 800; margin-bottom: 10px; }
+        .sub-text { font-size: 20px; margin-bottom: 40px; font-weight: 400; opacity: 0.9; }
+        .hero-img {
+            width: 95%;
+            max-width: 900px;
+            border-radius: 4px;
+            box-shadow: 0 20px 50px rgba(0,0,0,0.5);
+        }
+        .news-desc {
+            max-width: 800px;
+            margin: 40px auto;
+            line-height: 1.8;
+            font-size: 18px;
+            padding: 0 15px;
+        }
+
+        /* --- Section 2: Fruit Slider (cost1-cost5) --- */
+        .fruit-slider {
+            width: 95%;
+            max-width: 900px;
+            margin: 60px auto;
+            overflow: hidden;
+            background: rgba(255,255,255,0.08);
+            border-radius: 15px;
+        }
+        .fruit-track { display: flex; transition: transform 0.8s cubic-bezier(0.4, 0, 0.2, 1); }
+        .fruit-slide { min-width: 100%; text-align: left; }
+        .fruit-slide img { width: 100%; height: 450px; object-fit: cover; }
+        .fruit-info { padding: 40px; }
+        .fruit-info h3 { color: #00FFFF; font-size: 28px; margin-bottom: 15px; text-transform: uppercase; }
+        .fruit-info p { font-size: 16px; line-height: 1.8; opacity: 0.95; }
+
+        /* --- Section 3: Grown Around the World (Map) --- */
+        .map-section {
+            background-color: #ffffff;
+            color: #005633;
+            padding: 100px 20px;
+        }
+        .map-section h2 { font-size: 48px; font-weight: 800; margin-bottom: 25px; }
+        .map-section p { max-width: 900px; margin: 0 auto 60px auto; font-size: 20px; line-height: 1.6; }
+        .map-container { width: 100%; max-width: 750px; margin: 0 auto; }
+        .map-svg { fill: #005633; opacity: 0.15; width: 100%; }
+
+        /* --- Section 4: Leadership Slider (c1-c8) --- */
+        .leader-section {
+            background-color: #ffffff; /* White background for the leadership slider */
+            padding: 60px 20px 100px 20px;
+            color: #005633;
+        }
+        .leader-slider-box {
+            width: 95%;
+            max-width: 500px; /* Executive images are usually portrait */
+            margin: 0 auto;
+            overflow: hidden;
+            position: relative;
+        }
+        .leader-track { display: flex; transition: transform 0.6s ease-in-out; }
+        .leader-slide { min-width: 100%; padding: 20px; text-align: center; }
+        .leader-slide img {
+            width: 100%;
+            border: 1px solid #e0e0e0;
+            border-radius: 4px;
+            margin-bottom: 20px;
+        }
+        .leader-name { font-size: 26px; font-weight: 800; color: #005633; margin-bottom: 5px; }
+        .leader-title { font-size: 18px; font-weight: 600; color: #008445; }
+
+        /* Slider Arrows */
+        .arrow {
+            position: absolute;
+            top: 40%;
+            transform: translateY(-50%);
+            font-size: 40px;
+            color: #005633;
+            cursor: pointer;
+            z-index: 10;
+            user-select: none;
+        }
+        .arrow-left { left: 0; }
+        .arrow-right { right: 0; }
+
+        /* --- Section 5: Glowing Button --- */
+        .footer-cta { background-color: #ffffff; padding-bottom: 120px; }
+        .glow-btn {
+            display: inline-block;
+            padding: 25px 70px;
+            font-size: 22px;
+            font-weight: 800;
+            color: white;
+            text-decoration: none;
+            background: linear-gradient(90deg, #ff8c00, #ff0000);
+            border-radius: 60px;
+            text-transform: uppercase;
+            box-shadow: 0 0 20px rgba(255, 69, 0, 0.6);
+            animation: glowing 1.5s infinite alternate;
+        }
+        @keyframes glowing {
+            0% { transform: scale(1); box-shadow: 0 0 10px #ff4500; }
+            100% { transform: scale(1.08); box-shadow: 0 0 45px #ff0000; }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="fixed-header">
+        <svg class="header-svg" viewBox="0 0 100 100" preserveAspectRatio="none">
+            <path d="M0 0 L100 0 L100 65 Q70 100 0 65 Z" fill="#005633" />
+        </svg>
+        <div class="costa-logo-fixed">costa</div>
+    </div>
+
+    <div class="main-wrapper">
+        <section class="news-section">
+            <h1>Costa news</h1>
+            <p class="sub-text">Discover the latest developments</p>
+            <img src="cost6.png" class="hero-img">
+            <div class="news-desc">
+                The annual Costa Well Grown Community Grants Program for the Armidale and Guyra region is now open for applications. This vital program invests in local projects that strengthen the social fabric and economic resilience of our agricultural heartlands through education and health support.
+            </div>
+        </section>
+
+        <div class="fruit-slider">
+            <div class="fruit-track" id="fruitTrack">
+                <div class="fruit-slide">
+                    <img src="cost1.png">
+                    <div class="fruit-info">
+                        <h3>Premium Citrus Harvesting</h3>
+                        <p>Our citrus orchards are managed with absolute precision to meet global quality standards. Every fruit is hand-picked at the peak of ripeness to ensure a rich vitamin C profile and natural sweetness. We use sustainable farming techniques to protect the soil health for future generations of Australian growers. Our technology-led approach ensures that only the most vibrant and juicy citrus fruits reach your table every single day.</p>
+                    </div>
+                </div>
+                <div class="fruit-slide">
+                    <img src="cost2.png">
+                    <div class="fruit-info">
+                        <h3>World-Class Grapes & Vineyards</h3>
+                        <p>Costa's vineyards are situated in prime climatic regions that allow for the production of superior table grapes. We monitor moisture and nutrient levels daily to ensure large, sweet bunches that offer a crisp texture and deep flavor. Our trellis systems protect the delicate clusters from environmental stress while maximizing sunlight exposure. We take immense pride in delivering grapes that represent the pinnacle of agricultural innovation and quality control.</p>
+                    </div>
+                </div>
+                <div class="fruit-slide">
+                    <img src="cost3.png">
+                    <div class="fruit-info">
+                        <h3>Succulent Strawberry Production</h3>
+                        <p>Our strawberries are grown in controlled environments using advanced substrate technology to minimize water waste and soil diseases. We prioritize varieties known for their deep red color, firm texture, and incredible natural aroma. By utilizing greenhouse farming, we can provide a consistent supply of premium strawberries year-round. Every berry is carefully inspected for size and sweetness, ensuring a perfect snacking experience in every punnet we ship.</p>
+                    </div>
+                </div>
+                <div class="fruit-slide">
+                    <img src="cost4.png">
+                    <div class="fruit-info">
+                        <h3>Advanced Glasshouse Tomatoes</h3>
+                        <p>Our glasshouse tomato facilities are a marvel of modern agricultural engineering, producing high-density nutrition year-round. Using hydroponic systems, we deliver precise nutrients directly to the roots, resulting in superior flavor and vibrant color. We rely on biological controls instead of harsh chemicals to maintain a healthy ecosystem within our greenhouses. Whether it is snacking tomatoes or large trusses, we focus on culinary versatility and consistent quality.</p>
+                    </div>
+                </div>
+                <div class="fruit-slide">
+                    <img src="cost5.png">
+                    <div class="fruit-info">
+                        <h3>Agricultural Infrastructure Future</h3>
+                        <p>We are building the future of food security through massive investments in solar energy and water recycling plants across our farms. This infrastructure allows us to achieve high yields on a smaller footprint, preserving natural habitats around our facilities. Our focus on stewardship means we are feeding a growing population while protecting the planet's vital resources. We integrate data analytics to optimize harvest cycles, reducing waste and ensuring maximum efficiency in the supply chain.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <section class="map-section">
+            <h2>Grown around the world</h2>
+            <p>We fly high the flag of Australian-grown quality, working sustainably with the land to maximise optimal growing conditions around the country. Expanding our expertise globally, we've developed berry farms in China, Morocco and Laos.</p>
+            <div class="map-container">
+                <svg viewBox="0 0 600 500" class="map-svg">
+                    <path d="M495,306c-3,2-11,2-15,4c-5,3-8,9-14,10c-6,2-13,0-19,1c-5,2-9,6-14,9c-5,3-12,3-17,4c-6,1-13-1-19,0c-4,1-7,4-11,5c-4,2-7,4-11,5c-5,2-10,3-15,5c-6,2-12,2-18,2c-5,0-11-1-16-1c-5,1-10,4-15,5c-4,1-9,1-13,2c-5,1-11,3-16,3c-4,0-9-2-13-2c-5,0-10,2-15,3c-4,1-8,2-13,3c-4,1-9,2-13,3c-5,1-10,1-15,0c-4-1-8-4-12-5c-4-1-8-1-12,0c-4,1-8,4-12,5c-5,1-11,1-16,0c-5-1-11-4-16-5c-5-1-10-1-15-1c-5,1-11,2-16,3c-4,1-8,2-12,2c-5,0-11-2-16-3c-5-1-10-3-15-4c-5-1-11-1-16-2c-5-1-10-2-15-3c-4-1-9-3-13-4c-4-2-8-3-11-6c-3-2-6-5-9-8c-2-2-5-5-6-8c-2-3-3-8-3-12c0-5,2-10,4-15c2-4,4-9,5-13c1-5,1-11,1-16c0-5,0-11,1-16c1-5,3-10,5-15c2-5,4-10,6-15c2-5,5-10,8-14c3-4,6-9,10-13c3-4,8-7,12-10c4-3,9-5,14-7c5-2,10-3,15-4c5-1,10-1,15-1c5,1,10,3,15,4c5,1,10,2,15,3c5,1,11,1,16,1c5,0,10-2,15-3c5-1,10-2,15-2c5,0,10,2,15,3c5,1,10,2,15,2c5,0,10-1,15-2c5-1,11-1,16-1c5,1,10,2,15,3c5,1,10,2,15,3c5,1,10,2,15,3c4,1,8,2,12,3c5,1,10,3,15,4c5,1,11,3,16,5c5,2,10,4,15,6c5,2,10,4,15,6c5,2,11,4,16,6c5,2,10,5,15,8c4,2,8,5,12,8c4,3,8,6,11,10c3,4,6,9,8,14c2,5,3,10,4,15c1,5,2,11,2,16c0,5,1,10,2,15c1,5,3,10,5,15c2,5,5,10,8,14c3,4,6,9,9,13c3,4,7,8,11,11c4,3,8,6,12,8c3,2,7,4,11,5C502,305,499,304,495,306z" />
+                </svg>
+            </div>
+        </section>
+
+        <section class="leader-section">
+            <h2 style="font-size: 40px; margin-bottom: 40px;">Our Leadership Team</h2>
+            <div class="leader-slider-box">
+                <span class="arrow arrow-left" onclick="moveLeader(-1)">&#10094;</span>
+                <span class="arrow arrow-right" onclick="moveLeader(1)">&#10095;</span>
+                
+                <div class="leader-track" id="leaderTrack">
+                    <div class="leader-slide">
+                        <img src="c1.png">
+                        <div class="leader-name">Marc Werner</div>
+                        <div class="leader-title">Chief Executive Officer</div>
+                    </div>
+                    <div class="leader-slide">
+                        <img src="c2.png">
+                        <div class="leader-name">Wayne Johnston</div>
+                        <div class="leader-title">Chief Financial Officer</div>
+                    </div>
+                    <div class="leader-slide">
+                        <img src="c3.png">
+                        <div class="leader-name">Carl Phillips</div>
+                        <div class="leader-title">Chief People Officer</div>
+                    </div>
+                    <div class="leader-slide">
+                        <img src="c4.png">
+                        <div class="leader-name">Manpreet Sidhu</div>
+                        <div class="leader-title">Chief Operating Officer – Domestic Produce</div>
+                    </div>
+                    <div class="leader-slide">
+                        <img src="c5.png">
+                        <div class="leader-name">Christian Parsons</div>
+                        <div class="leader-title">Chief Operating Officer – Citrus, Grapes, Avocado and Banana</div>
+                    </div>
+                    <div class="leader-slide">
+                        <img src="c6.png">
+                        <div class="leader-name">Leon Van Biljon</div>
+                        <div class="leader-title">Regional Director Berry International</div>
+                    </div>
+                    <div class="leader-slide">
+                        <img src="c7.png">
+                        <div class="leader-name">Kirsty Deglas</div>
+                        <div class="leader-title">Chief Strategy and M&A Officer</div>
+                    </div>
+                    <div class="leader-slide">
+                        <img src="c8.png">
+                        <div class="leader-name">David Thomas</div>
+                        <div class="leader-title">General Counsel and Company Secretary</div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <div class="footer-cta">
+            <a href="application.html" class="glow-btn">CLICK HERE APPLICATION</a>
+        </div>
+    </div>
+<footer style="background-color: #005633; padding: 60px 40px 30px 40px; font-family: 'Montserrat', sans-serif; color: white; text-align: left; border-top: 1px solid rgba(255,255,255,0.1);">
+    
+    <div style="max-width: 1100px; margin: 0 auto 60px auto; position: relative;">
+        <input type="text" placeholder="Search here..." style="width: 100%; padding: 18px 25px; border-radius: 35px; border: none; font-size: 16px; outline: none;">
+        <button onclick="window.scrollTo({top: 0, behavior: 'smooth'})" style="position: absolute; right: 8px; top: 8px; background: #008445; color: white; border: none; padding: 10px 25px; border-radius: 30px; cursor: pointer; font-weight: bold; display: flex; align-items: center; gap: 10px;">
+            Search <span style="font-size: 20px;">&rarr;</span>
+        </button>
+    </div>
+
+    <div style="max-width: 1100px; margin: 0 auto; display: flex; flex-wrap: wrap; justify-content: space-between; gap: 40px;">
+        
+        <div style="flex: 1; min-width: 280px;">
+            <div onclick="window.scrollTo({top: 0, behavior: 'smooth'})" style="font-size: 55px; font-weight: 800; color: white; letter-spacing: -3px; cursor: pointer; margin-bottom: 15px;">costa</div>
+            <p style="font-size: 18px; opacity: 0.9; line-height: 1.4; max-width: 320px; font-weight: 500;">
+                Well grown. Growing fresh, nutritious produce loved by all.
+            </p>
+            
+            <div style="margin-top: 35px; display: flex; gap: 12px;">
+                <a href="javascript:window.scrollTo({top: 0, behavior: 'smooth'})" style="width: 42px; height: 42px; border: 1.5px solid white; border-radius: 6px; display: flex; align-items: center; justify-content: center; color: white; text-decoration: none;"><i class="fab fa-facebook-f"></i></a>
+                <a href="javascript:window.scrollTo({top: 0, behavior: 'smooth'})" style="width: 42px; height: 42px; border: 1.5px solid white; border-radius: 6px; display: flex; align-items: center; justify-content: center; color: white; text-decoration: none;"><i class="fab fa-vimeo-v"></i></a>
+                <a href="javascript:window.scrollTo({top: 0, behavior: 'smooth'})" style="width: 42px; height: 42px; border: 1.5px solid white; border-radius: 6px; display: flex; align-items: center; justify-content: center; color: white; text-decoration: none;"><i class="fab fa-instagram"></i></a>
+                <a href="javascript:window.scrollTo({top: 0, behavior: 'smooth'})" style="width: 42px; height: 42px; border: 1.5px solid white; border-radius: 6px; display: flex; align-items: center; justify-content: center; color: white; text-decoration: none;"><i class="fab fa-linkedin-in"></i></a>
+            </div>
+        </div>
+
+        <div style="flex: 1; min-width: 200px;">
+            <ul style="list-style: none; padding: 0;">
+                <li style="margin-bottom: 15px;"><a href="javascript:window.scrollTo({top: 0, behavior: 'smooth'})" style="color: white; text-decoration: none; font-size: 17px; font-weight: 500; opacity: 0.85;">About</a></li>
+                <li style="margin-bottom: 15px;"><a href="javascript:window.scrollTo({top: 0, behavior: 'smooth'})" style="color: white; text-decoration: none; font-size: 17px; font-weight: 500; opacity: 0.85;">Brands</a></li>
+                <li style="margin-bottom: 15px;"><a href="javascript:window.scrollTo({top: 0, behavior: 'smooth'})" style="color: white; text-decoration: none; font-size: 17px; font-weight: 500; opacity: 0.85;">Produce</a></li>
+                <li style="margin-bottom: 15px;"><a href="javascript:window.scrollTo({top: 0, behavior: 'smooth'})" style="color: white; text-decoration: none; font-size: 17px; font-weight: 500; opacity: 0.85;">Our Costa Way</a></li>
+                <li style="margin-bottom: 15px;"><a href="javascript:window.scrollTo({top: 0, behavior: 'smooth'})" style="color: white; text-decoration: none; font-size: 17px; font-weight: 500; opacity: 0.85;">News</a></li>
+                <li style="margin-bottom: 15px;"><a href="javascript:window.scrollTo({top: 0, behavior: 'smooth'})" style="color: white; text-decoration: none; font-size: 17px; font-weight: 500; opacity: 0.85;">Careers</a></li>
+                <li style="margin-bottom: 15px;"><a href="javascript:window.scrollTo({top: 0, behavior: 'smooth'})" style="color: white; text-decoration: none; font-size: 17px; font-weight: 500; opacity: 0.85;">Contact</a></li>
+            </ul>
+        </div>
+
+    </div>
+
+    <div style="max-width: 1100px; margin: 50px auto 0 auto; padding-top: 25px; border-top: 1px solid rgba(255,255,255,0.15); display: flex; justify-content: space-between; align-items: center; font-size: 14px; opacity: 0.7;">
+        <p>© 2026 Costa. All rights reserved</p>
+        <div style="display: flex; gap: 25px;">
+            <a href="javascript:window.scrollTo({top: 0, behavior: 'smooth'})" style="color: white; text-decoration: none;">Privacy Policy</a>
+            <a href="javascript:window.scrollTo({top: 0, behavior: 'smooth'})" style="color: white; text-decoration: none;">Terms and Conditions</a>
+        </div>
+    </div>
+</footer>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/js/all.min.js"></script>
+
+    <script>
+        // Fruit Slider Logic (Auto)
+        let fruitIndex = 0;
+        const fruitTrack = document.getElementById('fruitTrack');
+        setInterval(() => {
+            fruitIndex = (fruitIndex + 1) % 5;
+            fruitTrack.style.transform = `translateX(-${fruitIndex * 100}%)`;
+        }, 5000);
+
+        // Leader Slider Logic (Manual + Auto)
+        let leaderIndex = 0;
+        const leaderTrack = document.getElementById('leaderTrack');
+        const totalLeaders = 8;
+
+        function moveLeader(step) {
+            leaderIndex += step;
+            if (leaderIndex >= totalLeaders) leaderIndex = 0;
+            if (leaderIndex < 0) leaderIndex = totalLeaders - 1;
+            updateLeaderSlider();
+        }
+
+        function updateLeaderSlider() {
+            leaderTrack.style.transform = `translateX(-${leaderIndex * 100}%)`;
+        }
+
+        // Auto slide leaders every 4 seconds
+        setInterval(() => moveLeader(1), 4000);
+    </script>
+</body>
+</html>
