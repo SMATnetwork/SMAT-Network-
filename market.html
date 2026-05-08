@@ -15,72 +15,288 @@
 
 
  <style>
-        :root {
-            --bg: #0b0e11; --card: #1e2329; --primary: #f0b90b;
-            --up: #0ecb81; --down: #f6465d; --text-sec: #848e9c;
-            --border: rgba(255, 255, 255, 0.05);
-            --font-bold: 'Montserrat', sans-serif;
-        }
-        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Inter', sans-serif; -webkit-tap-highlight-color: transparent; }
-        body { background: var(--bg); color: white; padding-bottom: 85px; overflow-x: hidden; }
+    :root {
+        /* ডে-মোড কালার প্যালেট - ১ বিন্দুও লজিক পরিবর্তন ছাড়া */
+        --bg: #f8f9fa;             /* ডার্ক থেকে লাইট গ্রে */
+        --card: #ffffff;           /* সাদা কার্ড */
+        --primary: #f3ba2f;        /* আপনার সিগনেচার গোল্ডেন */
+        --up: #0ecb81; 
+        --down: #f6465d; 
+        --text-main: #1e2329;      /* ডার্ক টেক্সট */
+        --text-sec: #5e6673;       /* মিউটেড টেক্সট */
+        --border: rgba(0, 0, 0, 0.06);
+        --font-bold: 'Montserrat', sans-serif;
+    }
 
-        /* Header & Search */
-        .header { padding: 15px; border-bottom: 1px solid var(--border); position: sticky; top: 0; background: var(--bg); z-index: 100; }
-        .search-box { 
-            background: var(--card); border-radius: 12px; padding: 12px 15px; 
-            display: flex; align-items: center; gap: 10px; margin-top: 5px; 
-            border: 1px solid var(--border); transition: 0.3s;
-        }
-        .search-box:focus-within { border-color: var(--primary); box-shadow: 0 0 10px rgba(240, 185, 11, 0.1); }
-        .search-box input { background: none; border: none; color: white; width: 100%; outline: none; font-size: 15px; }
+    * { 
+        box-sizing: border-box; 
+        margin: 0; 
+        padding: 0; 
+        font-family: 'Inter', sans-serif; 
+        -webkit-tap-highlight-color: transparent; 
+    }
 
-        /* Market Tabs */
-        .market-tabs { display: flex; gap: 10px; padding: 15px; overflow-x: auto; scrollbar-width: none; }
-        .market-tabs::-webkit-scrollbar { display: none; }
-        
-        .m-tab { 
-            display: flex; align-items: center; gap: 8px; padding: 8px 16px; 
-            background: var(--card); border-radius: 50px; color: var(--text-sec); 
-            font-size: 13px; cursor: pointer; white-space: nowrap; 
-            transition: 0.3s; font-weight: 700; border: 1px solid transparent;
-        }
-        .m-tab.active { background: rgba(240, 185, 11, 0.1); color: var(--primary); border-color: var(--primary); }
-        .m-tab-icon { width: 16px; height: 16px; border-radius: 50%; }
+    body { 
+        background: var(--bg); 
+        color: var(--text-main); 
+        padding-bottom: 85px; 
+        overflow-x: hidden; 
+    }
 
-        /* Market List Section */
-        .market-header { 
-            display: grid; grid-template-columns: 1.5fr 1.1fr 0.9fr; 
-            padding: 10px 20px; color: var(--text-sec); font-size: 11px; 
-            font-weight: 600; text-transform: uppercase;
-        }
-        
-        .coin-row { 
-            display: grid; grid-template-columns: 1.5fr 1.1fr 0.9fr; 
-            padding: 16px 20px; align-items: center;
-            cursor: pointer; transition: 0.2s;
-        }
-        .coin-row:active { background: #1e2329; }
-        
-        .c-info { display: flex; align-items: center; gap: 12px; }
-        .c-logo { width: 36px; height: 36px; border-radius: 50%; background: #2b3139; display: flex; align-items: center; justify-content: center; position: relative; }
-        .c-logo img { width: 100%; height: 100%; object-fit: cover; border-radius: 50%; }
-        
-        .c-name-box { display: flex; flex-direction: column; }
-        .c-name { font-family: var(--font-bold); font-weight: 900; font-size: 16px; color: #ffffff; letter-spacing: -0.5px; }
-        .c-vol { font-size: 11px; color: var(--text-sec); margin-top: 2px; }
+    /* Header & Search */
+    .header { 
+        padding: 15px; 
+        border-bottom: 1px solid var(--border); 
+        position: sticky; 
+        top: 0; 
+        background: var(--bg); 
+        z-index: 100; 
+    }
 
-        .c-price { font-family: var(--font-bold); font-weight: 900; font-size: 15px; text-align: left; }
-        
-        /* Advanced % Change Box */
-        .c-change { 
-            justify-self: end; padding: 8px 0; border-radius: 8px; 
-            font-family: var(--font-bold); font-weight: 900; width: 78px; 
-            text-align: center; font-size: 12px; transition: 0.3s;
-        }
-        .up-bg { background: var(--up); color: #000; box-shadow: 0 4px 12px rgba(14, 203, 129, 0.2); }
-        .down-bg { background: var(--down); color: #fff; box-shadow: 0 4px 12px rgba(246, 70, 93, 0.2); }
+    .search-box { 
+        background: var(--card); 
+        border-radius: 12px; 
+        padding: 12px 15px; 
+        display: flex; 
+        align-items: center; 
+        gap: 10px; 
+        margin-top: 5px; 
+        border: 1px solid var(--border); 
+        transition: 0.3s;
+    }
 
-    </style>
+    .search-box:focus-within { 
+        border-color: var(--primary); 
+        box-shadow: 0 0 10px rgba(243, 186, 47, 0.1); 
+    }
+
+    .search-box input { 
+        background: none; 
+        border: none; 
+        color: var(--text-main); 
+        width: 100%; 
+        outline: none; 
+        font-size: 15px; 
+    }
+
+    .search-box input::placeholder {
+        color: var(--text-sec);
+    }
+
+    /* Market Tabs */
+    .market-tabs { 
+        display: flex; 
+        gap: 10px; 
+        padding: 15px; 
+        overflow-x: auto; 
+        scrollbar-width: none; 
+    }
+
+    .market-tabs::-webkit-scrollbar { display: none; }
+    
+    .m-tab { 
+        display: flex; 
+        align-items: center; 
+        gap: 8px; 
+        padding: 8px 16px; 
+        background: var(--card); 
+        border-radius: 50px; 
+        color: var(--text-sec); 
+        font-size: 13px; 
+        cursor: pointer; 
+        white-space: nowrap; 
+        transition: 0.3s; 
+        font-weight: 700; 
+        border: 1px solid var(--border);
+    }
+
+    .m-tab.active { 
+        background: rgba(243, 186, 47, 0.1); 
+        color: var(--primary); 
+        border-color: var(--primary); 
+    }
+
+    .m-tab-icon { width: 16px; height: 16px; border-radius: 50%; }
+
+    /* Market List Section */
+    .market-header { 
+        display: grid; 
+        grid-template-columns: 1.5fr 1.1fr 0.9fr; 
+        padding: 10px 20px; 
+        color: var(--text-sec); 
+        font-size: 11px; 
+        font-weight: 600; 
+        text-transform: uppercase;
+    }
+    
+    .coin-row { 
+        display: grid; 
+        grid-template-columns: 1.5fr 1.1fr 0.9fr; 
+        padding: 16px 20px; 
+        align-items: center;
+        cursor: pointer; 
+        transition: 0.2s;
+        border-bottom: 1px solid rgba(0,0,0,0.02);
+    }
+
+    .coin-row:active { background: rgba(0,0,0,0.05); }
+    
+    .c-info { display: flex; align-items: center; gap: 12px; }
+    .c-logo { 
+        width: 36px; 
+        height: 36px; 
+        border-radius: 50%; 
+        background: #e9ecef; 
+        display: flex; 
+        align-items: center; 
+        justify-content: center; 
+        position: relative; 
+    }
+
+    .c-logo img { width: 100%; height: 100%; object-fit: cover; border-radius: 50%; }
+    
+    .c-name-box { display: flex; flex-direction: column; }
+    .c-name { 
+        font-family: var(--font-bold); 
+        font-weight: 900; 
+        font-size: 16px; 
+        color: var(--text-main); 
+        letter-spacing: -0.5px; 
+    }
+
+    .c-vol { font-size: 11px; color: var(--text-sec); margin-top: 2px; }
+
+    .c-price { 
+        font-family: var(--font-bold); 
+        font-weight: 900; 
+        font-size: 15px; 
+        text-align: left; 
+        color: var(--text-main);
+    }
+    
+    /* Advanced % Change Box */
+    .c-change { 
+        justify-self: end; 
+        padding: 8px 0; 
+        border-radius: 8px; 
+        font-family: var(--font-bold); 
+        font-weight: 900; 
+        width: 78px; 
+        text-align: center; 
+        font-size: 12px; 
+        transition: 0.3s;
+    }
+
+    .up-bg { 
+        background: var(--up); 
+        color: #fff; 
+        box-shadow: 0 4px 12px rgba(14, 203, 129, 0.2); 
+    }
+
+    .down-bg { 
+        background: var(--down); 
+        color: #fff; 
+        box-shadow: 0 4px 12px rgba(246, 70, 93, 0.2); 
+    }
+
+    /* Footer Section */
+    .footer {
+        font-weight: 900; 
+        position: fixed; 
+        bottom: 0; 
+        width: 100%; 
+        height: 80px; 
+        background: #ffffff; 
+        display: flex; 
+        justify-content: space-around; 
+        align-items: center; 
+        z-index: 3000; 
+        box-shadow: 0 -2px 10px rgba(0,0,0,0.05);
+    }
+
+    .f-nav { 
+        text-decoration: none; 
+        color: var(--text-sec); 
+        text-align: center; 
+        font-size: 10px; 
+        flex: 1; 
+        display: flex; 
+        flex-direction: column; 
+        align-items: center; 
+    }
+
+    .f-nav i { font-size: 22px; margin-bottom: 5px; }
+    .f-nav.active { color: var(--primary); }
+
+    .fab-wrapper { position: relative; width: 75px; display: flex; justify-content: center; }       
+    
+    .fab-options {  
+        position: absolute; 
+        bottom: 30px; 
+        display: flex; 
+        justify-content: center;   
+        align-items: center; 
+        pointer-events: none; 
+        width: 250px; 
+        height: 180px;  
+    }
+
+    .fab-options i { font-size: 20px; background: none; color: #fff; }
+
+    .popup-btn {   
+        position: absolute; 
+        background: #333; /* ডার্ক বাটন ফর কন্ট্রাস্ট ইন ডে মোড */
+        padding: 18px 18px; 
+        border-radius: 50px;  
+        text-decoration: none; 
+        font-weight: 800; 
+        font-size: 12px;   
+        box-shadow: 0 10px 25px rgba(0,0,0,0.2); 
+        transition: all 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);  
+        opacity: 0; 
+        transform: scale(0.3) translateY(120px); 
+        pointer-events: auto; 
+        white-space: nowrap; 
+        z-index: 2900;
+        color: #fff;
+    }
+
+    .fab-options.show .btn-left { opacity: 1; transform: translate(-95px, -45px) scale(1); }
+    .fab-options.show .btn-center { opacity: 1; transform: translate(0, -115px) scale(1); }
+    .fab-options.show .btn-right { opacity: 1; transform: translate(95px, -45px) scale(1); }
+
+    .main-fab {   
+        width: 65px; 
+        height: 65px; 
+        background: var(--primary); 
+        border: none; 
+        border-radius: 50%; 
+        cursor: pointer;   
+        box-shadow: 0 4px 15px rgba(243, 186, 47, 0.4); 
+        display: flex; 
+        justify-content: center; 
+        align-items: center;  
+        z-index: 3100; 
+        margin-top: -35px; 
+        outline: none;   
+        transition: background 0.3s, box-shadow 0.3s;
+    }
+
+    @keyframes continuous-spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+    
+    .main-fab.active {  
+        animation: continuous-spin 2s linear infinite;  
+        background: var(--down); 
+        box-shadow: 0 0 35px rgba(246, 70, 93, 0.5);
+    }
+
+    .gaming-icon { font-size: 30px; color: #000; transition: color 0.3s; }
+    .main-fab.active .gaming-icon { color: #fff; } 
+    
+    @keyframes subtle-pulse { 0% { transform: scale(1); } 50% { transform: scale(1.05); } 100% { transform: scale(1); } }
+    .main-fab:not(.active) { animation: subtle-pulse 3s infinite ease-in-out; }
+</style>
+
 </head>
 <body>
 
@@ -102,24 +318,7 @@
         <div id="coinListContainer"></div>
     </div>
 
-    <style>
-        .footer {font-weight: 900; position: fixed; bottom: 0; width: 100%; height: 80px; background: #0b0e11; display: flex; justify-content: space-around; align-items: center; z-index: 3000; }
-        .f-nav { text-decoration: none; color: var(--text-sec); text-align: center; font-size: 10px; flex: 1; display: flex; flex-direction: column; align-items: center; }
-        .f-nav i { font-size: 22px; margin-bottom: 5px; }
-        .f-nav.active { color: var(--primary); }
-        .fab-wrapper { position: relative; width: 75px; display: flex; justify-content: center; }       
-        .fab-options {  position: absolute; bottom: 30px; display: flex; justify-content: center;   align-items: center; pointer-events: none; width: 250px; height: 180px;  }
-        .fab-options i{font-size:20px;background :none;color:black;}
-        .popup-btn {   position: absolute; background :silver; padding:18px 18px; border-radius: 50px;  text-decoration: none; font-weight: 800; font-size: 12px;   box-shadow: 0 10px 25px rgba(0,0,0,0.6); transition: all 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);  opacity: 0; transform: scale(0.3) translateY(120px); pointer-events: auto; white-space: nowrap; z-index: 2900;}
-        .fab-options.show .btn-left { opacity: 1; transform: translate(-95px, -45px) scale(1); }
-        .fab-options.show .btn-center { opacity: 1; transform: translate(0, -115px) scale(1); }
-        .fab-options.show .btn-right { opacity: 1; transform: translate(95px, -45px) scale(1); }
-        .main-fab {   width: 65px; height: 65px; background: var(--primary);border: none; border-radius: 50%; cursor: pointer;   box-shadow: 0 0 20px rgba(243, 186, 47, 0.4); display: flex; justify-content: center; align-items: center;  z-index: 3100; margin-top: -35px; outline: none;   transition: background 0.3s, box-shadow 0.3s;} @keyframes continuous-spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
-        .main-fab.active {  animation: continuous-spin 2s linear infinite;  background: var(--down); box-shadow: 0 0 35px rgba(246, 70, 93, 0.5);}
-        .gaming-icon { font-size: 30px; color: #000; transition: color 0.3s; }
-        .main-fab.active .gaming-icon { color: #fff; } @keyframes subtle-pulse { 0% { transform: scale(1); } 50% { transform: scale(1.05); } 100% { transform: scale(1); } }
-        .main-fab:not(.active) { animation: subtle-pulse 3s infinite ease-in-out; }
- </style>
+    
     <footer class="footer">
     <a href="home.html" class="f-nav "><i class="fas fa-home"></i>Home</a>
     <a href="swap.html" class="f-nav "><i class="fas fa-sync-alt"></i>Swap</a>
