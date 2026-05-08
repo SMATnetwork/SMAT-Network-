@@ -12,32 +12,113 @@
 <link rel="icon" type="image/svg+xml" href="data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNTEyIiBoZWlnaHQ9IjUxMiIgdmlld0JveD0iMCAwIDUxMiA1MTIiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+CiAgPGNpcmNsZSBjeD0iMjU2IiBjeT0iMjU2IiByPSIyNDAiIGZpbGw9IiNmM2JhMmYiLz4KICA8Y2lyY2xlIGN4PSIyNTYiIGN5PSIyNTYiIHI9IjIxNSIgc3Ryb2tlPSJ3aGl0ZSIgc3Ryb2tlLXdpZHRoPSI4IiBmaWxsPSJ0cmFuc3BhcmVudCIvPgogIDxwYXRoIGQ9Ik0xNTAgMTcwIEMxNTAgMTQ1IDE3MCAxMzUgMjAwIDEzNSBMMzQwIDEzNSBDMzU1IDEzNSAzNjUgMTQ1IDM2NSAxNjAgQzM2NSAxNzUgMzU1IDE4NSAzNDAgMTg1IEwyMDUgMTg1IEMxOTAgMTg1IDE4NSAxOTAgMTg1IDIwNSBDMTg1IDIyMCAxOTAgMjI1IDIwNSAyMjUgTDM0MCAyMjUgQzM3MCAyMjUgMzkwIDI0NSAzOTAgMjc1IEwzOTAgMzI1IEMzOTAgMzU1IDM3MCAzNzUgMzQwIDM3NSBMMTcwIDM3NSBDMTU1IDM3NSAxNDUgMzY1IDE0NSAzNTAgQzE0NSAzMzUgMTU1IDMyNSAxNzAgMzI1IEwzMzUgMzI1IEMzNTAgMzI1IDM1NSAzMjAgMzU1IDMwNSBDMzU1IDI5MCAzNTAgMjg1IDMzNSAyODUgTDIwMCAyODUgQzE3MCAyODUgMTUwIDI2NSAxNTAgMjM1IFoiIGZpbGw9IndoaXRlIi8+Cjwvc3ZnPg=="> 
  <style>
  :root {
- --bg: #0b0e11; --card: #1e2329; --primary: #f0b90b;
- --up: #0ecb81; --down: #f6465d; --text-sec: #848e9c;
- --border: #2b3139;--font-bold: 'Montserrat', sans-serif;
- }
- * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Inter', sans-serif; -webkit-tap-highlight-color: transparent; }
- body { background: var(--bg); color: white; overflow-x: hidden; padding-bottom: 80px; }
- 
- /* Header & Common Styles */
- .header { display: flex; justify-content: space-between; align-items: center; padding: 12px 15px; border-bottom: 1px solid var(--border); background: var(--bg); position: sticky; top: 0; z-index: 1000; }
- .pair-selector { display: flex; align-items: center; gap: 8px; cursor: pointer; font-size: 18px; font-weight: bold; text-transform: uppercase; }
- 
- /* Popup Overlay */
- .overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: var(--bg); z-index: 4000; display: none; flex-direction: column; }
- .popup-header { padding: 15px; display: flex; align-items: center; gap: 15px; border-bottom: 1px solid #2b3139; }
- .popup-header i { font-size: 20px; cursor: pointer; }
- 
- .search-container { padding: 10px 15px; }
- .search-box { background: var(--card); border-radius: 8px; padding: 10px 15px; display: flex; align-items: center; gap: 10px; }
- .search-box input { background: none; border: none; color: white; width: 100%; outline: none; font-size: 16px; }
- 
-/* Market Tabs - ডট (.) যোগ করা হয়েছে */
+    /* Day Mode Colors */
+    --bg: #ffffff;               /* সাদা ব্যাকগ্রাউন্ড */
+    --card: #f8f9fa;             /* হালকা গ্রে কার্ড */
+    --primary: #f0b90b;          /* বাইন্যান্স ইয়েলো (একই রাখা হয়েছে) */
+    --up: #03a66d;               /* ডিপ গ্রিন - ডে মোডের জন্য উপযোগী */
+    --down: #cf304a;             /* ডিপ রেড - ডে মোডের জন্য উপযোগী */
+    --text-main: #1e2329;        /* গাঢ় টেক্সট */
+    --text-sec: #707a8a;         /* হালকা টেক্সট */
+    --border: #eaecef;           /* হালকা বর্ডার */
+    --font-bold: 'Montserrat', sans-serif;
+}
+
+* { 
+    box-sizing: border-box; 
+    margin: 0; 
+    padding: 0; 
+    font-family: 'Inter', sans-serif; 
+    -webkit-tap-highlight-color: transparent; 
+}
+
+body { 
+    background: var(--bg); 
+    color: var(--text-main); 
+    overflow-x: hidden; 
+    padding-bottom: 80px; 
+}
+
+/* Header & Common Styles */
+.header { 
+    display: flex; 
+    justify-content: space-between; 
+    align-items: center; 
+    padding: 12px 15px; 
+    border-bottom: 1px solid var(--border); 
+    background: var(--bg); 
+    position: sticky; 
+    top: 0; 
+    z-index: 1000; 
+}
+
+.pair-selector { 
+    display: flex; 
+    align-items: center; 
+    gap: 8px; 
+    cursor: pointer; 
+    font-size: 18px; 
+    font-weight: bold; 
+    text-transform: uppercase; 
+    color: var(--text-main);
+}
+
+/* Popup Overlay */
+.overlay { 
+    position: fixed; 
+    top: 0; 
+    left: 0; 
+    width: 100%; 
+    height: 100%; 
+    background: var(--bg); 
+    z-index: 4000; 
+    display: none; 
+    flex-direction: column; 
+}
+
+.popup-header { 
+    padding: 15px; 
+    display: flex; 
+    align-items: center; 
+    gap: 15px; 
+    border-bottom: 1px solid var(--border); 
+}
+
+.popup-header i { 
+    font-size: 20px; 
+    cursor: pointer; 
+    color: var(--text-main);
+}
+
+.search-container { 
+    padding: 10px 15px; 
+}
+
+.search-box { 
+    background: var(--card); 
+    border-radius: 8px; 
+    padding: 10px 15px; 
+    display: flex; 
+    align-items: center; 
+    gap: 10px; 
+    border: 1px solid var(--border);
+}
+
+.search-box input { 
+    background: none; 
+    border: none; 
+    color: var(--text-main); 
+    width: 100%; 
+    outline: none; 
+    font-size: 16px; 
+}
+
+/* Market Tabs */
 .market-tabs { 
     display: flex; 
     gap: 20px; 
     padding: 10px 20px;  
-    overflow-x: auto; /* মোবাইল স্ক্রিনের জন্য স্ক্রলিং সুবিধা */
+    overflow-x: auto; 
     scrollbar-width: none;
 }
 
@@ -77,7 +158,7 @@
     align-items: center; 
     justify-content: center; 
     background: var(--primary); 
-    color: black; 
+    color: white; 
     font-size: 10px; 
     font-weight: bold; 
 }
@@ -90,18 +171,19 @@
     grid-template-columns: 1.5fr 1.1fr 0.9fr; 
     padding: 12px 15px;
     align-items: center;
+    border-bottom: 1px solid #f1f1f1;
 }
 
-.pair-row:active { background: rgba(255, 255, 255, 0.05); } /* ক্লিক করলে রেসপন্স করবে */
+.pair-row:active { background: #f1f1f1; }
 
 .p-info { display: flex; align-items: center; gap: 10px; }
-.p-logo { width: 30px; height: 30px; border-radius: 50%; overflow: hidden; background: #2b3139; }
+.p-logo { width: 30px; height: 30px; border-radius: 50%; overflow: hidden; background: #eee; }
 .p-logo img { width: 100%; height: 100%; object-fit: cover; }
 
-.pair-main-name { font-weight: 700; color: #fff; font-size: 14px; }
+.pair-main-name { font-weight: 700; color: var(--text-main); font-size: 14px; }
 .pair-vol { font-size: 10px; color: var(--text-sec); display: block; }
 
-.pair-price-col { font-weight: 700; font-size: 14px; text-align: left; }
+.pair-price-col { font-weight: 700; font-size: 14px; text-align: left; color: var(--text-main); }
 
 .change-badge {
     display: block;
@@ -115,90 +197,129 @@
 }
 
 /* মার্কেট পেজ থেকে কালার কোড */
-.up-bg { background: var(--up); color: #000; box-shadow: 0 4px 12px rgba(14, 203, 129, 0.2); }
-.down-bg { background: var(--down); color: #fff; box-shadow: 0 4px 12px rgba(246, 70, 93, 0.2); }
+.up-bg { background: var(--up); color: #fff; box-shadow: 0 4px 8px rgba(3, 166, 109, 0.15); }
+.down-bg { background: var(--down); color: #fff; box-shadow: 0 4px 8px rgba(207, 48, 74, 0.15); }
 
+/* Trade Layout */
+.trade-grid { display: grid; grid-template-columns: 1.1fr 0.9fr; gap: 12px; padding: 12px; }
 
- /* Trade Layout */
- .trade-grid { display: grid; grid-template-columns: 1.1fr 0.9fr; gap: 12px; padding: 12px; }
- .side-tabs { display: flex; background: #2b3139; border-radius: 4px; margin-bottom: 12px; height: 36px; overflow: hidden; }
- .tab-btn { flex: 1; border: none; background: none; color: var(--text-sec); font-weight: bold; cursor: pointer; }
- .tab-btn.active.buy { background: var(--up); color: white; }
- .tab-btn.active.sell { background: var(--down); color: white; }
- 
- .input-box { background: var(--card); border: 1px solid #333; border-radius: 4px; margin-bottom: 8px; padding: 10px; display: flex; align-items: center; position: relative; }
- .input-box input { background: none; border: none; color: white; width: 100%; outline: none; font-size: 16px; }
- .input-box span { font-size: 12px; color: var(--text-sec); }
- 
- .fee-info { font-size: 10px; color: var(--text-sec); margin: 5px 0; display: flex; justify-content: space-between; }
- .pct-row { display: flex; gap: 5px; margin: 10px 0; }
- .pct-btn { flex: 1; background: #2b3139; border: none; color: white; padding: 6px; border-radius: 4px; font-size: 11px; }
- 
- .btn-action { width: 100%; padding: 14px; border: none; border-radius: 6px; font-weight: bold; font-size: 16px; cursor: pointer; }
- .buy-bg { background: var(--up); color: white; }
- .sell-bg { background: var(--down); color: white; }
- 
- /* Order Book */
- .ob-header { display: flex; justify-content: space-between; font-size: 11px; color: var(--text-sec); margin-bottom: 5px; }
- .ob-list { height: 160px; overflow: hidden; font-size: 12px; }
- .ob-row { display: flex; justify-content: space-between; padding: 4px 0; position: relative; z-index: 1; }
- .depth-bar { position: absolute; right: 0; top: 0; bottom: 0; z-index: -1; transition: 0.3s; }
- .mid-price { text-align: center; padding: 10px 0; border-top: 1px solid var(--border); border-bottom: 1px solid var(--border); margin: 5px 0; }
- 
- /* History Table */
- .history-section { padding: 15px; }
- .h-tabs { display: flex; gap: 15px; border-bottom: 1px solid var(--border); margin-bottom: 10px; }
- .h-tab { padding: 8px 0; color: var(--text-sec); font-size: 13px; cursor: pointer; }
- .h-tab.active { color: var(--primary); border-bottom: 2px solid var(--primary); }
- .h-table { width: 100%; border-collapse: collapse; font-size: 11px; text-align: left; }
- .h-table th { color: var(--text-sec); padding: 8px 0; }
- .h-table td { padding: 10px 0; border-bottom: 1px solid #1e2329; }
- .show-more-container { text-align: center; padding: 15px 0; }
- .show-more-btn { background: none; border: 1px solid var(--border); color: var(--text-sec); padding: 6px 20px; border-radius: 20px; font-size: 12px; cursor: pointer; }
- 
+.side-tabs { 
+    display: flex; 
+    background: #edf0f3; 
+    border-radius: 4px; 
+    margin-bottom: 12px; 
+    height: 36px; 
+    overflow: hidden; 
+}
+
+.tab-btn { flex: 1; border: none; background: none; color: var(--text-sec); font-weight: bold; cursor: pointer; }
+.tab-btn.active.buy { background: var(--up); color: white; }
+.tab-btn.active.sell { background: var(--down); color: white; }
+
+.input-box { 
+    background: var(--card); 
+    border: 1px solid var(--border); 
+    border-radius: 4px; 
+    margin-bottom: 8px; 
+    padding: 10px; 
+    display: flex; 
+    align-items: center; 
+    position: relative; 
+}
+
+.input-box input { 
+    background: none; 
+    border: none; 
+    color: var(--text-main); 
+    width: 100%; 
+    outline: none; 
+    font-size: 16px; 
+}
+
+.input-box span { font-size: 12px; color: var(--text-sec); }
+
+.fee-info { font-size: 10px; color: var(--text-sec); margin: 5px 0; display: flex; justify-content: space-between; }
+
+.pct-row { display: flex; gap: 5px; margin: 10px 0; }
+
+.pct-btn { 
+    flex: 1; 
+    background: #edf0f3; 
+    border: none; 
+    color: var(--text-main); 
+    padding: 6px; 
+    border-radius: 4px; 
+    font-size: 11px; 
+    font-weight: 600;
+}
+
+.btn-action { width: 100%; padding: 14px; border: none; border-radius: 6px; font-weight: bold; font-size: 16px; cursor: pointer; }
+.buy-bg { background: var(--up); color: white; }
+.sell-bg { background: var(--down); color: white; }
+
+/* Order Book */
+.ob-header { display: flex; justify-content: space-between; font-size: 11px; color: var(--text-sec); margin-bottom: 5px; }
+.ob-list { height: 160px; overflow: hidden; font-size: 12px; }
+.ob-row { display: flex; justify-content: space-between; padding: 4px 0; position: relative; z-index: 1; }
+.depth-bar { position: absolute; right: 0; top: 0; bottom: 0; z-index: -1; transition: 0.3s; }
+.mid-price { text-align: center; padding: 10px 0; border-top: 1px solid var(--border); border-bottom: 1px solid var(--border); margin: 5px 0; color: var(--text-main); font-weight: bold; }
+
+/* History Table */
+.history-section { padding: 15px; }
+.h-tabs { display: flex; gap: 15px; border-bottom: 1px solid var(--border); margin-bottom: 10px; }
+.h-tab { padding: 8px 0; color: var(--text-sec); font-size: 13px; cursor: pointer; }
+.h-tab.active { color: var(--primary); border-bottom: 2px solid var(--primary); }
+
+.h-table { width: 100%; border-collapse: collapse; font-size: 11px; text-align: left; }
+.h-table th { color: var(--text-sec); padding: 8px 0; }
+.h-table td { padding: 10px 0; border-bottom: 1px solid #f1f1f1; color: var(--text-main); }
+
+.show-more-container { text-align: center; padding: 15px 0; }
+.show-more-btn { 
+    background: #f8f9fa; 
+    border: 1px solid var(--border); 
+    color: var(--text-sec); 
+    padding: 6px 20px; 
+    border-radius: 20px; 
+    font-size: 12px; 
+    cursor: pointer; 
+}
+
 /* Toast Notification Design */
 .toast-container {
     position: fixed;
     top: 20px;
     left: 50%;
     transform: translateX(-50%);
-    background: var(--card);
+    background: #ffffff;
     border: 1px solid var(--primary);
-    color: white;
+    color: var(--text-main);
     padding: 12px 24px;
     border-radius: 8px;
     display: flex;
     align-items: center;
     gap: 10px;
     z-index: 9999;
-    box-shadow: 0 4px 15px rgba(0,0,0,0.5);
+    box-shadow: 0 8px 25px rgba(0,0,0,0.1);
     animation: slideDownFade 0.3s ease forwards;
 }
 
-.toast-container i {
-    color: var(--primary);
-}
+.toast-container i { color: var(--primary); }
 
 @keyframes slideDownFade {
     from { opacity: 0; top: -10px; }
     to { opacity: 1; top: 20px; }
 }
 
-.fade-out {
-    animation: fadeOut 0.5s ease forwards;
-}
+.fade-out { animation: fadeOut 0.5s ease forwards; }
 
-@keyframes fadeOut {
-    to { opacity: 0; transform: translate(-50%, -20px); }
-}
+@keyframes fadeOut { to { opacity: 0; transform: translate(-50%, -20px); } }
 
+/* Utility Classes */
+@keyframes spin { 100% { transform: rotate(360deg); } }
+.up { color: var(--up); }
+.down { color: var(--down); }
 
-
- /* Footer */
- 
- @keyframes spin { 100% { transform: rotate(360deg); } }
- .up { color: var(--up); }
- .down { color: var(--down); }
  </style>
  </head>
  <body>
