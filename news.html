@@ -8,7 +8,7 @@
     <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-database-compat.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;700;900&display=swap" rel="stylesheet">
-<link rel="icon" type="image/svg+xml" href="data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNTEyIiBoZWlnaHQ9IjUxMiIgdmlld0JveD0iMCAwIDUxMiA1MTIiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+CiAgPGNpcmNsZSBjeD0iMjU2IiBjeT0iMjU2IiByPSIyNDAiIGZpbGw9IiNmM2JhMmYiLz4KICA8Y2lyY2xlIGN4PSIyNTYiIGN5PSIyNTYiIHI9IjIxNSIgc3Ryb2tlPSJ3aGl0ZSIgc3Ryb2tlLXdpZHRoPSI4IiBmaWxsPSJ0cmFuc3BhcmVudCIvPgogIDxwYXRoIGQ9Ik0xNTAgMTcwIEMxNTAgMTQ1IDE3MCAxMzUgMjAwIDEzNSBMMzQwIDEzNSBDMzU1IDEzNSAzNjUgMTQ1IDM2NSAxNjAgQzM2NSAxNzUgMzU1IDE4NSAzNDAgMTg1IEwyMDUgMTg1IEMxOTAgMTg1IDE4NSAxOTAgMTg1IDIwNSBDMTg1IDIyMCAxOTAgMjI1IDIwNSAyMjUgTDM0MCAyMjUgQzM3MCAyMjUgMzkwIDI0NSAzOTAgMjc1IEwzOTAgMzI1IEMzOTAgMzU1IDM3MCAzNzUgMzQwIDM3NSBMMTcwIDM3NSBDMTU1IDM3NSAxNDUgMzY1IDE0NSAzNTAgQzE0NSAzMzUgMTU1IDMyNSAxNzAgMzI1IEwzMzUgMzI1IEMzNTAgMzI1IDM1NSAzMjAgMzU1IDMwNSBDMzU1IDI5MCAzNTAgMjg1IDMzNSAyODUgTDIwMCAyODUgQzE3MCAyODUgMTUwIDI2NSAxNTAgMjM1IFoiIGZpbGw9IndoaXRlIi8+Cjwvc3ZnPg==">    
+    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNTEyIiBoZWlnaHQ9IjUxMiIgdmlld0JveD0iMCAwIDUxMiA1MTIiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+CiAgPGNpcmNsZSBjeD0iMjU2IiBjeT0iMjU2IiByPSIyNDAiIGZpbGw9IiNmM2JhMmYiLz4KICA8Y2lyY2xlIGN4PSIyNTYiIGN5PSIyNTYiIHI9IjIxNSIgc3Ryb2tlPSJ3aGl0ZSIgc3Ryb2tlLXdpZHRoPSI4IiBmaWxsPSJ0cmFuc3BhcmVudCIvPgogIDxwYXRoIGQ9Ik0xNTAgMTcwIEMxNTAgMTQ1IDE3MCAxMzUgMjAwIDEzNSBMMzQwIDEzNSBDMzU1IDEzNSAzNjUgMTQ1IDM2NSAxNjAgQzM2NSAxNzUgMzU1IDE4NSAzNDAgMTg1IEwyMDUgMTg1IEMxOTAgMTg1IDE4NSAxOTAgMTg1IDIwNSBDMTg1IDIyMCAxOTAgMjI1IDIwNSAyMjUgTDM0MCAyMjUgQzM3MCAyMjUgMzkwIDI0NSAzOTAgMjc1IEwzOTAgMzI1IEMzOTAgMzU1IDM3MCAzNzUgMzQwIDM3NSBMMTcwIDM3NSBDMTU1IDM3NSAxNDUgMzY1IDE0NSAzNTAgQzE0NSAzMzUgMTU1IDMyNSAxNzAgMzI1IEwzMzUgMzI1IEMzNTAgMzI1IDM1NSAzMjAgMzU1IDMwNSBDMzU1IDI5MCAzNTAgMjg1IDMzNSAyODUgTDIwMCAyODUgQzE3MCAyODUgMTUwIDI2NSAxNTAgMjM1IFoiIGZpbGw9IndoaXRlIi8+Cjwvc3ZnPg==">    
     <style>
         :root {
             --bg: #0b0e11;
@@ -24,36 +24,36 @@
         body { 
             background: var(--bg); 
             color: white; 
-            height: 100vh; 
+            height: 100vh;
+            height: 100dvh; /* আধুনিক ব্রাউজারের জন্য ডাইনামিক হাইট */
             display: flex; 
             flex-direction: column; 
-            overflow: hidden; /* বডি স্ক্রল হবে না */
+            overflow: hidden; 
         }
 
         /* Fixed Header */
         .news-header {
             flex-shrink: 0;
-            padding: 25px 20px;
+            padding: 20px;
             text-align: center;
-            background: #0b0e11;
+            background: var(--bg);
             border-bottom: 1px solid var(--border);
             z-index: 1000;
-            box-shadow: 0 4px 20px rgba(0,0,0,0.5);
         }
         
         .news-header h1 {
             font-family: var(--font-mon);
             font-weight: 900;
-            font-size: 24px;
+            font-size: 22px;
             text-transform: uppercase;
             color: var(--primary);
-            letter-spacing: 2px;
+            letter-spacing: 1.5px;
         }
 
         /* Scrollable News Area */
         .scroll-area {
-            flex-grow: 1;
-            overflow-y: auto; /* শুধু এই অংশ স্ক্রল হবে */
+            flex: 1; /* ফ্লেক্স গ্রো করবে যাতে মাঝখানের জায়গা পুরোটাই নেয় */
+            overflow-y: auto; 
             padding: 15px;
             -webkit-overflow-scrolling: touch;
         }
@@ -64,7 +64,6 @@
             width: 100%;
         }
 
-        /* Full Display News Card */
         .news-card {
             background: var(--card);
             border-radius: 20px;
@@ -76,7 +75,7 @@
 
         .img-wrapper {
             width: 100%;
-            aspect-ratio: 16 / 9; /* অটো এডজাস্ট ইমেজের জন্য */
+            aspect-ratio: 16 / 9;
             overflow: hidden;
             background: #000;
         }
@@ -87,9 +86,7 @@
             object-fit: cover;
         }
 
-        .news-content {
-            padding: 20px;
-        }
+        .news-content { padding: 20px; }
 
         .category-tag {
             background: rgba(0, 255, 255, 0.1);
@@ -106,17 +103,17 @@
         .news-title {
             font-family: var(--font-mon);
             font-weight: 900;
-            font-size: 19px;
+            font-size: 18px;
             color: #fff;
-            margin-bottom: 12px;
+            margin-bottom: 10px;
             line-height: 1.3;
         }
 
         .news-desc {
             font-size: 14px;
             color: #b7bdc6;
-            line-height: 1.6;
-            margin-bottom: 18px;
+            line-height: 1.5;
+            margin-bottom: 15px;
         }
 
         .meta-footer {
@@ -128,14 +125,16 @@
             border-top: 1px solid rgba(255,255,255,0.05);
         }
 
-        /* Fixed Footer Nav */
+        /* Fixed Footer Nav - Optimized */
         .footer-nav {
             flex-shrink: 0;
-            background: #0b0e11;
+            background: var(--bg);
             display: flex;
             justify-content: space-around;
-            padding: 12px 0 25px; /* মোবাইল নচ এর জন্য নিচে স্পেস */
+            padding: 12px 0;
+            padding-bottom: calc(12px + env(safe-area-inset-bottom)); /* আইফোন বা আধুনিক ফোনের নচ এর জন্য */
             border-top: 1px solid var(--border);
+            z-index: 1000;
         }
 
         .nav-item { 
@@ -143,19 +142,18 @@
             color: #848e9c; 
             text-decoration: none; 
             font-size: 10px;
-            transition: 0.3s;
+            flex: 1;
         }
         .nav-item i { font-size: 20px; display: block; margin-bottom: 4px; }
         .nav-item.active { color: var(--primary); }
 
-        /* Loader */
         #loading-ui { text-align: center; padding: 40px; color: var(--accent); font-weight: 900; font-size: 11px; letter-spacing: 2px; }
     </style>
 </head>
 <body>
 
     <header class="news-header">
-        <h1 class="mon-900">SMAT News Feed</h1>
+        <h1>SMAT News Feed</h1>
     </header>
 
     <main class="scroll-area">
@@ -164,14 +162,17 @@
     </main>
 
     <footer class="footer-nav">
-        <a href="home.html" class="nav-item"><i class="fas fa-home"></i>Home</a>
-        <a href="market.html" class="nav-item"><i class="fas fa-chart-line"></i>Market</a>
-       
-        <a href="wallet.html" class="nav-item"><i class="fas fa-wallet"></i>Wallet</a>
+        <a href="home.html" class="nav-item"><i class="fas fa-home"></i><span>Home</span></a>
+        <a href="market.html" class="nav-item"><i class="fas fa-chart-line"></i><span>Market</span></a>
+        <a href="news.html" class="nav-item active"><i class="fas fa-newspaper"></i><span>News</span></a>
+        <a href="wallet.html" class="nav-item"><i class="fas fa-wallet"></i><span>Wallet</span></a>
     </footer>
 
     <script>
-        const firebaseConfig = { apiKey: "AIzaSyAMxtJedkehhxJRMPZLjhpKHqneHEWsGlE", databaseURL: "https://smat-exchange-default-rtdb.firebaseio.com" };
+        const firebaseConfig = { 
+            apiKey: "AIzaSyAMxtJedkehhxJRMPZLjhpKHqneHEWsGlE", 
+            databaseURL: "https://smat-exchange-default-rtdb.firebaseio.com" 
+        };
         firebase.initializeApp(firebaseConfig);
         const db = firebase.database();
 
@@ -182,7 +183,6 @@
                 newsList.innerHTML = "";
                 
                 const data = snap.val() || {};
-                // সর্বশেষ নিউজ সর্বপ্রথমে রাখার জন্য Sort করা হলো
                 const sortedKeys = Object.keys(data).sort((a, b) => data[b].timestamp - data[a].timestamp);
 
                 if(sortedKeys.length === 0) {
@@ -197,7 +197,7 @@
                     newsList.innerHTML += `
                         <article class="news-card">
                             <div class="img-wrapper">
-                                <img src="${news.image || 'https://via.placeholder.com/600x340/1e2329/ffff00?text=SmatBit+News'}" class="news-img" loading="lazy">
+                                <img src="${news.image || 'https://via.placeholder.com/600x340/1e2329/ffff00?text=SMAT+News'}" class="news-img" loading="lazy">
                             </div>
                             <div class="news-content">
                                 <span class="category-tag">${news.category || 'Official'}</span>
