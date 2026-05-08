@@ -21,68 +21,56 @@
         body { background: var(--bg); color: white; padding-bottom: 100px; display: none; }
 
         .header { padding: 30px 20px; text-align: center; background: linear-gradient(180deg, rgba(240, 185, 11, 0.1) 0%, var(--bg) 100%); }
-        .header h1 { font-family: var(--font-mont); color: var(--primary); font-size: 22px; text-transform: uppercase; letter-spacing: 1px; }
+        .header h1 { font-family: var(--font-mont); color: var(--primary); font-size: 22px; text-transform: uppercase; }
         
         .container { padding: 0 15px; }
-
-        /* Pool Card Styling */
-        .stake-card { background: var(--card); border-radius: 20px; padding: 18px; margin-bottom: 20px; border: 1px solid var(--border); box-shadow: 0 4px 15px rgba(0,0,0,0.2); }
+        .stake-card { background: var(--card); border-radius: 20px; padding: 18px; margin-bottom: 20px; border: 1px solid var(--border); }
         
-        /* Top Bar: My vs Global */
         .card-top-info { display: flex; justify-content: space-between; font-size: 10px; margin-bottom: 15px; padding-bottom: 10px; border-bottom: 1px solid var(--border); }
-        .card-top-info span { color: var(--text-sec); }
         .card-top-info b { color: var(--primary); }
 
         .coin-info { display: flex; align-items: center; gap: 12px; margin-bottom: 15px; }
         .coin-logo { width: 42px; height: 42px; border-radius: 50%; border: 1px solid var(--border); }
-        .apy-tag { margin-left: auto; color: var(--up); font-size: 15px; text-align: right; line-height: 1.2; }
+        .apy-tag { margin-left: auto; color: var(--up); font-size: 15px; text-align: right; }
         
         .progress-bar { height: 5px; background: #000; border-radius: 10px; overflow: hidden; margin: 10px 0; }
         .progress-fill { height: 100%; background: var(--primary); transition: 0.8s; }
 
         .btn-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 15px; }
         .btn-opt { padding: 12px; border-radius: 12px; background: #2b3139; color: white; text-align: center; font-size: 11px; cursor: pointer; border: 1px solid var(--border); }
-        .btn-opt.highlight { border-color: var(--primary); color: var(--primary); font-weight: 900; }
+        .btn-opt.highlight { border-color: var(--primary); color: var(--primary); }
 
-        /* Internal Stake History List */
+        /* Internal Active Stakes */
         .internal-stakes { margin-top: 15px; padding-top: 10px; border-top: 1px dashed var(--border); }
-        .stake-mini-item { background: rgba(0,0,0,0.2); padding: 10px; border-radius: 10px; display: flex; justify-content: space-between; align-items: center; margin-bottom: 5px; font-size: 11px; }
+        .stake-mini-item { background: rgba(0,0,0,0.2); padding: 12px; border-radius: 12px; display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; font-size: 11px; }
 
-        /* Custom Graphic Popups */
-        .overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.92); display: none; align-items: center; justify-content: center; z-index: 9000; padding: 25px; backdrop-filter: blur(4px); }
-        .modal { background: var(--card); width: 100%; max-width: 380px; border-radius: 28px; padding: 25px; border: 1px solid var(--border); position: relative; }
+        /* Modal & Popups */
+        .overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.95); display: none; align-items: center; justify-content: center; z-index: 9000; padding: 25px; }
+        .modal { background: var(--card); width: 100%; max-width: 380px; border-radius: 28px; padding: 25px; border: 1px solid var(--border); }
         
-        .toast-container { position: fixed; top: 20px; left: 50%; transform: translateX(-50%); z-index: 10000; width: 90%; max-width: 350px; }
-        .toast { background: #1e2329; border-left: 4px solid var(--primary); padding: 15px; border-radius: 12px; display: flex; align-items: center; gap: 12px; margin-bottom: 10px; animation: slideIn 0.3s ease forwards; box-shadow: 0 10px 20px rgba(0,0,0,0.4); }
-        .toast.success { border-left-color: var(--up); }
-        .toast.error { border-left-color: var(--down); }
+        /* Duration Tabs */
+        .dur-flex { display: flex; gap: 8px; margin: 15px 0; }
+        .dur-btn { flex: 1; padding: 10px; background: #0b0e11; border-radius: 10px; border: 1px solid var(--border); color: var(--text-sec); text-align: center; font-size: 11px; cursor: pointer; }
+        .dur-btn.active { border-color: var(--primary); color: var(--primary); }
 
-        /* Buttons & Inputs */
         .input-group { background: #0b0e11; border-radius: 15px; padding: 15px; margin: 15px 0; border: 1px solid var(--border); position: relative; }
         .input-group input { width: 75%; background: transparent; border: none; color: white; font-size: 18px; outline: none; }
         .max-btn { position: absolute; right: 15px; color: var(--primary); font-size: 11px; cursor: pointer; top: 50%; transform: translateY(-50%); }
-        .btn-main { width: 100%; padding: 16px; background: var(--primary); color: #000; border: none; border-radius: 16px; font-weight: 900; cursor: pointer; margin-top: 10px; }
-        .btn-cancel { width: 100%; padding: 14px; background: transparent; color: var(--text-sec); border: none; font-size: 12px; cursor: pointer; margin-top: 5px; }
+
+        .btn-main { width: 100%; padding: 16px; background: var(--primary); color: #000; border: none; border-radius: 16px; font-weight: 900; cursor: pointer; }
+        .btn-cancel { width: 100%; padding: 14px; background: transparent; color: var(--text-sec); border: none; font-size: 12px; cursor: pointer; }
 
         .footer { position: fixed; bottom: 0; width: 100%; height: 75px; background: var(--bg); display: flex; border-top: 1px solid var(--border); z-index: 4000; }
         .nav-item { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; text-decoration: none; color: var(--text-sec); font-size: 11px; gap: 4px; }
         .nav-item.active { color: var(--primary); }
-
-        @keyframes slideIn { from { opacity: 0; transform: translateY(-20px); } to { opacity: 1; transform: translateY(0); } }
     </style>
 </head>
 <body>
 
-    <div class="header">
-        <h1>Staking Hub</h1>
-    </div>
+    <div class="header"><h1>Staking Hub</h1></div>
+    <div class="container" id="poolContainer"></div>
 
-    <div class="container" id="poolContainer">
-        </div>
-
-    <div class="overlay" id="globalOverlay">
-        <div class="modal" id="modalContent"></div>
-    </div>
+    <div class="overlay" id="globalOverlay"><div class="modal" id="modalContent"></div></div>
 
     <footer class="footer">
         <a href="home.html" class="nav-item"><i class="fas fa-home"></i>Home</a>
@@ -132,18 +120,21 @@ function renderAll() {
         const staked = p.totalStaked || 0;
         const max = p.maxPool || 1000000;
         const progress = Math.min((staked/max)*100, 100);
-        const apy = (p.startingAPY * (1 - (staked/max))).toFixed(2);
+        const baseApy = (p.startingAPY * (1 - (staked/max))).toFixed(2);
 
-        // Filter user stakes for this specific coin
         let myStakeItems = "";
         if(userData.stakes) {
             Object.keys(userData.stakes).forEach(id => {
                 const stk = userData.stakes[id];
                 if(stk.coin === sym && stk.status === 'active') {
+                    const isLocked = stk.unlockTime > Date.now();
                     myStakeItems += `
                         <div class="stake-mini-item">
-                            <span>${f8(stk.amount)} ${sym}</span>
-                            <button onclick="confirmUnstakePop('${id}')" style="background:var(--down); border:none; padding:4px 8px; border-radius:6px; color:white; font-size:9px">UNSTAKE</button>
+                            <div>
+                                <b>${f8(stk.amount)} ${sym}</b><br>
+                                <small style="color:${isLocked?'var(--down)':'var(--up)'}">${isLocked ? 'Locked' : 'Unlocked'}</small>
+                            </div>
+                            <button onclick="confirmUnstakePop('${id}')" style="background:var(--down); border:none; padding:6px 12px; border-radius:8px; color:white; font-size:10px">UNSTAKE</button>
                         </div>`;
                 }
             });
@@ -153,12 +144,12 @@ function renderAll() {
             <div class="stake-card">
                 <div class="card-top-info">
                     <span>My Stake: <b>${f8(sBal)}</b></span>
-                    <span>Global Stake: <b>${f8(staked)}</b></span>
+                    <span>Global: <b>${f8(staked)}</b></span>
                 </div>
                 <div class="coin-info">
-                    <img src="${p.logopath}" class="coin-logo" onerror="this.src='assets/logos/generic.png'">
+                    <img src="${p.logopath}" class="coin-logo">
                     <div><b>${p.name}</b><br><small style="color:var(--text-sec)">${p.network}</small></div>
-                    <div class="apy-tag"><b>${apy}%</b><br><span style="font-size:9px">APY</span></div>
+                    <div class="apy-tag"><b>${baseApy}%</b><br><span style="font-size:9px">APY</span></div>
                 </div>
                 <div class="progress-bar"><div class="progress-fill" style="width:${progress}%"></div></div>
                 <div class="btn-grid">
@@ -168,50 +159,61 @@ function renderAll() {
                 ${myStakeItems ? `<div class="internal-stakes">${myStakeItems}</div>` : ''}
             </div>`;
     });
-    area.innerHTML = html || "<p style='text-align:center; margin-top:50px; color:var(--text-sec)'>Loading Pools...</p>";
+    area.innerHTML = html;
 }
 
-// --- GRAPHIC POPUP: STAKE ---
 function openStakePop(key, type) {
     const p = pools[key];
     const bal = userData[p.symbol.toLowerCase() + '_balance'] || 0;
-    const overlay = document.getElementById('globalOverlay');
     const content = document.getElementById('modalContent');
 
     content.innerHTML = `
-        <h3 style="font-family:var(--font-mont); color:var(--primary); text-align:center">STAKE ${p.symbol}</h3>
-        <p style="font-size:11px; color:var(--text-sec); text-align:center; margin-top:5px">Wallet Balance: ${f8(bal)}</p>
+        <h3 style="text-align:center; font-family:var(--font-mont)">STAKE ${p.symbol}</h3>
+        <p style="text-align:center; font-size:11px; color:var(--text-sec); margin-top:5px">Balance: ${f8(bal)}</p>
         
         <div class="input-group">
-            <input type="number" id="stkAmt" placeholder="0.00">
-            <span class="max-btn" onclick="document.getElementById('stkAmt').value='${bal}'">MAX</span>
+            <input type="number" id="stkAmt" placeholder="0.00" oninput="updatePreview('${key}', '${type}')">
+            <span class="max-btn" onclick="document.getElementById('stkAmt').value='${bal}'; updatePreview('${key}', '${type}')">MAX</span>
+        </div>
+
+        ${type === 'fixed' ? `
+            <div class="dur-flex">
+                <div class="dur-btn active" data-d="15" data-m="1.2" onclick="setDur(this, '${key}', '${type}')">15D</div>
+                <div class="dur-btn" data-d="30" data-m="1.5" onclick="setDur(this, '${key}', '${type}')">30D</div>
+                <div class="dur-btn" data-d="90" data-m="2.5" onclick="setDur(this, '${key}', '${type}')">90D</div>
+            </div>
+        ` : ''}
+
+        <div style="background:rgba(255,255,255,0.05); padding:15px; border-radius:15px; font-size:12px; margin-bottom:15px">
+            <div style="display:flex; justify-content:space-between"><span>Est. APY</span><b id="prevAPY" style="color:var(--up)">0.00%</b></div>
+            <div style="display:flex; justify-content:space-between; margin-top:5px"><span>Daily</span><b id="prevDaily">0.00000000</b></div>
         </div>
 
         <button class="btn-main" onclick="executeStake('${key}', '${type}')">CONFIRM STAKE</button>
         <button class="btn-cancel" onclick="closePop()">Cancel</button>
     `;
-    overlay.style.display = 'flex';
+    document.getElementById('globalOverlay').style.display = 'flex';
+    updatePreview(key, type);
 }
 
-// --- GRAPHIC POPUP: UNSTAKE (ল্যাংটা পপআপ সমাধান) ---
-function confirmUnstakePop(id) {
-    const item = userData.stakes[id];
-    const overlay = document.getElementById('globalOverlay');
-    const content = document.getElementById('modalContent');
+function setDur(btn, key, type) {
+    document.querySelectorAll('.dur-btn').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    updatePreview(key, type);
+}
 
-    content.innerHTML = `
-        <div style="text-align:center">
-            <div style="width:60px; height:60px; background:rgba(246,70,93,0.1); color:var(--down); border-radius:50%; display:flex; align-items:center; justify-content:center; margin:0 auto 15px; font-size:24px">
-                <i class="fas fa-wallet"></i>
-            </div>
-            <h3 style="font-family:var(--font-mont)">Return Assets?</h3>
-            <p style="font-size:12px; color:var(--text-sec); margin:10px 0 20px">Do you want to unstake <b>${f8(item.amount)} ${item.coin}</b> and return them to your main wallet?</p>
-            
-            <button class="btn-main" style="background:var(--up)" onclick="executeUnstake('${id}')">YES, UNSTAKE</button>
-            <button class="btn-cancel" onclick="closePop()">No, Keep Staked</button>
-        </div>
-    `;
-    overlay.style.display = 'flex';
+function updatePreview(key, type) {
+    const p = pools[key];
+    const amt = parseFloat(document.getElementById('stkAmt').value) || 0;
+    let apy = p.startingAPY * (1 - ((p.totalStaked||0)/(p.maxPool||1000000)));
+
+    if(type === 'fixed') {
+        const mult = parseFloat(document.querySelector('.dur-btn.active').dataset.m);
+        apy *= mult;
+    }
+
+    document.getElementById('prevAPY').innerText = apy.toFixed(2) + "%";
+    document.getElementById('prevDaily').innerText = f8((amt * (apy/100)) / 365);
 }
 
 async function executeStake(key, type) {
@@ -220,24 +222,49 @@ async function executeStake(key, type) {
     const sym = p.symbol.toLowerCase();
     const bal = userData[sym + '_balance'] || 0;
 
-    if(!amt || amt <= 0 || amt > bal) return toast("Invalid amount!", "error");
+    if(!amt || amt <= 0 || amt > bal) return toast("Invalid amount", "error");
 
     const tid = "STK" + Date.now();
+    const ts = Date.now();
+    let unlockTime = 0; 
+    
+    if(type === 'fixed') {
+        const days = parseInt(document.querySelector('.dur-btn.active').dataset.d);
+        unlockTime = ts + (days * 24 * 60 * 60 * 1000);
+    }
+
     const up = {};
     up[`users/${auth.currentUser.uid}/${sym}_balance`] = parseFloat((bal - amt).toFixed(8));
     up[`users/${auth.currentUser.uid}/s${sym}_balance`] = parseFloat(((userData['s'+sym+'_balance']||0) + amt).toFixed(8));
     up[`users/${auth.currentUser.uid}/stakes/${tid}`] = {
-        coin: p.symbol, amount: amt, type: type, apy: p.startingAPY, // simplified for demo
-        startTime: Date.now(), status: 'active'
+        coin: p.symbol, amount: amt, type: type, 
+        apy: parseFloat(document.getElementById('prevAPY').innerText),
+        startTime: ts, unlockTime: unlockTime, status: 'active'
     };
     up[`staking_settings/${key}/totalStaked`] = (p.totalStaked||0) + amt;
-    up[`users/${auth.currentUser.uid}/history/${tid}`] = {
-        method: 'Stake Out', coin: p.symbol, amount: f8(amt), status: 'success', timestamp: Date.now()
-    };
 
     await db.ref().update(up);
-    toast("Staking Successful!", "success");
+    toast("Staked Successfully!", "success");
     closePop();
+}
+
+function confirmUnstakePop(id) {
+    const item = userData.stakes[id];
+    const isLocked = item.unlockTime > Date.now();
+    const content = document.getElementById('modalContent');
+
+    content.innerHTML = `
+        <div style="text-align:center">
+            <i class="fas fa-exclamation-triangle" style="font-size:40px; color:${isLocked?'var(--down)':'var(--up)'}"></i>
+            <h3 style="margin-top:15px">${isLocked ? 'Still Locked!' : 'Confirm Unstake'}</h3>
+            <p style="font-size:12px; color:var(--text-sec); margin:15px 0">
+                ${isLocked ? 'Your asset is currently locked. If you unstake now, you will lose all accumulated rewards.' : 'Your lock period is over. You can safely return assets to wallet.'}
+            </p>
+            <button class="btn-main" style="background:${isLocked?'#333':''}" onclick="executeUnstake('${id}')">UNSTAKE ANYWAY</button>
+            <button class="btn-cancel" onclick="closePop()">Cancel</button>
+        </div>
+    `;
+    document.getElementById('globalOverlay').style.display = 'flex';
 }
 
 async function executeUnstake(id) {
@@ -250,9 +277,6 @@ async function executeUnstake(id) {
     
     const pKey = Object.keys(pools).find(k => pools[k].symbol === item.coin);
     up[`staking_settings/${pKey}/totalStaked`] = Math.max(0, (pools[pKey].totalStaked||0) - item.amount);
-    up[`users/${auth.currentUser.uid}/history/${id}_un`] = {
-        method: 'Unstake In', coin: item.coin, amount: f8(item.amount), status: 'success', timestamp: Date.now()
-    };
 
     await db.ref().update(up);
     toast("Unstaked successfully!", "success");
@@ -260,16 +284,11 @@ async function executeUnstake(id) {
 }
 
 function toast(msg, type) {
-    const c = document.getElementById('toastContainer') || (() => {
-        const d = document.createElement('div'); d.id = 'toastContainer'; d.className = 'toast-container';
-        document.body.appendChild(d); return d;
-    })();
-    const t = document.createElement('div');
-    t.className = `toast ${type}`;
-    t.innerHTML = `<div style="background:rgba(255,255,255,0.1); width:30px; height:30px; border-radius:50%; display:flex; align-items:center; justify-content:center"><i class="fas ${type==='success'?'fa-check':'fa-times'}"></i></div>
-                   <div><b style="font-size:12px; display:block">${type==='success'?'Success':'Error'}</b><span style="font-size:10px; color:var(--text-sec)">${msg}</span></div>`;
-    c.appendChild(t);
-    setTimeout(() => { t.style.opacity = '0'; setTimeout(()=>t.remove(), 400); }, 3000);
+    const d = document.createElement('div');
+    d.style.cssText = `position:fixed; top:20px; left:50%; transform:translateX(-50%); background:#1e2329; border-left:4px solid ${type==='success'?'var(--up)':'var(--down)'}; padding:15px; border-radius:10px; z-index:10000; font-size:12px; min-width:250px; box-shadow:0 10px 30px #000;`;
+    d.innerHTML = `<b>${type==='success'?'Success':'Error'}</b><br>${msg}`;
+    document.body.appendChild(d);
+    setTimeout(() => d.remove(), 3000);
 }
 
 function closePop() { document.getElementById('globalOverlay').style.display = 'none'; }
