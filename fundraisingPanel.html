@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>SmatBit Admin | Project & Vesting Control</title>
+    <title>SmatBit Admin | Full Project & Vesting Control</title>
     <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-database-compat.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
@@ -40,14 +40,16 @@
         .tag-ongoing { background: rgba(14, 203, 129, 0.1); color: var(--status-ongoing); }
         .tag-completed { background: rgba(246, 70, 93, 0.1); color: var(--status-completed); }
 
-        /* Modal */
+        /* Modal Overlay */
         .modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.95); display: none; flex-direction: column; z-index: 9999; padding: 20px; }
         .modal-content { background: var(--card); border: 1px solid var(--primary); border-radius: 25px; padding: 20px; max-width: 600px; margin: auto; width: 100%; max-height: 90vh; overflow-y: auto; }
         
-        .vesting-control { background: #0b0e11; padding: 15px; border-radius: 15px; margin: 15px 0; border: 1px solid var(--accent); }
-        .user-row { background: rgba(255,255,255,0.03); margin-bottom: 8px; padding: 12px; border-radius: 12px; display: flex; justify-content: space-between; align-items: center; font-size: 11px; }
+        /* Vesting Preview Box */
+        .preview-box { background: #0b0e11; border-radius: 15px; padding: 15px; margin: 15px 0; border: 1px solid var(--accent); max-height: 250px; overflow-y: auto; }
+        .user-preview-row { display: flex; justify-content: space-between; padding: 8px; border-bottom: 1px solid rgba(255,255,255,0.05); font-size: 11px; }
 
-        .dist-history-item { font-size: 10px; padding: 8px; border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; color: var(--text-sec); }
+        .vesting-control { background: rgba(0,255,255,0.02); padding: 15px; border-radius: 15px; margin: 15px 0; border: 1px solid rgba(255,255,255,0.1); }
+        .dist-history-item { font-size: 10px; padding: 8px; border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; color: #848e9c; }
 
         /* Toast Notification */
         #toast-container { position: fixed; top: 20px; left: 50%; transform: translateX(-50%); z-index: 10001; }
@@ -112,7 +114,12 @@
                     <label>VESTING PHASE NAME (Unique)</label>
                     <input type="text" id="vestingName" placeholder="e.g. Phase 1 / TGE">
                 </div>
-                <p style="font-size:10px; margin-bottom:10px; color:gray;">Note: Distribution will be proportional to USDT funding.</p>
+
+                <p style="font-size:10px; margin-bottom:5px; color:var(--primary);">Distribution Preview:</p>
+                <div class="preview-box" id="distPreview">
+                    <p style="font-size:10px; color:gray; text-align:center;">Loading contributors...</p>
+                </div>
+
                 <button class="btn-launch" id="distBtn" style="padding:12px; font-size:12px;" onclick="executeVesting()">DISTRIBUTE TO ALL CONTRIBUTORS</button>
             </div>
 
@@ -155,7 +162,7 @@ async function launchProject() {
     showToast("Project Launched!");
 }
 
-// 2. Load History
+// 2. Load History List
 db.ref('fundraising_history').on('value', snap => {
     const container = document.getElementById('projectHistory');
     container.innerHTML = "";
@@ -168,7 +175,7 @@ db.ref('fundraising_history').on('value', snap => {
             <div class="proj-item" onclick="openManageModal('${p.id}')">
                 <div>
                     <h4 class="mon-900" style="font-size:13px">${p.title} <span class="status-tag ${statusClass}">${p.status}</span></h4>
-                    <p style="font-size:10px; color:var(--text-sec)">Path: ${p.sym}_balance | Supply: ${p.total_tokens}</p>
+                    <p style="font-size:10px; color:#848e9c">Path: ${p.sym}_balance | Supply: ${p.total_tokens}</p>
                 </div>
                 <i class="fas fa-edit" style="color:var(--primary)"></i>
             </div>
@@ -176,46 +183,80 @@ db.ref('fundraising_history').on('value', snap => {
     });
 });
 
-// 3. Open Modal & Load Project Data
+// 3. Open Modal & Load Preview
 async function openManageModal(id) {
     selectedProj = currentProjects.find(x => x.id === id);
     document.getElementById('modalTitle').innerText = selectedProj.title;
     document.getElementById('statusSelect').value = selectedProj.status || 'Ongoing';
     document.getElementById('manageModal').style.display = 'flex';
     
-    // Load Distribution History
+    loadVestingPreview(id);
     loadDistributionLogs(id);
 }
 
-// 4. Update Status (Ongoing/Completed)
+// 4. Load Distribution Preview (কে কত পাবে)
+async function loadVestingPreview(pid) {
+    const previewBox = document.getElementById('distPreview');
+    previewBox.innerHTML = "<p style='font-size:10px; color:gray; text-align:center;'>Calculating...</p>";
+
+    const contSnap = await db.ref(`fundraising_contributions/${pid}`).once('value');
+    const rawCont = contSnap.val() || {};
+    const contributors = Object.keys(rawCont).map(uid => ({uid, ...rawCont[uid]}));
+
+    if(contributors.length === 0) {
+        previewBox.innerHTML = "<p style='font-size:10px; color:orange; text-align:center;'>No contributors yet.</p>";
+        return;
+    }
+
+    const globalTotalFund = contributors.reduce((s, i) => s + i.amount, 0);
+    const vestPercent = parseFloat(selectedProj.vesting_percent);
+    const totalVestTokens = (selectedProj.total_tokens * (vestPercent / 100));
+
+    let html = `
+        <div style="margin-bottom:10px; padding:8px; background:rgba(0,255,255,0.05); border-radius:8px;">
+            <p style="font-size:11px; color:var(--accent);">Current Phase Release: <b>${totalVestTokens.toFixed(2)} ${selectedProj.sym.toUpperCase()}</b></p>
+            <p style="font-size:9px; color:gray;">(Based on ${vestPercent}% of total supply)</p>
+        </div>
+    `;
+
+    contributors.forEach(user => {
+        const userShare = (user.amount / globalTotalFund) * totalVestTokens;
+        html += `
+            <div class="user-preview-row">
+                <span><b>${user.smat_id}</b><br><small style="color:gray;">Funded: ${user.amount} USDT</small></span>
+                <span style="text-align:right; color:var(--primary);">Gets: <b>${userShare.toFixed(2)}</b><br><small>${selectedProj.sym.toUpperCase()}</small></span>
+            </div>
+        `;
+    });
+
+    previewBox.innerHTML = html;
+}
+
+// 5. Update Status
 async function updateProjectStatus() {
     const newStatus = document.getElementById('statusSelect').value;
     await db.ref(`fundraising_history/${selectedProj.id}/status`).set(newStatus);
     showToast(`Project Status: ${newStatus}`);
 }
 
-// 5. Execute Vesting (One-Click)
+// 6. Execute Distribution (One-Click)
 async function executeVesting() {
     const phaseName = document.getElementById('vestingName').value.trim();
     if(!phaseName) return showToast("Enter Phase Name!", "#f6465d");
 
-    // Check if this phase already distributed
     const checkSnap = await db.ref(`fundraising_history/${selectedProj.id}/distributions/${phaseName}`).once('value');
     if(checkSnap.exists()) return showToast("This phase already distributed!", "#f6465d");
 
     const btn = document.getElementById('distBtn');
-    btn.disabled = true;
-    btn.innerText = "PROCESSING...";
+    btn.disabled = true; btn.innerText = "PROCESSING...";
 
-    // Get Contributors
     const contSnap = await db.ref(`fundraising_contributions/${selectedProj.id}`).once('value');
     const rawCont = contSnap.val() || {};
     const contributors = Object.keys(rawCont).map(uid => ({uid, ...rawCont[uid]}));
     
     if(contributors.length === 0) {
-        btn.disabled = false;
-        btn.innerText = "DISTRIBUTE";
-        return showToast("No contributors found!", "#f6465d");
+        btn.disabled = false; btn.innerText = "DISTRIBUTE";
+        return showToast("No contributors!", "#f6465d");
     }
 
     const globalTotalFund = contributors.reduce((s, i) => s + i.amount, 0);
@@ -225,13 +266,10 @@ async function executeVesting() {
 
     for (const user of contributors) {
         const userShare = (user.amount / globalTotalFund) * vestAmt;
-        
-        // 1. Update User Balance
         const userBalSnap = await db.ref(`users/${user.uid}/${sym}_balance`).once('value');
         const oldBal = parseFloat(userBalSnap.val() || 0);
+        
         updates[`users/${user.uid}/${sym}_balance`] = parseFloat((oldBal + userShare).toFixed(8));
-
-        // 2. Add History
         const tid = "VEST_" + Date.now() + "_" + user.uid.substring(0,4);
         updates[`users/${user.uid}/history/${tid}`] = {
             method: 'Venture Release', coin: sym.toUpperCase(), amount: userShare.toFixed(2), 
@@ -239,15 +277,13 @@ async function executeVesting() {
         };
     }
 
-    // Mark phase as done
     updates[`fundraising_history/${selectedProj.id}/distributions/${phaseName}`] = {
         timestamp: Date.now(), amount: vestAmt, contributors: contributors.length
     };
 
     await db.ref().update(updates);
     showToast(`${phaseName} Distributed Successfully!`);
-    btn.disabled = false;
-    btn.innerText = "DISTRIBUTE TO ALL";
+    btn.disabled = false; btn.innerText = "DISTRIBUTE TO ALL";
     document.getElementById('vestingName').value = "";
     loadDistributionLogs(selectedProj.id);
 }
