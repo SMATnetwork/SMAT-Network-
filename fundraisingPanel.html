@@ -3,12 +3,12 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title> SMAT | Venture Distribution</title>
+    <title>SmatBit Admin | Distribution & Refund</title>
     <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-database-compat.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@900&display=swap" rel="stylesheet">
-  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNTEyIiBoZWlnaHQ9IjUxMiIgdmlld0JveD0iMCAwIDUxMiA1MTIiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+CiAgPGNpcmNsZSBjeD0iMjU2IiBjeT0iMjU2IiByPSIyNDAiIGZpbGw9IiNmM2JhMmYiLz4KICA8Y2lyY2xlIGN4PSIyNTYiIGN5PSIyNTYiIHI9IjIxNSIgc3Ryb2tlPSJ3aGl0ZSIgc3Ryb2tlLXdpZHRoPSI4IiBmaWxsPSJ0cmFuc3BhcmVudCIvPgogIDxwYXRoIGQ9Ik0xNTAgMTcwIEMxNTAgMTQ1IDE3MCAxMzUgMjAwIDEzNSBMMzQwIDEzNSBDMzU1IDEzNSAzNjUgMTQ1IDM2NSAxNjAgQzM2NSAxNzUgMzU1IDE4NSAzNDAgMTg1IEwyMDUgMTg1IEMxOTAgMTg1IDE4NSAxOTAgMTg1IDIwNSBDMTg1IDIyMCAxOTAgMjI1IDIwNSAyMjUgTDM0MCAyMjUgQzM3MCAyMjUgMzkwIDI0NSAzOTAgMjc1IEwzOTAgMzI1IEMzOTAgMzU1IDM3MCAzNzUgMzQwIDM3NSBMMTcwIDM3NSBDMTU1IDM3NSAxNDUgMzY1IDE0NSAzNTAgQzE0NSAzMzUgMTU1IDMyNSAxNzAgMzI1IEwzMzUgMzI1IEMzNTAgMzI1IDM1NSAzMjAgMzU1IDMwNSBDMzU1IDI5MCAzNTAgMjg1IDMzNSAyODUgTDIwMCAyODUgQzE3MCAyODUgMTUwIDI2NSAxNTAgMjM1IFoiIGZpbGw9IndoaXRlIi8+Cjwvc3ZnPg==">  
+    
     <style>
         :root {
             --bg: #0b0e11; --card: #1e2329; --primary: #ffff00;
@@ -29,11 +29,10 @@
         .input-box { margin-bottom: 15px; }
         .input-box label { display: block; font-size: 10px; color: var(--accent); margin-bottom: 5px; font-family: var(--font-mon); }
         input, textarea, select { width: 100%; background: #0b0e11; border: 1px solid var(--border); color: white; padding: 12px; border-radius: 10px; outline: none; }
-        input:focus { border-color: var(--primary); }
-
+        
         .btn-launch { width: 100%; background: var(--primary); color: #000; border: none; padding: 18px; border-radius: 15px; font-size: 16px; cursor: pointer; font-family: var(--font-mon); margin-top: 10px; transition: 0.3s; }
-        .btn-launch:active { transform: scale(0.98); }
-        .btn-delete { background: #f6465d !important; color: white !important; margin-top: 20px; font-size: 12px; padding: 12px; }
+        .btn-refund { background: #f6465d !important; color: white !important; margin-top: 10px; font-size: 12px; padding: 12px; }
+        .btn-hide { background: #474d57 !important; color: white !important; margin-top: 10px; font-size: 11px; padding: 10px; }
 
         .proj-item { background: var(--card); border-radius: 15px; padding: 15px; margin-bottom: 12px; border-left: 5px solid var(--accent); display: flex; justify-content: space-between; align-items: center; cursor: pointer; }
         .status-tag { font-size: 9px; padding: 3px 8px; border-radius: 5px; margin-left: 10px; }
@@ -60,34 +59,25 @@
 
     <div class="admin-header">
         <h1>SmatBit Venture Admin</h1>
-        <p style="font-size: 10px; color: var(--accent)">DYNAMIC TOKEN DISTRIBUTION SYSTEM</p>
+        <p style="font-size: 10px; color: var(--accent)">MANAGEMENT & REFUND SYSTEM</p>
     </div>
 
     <div class="card">
         <h3 class="mon-900" style="font-size: 14px; margin-bottom: 15px; color: var(--primary)">Launch New Project</h3>
         <div class="grid-inputs">
             <div class="input-box"><label>Project Name</label><input type="text" id="pName" placeholder="e.g. SmatBit L1"></div>
-            <div class="input-box"><label>Symbol (Token Path)</label><input type="text" id="pSym" placeholder="smat"></div>
+            <div class="input-box"><label>Symbol</label><input type="text" id="pSym" placeholder="smat"></div>
         </div>
         <div class="grid-inputs">
             <div class="input-box"><label>Total Supply</label><input type="number" id="pTotalTokens" placeholder="2500000"></div>
-            <div class="input-box"><label>Default Vesting %</label><input type="number" id="pVesting" placeholder="10"></div>
+            <div class="input-box"><label>Vesting %</label><input type="number" id="pVesting" placeholder="10"></div>
         </div>
-        <div class="grid-inputs">
-            <div class="input-box"><label>Logo URL</label><input type="text" id="pLogo"></div>
-            <div class="input-box"><label>Website URL</label><input type="text" id="pWeb"></div>
-        </div>
-        <div class="grid-inputs">
-            <div class="input-box"><label>Twitter</label><input type="text" id="pTwit"></div>
-            <div class="input-box"><label>Telegram</label><input type="text" id="pTele"></div>
-        </div>
-        <div class="input-box"><label>Discord URL</label><input type="text" id="pDisc"></div>
-        <div class="input-box"><label>Description</label><textarea id="pDesc" rows="3"></textarea></div>
-        
+        <div class="input-box"><label>Logo URL</label><input type="text" id="pLogo"></div>
+        <div class="input-box"><label>Description</label><textarea id="pDesc" rows="2"></textarea></div>
         <button class="btn-launch" onclick="launchProject()">LAUNCH PROJECT</button>
     </div>
 
-    <h3 class="mon-900" style="font-size: 14px; margin-bottom: 15px;">Active Project Management</h3>
+    <h3 class="mon-900" style="font-size: 14px; margin-bottom: 15px;">Manage Projects</h3>
     <div id="projectHistory"></div>
 
     <div class="modal-overlay" id="manageModal">
@@ -98,37 +88,27 @@
             </div>
             
             <div class="input-box">
-                <label>CHANGE STATUS</label>
+                <label>PROJECT STATUS</label>
                 <select id="statusSelect" onchange="updateStatus()">
                     <option value="Ongoing">Ongoing</option>
                     <option value="Completed">Completed</option>
+                    <option value="Failed">Failed (Refundable)</option>
                 </select>
             </div>
 
             <div class="vesting-control">
-                <h4 class="mon-900" style="font-size:11px; color:var(--accent); margin-bottom:12px;">Manual Token Distribution</h4>
-                <div class="input-box">
-                    <label>PHASE NAME</label>
-                    <input type="text" id="vestName" placeholder="e.g. TGE / Phase 1">
-                </div>
-                <div class="input-box">
-                    <label>TOTAL TOKENS TO RELEASE</label>
-                    <input type="number" id="distQty" placeholder="Amount to distribute" oninput="showPreview()">
-                </div>
-
-                <div class="preview-box" id="distPreview">
-                    <p style="font-size:9px; color:gray; text-align:center;">Preview will appear here...</p>
-                </div>
-
-                <button class="btn-launch" id="distBtn" style="padding:12px; font-size:12px;" onclick="confirmDistribution()">DISTRIBUTE NOW</button>
+                <h4 class="mon-900" style="font-size:10px; color:var(--accent); margin-bottom:10px;">Token Distribution</h4>
+                <input type="text" id="vestName" placeholder="Phase Name" style="margin-bottom:10px;">
+                <input type="number" id="distQty" placeholder="Total Tokens" oninput="showPreview()">
+                <div class="preview-box" id="distPreview"></div>
+                <button class="btn-launch" id="distBtn" style="padding:12px; font-size:12px;" onclick="confirmDistribution()">DISTRIBUTE TOKENS</button>
             </div>
 
-            <div id="logsBox">
-                <h4 class="mon-900" style="font-size:10px; margin-bottom:10px;">Logs</h4>
-                <div id="logsContainer" style="font-size:10px;"></div>
+            <div style="border-top:1px solid #333; padding-top:15px; margin-top:15px;">
+                <h4 class="mon-900" style="font-size:10px; color:#f6465d; margin-bottom:10px;">Danger Zone</h4>
+                <button class="btn-launch btn-refund mon-900" id="refundBtn" onclick="processRefund()">REFUND ALL INVESTORS</button>
+                <button class="btn-launch btn-hide mon-900" onclick="hideProject()">REMOVE FROM ADMIN PANEL</button>
             </div>
-
-            <button class="btn-launch btn-delete mon-900" onclick="hideProject()">DELETE FROM ADMIN PANEL</button>
         </div>
     </div>
 
@@ -139,7 +119,6 @@ const db = firebase.database();
 
 let allProjects = [], selectedProj = null;
 
-// --- Project Launch ---
 async function launchProject() {
     const id = "PRJ" + Date.now();
     const data = {
@@ -148,20 +127,14 @@ async function launchProject() {
         total_tokens: parseFloat(document.getElementById('pTotalTokens').value),
         vesting_percent: document.getElementById('pVesting').value,
         logo: document.getElementById('pLogo').value,
-        web_url: document.getElementById('pWeb').value,
-        twitter_url: document.getElementById('pTwit').value,
-        telegram_url: document.getElementById('pTele').value,
-        discord_url: document.getElementById('pDisc').value,
         description: document.getElementById('pDesc').value,
         status: 'Ongoing', timestamp: Date.now(), admin_hidden: false
     };
-
-    if(!data.title || !data.sym) return showToast("Title & Symbol are required!", "#f6465d");
+    if(!data.title || !data.sym) return showToast("Required fields missing!", "#f6465d");
     await db.ref('fundraising_history/' + id).set(data);
-    showToast("Project Launched Successfully!");
+    showToast("Project Launched!");
 }
 
-// --- Sync History ---
 db.ref('fundraising_history').on('value', snap => {
     const container = document.getElementById('projectHistory');
     container.innerHTML = "";
@@ -169,72 +142,57 @@ db.ref('fundraising_history').on('value', snap => {
     allProjects = Object.keys(data).map(k => ({id: k, ...data[k]})).sort((a,b) => b.timestamp - a.timestamp);
 
     allProjects.filter(p => !p.admin_hidden).forEach(p => {
-        const sClass = p.status === 'Completed' ? 'tag-completed' : 'tag-ongoing';
+        let sClass = p.status === 'Completed' ? 'tag-completed' : 'tag-ongoing';
+        if(p.status === 'Failed') sClass = 'tag-completed';
         container.innerHTML += `
             <div class="proj-item" onclick="openManage('${p.id}')">
                 <div>
                     <h4 class="mon-900" style="font-size:12px">${p.title} <span class="status-tag ${sClass}">${p.status}</span></h4>
-                    <p style="font-size:9px; color:gray">Path: ${p.sym}_balance | Supply: ${p.total_tokens}</p>
+                    <p style="font-size:9px; color:gray">Symbol: ${p.sym.toUpperCase()}</p>
                 </div>
-                <i class="fas fa-cog" style="color:var(--primary)"></i>
-            </div>
-        `;
+                <i class="fas fa-edit" style="color:var(--primary)"></i>
+            </div>`;
     });
 });
 
-// --- Modal Control ---
-async function openManage(id) {
+function openManage(id) {
     selectedProj = allProjects.find(x => x.id === id);
     document.getElementById('modalTitle').innerText = selectedProj.title;
     document.getElementById('statusSelect').value = selectedProj.status;
     document.getElementById('manageModal').style.display = 'flex';
-    document.getElementById('distPreview').innerHTML = "";
-    loadLogs(id);
 }
 
 function closeModal() { document.getElementById('manageModal').style.display = 'none'; }
 
-// --- Status Update ---
 async function updateStatus() {
     const s = document.getElementById('statusSelect').value;
     await db.ref(`fundraising_history/${selectedProj.id}/status`).set(s);
-    showToast("Status Updated to " + s);
+    showToast("Status: " + s);
 }
 
-// --- Proportional Preview ---
 async function showPreview() {
     const qty = parseFloat(document.getElementById('distQty').value);
     const box = document.getElementById('distPreview');
-    if(!qty || qty <= 0) return box.innerHTML = "<p style='font-size:9px; color:gray; text-align:center;'>Enter amount...</p>";
-
+    if(!qty) return box.innerHTML = "";
     const snap = await db.ref(`fundraising_contributions/${selectedProj.id}`).once('value');
     const contributors = snap.val() || {};
     const uids = Object.keys(contributors);
-
-    if(uids.length === 0) return box.innerHTML = "<p style='font-size:9px; color:orange; text-align:center;'>No contributors found.</p>";
-
     const totalFund = uids.reduce((acc, uid) => acc + contributors[uid].amount, 0);
     let html = "";
     uids.forEach(uid => {
         const share = (contributors[uid].amount / totalFund) * qty;
-        html += `
-            <div class="user-preview-row">
-                <span>${contributors[uid].smat_id}</span>
-                <span style="color:var(--accent)">+ ${share.toFixed(2)} ${selectedProj.sym.toUpperCase()}</span>
-            </div>
-        `;
+        html += `<div class="user-preview-row"><span>${contributors[uid].smat_id}</span><span style="color:var(--accent)">+ ${share.toFixed(2)}</span></div>`;
     });
     box.innerHTML = html;
 }
 
 // --- Distribution ---
 async function confirmDistribution() {
-    const phase = document.getElementById('vestName').value.trim();
+    const phase = document.getElementById('vestName').value;
     const qty = parseFloat(document.getElementById('distQty').value);
-    if(!phase || !qty) return showToast("Fill all distribution fields!", "#f6465d");
-
+    if(!phase || !qty) return showToast("Fill all fields!", "#f6465d");
     const btn = document.getElementById('distBtn');
-    btn.disabled = true; btn.innerText = "PROCESSING...";
+    btn.disabled = true; btn.innerText = "Distributing...";
 
     const snap = await db.ref(`fundraising_contributions/${selectedProj.id}`).once('value');
     const contributors = snap.val() || {};
@@ -242,65 +200,74 @@ async function confirmDistribution() {
     const totalFund = uids.reduce((acc, uid) => acc + contributors[uid].amount, 0);
 
     const updates = {};
-    const sym = selectedProj.sym;
-
     for(const uid of uids) {
         const share = (contributors[uid].amount / totalFund) * qty;
-        const balSnap = await db.ref(`users/${uid}/${sym}_balance`).once('value');
-        const old = parseFloat(balSnap.val() || 0);
+        const balSnap = await db.ref(`users/${uid}/${selectedProj.sym}_balance`).once('value');
+        updates[`users/${uid}/${selectedProj.sym}_balance`] = parseFloat(((balSnap.val() || 0) + share).toFixed(8));
+        updates[`users/${uid}/history/DIST_${Date.now()}`] = { method: 'Venture Release', coin: selectedProj.sym.toUpperCase(), amount: share.toFixed(2), timestamp: Date.now(), status: 'success', note: phase };
+    }
+    await db.ref().update(updates);
+    showToast("Distributed!");
+    btn.disabled = false; btn.innerText = "DISTRIBUTE TOKENS";
+}
+
+// --- Refund Logic (অত্যন্ত গুরুত্বপূর্ণ) ---
+async function processRefund() {
+    const btn = document.getElementById('refundBtn');
+    if(selectedProj.status !== "Failed") return showToast("Set status to 'Failed' first!", "#f6465d");
+    
+    btn.disabled = true; btn.innerText = "REFUNDING...";
+
+    const snap = await db.ref(`fundraising_contributions/${selectedProj.id}`).once('value');
+    const contributors = snap.val() || {};
+    const uids = Object.keys(contributors);
+
+    if(uids.length === 0) {
+        showToast("No investors to refund.");
+        btn.disabled = false; btn.innerText = "REFUND ALL INVESTORS";
+        return;
+    }
+
+    const updates = {};
+    for(const uid of uids) {
+        const refundAmt = contributors[uid].amount; // ইউজারের জমা দেওয়া মূল ডলার (USDT)
         
-        updates[`users/${uid}/${sym}_balance`] = parseFloat((old + share).toFixed(8));
-        updates[`users/${uid}/history/DIST_${Date.now()}_${uid.slice(0,3)}`] = {
-            method: 'Venture In Fund', coin: sym.toUpperCase(), amount: share.toFixed(2),
-            timestamp: Date.now(), status: 'success', note: phase
+        // ১. ইউজারের USDT ব্যালেন্স ব্যাক করা
+        const userUsdtSnap = await db.ref(`users/${uid}/usdt_balance`).once('value');
+        const currentUsdt = parseFloat(userUsdtSnap.val() || 0);
+        updates[`users/${uid}/usdt_balance`] = parseFloat((currentUsdt + refundAmt).toFixed(8));
+
+        // ২. ওয়ালেট হিস্ট্রিতে রিফান্ড এন্ট্রি
+        updates[`users/${uid}/history/RFND_${Date.now()}_${uid.slice(0,3)}`] = {
+            method: 'Venture Refund',
+            coin: 'USDT',
+            amount: refundAmt.toFixed(2),
+            timestamp: Date.now(),
+            status: 'success',
+            note: 'Project Failed: ' + selectedProj.title
         };
     }
 
-    updates[`fundraising_history/${selectedProj.id}/distributions/${phase}`] = {
-        amount: qty, timestamp: Date.now()
-    };
+    // ৩. প্রজেক্ট কন্ট্রিবিউশন ক্লিয়ার করা (যাতে বারবার রিফান্ড না নেওয়া যায়)
+    updates[`fundraising_contributions/${selectedProj.id}`] = null;
 
     await db.ref().update(updates);
-    showToast(`${phase} distributed successfully!`);
-    btn.disabled = false; btn.innerText = "DISTRIBUTE NOW";
-    document.getElementById('vestName').value = "";
-    document.getElementById('distQty').value = "";
-    loadLogs(selectedProj.id);
-}
-
-// --- Logs & Delete ---
-function loadLogs(id) {
-    const box = document.getElementById('logsContainer');
-    box.innerHTML = "";
-    db.ref(`fundraising_history/${id}/distributions`).once('value', snap => {
-        const logs = snap.val() || {};
-        Object.keys(logs).forEach(k => {
-            box.innerHTML += `<div style="padding:5px 0; border-bottom:1px solid #333;"><b>${k}</b>: ${logs[k].amount} Tokens <span style="color:var(--status-ongoing); float:right;">DONE</span></div>`;
-        });
-    });
+    showToast("All investors refunded successfully!", "#0ecb81");
+    btn.disabled = false; btn.innerText = "REFUND COMPLETED";
 }
 
 async function hideProject() {
-    // এখানে ব্রাউজার কনফার্মেশন এর বদলে আমরা সরাসরি অ্যাকশন নিচ্ছি গ্রাফিক টোস্ট দিয়ে
     await db.ref(`fundraising_history/${selectedProj.id}/admin_hidden`).set(true);
-    showToast("Project hidden from Admin Panel", "#f6465d");
+    showToast("Project hidden", "#f6465d");
     closeModal();
 }
 
-// --- Graphic Toast Function ---
 function showToast(msg, color = "#00ffff") {
     const container = document.getElementById('toast-container');
-    const t = document.createElement('div');
-    t.className = 'g-toast';
-    t.style.borderLeftColor = color;
-    t.innerHTML = `<span class="mon-900" style="font-size:9px; color:${color}; display:block; margin-bottom:5px;">SYSTEM NOTIFICATION</span>
-                   <span style="font-size:12px; color:white;">${msg}</span>`;
+    const t = document.createElement('div'); t.className = 'g-toast'; t.style.borderLeftColor = color;
+    t.innerHTML = `<span class="mon-900" style="font-size:9px; color:${color}; display:block; margin-bottom:5px;">SYSTEM</span><span style="font-size:12px;">${msg}</span>`;
     container.appendChild(t);
-    setTimeout(() => {
-        t.style.opacity = "0";
-        t.style.transform = "translateY(-20px)";
-        setTimeout(() => t.remove(), 4000);
-    }, 3000);
+    setTimeout(() => { t.style.opacity = "0"; setTimeout(() => t.remove(), 500); }, 3000);
 }
 </script>
 </body>
