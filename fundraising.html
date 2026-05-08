@@ -8,7 +8,7 @@
     <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-auth-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-database-compat.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@900&family=Inter:wght@400;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@900&display=swap" rel="stylesheet">
     
     <style>
         :root {
@@ -16,133 +16,95 @@
             --accent: #00ffff; --text-sec: #848e9c; --border: rgba(255, 255, 255, 0.08);
             --font-mon: 'Montserrat', sans-serif;
         }
-        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Inter', sans-serif; font-weight: 700; -webkit-tap-highlight-color: transparent; }
-        body { background: var(--bg); color: white; padding-bottom: 100px; display: none; }
-
-        /* Typography */
-        h1, h2, h3, .mon-900 { font-family: var(--font-mon); font-weight: 900; text-transform: uppercase; }
+        * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+        body { background: var(--bg); color: white; font-family: 'Inter', sans-serif; font-weight: 700; padding-bottom: 100px; }
+        
+        .mon-900 { font-family: var(--font-mon); font-weight: 900; text-transform: uppercase; }
 
         /* Header */
-        .v-header { padding: 40px 20px; text-align: center; background: linear-gradient(180deg, rgba(255, 255, 0, 0.05) 0%, var(--bg) 100%); }
+        .v-header { padding: 40px 20px; text-align: center; border-bottom: 1px solid var(--border); }
         .v-header h1 { font-size: 22px; color: var(--primary); margin-bottom: 8px; }
-        .v-header h3 { font-size: 10px; color: var(--text-sec); letter-spacing: 1px; }
+        .v-header h3 { font-size: 11px; color: var(--text-sec); letter-spacing: 0.5px; }
 
-        /* Project Section */
-        #emptyState { text-align: center; padding: 60px 20px; color: var(--text-sec); display: none; }
-        .main-container { padding: 15px; max-width: 600px; margin: auto; }
+        /* Main List Container */
+        #projectListContainer { padding: 15px; max-width: 600px; margin: auto; }
 
-        .proj-card { background: var(--card); border-radius: 24px; padding: 25px; border: 1px solid var(--border); margin-bottom: 20px; }
-        .proj-top { display: flex; align-items: center; gap: 15px; margin-bottom: 25px; }
-        .proj-logo { width: 70px; height: 70px; border-radius: 18px; border: 2px solid var(--accent); object-fit: cover; }
+        /* Project Card */
+        .proj-card { 
+            background: var(--card); border-radius: 24px; padding: 20px; 
+            border: 1px solid var(--border); margin-bottom: 25px; 
+            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+        }
+        .proj-top { display: flex; align-items: center; gap: 15px; margin-bottom: 20px; }
+        .proj-logo { width: 60px; height: 60px; border-radius: 15px; border: 2px solid var(--accent); object-fit: cover; }
         
+        /* Description: Auto-adjust and word wrap */
+        .description { 
+            font-size: 13px; color: #b7bdc6; line-height: 1.6; 
+            margin: 20px 0; text-align: justify; font-weight: 400;
+            white-space: pre-wrap; 
+            overflow-wrap: break-word; 
+            word-wrap: break-word;
+        }
+
         /* Links Grid */
-        .links-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 25px; }
-        .link-item { background: #0b0e11; padding: 12px; border-radius: 12px; display: flex; justify-content: space-between; align-items: center; border: 1px solid var(--border); text-decoration: none; color: white; }
-        .link-item i { color: var(--accent); font-size: 14px; }
-        .link-item span { font-size: 11px; color: var(--text-sec); }
+        .links-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 20px; }
+        .link-item { 
+            background: #0b0e11; padding: 12px; border-radius: 12px; 
+            display: flex; justify-content: space-between; align-items: center; 
+            border: 1px solid var(--border); text-decoration: none; color: white; 
+        }
+        .link-item i { color: var(--accent); }
 
-        /* Tokenomics */
-        .section-title { font-size: 14px; color: var(--primary); margin-bottom: 15px; border-left: 4px solid var(--primary); padding-left: 10px; }
-        .tok-row { display: flex; justify-content: space-between; padding: 12px 0; border-bottom: 1px dashed var(--border); font-size: 12px; }
-        
-        .description { font-size: 12px; color: #b7bdc6; line-height: 1.6; margin: 20px 0; text-align: justify; font-weight: 400; }
-
-        /* Funding Card */
-        .stats-card { background: #161a1e; border-radius: 20px; padding: 20px; display: grid; grid-template-columns: 1fr 1.2fr 1fr; gap: 10px; align-items: center; text-align: center; border: 1px solid var(--accent); margin-bottom: 20px; }
-        .stat-box span { font-size: 8px; color: var(--text-sec); display: block; margin-bottom: 5px; }
-        .stat-box b { font-size: 12px; color: white; }
-        .growing-text { color: var(--accent); font-size: 10px; animation: pulse 1.5s infinite; }
-        @keyframes pulse { 0% { opacity: 0.5; } 100% { opacity: 1; } }
+        /* Funding Stats */
+        .stats-card { 
+            background: #161a1e; border-radius: 18px; padding: 15px; 
+            display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 5px; 
+            text-align: center; border: 1px solid var(--accent); margin-bottom: 15px;
+        }
+        .stat-box span { font-size: 8px; color: var(--text-sec); display: block; }
+        .stat-box b { font-size: 11px; color: white; }
 
         /* Buttons */
-        .btn-participate { width: 100%; background: var(--primary); color: #000; border: none; padding: 18px; border-radius: 15px; font-size: 16px; cursor: pointer; margin-bottom: 25px; }
-
-        /* Modal */
-        .modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.95); display: none; align-items: center; justify-content: center; z-index: 9999; padding: 20px; }
-        .modal-card { background: var(--card); border: 1px solid var(--accent); border-radius: 30px; padding: 30px; width: 100%; max-width: 400px; text-align: center; }
-        .input-wrap { background: #0b0e11; border-radius: 15px; padding: 15px; display: flex; align-items: center; border: 1px solid var(--border); margin: 20px 0; }
-        .input-wrap input { background: transparent; border: none; color: white; flex: 1; font-size: 20px; outline: none; font-weight: 900; width: 50%; }
-        .max-btn { color: var(--accent); cursor: pointer; border: 1px solid var(--accent); padding: 4px 10px; border-radius: 5px; font-size: 10px; }
+        .btn-participate { 
+            width: 100%; background: var(--primary); color: #000; border: none; 
+            padding: 16px; border-radius: 12px; font-size: 15px; cursor: pointer; 
+        }
 
         /* History Table */
-        .history-section { background: var(--card); border-radius: 20px; padding: 15px; }
-        table { width: 100%; border-collapse: collapse; }
-        th { text-align: left; font-size: 10px; color: var(--text-sec); padding: 10px; border-bottom: 1px solid var(--border); }
-        td { padding: 12px 10px; font-size: 12px; border-bottom: 1px solid rgba(255,255,255,0.03); }
+        .history-box { margin-top: 20px; border-top: 1px solid var(--border); padding-top: 15px; }
+        table { width: 100%; border-collapse: collapse; margin-top: 10px; }
+        th { text-align: left; font-size: 10px; color: var(--text-sec); padding: 8px; }
+        td { padding: 10px 8px; font-size: 11px; border-bottom: 1px solid rgba(255,255,255,0.03); }
         .my-row { background: rgba(0, 255, 255, 0.05); color: var(--accent); }
 
+        /* Modals */
+        .modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.9); display: none; align-items: center; justify-content: center; z-index: 5000; padding: 20px; }
+        .modal-content { background: var(--card); border: 1px solid var(--accent); border-radius: 24px; padding: 25px; width: 100%; max-width: 380px; text-align: center; }
+        .f-input { width: 100%; background: #0b0e11; border: 1px solid var(--border); padding: 15px; border-radius: 10px; color: white; font-size: 18px; margin: 15px 0; outline: none; }
+
         /* Footer */
-        .footer { position: fixed; bottom: 0; width: 100%; height: 70px; background: #0b0e11; display: flex; justify-content: space-around; align-items: center; border-top: 1px solid var(--border); }
+        .footer { position: fixed; bottom: 0; width: 100%; height: 75px; background: #0b0e11; display: flex; justify-content: space-around; align-items: center; border-top: 1px solid var(--border); }
         .f-nav { text-decoration: none; color: var(--text-sec); text-align: center; font-size: 10px; flex: 1; }
         .f-nav i { font-size: 20px; display: block; margin-bottom: 5px; }
-        .f-nav.active { color: var(--primary); }
-
-        /* Toast */
-        #toast-box { position: fixed; top: 30px; left: 50%; transform: translateX(-50%); z-index: 10000; }
-        .g-toast { background: var(--card); border-left: 4px solid var(--accent); padding: 15px 25px; border-radius: 12px; color: white; font-size: 12px; box-shadow: 0 10px 30px rgba(0,0,0,0.5); animation: slideDown 0.3s; }
-        @keyframes slideDown { from { transform: translateY(-20px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
     </style>
 </head>
 <body>
 
-    <div id="toast-box"></div>
+    <div class="v-header">
+        <h1 class="mon-900">SMAT Venture Partnership</h1>
+        <h3 class="mon-900">Unity is strength, and strength is the force of the project</h3>
+    </div>
+
+    <div id="projectListContainer"></div>
 
     <div class="modal-overlay" id="fundModal">
-        <div class="modal-card">
-            <h2 class="mon-900" style="color:var(--accent)">Contribute USDT</h2>
-            <p style="font-size:11px; color:var(--text-sec); margin-top:10px">Available: <b id="userBalance" style="color:white">0.00</b> USDT</p>
-            <div class="input-wrap">
-                <input type="number" id="fundInput" placeholder="0.00">
-                <span class="max-btn" onclick="setMax()">MAX</span>
-            </div>
-            <button class="btn-participate" onclick="submitFunding()">CONFIRM CONTRIBUTION</button>
-            <button style="background:none; border:none; color:var(--text-sec); font-size:12px; cursor:pointer" onclick="closeModal()">CANCEL</button>
-        </div>
-    </div>
-
-    <div class="v-header">
-        <h1>SMAT Venture Partnership</h1>
-        <h3>Unity is strength, and strength is the force of the project</h3>
-    </div>
-
-    <div id="emptyState">
-        <i class="fas fa-layer-group" style="font-size:40px; margin-bottom:15px"></i>
-        <p class="mon-900">No Available Project</p>
-    </div>
-
-    <div class="main-container" id="projectUI" style="display:none">
-        <div class="proj-card">
-            <div class="proj-top">
-                <img src="" id="pLogo" class="proj-logo">
-                <h2 id="pName" class="mon-900" style="font-size:20px; color:var(--accent)"></h2>
-            </div>
-
-            <div class="links-grid" id="pLinks">
-                </div>
-
-            <div class="section-title mon-900">Project Tokenomics</div>
-            <div class="tok-row"><span>Total Tokens</span><b id="pTotalTokens">-</b></div>
-            <div class="tok-row"><span>Venture Vesting</span><b id="pVesting">-</b></div>
-
-            <div class="section-title mon-900" style="margin-top:25px">Project Overview</div>
-            <div class="description" id="pDesc"></div>
-
-            <button class="btn-participate mon-900" onclick="openModal()">Participate Now</button>
-
-            <div class="stats-card">
-                <div class="stat-box"><span>MY FUNDING</span><b id="myFund">0.00</b></div>
-                <div class="stat-box"><div class="growing-text mon-900">SMAT VENTURE<br>GROWING</div></div>
-                <div class="stat-box"><span>GLOBAL FUNDING</span><b id="globalFund">0.00</b></div>
-            </div>
-        </div>
-
-        <div class="history-section">
-            <h3 class="mon-900" style="font-size:12px; margin-bottom:15px; color:var(--text-sec)">Funding Leaders</h3>
-            <table>
-                <thead><tr><th>USER ID</th><th>AMOUNT</th><th>RANK</th></tr></thead>
-                <tbody id="historyList"></tbody>
-            </table>
-            <div id="loadMore" style="text-align:center; padding:15px; color:var(--accent); font-size:11px; cursor:pointer; display:none" onclick="showMoreHistory()">SHOW MORE</div>
+        <div class="modal-content">
+            <h2 class="mon-900" style="color:var(--accent)">Participate</h2>
+            <p id="userBalDisplay" style="font-size:12px; margin-top:10px; color:var(--text-sec)"></p>
+            <input type="number" id="investAmt" class="f-input" placeholder="0.00">
+            <button class="btn-participate mon-900" onclick="confirmInvestment()">Confirm</button>
+            <button onclick="closeModal()" style="background:none; border:none; color:white; margin-top:15px; cursor:pointer">Close</button>
         </div>
     </div>
 
@@ -153,141 +115,148 @@
     </footer>
 
 <script>
-// Firebase Config (Same as your system)
-const firebaseConfig = { apiKey: "AIzaSyAMxtJedkehhxJRMPZLjhpKHqneHEWsGlE", authDomain: "smat-exchange.firebaseapp.com", projectId: "smat-exchange", databaseURL: "https://smat-exchange-default-rtdb.firebaseio.com" };
+const firebaseConfig = { apiKey: "AIzaSyAMxtJedkehhxJRMPZLjhpKHqneHEWsGlE", databaseURL: "https://smat-exchange-default-rtdb.firebaseio.com" };
 firebase.initializeApp(firebaseConfig);
 const db = firebase.database();
 const auth = firebase.auth();
 
-let userData = {}, activeProj = null, historyData = [], displayLimit = 50;
+let userData = {}, allProjects = [], activeInvestProj = null;
 
 auth.onAuthStateChanged(user => {
-    if (user) { document.body.style.display = 'block'; loadData(user.uid); }
-    else { window.location.href = "logIn.html"; }
+    if (user) {
+        db.ref('users/' + user.uid).on('value', snap => {
+            userData = snap.val() || {};
+            userData.uid = user.uid;
+        });
+        loadProjects();
+    } else {
+        window.location.href = "logIn.html";
+    }
 });
 
-function loadData(uid) {
-    // Load User
-    db.ref('users/' + uid).on('value', s => { userData = s.val() || {}; userData.uid = uid; });
-
-    // Load Active Project
-    db.ref('active_fundraising').on('value', snap => {
-        activeProj = snap.val();
-        if(!activeProj) {
-            document.getElementById('emptyState').style.display = 'block';
-            document.getElementById('projectUI').style.display = 'none';
-            return;
-        }
-        renderProject();
-        loadHistory();
+function loadProjects() {
+    db.ref('fundraising_history').on('value', snap => {
+        const data = snap.val() || {};
+        allProjects = Object.keys(data).map(k => data[k]).sort((a,b) => b.timestamp - a.timestamp);
+        renderUI();
     });
 }
 
-function renderProject() {
-    document.getElementById('emptyState').style.display = 'none';
-    document.getElementById('projectUI').style.display = 'block';
-    
-    document.getElementById('pName').innerText = activeProj.title;
-    document.getElementById('pLogo').src = activeProj.logo;
-    document.getElementById('pTotalTokens').innerText = activeProj.total_tokens || "0.00";
-    document.getElementById('pVesting').innerText = (activeProj.vesting_percent || "0") + "%";
-    document.getElementById('pDesc').innerText = activeProj.description || "";
+async function renderUI() {
+    const container = document.getElementById('projectListContainer');
+    container.innerHTML = "";
 
-    const linksHtml = `
-        <a href="${activeProj.web_url}" class="link-item"><span>Website</span><i class="fas fa-external-link-alt"></i></a>
-        <a href="${activeProj.telegram_url}" class="link-item"><span>Telegram</span><i class="fab fa-telegram-plane"></i></a>
-        <a href="${activeProj.twitter_url}" class="link-item"><span>Twitter</span><i class="fab fa-twitter"></i></a>
-        <a href="${activeProj.discord_url}" class="link-item"><span>Discord</span><i class="fab fa-discord"></i></a>
-    `;
-    document.getElementById('pLinks').innerHTML = linksHtml;
-}
-
-function loadHistory() {
-    db.ref('fundraising_contributions/' + activeProj.id).on('value', snap => {
-        const val = snap.val() || {};
-        historyData = Object.keys(val).map(k => ({uid: k, ...val[k]})).sort((a,b) => b.amount - a.amount);
-        
-        let total = historyData.reduce((acc, cur) => acc + cur.amount, 0);
-        document.getElementById('globalFund').innerText = total.toFixed(2) + " USDT";
-        
-        const my = historyData.find(x => x.uid === userData.uid);
-        document.getElementById('myFund').innerText = (my ? my.amount : 0).toFixed(2) + " USDT";
-        
-        renderHistory();
-    });
-}
-
-function renderHistory() {
-    const list = document.getElementById('historyList');
-    list.innerHTML = "";
-    
-    // User Row First if exists
-    const myIdx = historyData.findIndex(x => x.uid === userData.uid);
-    if(myIdx !== -1) {
-        const my = historyData[myIdx];
-        list.innerHTML += `<tr class="my-row"><td>${userData.smat_id || 'Me'}</td><td>${my.amount.toFixed(2)}</td><td>#${myIdx + 1}</td></tr>`;
+    if(allProjects.length === 0) {
+        container.innerHTML = "<p style='text-align:center; color:gray; margin-top:50px;'>No Available Project</p>";
+        return;
     }
 
-    // Top 50 (Excluding duplicate of user if already on top)
-    historyData.slice(0, displayLimit).forEach((item, index) => {
-        if(item.uid === userData.uid) return;
-        list.innerHTML += `<tr><td>${item.smat_id}</td><td>${item.amount.toFixed(2)}</td><td>#${index + 1}</td></tr>`;
-    });
+    for (let proj of allProjects) {
+        const contSnap = await db.ref('fundraising_contributions/' + proj.id).once('value');
+        const contributions = contSnap.val() || {};
+        
+        const historyArr = Object.keys(contributions).map(uid => ({uid, ...contributions[uid]})).sort((a,b) => b.amount - a.amount);
+        const globalTotal = historyArr.reduce((acc, cur) => acc + cur.amount, 0);
+        const myCont = historyArr.find(x => x.uid === userData.uid);
+        const myTotal = myCont ? myCont.amount : 0;
 
-    document.getElementById('loadMore').style.display = historyData.length > displayLimit ? 'block' : 'none';
+        let visibleRows = "";
+        let hiddenRows = "";
+        
+        historyArr.forEach((item, index) => {
+            const isMe = item.uid === userData.uid;
+            const row = `<tr class="${isMe ? 'my-row' : ''}"><td>${item.smat_id || 'User'}</td><td>${item.amount.toFixed(2)} USDT</td><td>#${index + 1}</td></tr>`;
+            if (index < 5) visibleRows += row;
+            else hiddenRows += row;
+        });
+
+        const card = `
+            <div class="proj-card">
+                <div class="proj-top">
+                    <img src="${proj.logo}" class="proj-logo">
+                    <h2 class="mon-900" style="color:var(--accent); font-size:18px;">${proj.title}</h2>
+                </div>
+
+                <div class="links-grid">
+                    <a href="${proj.web_url}" target="_blank" class="link-item"><span>Website</span><i class="fas fa-globe"></i></a>
+                    <a href="${proj.telegram_url}" target="_blank" class="link-item"><span>Telegram</span><i class="fab fa-telegram"></i></a>
+                    <a href="${proj.twitter_url}" target="_blank" class="link-item"><span>Twitter</span><i class="fab fa-twitter"></i></a>
+                    <a href="${proj.discord_url || '#'}" target="_blank" class="link-item"><span>Discord</span><i class="fab fa-discord"></i></a>
+                </div>
+
+                <div class="mon-900" style="color:var(--primary); font-size:12px; margin-bottom:10px;">Tokenomics</div>
+                <div style="display:flex; justify-content:space-between; font-size:11px; margin-bottom:5px;"><span>Total Tokens:</span><b>${proj.total_tokens}</b></div>
+                <div style="display:flex; justify-content:space-between; font-size:11px; margin-bottom:15px;"><span>Vesting:</span><b>${proj.vesting_percent}%</b></div>
+
+                <div class="description">${proj.description}</div>
+
+                <button class="btn-participate mon-900" onclick="openModal('${proj.id}')">Participate Now</button>
+
+                <div class="stats-card" style="margin-top:20px;">
+                    <div class="stat-box"><span>MY FUNDING</span><b>${myTotal.toFixed(2)}</b></div>
+                    <div class="stat-box"><b style="color:var(--accent); font-size:8px;">SMAT VENTURE<br>GROWING</b></div>
+                    <div class="stat-box"><span>GLOBAL FUNDING</span><b>${globalTotal.toFixed(2)}</b></div>
+                </div>
+
+                <div class="history-box">
+                    <span class="mon-900" style="font-size:10px; color:var(--text-sec)">Funding History</span>
+                    <table>
+                        <thead><tr><th>SMAT ID</th><th>AMOUNT</th><th>RANK</th></tr></thead>
+                        <tbody>${visibleRows || '<tr><td colspan="3" style="text-align:center">No contributions yet</td></tr>'}</tbody>
+                        <tbody id="more-${proj.id}" style="display:none">${hiddenRows}</tbody>
+                    </table>
+                    ${hiddenRows ? `<div style="text-align:center; margin-top:10px;"><button onclick="toggleHistory('${proj.id}', this)" style="background:none; border:none; color:var(--accent); font-size:10px; cursor:pointer;" class="mon-900">+ Show More</button></div>` : ''}
+                </div>
+            </div>
+        `;
+        container.innerHTML += card;
+    }
 }
 
-function showMoreHistory() { displayLimit += 50; renderHistory(); }
+window.toggleHistory = (projId, btn) => {
+    const moreList = document.getElementById(`more-${projId}`);
+    if (moreList.style.display === "none") {
+        moreList.style.display = "table-row-group";
+        btn.innerText = "- Show Less";
+    } else {
+        moreList.style.display = "none";
+        btn.innerText = "+ Show More";
+    }
+};
 
-// Modal Control
-function openModal() {
-    document.getElementById('userBalance').innerText = parseFloat(userData.usdt_balance || 0).toFixed(2);
+function openModal(id) {
+    activeInvestProj = allProjects.find(p => p.id === id);
+    document.getElementById('userBalDisplay').innerText = "Available: " + (userData.usdt_balance || 0).toFixed(2) + " USDT";
     document.getElementById('fundModal').style.display = 'flex';
 }
+
 function closeModal() { document.getElementById('fundModal').style.display = 'none'; }
-function setMax() { document.getElementById('fundInput').value = parseFloat(userData.usdt_balance || 0); }
 
-async function submitFunding() {
-    const amt = parseFloat(document.getElementById('fundInput').value);
-    const bal = parseFloat(userData.usdt_balance || 0);
+async function confirmInvestment() {
+    const amt = parseFloat(document.getElementById('investAmt').value);
+    const myBal = parseFloat(userData.usdt_balance || 0);
+    if(!amt || amt <= 0 || amt > myBal) return alert("Invalid Balance or Amount!");
 
-    if(!amt || amt <= 0 || amt > bal) return showToast("Invalid amount or balance!", "#f6465d");
+    const pid = activeInvestProj.id;
+    db.ref(`fundraising_contributions/${pid}/${userData.uid}`).once('value', s => {
+        const prev = s.val() ? s.val().amount : 0;
+        const updates = {};
+        updates[`users/${userData.uid}/usdt_balance`] = parseFloat((myBal - amt).toFixed(8));
+        updates[`fundraising_contributions/${pid}/${userData.uid}`] = {
+            amount: prev + amt,
+            smat_id: userData.smatID || "User",
+            timestamp: Date.now()
+        };
+        const tid = "VENTURE_" + Date.now();
+        updates[`users/${userData.uid}/history/${tid}`] = {
+            method: 'Venture Invest', coin: 'USDT', amount: amt.toFixed(2), timestamp: Date.now(), status: 'success'
+        };
 
-    const up = {};
-    up[`users/${userData.uid}/usdt_balance`] = parseFloat((bal - amt).toFixed(8));
-    
-    const pid = activeProj.id;
-    let currentCont = 0;
-    const exist = historyData.find(x => x.uid === userData.uid);
-    if(exist) currentCont = exist.amount;
-
-    up[`fundraising_contributions/${pid}/${userData.uid}`] = {
-        amount: currentCont + amt,
-        smat_id: userData.smat_id || "User",
-        timestamp: Date.now()
-    };
-
-    // Wallet History
-    const tid = "FUND_OUT_" + Date.now();
-    up[`users/${userData.uid}/history/${tid}`] = {
-        method: 'Venture Spend', coin: 'USDT', amount: amt.toFixed(2), timestamp: Date.now(), status: 'success'
-    };
-
-    try {
-        await db.ref().update(up);
-        showToast("Contribution Successful!");
-        closeModal();
-    } catch(e) { showToast("Error occurred!", "#f6465d"); }
-}
-
-function showToast(msg, color = "#00ffff") {
-    const box = document.getElementById('toast-box');
-    const t = document.createElement('div');
-    t.className = 'g-toast';
-    t.style.borderLeftColor = color;
-    t.innerText = msg;
-    box.appendChild(t);
-    setTimeout(() => t.remove(), 3000);
+        db.ref().update(updates).then(() => {
+            alert("Success!");
+            closeModal();
+        });
+    });
 }
 </script>
 </body>
