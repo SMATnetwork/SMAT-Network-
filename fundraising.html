@@ -3,13 +3,13 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>SmatBit | Venture Partnership</title>
+    <title>SMAT | Venture Partnership</title>
     <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-auth-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-database-compat.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@900&display=swap" rel="stylesheet">
-    
+<link rel="icon" type="image/svg+xml" href="data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNTEyIiBoZWlnaHQ9IjUxMiIgdmlld0JveD0iMCAwIDUxMiA1MTIiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+CiAgPGNpcmNsZSBjeD0iMjU2IiBjeT0iMjU2IiByPSIyNDAiIGZpbGw9IiNmM2JhMmYiLz4KICA8Y2lyY2xlIGN4PSIyNTYiIGN5PSIyNTYiIHI9IjIxNSIgc3Ryb2tlPSJ3aGl0ZSIgc3Ryb2tlLXdpZHRoPSI4IiBmaWxsPSJ0cmFuc3BhcmVudCIvPgogIDxwYXRoIGQ9Ik0xNTAgMTcwIEMxNTAgMTQ1IDE3MCAxMzUgMjAwIDEzNSBMMzQwIDEzNSBDMzU1IDEzNSAzNjUgMTQ1IDM2NSAxNjAgQzM2NSAxNzUgMzU1IDE4NSAzNDAgMTg1IEwyMDUgMTg1IEMxOTAgMTg1IDE4NSAxOTAgMTg1IDIwNSBDMTg1IDIyMCAxOTAgMjI1IDIwNSAyMjUgTDM0MCAyMjUgQzM3MCAyMjUgMzkwIDI0NSAzOTAgMjc1IEwzOTAgMzI1IEMzOTAgMzU1IDM3MCAzNzUgMzQwIDM3NSBMMTcwIDM3NSBDMTU1IDM3NSAxNDUgMzY1IDE0NSAzNTAgQzE0NSAzMzUgMTU1IDMyNSAxNzAgMzI1IEwzMzUgMzI1IEMzNTAgMzI1IDM1NSAzMjAgMzU1IDMwNSBDMzU1IDI5MCAzNTAgMjg1IDMzNSAyODUgTDIwMCAyODUgQzE3MCAyODUgMTUwIDI2NSAxNTAgMjM1IFoiIGZpbGw9IndoaXRlIi8+Cjwvc3ZnPg==">    
     <style>
         :root {
             --bg: #0b0e11; --card: #1e2329; --primary: #ffff00;
@@ -55,7 +55,7 @@
         }
         .link-item i { color: var(--accent); }
 
-        /* Description: সঠিক স্থানে এবং ফন্টে প্রদর্শনের জন্য */
+        /* Description */
         .description-box { 
             font-size: 13px; color: #b7bdc6; line-height: 1.6; 
             margin: 15px 0; text-align: justify; font-weight: 400;
@@ -87,16 +87,23 @@
         td { padding: 10px 8px; font-size: 11px; border-bottom: 1px solid rgba(255,255,255,0.03); }
         .my-row { background: rgba(0, 255, 255, 0.05); color: var(--accent); }
 
-        /* Modal & Footer (Same as before) */
+        /* Modal & Footer */
         .modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.9); display: none; align-items: center; justify-content: center; z-index: 5000; padding: 20px; }
         .modal-content { background: var(--card); border: 1px solid var(--accent); border-radius: 24px; padding: 25px; width: 100%; max-width: 380px; text-align: center; }
         .f-input { width: 100%; background: #0b0e11; border: 1px solid var(--border); padding: 15px; border-radius: 10px; color: white; font-size: 18px; margin: 15px 0; outline: none; }
         .footer { position: fixed; bottom: 0; width: 100%; height: 75px; background: #0b0e11; display: flex; justify-content: space-around; align-items: center; border-top: 1px solid var(--border); }
         .f-nav { text-decoration: none; color: var(--text-sec); text-align: center; font-size: 10px; flex: 1; }
         .f-nav i { font-size: 20px; display: block; margin-bottom: 5px; }
+
+        /* Graphic Toast */
+        #toast-container { position: fixed; top: 20px; left: 50%; transform: translateX(-50%); z-index: 10001; width: 90%; max-width: 400px; }
+        .g-toast { background: #1c2127; border-left: 5px solid var(--accent); padding: 15px; border-radius: 12px; box-shadow: 0 10px 40px rgba(0,0,0,0.8); margin-bottom: 10px; animation: toastIn 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards; border: 1px solid rgba(255,255,255,0.05); }
+        @keyframes toastIn { from { transform: translateY(-100%); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
     </style>
 </head>
 <body>
+
+    <div id="toast-container"></div>
 
     <div class="v-header">
         <h1 class="mon-900">SMAT Venture Partnership</h1>
@@ -110,7 +117,7 @@
             <h2 class="mon-900" style="color:var(--accent)">Participate</h2>
             <p id="userBalDisplay" style="font-size:12px; margin-top:10px; color:var(--text-sec)"></p>
             <input type="number" id="investAmt" class="f-input" placeholder="0.00">
-            <button class="btn-participate mon-900" onclick="confirmInvestment()">Confirm</button>
+            <button id="confirmBtn" class="btn-participate mon-900" onclick="confirmInvestment()">Confirm</button>
             <button onclick="closeModal()" style="background:none; border:none; color:white; margin-top:15px; cursor:pointer">Close</button>
         </div>
     </div>
@@ -131,9 +138,16 @@ let userData = {}, allProjects = [], activeInvestProj = null;
 
 auth.onAuthStateChanged(user => {
     if (user) {
+        // Real-time user listener for balance updates
         db.ref('users/' + user.uid).on('value', snap => {
             userData = snap.val() || {};
             userData.uid = user.uid;
+            
+            // Update balance display if modal is open
+            if(document.getElementById('fundModal').style.display === 'flex') {
+                document.getElementById('userBalDisplay').innerText = "Balance: " + (userData.usdt_balance || 0).toFixed(2) + " USDT";
+            }
+            renderUI();
         });
         loadProjects();
     } else {
@@ -151,6 +165,7 @@ function loadProjects() {
 
 async function renderUI() {
     const container = document.getElementById('projectListContainer');
+    if (!container) return;
     container.innerHTML = "";
 
     for (let proj of allProjects) {
@@ -161,7 +176,6 @@ async function renderUI() {
         const myCont = historyArr.find(x => x.uid === userData.uid);
         const myTotal = myCont ? myCont.amount : 0;
 
-        // Status ও বাটনের লজিক
         const isCompleted = proj.status === 'Completed';
         const statusClass = isCompleted ? 'completed' : 'ongoing';
         const statusLabel = isCompleted ? 'Completed' : 'Ongoing';
@@ -225,27 +239,72 @@ function openModal(id) {
     document.getElementById('fundModal').style.display = 'flex';
 }
 
-function closeModal() { document.getElementById('fundModal').style.display = 'none'; }
+function closeModal() { document.getElementById('fundModal').style.display = 'none'; document.getElementById('investAmt').value = ""; }
 
 async function confirmInvestment() {
     const amt = parseFloat(document.getElementById('investAmt').value);
-    if(!amt || amt <= 0 || amt > (userData.usdt_balance || 0)) return alert("Invalid Amount!");
+    if(!amt || amt <= 0) return showToast("Invalid Amount!", "#f6465d");
+    if(amt > (userData.usdt_balance || 0)) return showToast("Insufficient USDT Balance!", "#f6465d");
+
+    const confirmBtn = document.getElementById('confirmBtn');
+    confirmBtn.disabled = true;
+    confirmBtn.innerText = "Processing...";
 
     const pid = activeInvestProj.id;
+    const projectTitle = activeInvestProj.title;
+
     db.ref(`fundraising_contributions/${pid}/${userData.uid}`).once('value', s => {
         const prev = s.val() ? s.val().amount : 0;
         const updates = {};
+        const timestamp = Date.now();
+        const historyID = "HIST_" + timestamp;
+
+        // 1. Update User Balance
         updates[`users/${userData.uid}/usdt_balance`] = parseFloat((userData.usdt_balance - amt).toFixed(8));
+        
+        // 2. Update Project Contributions
         updates[`fundraising_contributions/${pid}/${userData.uid}`] = {
             amount: prev + amt,
             smat_id: userData.smatID || "User",
-            timestamp: Date.now()
+            timestamp: timestamp
         };
+
+        // 3. Push Wallet History
+        updates[`users/${userData.uid}/history/${historyID}`] = {
+            method: 'Venture Out Fund',
+            coin: 'USDT',
+            amount: amt.toFixed(2),
+            timestamp: timestamp,
+            status: 'success',
+            note: 'Participated in ' + projectTitle
+        };
+
         db.ref().update(updates).then(() => {
-            alert("Contribution Successful!");
+            showToast("Contribution Successful!");
+            confirmBtn.disabled = false;
+            confirmBtn.innerText = "Confirm";
             closeModal();
+        }).catch(err => {
+            showToast("Transaction Failed!", "#f6465d");
+            confirmBtn.disabled = false;
+            confirmBtn.innerText = "Confirm";
         });
     });
+}
+
+function showToast(msg, color = "#00ffff") {
+    const container = document.getElementById('toast-container');
+    const t = document.createElement('div');
+    t.className = 'g-toast';
+    t.style.borderLeftColor = color;
+    t.innerHTML = `<span class="mon-900" style="font-size:9px; color:${color}; display:block; margin-bottom:5px;">SYSTEM</span>
+                   <span style="font-size:12px; color:white;">${msg}</span>`;
+    container.appendChild(t);
+    setTimeout(() => {
+        t.style.opacity = "0";
+        t.style.transform = "translateY(-20px)";
+        setTimeout(() => t.remove(), 500);
+    }, 3000);
 }
 </script>
 </body>
