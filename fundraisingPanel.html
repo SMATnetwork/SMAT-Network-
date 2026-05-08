@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>SmatBit Admin | Venture Control</title>
+    <title>SmatBit Admin | Project & Vesting Control</title>
     <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-database-compat.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
@@ -14,9 +14,11 @@
             --bg: #0b0e11; --card: #1e2329; --primary: #ffff00;
             --accent: #00ffff; --border: rgba(255, 255, 255, 0.1);
             --font-mon: 'Montserrat', sans-serif;
+            --status-ongoing: #0ecb81;
+            --status-completed: #f6465d;
         }
         * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Inter', sans-serif; font-weight: 700; }
-        body { background: var(--bg); color: white; padding: 20px; }
+        body { background: var(--bg); color: white; padding: 20px; padding-bottom: 50px; }
         h1, h2, h3, .mon-900 { font-family: var(--font-mon); font-weight: 900; text-transform: uppercase; }
 
         .admin-header { text-align: center; margin-bottom: 30px; border-bottom: 2px solid var(--primary); padding-bottom: 15px; }
@@ -27,21 +29,25 @@
         .grid-inputs { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; }
         .input-box { margin-bottom: 15px; }
         .input-box label { display: block; font-size: 10px; color: var(--accent); margin-bottom: 5px; font-family: var(--font-mon); }
-        input, textarea { width: 100%; background: #0b0e11; border: 1px solid var(--border); color: white; padding: 12px; border-radius: 10px; outline: none; }
+        input, textarea, select { width: 100%; background: #0b0e11; border: 1px solid var(--border); color: white; padding: 12px; border-radius: 10px; outline: none; }
         input:focus { border-color: var(--primary); }
 
         .btn-launch { width: 100%; background: var(--primary); color: #000; border: none; padding: 18px; border-radius: 15px; font-size: 16px; cursor: pointer; font-family: var(--font-mon); margin-top: 10px; }
 
         /* Project History */
         .proj-item { background: var(--card); border-radius: 15px; padding: 15px; margin-bottom: 12px; border-left: 5px solid var(--accent); display: flex; justify-content: space-between; align-items: center; cursor: pointer; transition: 0.3s; }
-        .proj-item:hover { background: #252b32; }
+        .status-tag { font-size: 9px; padding: 3px 8px; border-radius: 5px; margin-left: 10px; }
+        .tag-ongoing { background: rgba(14, 203, 129, 0.1); color: var(--status-ongoing); }
+        .tag-completed { background: rgba(246, 70, 93, 0.1); color: var(--status-completed); }
 
-        /* Distribution Modal (Full Graphic) */
+        /* Modal */
         .modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.95); display: none; flex-direction: column; z-index: 9999; padding: 20px; }
-        .modal-content { background: var(--card); border: 1px solid var(--primary); border-radius: 25px; padding: 20px; max-width: 600px; margin: auto; width: 100%; max-height: 80vh; overflow-y: auto; }
+        .modal-content { background: var(--card); border: 1px solid var(--primary); border-radius: 25px; padding: 20px; max-width: 600px; margin: auto; width: 100%; max-height: 90vh; overflow-y: auto; }
         
-        .user-row { background: rgba(255,255,255,0.03); margin-bottom: 8px; padding: 12px; border-radius: 12px; display: flex; justify-content: space-between; align-items: center; font-size: 12px; border: 1px solid var(--border); }
-        .prop-badge { background: var(--accent); color: #000; padding: 2px 8px; border-radius: 5px; font-size: 10px; }
+        .vesting-control { background: #0b0e11; padding: 15px; border-radius: 15px; margin: 15px 0; border: 1px solid var(--accent); }
+        .user-row { background: rgba(255,255,255,0.03); margin-bottom: 8px; padding: 12px; border-radius: 12px; display: flex; justify-content: space-between; align-items: center; font-size: 11px; }
+
+        .dist-history-item { font-size: 10px; padding: 8px; border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; color: var(--text-sec); }
 
         /* Toast Notification */
         #toast-container { position: fixed; top: 20px; left: 50%; transform: translateX(-50%); z-index: 10001; }
@@ -55,65 +61,80 @@
 
     <div class="admin-header">
         <h1>SmatBit Venture Admin</h1>
-        <p style="font-size: 10px; color: var(--accent)">DYNAMIC PROJECT & DISTRIBUTION CONTROL</p>
+        <p style="font-size: 10px; color: var(--accent)">PROJECT ACTION & VESTING DISTRIBUTION</p>
     </div>
 
     <div class="card">
-        <h3 class="mon-900" style="font-size: 14px; margin-bottom: 15px; color: var(--primary)">Upload New Venture</h3>
+        <h3 class="mon-900" style="font-size: 14px; margin-bottom: 15px; color: var(--primary)">Launch New Project</h3>
         <div class="grid-inputs">
             <div class="input-box"><label>Project Name</label><input type="text" id="pName" placeholder="e.g. SmatBit L1"></div>
-            <div class="input-box"><label>Token Symbol (Small Letter Path)</label><input type="text" id="pSym" placeholder="smat"></div>
+            <div class="input-box"><label>Symbol (Database Path)</label><input type="text" id="pSym" placeholder="smat"></div>
         </div>
         <div class="grid-inputs">
-            <div class="input-box"><label>Total Token Amount</label><input type="number" id="pTotalTokens" placeholder="1000000"></div>
-            <div class="input-box"><label>Vesting %</label><input type="number" id="pVesting" placeholder="10"></div>
+            <div class="input-box"><label>Total Token Supply</label><input type="number" id="pTotalTokens" placeholder="2500000"></div>
+            <div class="input-box"><label>Vesting % (Each Phase)</label><input type="number" id="pVesting" placeholder="10"></div>
         </div>
         <div class="grid-inputs">
             <div class="input-box"><label>Logo URL</label><input type="text" id="pLogo"></div>
             <div class="input-box"><label>Website URL</label><input type="text" id="pWeb"></div>
         </div>
+        <div class="grid-inputs">
+            <div class="input-box"><label>Twitter</label><input type="text" id="pTwit"></div>
+            <div class="input-box"><label>Telegram</label><input type="text" id="pTele"></div>
+        </div>
+        <div class="input-box"><label>Discord URL</label><input type="text" id="pDisc"></div>
         <div class="input-box"><label>Description</label><textarea id="pDesc" rows="3"></textarea></div>
         
-        <div class="grid-inputs">
-            <input type="text" id="pTwit" placeholder="Twitter URL">
-            <input type="text" id="pTele" placeholder="Telegram URL">
-        </div>
-        <button class="btn-launch" onclick="launchProject()">LAUNCH & SAVE PROJECT</button>
+        <button class="btn-launch" onclick="launchProject()">LAUNCH PROJECT (ONGOING)</button>
     </div>
 
-    <h3 class="mon-900" style="font-size: 14px; margin-bottom: 15px;">Project Repository (History)</h3>
+    <h3 class="mon-900" style="font-size: 14px; margin-bottom: 15px;">Manage History & Actions</h3>
     <div id="projectHistory"></div>
 
-    <div class="modal-overlay" id="distModal">
+    <div class="modal-overlay" id="manageModal">
         <div class="modal-content">
             <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px;">
-                <h2 id="modalProjName" class="mon-900" style="color:var(--primary)"></h2>
+                <h2 id="modalTitle" class="mon-900" style="color:var(--primary)"></h2>
                 <i class="fas fa-times" onclick="closeModal()" style="cursor:pointer"></i>
             </div>
             
-            <div id="distStats" style="background:#0b0e11; padding:15px; border-radius:15px; margin-bottom:20px; font-size:11px;">
-                <p>Global Funding: <b id="statGlobal" style="color:var(--accent)">0</b> USDT</p>
-                <p>Total Supply: <b id="statSupply" style="color:var(--primary)">0</b> Tokens</p>
+            <div class="input-box">
+                <label>CHANGE PROJECT STATUS</label>
+                <select id="statusSelect" onchange="updateProjectStatus()">
+                    <option value="Ongoing">Ongoing</option>
+                    <option value="Completed">Completed</option>
+                </select>
             </div>
 
-            <div id="userDistList"></div>
-            
-            <button class="btn-launch" id="distBtn" onclick="executeDistribution()">ONE-CLICK ALL DISTRIBUTION</button>
+            <div class="vesting-control">
+                <h4 class="mon-900" style="font-size:12px; color:var(--accent); margin-bottom:10px;">Token Distribution</h4>
+                <div class="input-box">
+                    <label>VESTING PHASE NAME (Unique)</label>
+                    <input type="text" id="vestingName" placeholder="e.g. Phase 1 / TGE">
+                </div>
+                <p style="font-size:10px; margin-bottom:10px; color:gray;">Note: Distribution will be proportional to USDT funding.</p>
+                <button class="btn-launch" id="distBtn" style="padding:12px; font-size:12px;" onclick="executeVesting()">DISTRIBUTE TO ALL CONTRIBUTORS</button>
+            </div>
+
+            <div id="distributionLogs">
+                <h4 class="mon-900" style="font-size:11px; margin-bottom:10px;">Distribution History</h4>
+                <div id="logsContainer"></div>
+            </div>
         </div>
     </div>
 
 <script>
-// Firebase Initialization
 const firebaseConfig = { apiKey: "AIzaSyAMxtJedkehhxJRMPZLjhpKHqneHEWsGlE", databaseURL: "https://smat-exchange-default-rtdb.firebaseio.com" };
 firebase.initializeApp(firebaseConfig);
 const db = firebase.database();
 
-let currentProjects = [], selectedProj = null, contributors = [];
+let currentProjects = [], selectedProj = null;
 
-// --- 1. Launch Project ---
+// 1. Launch Project
 async function launchProject() {
+    const id = "PRJ" + Date.now();
     const data = {
-        id: "PRJ" + Date.now(),
+        id: id,
         title: document.getElementById('pName').value,
         sym: document.getElementById('pSym').value.toLowerCase(),
         total_tokens: parseFloat(document.getElementById('pTotalTokens').value),
@@ -122,120 +143,141 @@ async function launchProject() {
         web_url: document.getElementById('pWeb').value,
         twitter_url: document.getElementById('pTwit').value,
         telegram_url: document.getElementById('pTele').value,
+        discord_url: document.getElementById('pDisc').value,
         description: document.getElementById('pDesc').value,
+        status: 'Ongoing',
         timestamp: Date.now()
     };
 
-    if(!data.title || !data.sym) return showToast("Project Name & Symbol Required!", "#f6465d");
+    if(!data.title || !data.sym) return showToast("Name and Symbol required!", "#f6465d");
 
-    await db.ref('fundraising_history/' + data.id).set(data);
-    await db.ref('active_fundraising').set(data); // ইউজার প্যানেলে সরাসরি আপডেট হবে
-    
-    showToast("Project Launched Successfully!");
+    await db.ref('fundraising_history/' + id).set(data);
+    showToast("Project Launched!");
 }
 
-// --- 2. Load Project History (Latest First) ---
+// 2. Load History
 db.ref('fundraising_history').on('value', snap => {
     const container = document.getElementById('projectHistory');
     container.innerHTML = "";
     const data = snap.val() || {};
-    currentProjects = Object.keys(data).map(k => data[k]).sort((a,b) => b.timestamp - a.timestamp);
+    currentProjects = Object.keys(data).map(k => ({id: k, ...data[k]})).sort((a,b) => b.timestamp - a.timestamp);
 
     currentProjects.forEach(p => {
+        const statusClass = p.status === 'Completed' ? 'tag-completed' : 'tag-ongoing';
         container.innerHTML += `
-            <div class="proj-item" onclick="openDistModal('${p.id}')">
+            <div class="proj-item" onclick="openManageModal('${p.id}')">
                 <div>
-                    <h4 class="mon-900" style="font-size:13px">${p.title}</h4>
-                    <p style="font-size:10px; color:var(--accent)">Path: ${p.sym}_balance</p>
+                    <h4 class="mon-900" style="font-size:13px">${p.title} <span class="status-tag ${statusClass}">${p.status}</span></h4>
+                    <p style="font-size:10px; color:var(--text-sec)">Path: ${p.sym}_balance | Supply: ${p.total_tokens}</p>
                 </div>
-                <i class="fas fa-users-cog" style="color:var(--primary)"></i>
+                <i class="fas fa-edit" style="color:var(--primary)"></i>
             </div>
         `;
     });
 });
 
-// --- 3. Distribution Modal Logic ---
-async function openDistModal(pId) {
-    selectedProj = currentProjects.find(p => p.id === pId);
-    document.getElementById('modalProjName').innerText = selectedProj.title;
+// 3. Open Modal & Load Project Data
+async function openManageModal(id) {
+    selectedProj = currentProjects.find(x => x.id === id);
+    document.getElementById('modalTitle').innerText = selectedProj.title;
+    document.getElementById('statusSelect').value = selectedProj.status || 'Ongoing';
+    document.getElementById('manageModal').style.display = 'flex';
     
-    const snap = await db.ref('fundraising_contributions/' + pId).once('value');
-    const rawCont = snap.val() || {};
-    
-    contributors = Object.keys(rawCont).map(uid => ({ uid, ...rawCont[uid] }));
-    const globalTotal = contributors.reduce((sum, item) => sum + item.amount, 0);
-
-    document.getElementById('statGlobal').innerText = globalTotal.toFixed(2);
-    document.getElementById('statSupply').innerText = selectedProj.total_tokens;
-
-    const listContainer = document.getElementById('userDistList');
-    listContainer.innerHTML = "";
-
-    contributors.forEach(user => {
-        // প্রপোশনাল ক্যালকুলেশন: (ইউজারের ইনভেস্ট / মোট ইনভেস্ট) * মোট টোকেন
-        const share = (user.amount / globalTotal) * selectedProj.total_tokens;
-        user.calculatedShare = share;
-
-        listContainer.innerHTML += `
-            <div class="user-row">
-                <div><b>${user.smat_id}</b><br><span style="color:var(--accent)">${user.amount} USDT</span></div>
-                <div style="text-align:right">
-                    <b style="color:var(--primary)">${share.toFixed(2)} ${selectedProj.sym.toUpperCase()}</b><br>
-                    <span class="prop-badge">PROP. SHARE</span>
-                </div>
-            </div>
-        `;
-    });
-
-    document.getElementById('distModal').style.display = 'flex';
+    // Load Distribution History
+    loadDistributionLogs(id);
 }
 
-// --- 4. Execute Distribution (One-Click) ---
-async function executeDistribution() {
+// 4. Update Status (Ongoing/Completed)
+async function updateProjectStatus() {
+    const newStatus = document.getElementById('statusSelect').value;
+    await db.ref(`fundraising_history/${selectedProj.id}/status`).set(newStatus);
+    showToast(`Project Status: ${newStatus}`);
+}
+
+// 5. Execute Vesting (One-Click)
+async function executeVesting() {
+    const phaseName = document.getElementById('vestingName').value.trim();
+    if(!phaseName) return showToast("Enter Phase Name!", "#f6465d");
+
+    // Check if this phase already distributed
+    const checkSnap = await db.ref(`fundraising_history/${selectedProj.id}/distributions/${phaseName}`).once('value');
+    if(checkSnap.exists()) return showToast("This phase already distributed!", "#f6465d");
+
     const btn = document.getElementById('distBtn');
     btn.disabled = true;
-    btn.innerText = "DISTRIBUTING...";
+    btn.innerText = "PROCESSING...";
 
+    // Get Contributors
+    const contSnap = await db.ref(`fundraising_contributions/${selectedProj.id}`).once('value');
+    const rawCont = contSnap.val() || {};
+    const contributors = Object.keys(rawCont).map(uid => ({uid, ...rawCont[uid]}));
+    
+    if(contributors.length === 0) {
+        btn.disabled = false;
+        btn.innerText = "DISTRIBUTE";
+        return showToast("No contributors found!", "#f6465d");
+    }
+
+    const globalTotalFund = contributors.reduce((s, i) => s + i.amount, 0);
     const updates = {};
     const sym = selectedProj.sym;
+    const vestAmt = (selectedProj.total_tokens * (selectedProj.vesting_percent / 100));
 
     for (const user of contributors) {
-        // ১. ইউজারের ব্যালেন্স রিড করা
-        const userSnap = await db.ref(`users/${user.uid}/${sym}_balance`).once('value');
-        const currentBal = parseFloat(userSnap.val() || 0);
+        const userShare = (user.amount / globalTotalFund) * vestAmt;
         
-        // ২. ব্যালেন্স আপডেট (ডায়নামিক পাথ)
-        updates[`users/${user.uid}/${sym}_balance`] = parseFloat((currentBal + user.calculatedShare).toFixed(8));
-        
-        // ৩. হিস্টোরি পুশ (Funding In)
-        const tid = "DIST_" + Date.now() + "_" + user.uid.substring(0,4);
+        // 1. Update User Balance
+        const userBalSnap = await db.ref(`users/${user.uid}/${sym}_balance`).once('value');
+        const oldBal = parseFloat(userBalSnap.val() || 0);
+        updates[`users/${user.uid}/${sym}_balance`] = parseFloat((oldBal + userShare).toFixed(8));
+
+        // 2. Add History
+        const tid = "VEST_" + Date.now() + "_" + user.uid.substring(0,4);
         updates[`users/${user.uid}/history/${tid}`] = {
-            method: 'Funding In',
-            coin: sym.toUpperCase(),
-            amount: user.calculatedShare.toFixed(2),
-            timestamp: Date.now(),
-            status: 'success',
-            project: selectedProj.title
+            method: 'Venture Release', coin: sym.toUpperCase(), amount: userShare.toFixed(2), 
+            timestamp: Date.now(), status: 'success', note: phaseName
         };
     }
 
-    try {
-        await db.ref().update(updates);
-        showToast("All Coins Distributed Successfully!");
-        closeModal();
-    } catch (e) {
-        showToast("Error in distribution!", "#f6465d");
-    }
+    // Mark phase as done
+    updates[`fundraising_history/${selectedProj.id}/distributions/${phaseName}`] = {
+        timestamp: Date.now(), amount: vestAmt, contributors: contributors.length
+    };
+
+    await db.ref().update(updates);
+    showToast(`${phaseName} Distributed Successfully!`);
+    btn.disabled = false;
+    btn.innerText = "DISTRIBUTE TO ALL";
+    document.getElementById('vestingName').value = "";
+    loadDistributionLogs(selectedProj.id);
 }
 
-function closeModal() { document.getElementById('distModal').style.display = 'none'; }
+function loadDistributionLogs(pid) {
+    const logBox = document.getElementById('logsContainer');
+    logBox.innerHTML = "";
+    db.ref(`fundraising_history/${pid}/distributions`).once('value', snap => {
+        const logs = snap.val() || {};
+        Object.keys(logs).forEach(key => {
+            logBox.innerHTML += `
+                <div class="dist-history-item">
+                    <span><b>${key}</b></span>
+                    <span>${logs[key].amount.toFixed(0)} Tokens</span>
+                    <span style="color:var(--status-ongoing)">SUCCESS</span>
+                </div>
+            `;
+        });
+        if(logBox.innerHTML === "") logBox.innerHTML = "<p style='font-size:10px; color:gray;'>No distribution history.</p>";
+    });
+}
+
+function closeModal() { document.getElementById('manageModal').style.display = 'none'; }
 
 function showToast(msg, color = "#00ffff") {
     const container = document.getElementById('toast-container');
     const t = document.createElement('div');
     t.className = 'g-toast';
     t.style.borderLeftColor = color;
-    t.innerHTML = `<b class="mon-900" style="font-size:10px; color:${color}">NOTIFICATION</b><br>${msg}`;
+    t.innerHTML = `<b class="mon-900" style="font-size:10px; color:${color}">SYSTEM</b><br>${msg}`;
     container.appendChild(t);
     setTimeout(() => t.remove(), 3000);
 }
