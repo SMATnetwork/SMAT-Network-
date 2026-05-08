@@ -251,7 +251,7 @@ async function confirmDistribution() {
         
         updates[`users/${uid}/${sym}_balance`] = parseFloat((old + share).toFixed(8));
         updates[`users/${uid}/history/DIST_${Date.now()}_${uid.slice(0,3)}`] = {
-            method: 'Venture Release', coin: sym.toUpperCase(), amount: share.toFixed(2),
+            method: 'Venture In Release', coin: sym.toUpperCase(), amount: share.toFixed(2),
             timestamp: Date.now(), status: 'success', note: phase
         };
     }
