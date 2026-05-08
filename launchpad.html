@@ -87,7 +87,7 @@
     </footer>
 
 <script>
-// --- CONFIG ---
+// --- CONFIG & FIREBASE ---
 const firebaseConfig = { 
     apiKey: "AIzaSyAMxtJedkehhxJRMPZLjhpKHqneHEWsGlE", 
     authDomain: "smat-exchange.firebaseapp.com", 
@@ -100,7 +100,7 @@ const auth = firebase.auth();
 
 let userData = {}, launchpads = [];
 
-// Helper to ensure numbers
+// Helper functions for safe calculation
 const toNum = (val) => parseFloat(val || 0);
 const f8 = (n) => toNum(n).toFixed(8);
 
@@ -114,7 +114,6 @@ auth.onAuthStateChanged(user => {
 });
 
 function syncData(uid) {
-    // ১. লঞ্চপ্যাড লিস্ট লোড
     db.ref('launchpad_list').on('value', snap => {
         const val = snap.val() || {};
         launchpads = Object.keys(val).map(k => ({id: k, ...val[k]})).sort((a,b) => b.startTime - a.startTime);
@@ -122,7 +121,6 @@ function syncData(uid) {
         renderLaunchpad();
     });
 
-    // ২. ইউজার ডাটা লোড
     db.ref('users/' + uid).on('value', snap => {
         userData = snap.val() || {};
         userData.uid = uid;
@@ -131,7 +129,7 @@ function syncData(uid) {
     });
 }
 
-// --- অটো সেটেলমেন্ট (বোনাস এবং আসল রিফান্ড) ---
+// --- AUTO SETTLEMENT (Reward @ 6AM & Refund) ---
 async function checkAutoSettlement() {
     if(!userData.launch_locks || !launchpads.length) return;
     const now = Date.now();
@@ -143,7 +141,7 @@ async function checkAutoSettlement() {
         const lp = launchpads.find(x => x.id === lpId);
         if(!lp) continue;
 
-        // ২.১. আসল কয়েন রিফান্ড (যদি মেয়াদ শেষ হয় এবং ব্যালেন্স থাকে)
+        // ১. অটো রিফান্ড (মেয়াদ শেষ হলে আসল কয়েন ওয়ালেটে ইন)
         if(now > lp.endTime && toNum(lock.amount) > 0) {
             const sym = lock.lockToken.toLowerCase();
             const currentBal = toNum(userData[sym + '_balance']);
@@ -152,15 +150,15 @@ async function checkAutoSettlement() {
             updates[`users/${userData.uid}/${sym}_balance`] = toNum((currentBal + refundAmt).toFixed(8));
             updates[`users/${userData.uid}/launch_locks/${lpId}/amount`] = 0;
             
-            const tid = "REF_" + Date.now();
+            const tid = "LP_IN_" + Date.now();
             updates[`users/${userData.uid}/history/${tid}`] = {
-                method: 'Launchpad Refund', coin: lock.lockToken, amount: "+" + refundAmt, timestamp: now, status: 'success'
+                method: 'Launchpad In', coin: lock.lockToken.toUpperCase(), amount: f8(refundAmt), timestamp: now, status: 'success'
             };
             hasChanges = true;
             showToast(`${lock.lockToken} Principal Refunded!`, "success");
         }
 
-        // ২.২. ডেইলি রিওয়ার্ড (সকাল ৬টায়)
+        // ২. ডেইলি রিওয়ার্ড (সকাল ৬টায়)
         const lastClaim = lock.lastRewardTime || lock.startTime;
         const sixAMToday = new Date();
         sixAMToday.setHours(6, 0, 0, 0);
@@ -176,9 +174,9 @@ async function checkAutoSettlement() {
             updates[`users/${userData.uid}/${rewardSym}_balance`] = toNum((currentRewardBal + userShare).toFixed(8));
             updates[`users/${userData.uid}/launch_locks/${lpId}/lastRewardTime`] = now;
             
-            const rid = "REW_" + Date.now();
+            const rid = "LP_REW_" + Date.now();
             updates[`users/${userData.uid}/history/${rid}`] = {
-                method: 'Launchpad Reward', coin: lp.tokenSymbol, amount: "+" + userShare.toFixed(6), timestamp: now, status: 'success'
+                method: 'Launchpad In', coin: lp.tokenSymbol.toUpperCase(), amount: f8(userShare), timestamp: now, status: 'success'
             };
             hasChanges = true;
         }
@@ -271,24 +269,24 @@ async function executeLock(id) {
 
     if(!amt || amt <= 0 || amt > balance) return showToast("Invalid amount or balance", "error");
 
-    const tid = "LP_LOCK_" + Date.now();
+    const tid = "LP_OUT_" + Date.now();
     const updates = {};
     
     // ১. ওয়ালেট ব্যালেন্স কমানো
     updates[`users/${userData.uid}/${sym}_balance`] = toNum((balance - amt).toFixed(8));
     
-    // ২. আগের লক করা পরিমাণ চেক এবং যোগ
+    // ২. একাধিকবার লকিং লজিক (যোগ করা)
     let currentLocked = 0;
     if(userData.launch_locks && userData.launch_locks[id]) {
         currentLocked = toNum(userData.launch_locks[id].amount);
     }
-    
     const newTotal = toNum((currentLocked + amt).toFixed(8));
 
     updates[`users/${userData.uid}/launch_locks/${id}`] = {
         amount: newTotal,
         lockToken: lp.lockToken,
         startTime: Date.now(),
+        // আগের রিওয়ার্ড টাইম থাকলে সেটা রাখা, না থাকলে নতুন
         lastRewardTime: (userData.launch_locks && userData.launch_locks[id]?.lastRewardTime) || Date.now()
     };
     
@@ -296,9 +294,13 @@ async function executeLock(id) {
     const newGlobal = toNum((toNum(lp.globalLocked) + amt).toFixed(8));
     updates[`launchpad_list/${id}/globalLocked`] = newGlobal;
 
-    // ৪. হিস্টোরি
+    // ৪. হিস্টোরি পুশ (Launchpad Out মেথড)
     updates[`users/${userData.uid}/history/${tid}`] = {
-        method: 'Launchpad Stake', coin: lp.lockToken, amount: "-" + amt, timestamp: Date.now(), status: 'success'
+        method: 'Launchpad Out', 
+        coin: lp.lockToken.toUpperCase(), 
+        amount: f8(amt), 
+        timestamp: Date.now(), 
+        status: 'success'
     };
 
     try {
