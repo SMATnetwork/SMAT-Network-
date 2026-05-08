@@ -1,0 +1,213 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SMAT Venture | Admin Control</title>
+    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-database-compat.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@700;900&family=Inter:wght@400;600&display=swap" rel="stylesheet">
+    
+    <style>
+        :root {
+            --bg: #0b0e11; --card: #1e2329; --primary: #f0b90b;
+            --accent: #00ffff; --border: rgba(255, 255, 255, 0.08);
+        }
+        body { background: var(--bg); color: white; font-family: 'Inter', sans-serif; padding: 20px; }
+        .admin-container { max-width: 900px; margin: 0 auto; }
+        h1 { font-family: 'Montserrat'; color: var(--primary); margin-bottom: 20px; text-align: center; }
+
+        .section { background: var(--card); padding: 25px; border-radius: 15px; border: 1px solid var(--border); margin-bottom: 30px; }
+        .section h2 { font-size: 18px; margin-bottom: 20px; color: var(--accent); border-bottom: 1px solid var(--border); padding-bottom: 10px; }
+
+        .grid-form { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; }
+        input, textarea, select { background: #0b0e11; border: 1px solid var(--border); padding: 12px; border-radius: 8px; color: white; outline: none; width: 100%; }
+        textarea { grid-column: span 2; height: 80px; }
+
+        .btn { background: var(--primary); color: black; border: none; padding: 12px 25px; border-radius: 8px; font-weight: 900; cursor: pointer; margin-top: 10px; }
+        .btn-distribute { background: var(--accent); }
+
+        table { width: 100%; border-collapse: collapse; margin-top: 20px; font-size: 13px; }
+        th, td { text-align: left; padding: 12px; border-bottom: 1px solid var(--border); }
+        th { color: var(--text-sec); }
+        
+        .status-badge { padding: 4px 8px; border-radius: 4px; font-size: 10px; background: rgba(0,255,255,0.1); color: var(--accent); }
+    </style>
+</head>
+<body>
+
+    <div class="admin-container">
+        <h1>SMAT VENTURE ADMIN</h1>
+
+        <div class="section">
+            <h2><i class="fas fa-plus-circle"></i> Create New Fundraising Project</h2>
+            <div class="grid-form">
+                <input type="text" id="pTitle" placeholder="Project Title">
+                <input type="text" id="pLogo" placeholder="Logo Image URL">
+                <input type="text" id="pTokenName" placeholder="Token Name (e.g. Bitcoin)">
+                <input type="text" id="pSymbol" placeholder="Token Symbol">
+                <input type="text" id="pSupply" placeholder="Total Supply">
+                <input type="text" id="pScan" placeholder="BlockScan Link">
+                <input type="text" id="pWeb" placeholder="Official Website">
+                <input type="text" id="pTg" placeholder="Telegram Link">
+                <input type="text" id="pTw" placeholder="Twitter Link">
+                <input type="text" id="pDs" placeholder="Discord Link">
+                <input type="text" id="pVesting" placeholder="Vesting Info (e.g. 10% TGE, 6 Months Linear)">
+                <textarea id="pDesc" placeholder="Project Detailed Description..."></textarea>
+            </div>
+            <button class="btn" onclick="uploadProject()">LAUNCH PROJECT</button>
+        </div>
+
+        <div class="section">
+            <h2><i class="fas fa-coins"></i> Token Distribution (Vesting Release)</h2>
+            <p style="font-size: 12px; color: #848e9c; margin-bottom: 15px;">
+                এখানে ডিস্ট্রিবিউট বাটনে ক্লিক করলে সকল ইউজারের কন্ট্রিবিউশন অনুযায়ী তাদের ওয়ালেটে অটো টোকেন যোগ হবে।
+            </p>
+            <div class="grid-form" style="grid-template-columns: 2fr 1fr 1fr;">
+                <input type="text" id="distTokenSymbol" placeholder="Token Symbol (e.g. BTC)">
+                <input type="number" id="totalTokensToGive" placeholder="Total Tokens for Users">
+                <button class="btn btn-distribute" onclick="distributeTokens()">RELEASE TO ALL</button>
+            </div>
+        </div>
+
+        <div class="section">
+            <h2><i class="fas fa-users"></i> Contributor Records</h2>
+            <div id="statsInfo" style="margin-bottom: 10px; font-weight: bold; color: var(--primary);"></div>
+            <table>
+                <thead>
+                    <tr>
+                        <th>SMAT ID</th>
+                        <th>USDT Contributed</th>
+                        <th>Share (%)</th>
+                        <th>Action</th>
+                    </tr>
+                </thead>
+                <tbody id="contributorTable"></tbody>
+            </table>
+        </div>
+    </div>
+
+<script>
+// --- FIREBASE CONFIG ---
+const firebaseConfig = { 
+    apiKey: "AIzaSyAMxtJedkehhxJRMPZLjhpKHqneHEWsGlE", 
+    authDomain: "smat-exchange.firebaseapp.com", 
+    projectId: "smat-exchange", 
+    databaseURL: "https://smat-exchange-default-rtdb.firebaseio.com" 
+};
+firebase.initializeApp(firebaseConfig);
+const db = firebase.database();
+
+let activeProjectId = "";
+let contributors = [];
+let totalRaised = 0;
+
+// প্রজেক্ট লোড করা (রেকর্ড দেখার জন্য)
+db.ref('active_fundraising').on('value', snap => {
+    const data = snap.val();
+    if(data) {
+        activeProjectId = data.id;
+        loadContributions(data.id);
+    }
+});
+
+async function uploadProject() {
+    const id = "PROJ_" + Date.now();
+    const data = {
+        id: id,
+        title: document.getElementById('pTitle').value,
+        logo: document.getElementById('pLogo').value,
+        tokenName: document.getElementById('pTokenName').value,
+        tokenSymbol: document.getElementById('pSymbol').value,
+        supply: document.getElementById('pSupply').value,
+        scan: document.getElementById('pScan').value,
+        web: document.getElementById('pWeb').value,
+        tg: document.getElementById('pTg').value,
+        tw: document.getElementById('pTw').value,
+        ds: document.getElementById('pDs').value,
+        vesting: document.getElementById('pVesting').value,
+        description: document.getElementById('pDesc').value,
+        startTime: Date.now()
+    };
+
+    await db.ref('active_fundraising').set(data);
+    alert("Project Launched Successfully!");
+}
+
+function loadContributions(pid) {
+    db.ref('fundraising_contributions/' + pid).on('value', snap => {
+        const val = snap.val() || {};
+        contributors = Object.keys(val).map(k => ({uid: k, ...val[k]}));
+        totalRaised = contributors.reduce((sum, item) => sum + item.amount, 0);
+        
+        document.getElementById('statsInfo').innerText = `Total Raised: ${totalRaised.toFixed(2)} USDT`;
+        renderTable();
+    });
+}
+
+function renderTable() {
+    const table = document.getElementById('contributorTable');
+    table.innerHTML = "";
+    contributors.forEach(c => {
+        const share = ((c.amount / totalRaised) * 100).toFixed(2);
+        table.innerHTML += `
+            <tr>
+                <td>${c.smat_id}</td>
+                <td>${c.amount} USDT</td>
+                <td><span class="status-badge">${share}%</span></td>
+                <td><button onclick="refundUser('${c.uid}', ${c.amount})">Refund</button></td>
+            </tr>
+        `;
+    });
+}
+
+// --- অটো ডিস্ট্রিবিউশন লজিক ---
+async function distributeTokens() {
+    const symbol = document.getElementById('distTokenSymbol').value.toLowerCase();
+    const totalTokens = parseFloat(document.getElementById('totalTokensToGive').value);
+
+    if(!symbol || !totalTokens || totalRaised <= 0) return alert("Invalid Input");
+
+    const confirmAction = confirm(`Release ${totalTokens} ${symbol.toUpperCase()} to all contributors?`);
+    if(!confirmAction) return;
+
+    const updates = {};
+    contributors.forEach(c => {
+        const userShareProportion = c.amount / totalRaised;
+        const userReward = (userShareProportion * totalTokens).toFixed(8);
+        
+        // ১. ইউজারের ব্যালেন্স যোগ (Funding In)
+        // আমরা ধরে নিচ্ছি ইউজারের ব্যালেন্স পাথ: users/uid/token_balance
+        const balancePath = `users/${c.uid}/${symbol}_balance`;
+        
+        // এই লজিকটি ইউজার ডাটা থেকে কারেন্ট ব্যালেন্স নিয়ে যোগ করবে (Admin Action)
+        // বাস্তব ক্ষেত্রে এটি ট্রান্সাকশন হিসেবে চালানো ভালো
+        db.ref(balancePath).transaction(current => (parseFloat(current || 0) + parseFloat(userReward)));
+
+        // ২. হিস্টোরি পুশ
+        const tid = "FUND_IN_" + Date.now();
+        updates[`users/${c.uid}/history/${tid}`] = {
+            method: 'Funding In',
+            coin: symbol.toUpperCase(),
+            amount: userReward,
+            timestamp: Date.now(),
+            status: 'success'
+        };
+    });
+
+    await db.ref().update(updates);
+    alert("Tokens Distributed Successfully!");
+}
+
+async function refundUser(uid, amt) {
+    if(confirm("Refund this user?")) {
+        // রিফান্ড লজিক (USDT ফেরত দেওয়া)
+        await db.ref(`users/${uid}/usdt_balance`).transaction(curr => (curr || 0) + amt);
+        await db.ref(`fundraising_contributions/${activeProjectId}/${uid}`).remove();
+        alert("Refunded!");
+    }
+}
+</script>
+</body>
+</html>
