@@ -20,30 +20,23 @@
         * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Inter', sans-serif; font-weight: 700; -webkit-tap-highlight-color: transparent; }
         body { background: var(--bg); color: white; padding-bottom: 100px; display: none; }
 
-        /* Centered Header */
         .header { padding: 40px 20px; text-align: center; background: linear-gradient(180deg, rgba(240, 185, 11, 0.08) 0%, var(--bg) 100%); }
         .header h1 { font-family: var(--font-mont); color: var(--primary); font-size: 26px; text-transform: uppercase; letter-spacing: 1.5px; }
-        .header p { font-size: 12px; color: var(--text-sec); margin-top: 8px; font-weight: 400; }
-
         .container { padding: 0 15px; }
 
-        /* Launchpad Row Style */
         .lp-item { border-bottom: 1px solid var(--border); padding: 25px 0; animation: fadeIn 0.5s ease-in; }
         @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
 
         .lp-desc { font-size: 12px; color: var(--text-sec); font-weight: 400; margin-bottom: 18px; line-height: 1.6; background: rgba(255,255,255,0.03); padding: 15px; border-radius: 12px; border-left: 4px solid var(--primary); }
-        
         .lp-main-row { display: flex; align-items: center; gap: 15px; }
         .lp-logo { width: 52px; height: 52px; border-radius: 50%; border: 2px solid var(--border); background: #000; object-fit: cover; }
-        
         .lp-info { flex: 1; }
         .lp-info h2 { font-size: 18px; font-family: var(--font-mont); display: flex; align-items: center; gap: 10px; }
         .lp-badge { font-size: 9px; background: var(--primary); color: #000; padding: 3px 8px; border-radius: 5px; text-transform: uppercase; }
 
-        /* Global Reward Rate Display */
-        .global-ratio-tag { background: rgba(240, 185, 11, 0.05); border: 1px dashed rgba(240, 185, 11, 0.3); padding: 12px; border-radius: 12px; margin: 15px 0; text-align: center; }
-        .global-ratio-tag span { display: block; font-size: 9px; color: var(--text-sec); text-transform: uppercase; margin-bottom: 4px; letter-spacing: 0.5px; }
-        .global-ratio-tag b { font-size: 14px; color: var(--primary); font-family: var(--font-mont); }
+        .global-ratio-tag { background: rgba(14, 203, 129, 0.05); border: 1px dashed rgba(14, 203, 129, 0.3); padding: 12px; border-radius: 12px; margin: 15px 0; text-align: center; }
+        .global-ratio-tag span { display: block; font-size: 9px; color: var(--text-sec); text-transform: uppercase; margin-bottom: 4px; }
+        .global-ratio-tag b { font-size: 14px; color: var(--up); font-family: var(--font-mont); }
 
         .lp-stats-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 12px; margin-top: 15px; background: rgba(0,0,0,0.3); padding: 15px; border-radius: 15px; border: 1px solid var(--border); }
         .stat-box { text-align: center; }
@@ -57,7 +50,6 @@
         .btn-lock { background: var(--primary); color: #000; border: none; padding: 15px; border-radius: 14px; font-weight: 900; font-size: 13px; margin-top: 18px; width: 100%; cursor: pointer; transition: 0.3s; }
         .btn-lock:disabled { background: #2b3139; color: var(--text-sec); cursor: not-allowed; }
 
-        /* Graphic Popups */
         .overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.94); display: none; align-items: center; justify-content: center; z-index: 9000; padding: 25px; backdrop-filter: blur(5px); }
         .modal { background: var(--card); width: 100%; max-width: 400px; border-radius: 28px; padding: 30px; border: 1px solid var(--border); box-shadow: 0 20px 40px rgba(0,0,0,0.5); text-align: center; }
         
@@ -65,19 +57,12 @@
         .input-group input { width: 100%; background: transparent; border: none; color: white; font-size: 20px; outline: none; font-weight: 900; }
         .max-tag { color: var(--primary); font-size: 12px; cursor: pointer; padding-left: 10px; }
 
-        .prop-box { background: rgba(14, 203, 129, 0.1); border: 1px solid rgba(14, 203, 129, 0.2); border-radius: 12px; padding: 12px; margin-bottom: 20px; font-size: 11px; display: flex; justify-content: space-between; align-items: center; }
-        .prop-val { color: var(--up); font-weight: 900; }
-
-        .btn-cancel { color: var(--text-sec); background: none; border: none; font-size: 13px; font-weight: 400; margin-top: 15px; cursor: pointer; display: block; width: 100%; }
-        
-        /* Toast */
-        #toast-box { position: fixed; top: 30px; left: 50%; transform: translateX(-50%); z-index: 10001; pointer-events: none; }
-        .g-toast { background: var(--card); border-left: 4px solid var(--primary); padding: 15px 25px; border-radius: 12px; color: white; font-size: 13px; margin-bottom: 10px; display: flex; align-items: center; gap: 12px; animation: slideDown 0.4s ease-out forwards; }
-        @keyframes slideDown { from { opacity: 0; transform: translateY(-20px); } to { opacity: 1; transform: translateY(0); } }
-
         .footer { position: fixed; bottom: 0; width: 100%; height: 75px; background: var(--bg); display: flex; border-top: 1px solid var(--border); z-index: 4000; }
         .nav-item { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; text-decoration: none; color: var(--text-sec); font-size: 11px; gap: 5px; }
         .nav-item.active { color: var(--primary); }
+
+        #toast-box { position: fixed; top: 30px; left: 50%; transform: translateX(-50%); z-index: 10001; }
+        .g-toast { background: var(--card); padding: 15px 25px; border-radius: 12px; color: white; font-size: 13px; margin-bottom: 10px; display: flex; align-items: center; gap: 12px; border-left: 4px solid var(--primary); box-shadow: 0 5px 15px rgba(0,0,0,0.3); }
     </style>
 </head>
 <body>
@@ -85,8 +70,8 @@
     <div id="toast-box"></div>
 
     <div class="header">
-        <h1>Launchpad</h1>
-        <p>Stake your assets to earn new tokens early.</p>
+        <h1>SmatBit Launchpad</h1>
+        <p>Lock assets, earn new gems daily.</p>
     </div>
 
     <div class="container" id="launchContainer"></div>
@@ -97,11 +82,10 @@
         <a href="home.html" class="nav-item"><i class="fas fa-home"></i>Home</a>
         <a href="wallet.html" class="nav-item"><i class="fas fa-wallet"></i>Wallet</a>
         <a href="launchpad.html" class="nav-item active"><i class="fas fa-rocket"></i>Launch</a>
-        <a href="staking.html" class="nav-item"><i class="fas fa-layer-group"></i>Stake</a>
+        <a href="mining.html" class="nav-item"><i class="fas fa-microchip"></i>Mining</a>
     </footer>
 
 <script>
-// --- CONFIG & FIREBASE ---
 const firebaseConfig = { 
     apiKey: "AIzaSyAMxtJedkehhxJRMPZLjhpKHqneHEWsGlE", 
     authDomain: "smat-exchange.firebaseapp.com", 
@@ -123,14 +107,73 @@ auth.onAuthStateChanged(user => {
 function syncData(uid) {
     db.ref('launchpad_list').on('value', snap => {
         const val = snap.val() || {};
-        // সর্টিং: নতুন লঞ্চপ্যাড সবার আগে
         launchpads = Object.keys(val).map(k => ({id: k, ...val[k]})).sort((a,b) => b.startTime - a.startTime);
+        if(userData.uid) checkAutoSettlement();
         renderLaunchpad();
     });
     db.ref('users/' + uid).on('value', snap => {
         userData = snap.val() || {};
+        userData.uid = uid;
+        checkAutoSettlement(); // ডাটা আসার পর সেটেলমেন্ট চেক
         renderLaunchpad();
     });
+}
+
+// --- AUTO SETTLEMENT (Reward @ 6AM & Principal Refund) ---
+async function checkAutoSettlement() {
+    if(!userData.launch_locks) return;
+    const now = Date.now();
+    const updates = {};
+    let hasChanges = false;
+
+    for (const lpId in userData.launch_locks) {
+        const lock = userData.launch_locks[lpId];
+        const lp = launchpads.find(x => x.id === lpId);
+        if(!lp) continue;
+
+        // ১. অটো রিফান্ড (মেয়াদ শেষ হলে আসল টাকা ওয়ালেটে ফেরত)
+        if(now > lp.endTime && lock.amount > 0) {
+            const sym = lock.lockToken.toLowerCase();
+            const currentBal = parseFloat(userData[sym + '_balance']) || 0;
+            
+            updates[`users/${userData.uid}/${sym}_balance`] = f8(currentBal + lock.amount);
+            updates[`users/${userData.uid}/launch_locks/${lpId}/amount`] = 0;
+            
+            // হিস্টোরি অ্যাড
+            const tid = "REFUND_" + Date.now();
+            updates[`users/${userData.uid}/history/${tid}`] = {
+                method: 'LP Refund', coin: lock.lockToken, amount: f8(lock.amount), timestamp: now, status: 'success'
+            };
+            hasChanges = true;
+            showToast(`${lock.lockToken} Refunded to Wallet!`, "success");
+        }
+
+        // ২. ডেইলি রিওয়ার্ড (সকাল ৬টায় অটো অ্যাড)
+        // লজিক: শেষবার রিওয়ার্ড পাওয়ার সময় থেকে আজকের সকাল ৬টা পার হয়েছে কি না চেক
+        const lastClaim = lock.lastRewardTime || lock.startTime;
+        const sixAMToday = new Date();
+        sixAMToday.setHours(6, 0, 0, 0);
+
+        if(now > sixAMToday.getTime() && lastClaim < sixAMToday.getTime() && lock.amount > 0 && now < lp.endTime) {
+            const totalDays = Math.ceil((lp.endTime - lp.startTime) / (1000 * 60 * 60 * 24)) || 1;
+            const dailyRelease = parseFloat(lp.poolSize) / totalDays;
+            const userShare = (lock.amount / lp.globalLocked) * dailyRelease;
+
+            const rewardSym = lp.tokenSymbol.toLowerCase();
+            const currentRewardBal = parseFloat(userData[rewardSym + '_balance']) || 0;
+
+            updates[`users/${userData.uid}/${rewardSym}_balance`] = f8(currentRewardBal + userShare);
+            updates[`users/${userData.uid}/launch_locks/${lpId}/lastRewardTime`] = now;
+            
+            const rid = "REWARD_" + Date.now();
+            updates[`users/${userData.uid}/history/${rid}`] = {
+                method: 'LP Reward', coin: lp.tokenSymbol, amount: f8(userShare), timestamp: now, status: 'success'
+            };
+            hasChanges = true;
+        }
+    }
+
+    if(hasChanges) await db.ref().update(updates);
 }
 
 function renderLaunchpad() {
@@ -142,17 +185,15 @@ function renderLaunchpad() {
         const now = Date.now();
         const isEnded = now > lp.endTime;
         
-        // গ্লোবাল রিওয়ার্ড ক্যালকুলেশন (২৪ ঘণ্টার গড়)
         const totalDays = Math.ceil((lp.endTime - lp.startTime) / (1000 * 60 * 60 * 24)) || 1;
         const dailyRelease = parseFloat(lp.poolSize) / totalDays;
-        const globalLocked = parseFloat(lp.globalLocked) || 0;
-        const ratioPerCoin = globalLocked > 0 ? (dailyRelease / globalLocked) : 0;
+        const ratioPerCoin = lp.globalLocked > 0 ? (dailyRelease / lp.globalLocked) : 0;
 
         html += `
             <div class="lp-item">
                 <div class="lp-desc">${lp.description}</div>
                 <div class="lp-main-row">
-                    <img src="${lp.logoPath}" class="lp-logo">
+                    <img src="${lp.logoPath}" class="lp-logo" onerror="this.src='assets/logos/generic.png'">
                     <div class="lp-info">
                         <h2>${lp.tokenName} <span class="lp-badge">${lp.tokenSymbol}</span></h2>
                         <div class="timer-box">
@@ -163,27 +204,18 @@ function renderLaunchpad() {
                 </div>
 
                 <div class="global-ratio-tag">
-                    <span>Est. Reward (Per 1 ${lp.lockToken} / 24h)</span>
+                    <span>Daily Yield Per 1 ${lp.lockToken}</span>
                     <b>${f8(ratioPerCoin)} ${lp.tokenSymbol}</b>
                 </div>
 
                 <div class="lp-stats-grid">
-                    <div class="stat-box">
-                        <span class="stat-label">Launch Pool</span>
-                        <span class="stat-val">${lp.poolSize} ${lp.tokenSymbol}</span>
-                    </div>
-                    <div class="stat-box">
-                        <span class="stat-label">My Locked</span>
-                        <span class="stat-val">${f8(userLock)}</span>
-                    </div>
-                    <div class="stat-box">
-                        <span class="stat-label">Global Locked</span>
-                        <span class="stat-val">${f8(lp.globalLocked)}</span>
-                    </div>
+                    <div class="stat-box"><span class="stat-label">Pool Size</span><span class="stat-val">${lp.poolSize}</span></div>
+                    <div class="stat-box"><span class="stat-label">My Locked</span><span class="stat-val">${f8(userLock)}</span></div>
+                    <div class="stat-box"><span class="stat-label">Global Lock</span><span class="stat-val">${f8(lp.globalLocked)}</span></div>
                 </div>
 
                 <button class="btn-lock" ${isEnded?'disabled':''} onclick="openLockPop('${lp.id}')">
-                    ${isEnded ? 'OFFERING CLOSED' : 'PARTICIPATE NOW'}
+                    ${isEnded ? 'OFFERING CLOSED' : 'LOCK '+lp.lockToken+' TO EARN'}
                 </button>
             </div>
         `;
@@ -193,7 +225,6 @@ function renderLaunchpad() {
 
 function calcTime(target) {
     const diff = target - Date.now();
-    if(diff <= 0) return "0d 0h";
     const days = Math.floor(diff / (1000 * 60 * 60 * 24));
     const hours = Math.floor((diff / (1000 * 60 * 60)) % 24);
     return `${days}d ${hours}h`;
@@ -201,77 +232,68 @@ function calcTime(target) {
 
 function openLockPop(id) {
     const lp = launchpads.find(x => x.id === id);
-    const balance = userData[lp.lockToken.toLowerCase() + '_balance'] || 0;
+    const balance = parseFloat(userData[lp.lockToken.toLowerCase() + '_balance']) || 0;
     const content = document.getElementById('lpModal');
 
     content.innerHTML = `
         <h2 style="font-family:var(--font-mont); color:var(--primary); font-size:20px">Lock ${lp.lockToken}</h2>
-        <p style="font-size:11px; color:var(--text-sec); margin:8px 0">Available: ${f8(balance)} ${lp.lockToken}</p>
+        <p style="font-size:11px; color:var(--text-sec); margin:8px 0">Wallet Balance: ${f8(balance)} ${lp.lockToken}</p>
         
         <div class="input-group">
-            <input type="number" id="lockAmt" placeholder="0.00" oninput="calcProportion('${id}')">
-            <span class="max-tag" onclick="document.getElementById('lockAmt').value='${balance}'; calcProportion('${id}')">MAX</span>
+            <input type="number" id="lockAmt" placeholder="0.00">
+            <span class="max-tag" onclick="document.getElementById('lockAmt').value='${balance}'">MAX</span>
         </div>
 
-        <div class="prop-box">
-            <span>Your Daily Share:</span>
-            <span class="prop-val" id="propDisplay">0.0000 ${lp.tokenSymbol}</span>
-        </div>
-
-        <button class="btn-lock" style="margin-top:0" onclick="executeLock('${id}')">CONFIRM LOCK</button>
-        <button class="btn-cancel" onclick="closePop()">Cancel participation</button>
+        <button class="btn-lock" style="margin-top:10px" onclick="executeLock('${id}')">CONFIRM & LOCK</button>
+        <button class="btn-cancel" onclick="closePop()">Close</button>
     `;
     document.getElementById('lpOverlay').style.display = 'flex';
-}
-
-function calcProportion(id) {
-    const lp = launchpads.find(x => x.id === id);
-    const amt = parseFloat(document.getElementById('lockAmt').value) || 0;
-    const totalDays = Math.ceil((lp.endTime - lp.startTime) / (1000 * 60 * 60 * 24)) || 1;
-    const dailyRelease = parseFloat(lp.poolSize) / totalDays;
-    const global = (lp.globalLocked || 0) + amt;
-    
-    let estimation = global > 0 ? (amt / global) * dailyRelease : 0;
-    document.getElementById('propDisplay').innerText = f8(estimation) + " " + lp.tokenSymbol;
 }
 
 async function executeLock(id) {
     const lp = launchpads.find(x => x.id === id);
     const amt = parseFloat(document.getElementById('lockAmt').value);
     const sym = lp.lockToken.toLowerCase();
-    const balance = userData[sym + '_balance'] || 0;
+    const balance = parseFloat(userData[sym + '_balance']) || 0;
 
-    if(!amt || amt <= 0 || amt > balance) return showToast("Invalid amount or balance", "error");
+    if(!amt || amt <= 0 || amt > balance) return showToast("Check amount or balance", "error");
 
-    const tid = "LP_LOCK_" + Date.now();
-    const up = {};
-    up[`users/${auth.currentUser.uid}/${sym}_balance`] = parseFloat((balance - amt).toFixed(8));
+    const tid = "LP_STAKE_" + Date.now();
+    const updates = {};
     
+    // ওয়ালেট থেকে ব্যালেন্স কমানো
+    updates[`users/${userData.uid}/${sym}_balance`] = f8(balance - amt);
+    
+    // লঞ্চপ্যাড রেকর্ড আপডেট
     const currentLocked = (userData.launch_locks && userData.launch_locks[id]) ? userData.launch_locks[id].amount : 0;
-    up[`users/${auth.currentUser.uid}/launch_locks/${id}`] = {
-        amount: parseFloat((currentLocked + amt).toFixed(8)),
+    updates[`users/${userData.uid}/launch_locks/${id}`] = {
+        amount: f8(currentLocked + amt),
         lockToken: lp.lockToken,
-        rewardToken: lp.tokenSymbol,
-        unlockTime: lp.endTime,
-        startTime: Date.now()
+        startTime: Date.now(),
+        lastRewardTime: Date.now()
     };
     
-    up[`launchpad_list/${id}/globalLocked`] = (lp.globalLocked || 0) + amt;
-    up[`users/${auth.currentUser.uid}/history/${tid}`] = {
-        method: 'Launchpad Lock', coin: lp.lockToken, amount: f8(amt), timestamp: Date.now(), status: 'success'
+    // গ্লোবাল লক বাড়ানো
+    updates[`launchpad_list/${id}/globalLocked`] = f8((lp.globalLocked || 0) + amt);
+    
+    // ট্রানজ্যাকশন হিস্টোরি
+    updates[`users/${userData.uid}/history/${tid}`] = {
+        method: 'LP Subscription', coin: lp.lockToken, amount: "-" + f8(amt), timestamp: Date.now(), status: 'success'
     };
 
-    await db.ref().update(up);
-    showToast("Assets locked successfully!", "success");
-    closePop();
+    try {
+        await db.ref().update(updates);
+        showToast("Successfully Participated!", "success");
+        closePop();
+    } catch(e) { showToast("Error!", "error"); }
 }
 
 function showToast(msg, type) {
     const box = document.getElementById('toast-box');
     const t = document.createElement('div');
     t.className = `g-toast`;
-    t.style.borderLeftColor = type === 'success' ? 'var(--up)' : 'var(--down)';
-    t.innerHTML = `<i class="fas ${type==='success'?'fa-check-circle':'fa-exclamation-circle'}" style="color:${type==='success'?'var(--up)':'var(--down)'}"></i><span>${msg}</span>`;
+    if(type === "error") t.style.borderLeftColor = "var(--down)";
+    t.innerHTML = `<i class="fas ${type==='success'?'fa-check-circle':'fa-exclamation-triangle'}"></i><span>${msg}</span>`;
     box.appendChild(t);
     setTimeout(() => { t.style.opacity = '0'; setTimeout(()=>t.remove(), 500); }, 3000);
 }
