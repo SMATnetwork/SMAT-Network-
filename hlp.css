@@ -168,7 +168,7 @@ body {
 .popup-header-theme { padding: 20px; background: #ffffff; display: flex; align-items: center; font-size: 18px; font-weight: bold; border-bottom: 1px solid #eee; }
 .popup-header-theme i.close-btn { margin-right: 20px; font-size: 20px; cursor: pointer; color: var(--text-main); }
 .popup-container-theme { padding: 10px 20px 20px 20px; overflow-y: auto; flex: 1; }
-.section-title-theme { font-size: 13px; padding:13px; color: var(--text-main); margin: 25px 0 15px 0; text-transform: uppercase; letter-spacing: 1px; text-align:center; }
+.section-title-theme { font-size: 13px; padding:13px; color: var(--text-main); margin: 25px 0 15px 0; text-transform: uppercase; letter-spacing: 1px;  }
 .menu-grid-theme { display: grid; grid-template-columns: repeat(4, 1fr); gap: 20px 10px; text-align: center; }
 .menu-item-theme {text-decoration:none; display: flex; flex-direction: column; align-items: center; color: var(--text-main); }
 .menu-item-theme i {
