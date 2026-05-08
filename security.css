@@ -1,0 +1,26 @@
+/* security.css */
+
+/* কন্টেন্ট সিলেকশন এবং কপি বন্ধ */
+body {
+    -webkit-user-select: none; /* Safari */
+    -ms-user-select: none; /* IE 10+ */
+    user-select: none; /* Standard */
+    -webkit-touch-callout: none; /* iOS Safari মেনু বন্ধ */
+}
+
+/* ইমেজের ওপর কন্ট্রোল */
+img {
+    -webkit-user-drag: none;
+    -khtml-user-drag: none;
+    -moz-user-drag: none;
+    -o-user-drag: none;
+    user-drag: none;
+    pointer-events: none; /* ইমেজে ক্লিক বা রাইট ক্লিক মেনু আসবে না */
+}
+
+/* ইনপুট বক্স এবং টেক্সট এরিয়াতে সিলেকশন এলাউ করা (যেন ইউজার লিখতে পারে) */
+input, textarea {
+    -webkit-user-select: text;
+    -ms-user-select: text;
+    user-select: text;
+}
