@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>SMAT | Staking</title>
+    <title>SMATBIT | Staking Hub</title>
     <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-auth-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-database-compat.js"></script>
@@ -16,73 +16,89 @@
             --border: rgba(255, 255, 255, 0.08);
             --font-bold: 'Montserrat', sans-serif;
         }
-        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Inter', sans-serif; font-weight: 900; }
-        body { background: var(--bg); color: white; padding-bottom: 100px; }
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Inter', sans-serif; font-weight: 900; -webkit-tap-highlight-color: transparent; }
+        body { background: var(--bg); color: white; padding-bottom: 100px; overflow-x: hidden; }
 
-        .header { padding: 30px 20px; background: linear-gradient(180deg, rgba(240, 185, 11, 0.15) 0%, var(--bg) 100%); text-align: center; }
-        .header h1 { font-family: var(--font-bold); color: var(--primary); font-size: 28px; }
+        /* Header Section */
+        .header { padding: 40px 20px 20px; text-align: center; background: linear-gradient(180deg, rgba(240, 185, 11, 0.1) 0%, var(--bg) 100%); }
+        .header h1 { font-family: var(--font-bold); color: var(--primary); font-size: 26px; text-transform: uppercase; }
 
-        .staking-container { padding: 15px; }
+        .container { padding: 0 15px; }
+
+        /* Global & Active Info */
+        .stats-bar { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 20px; }
+        .stat-card { background: var(--card); padding: 15px; border-radius: 12px; border: 1px solid var(--border); text-align: center; }
+        .stat-card small { font-size: 10px; color: var(--text-sec); display: block; margin-bottom: 5px; }
+        .stat-card b { font-size: 14px; color: var(--primary); }
+
+        /* Staking Pool Cards */
+        .stake-card { background: var(--card); border-radius: 20px; padding: 20px; margin-bottom: 15px; border: 1px solid var(--border); position: relative; overflow: hidden; }
+        .coin-header { display: flex; align-items: center; gap: 12px; margin-bottom: 15px; }
+        .coin-logo { width: 40px; height: 40px; border-radius: 50%; border: 2px solid var(--primary); }
+        .apy-tag { margin-left: auto; background: rgba(14, 203, 129, 0.15); color: var(--up); padding: 5px 10px; border-radius: 8px; font-size: 12px; }
+
+        /* Progress Bar for Pool Limit */
+        .pool-progress { height: 6px; background: #181a20; border-radius: 10px; margin: 10px 0; overflow: hidden; }
+        .progress-fill { height: 100%; background: var(--primary); width: 0%; transition: 0.5s; }
+
+        .action-btns { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 10px; }
+        .btn-opt { background: #181a20; border: 1px solid var(--border); padding: 12px; border-radius: 12px; color: white; cursor: pointer; font-size: 12px; text-align: center; }
         
-        /* Dynamic Coin Card */
-        .stake-card {
-            background: var(--card); border: 1px solid var(--border); border-radius: 20px;
-            padding: 20px; margin-bottom: 15px; transition: 0.3s;
-        }
-        .coin-info { display: flex; align-items: center; gap: 12px; margin-bottom: 15px; }
-        .coin-logo { width: 45px; height: 45px; border-radius: 50%; border: 2px solid var(--primary); }
+        /* Modal Popup */
+        .overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.95); display: none; align-items: center; justify-content: center; z-index: 9999; padding: 20px; }
+        .modal { background: #1e2329; width: 100%; max-width: 400px; border-radius: 24px; padding: 25px; border: 1px solid var(--border); }
         
-        .apy-badge { background: rgba(14, 203, 129, 0.1); color: var(--up); padding: 5px 12px; border-radius: 8px; font-size: 12px; }
+        .input-box { background: #0b0e11; border-radius: 12px; padding: 15px; margin-top: 15px; border: 1px solid var(--border); position: relative; }
+        .input-box input { width: 100%; background: transparent; border: none; color: white; font-size: 20px; outline: none; padding-right: 50px; }
+        .max-btn { position: absolute; right: 15px; top: 50%; transform: translateY(-50%); color: var(--primary); font-size: 12px; cursor: pointer; }
 
-        .tabs { display: flex; gap: 10px; margin-top: 15px; }
-        .tab { 
-            flex: 1; padding: 10px; text-align: center; border-radius: 10px; 
-            background: #181a20; border: 1px solid var(--border); font-size: 11px; cursor: pointer;
-        }
-        .tab.active { border-color: var(--primary); color: var(--primary); }
+        .duration-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; margin-top: 15px; }
+        .dur-tab { background: #0b0e11; border: 1px solid var(--border); padding: 8px; border-radius: 8px; text-align: center; font-size: 11px; cursor: pointer; }
+        .dur-tab.active { border-color: var(--primary); color: var(--primary); }
 
-        .input-group { background: #181a20; border-radius: 12px; padding: 12px; margin-top: 15px; border: 1px solid var(--border); }
-        .input-group input { width: 100%; background: transparent; border: none; color: white; font-size: 18px; outline: none; }
-        
-        .calc-box { 
-            margin-top: 15px; padding: 15px; border-radius: 12px; 
-            background: rgba(255,255,255,0.03); font-size: 12px;
-        }
-        .calc-row { display: flex; justify-content: space-between; margin-bottom: 5px; color: var(--text-sec); }
+        .calc-info { margin-top: 15px; background: rgba(255,255,255,0.03); padding: 12px; border-radius: 12px; font-size: 11px; color: var(--text-sec); }
+        .calc-row { display: flex; justify-content: space-between; margin-bottom: 5px; }
+        .btn-confirm { width: 100%; background: var(--primary); color: black; border: none; padding: 16px; border-radius: 16px; margin-top: 20px; cursor: pointer; font-size: 14px; }
 
-        .btn-stake { 
-            width: 100%; background: var(--primary); color: black; border: none; 
-            padding: 15px; border-radius: 15px; margin-top: 15px; cursor: pointer;
-        }
+        /* My Stakes List */
+        .my-stakes-list { margin-top: 30px; }
+        .active-stake-item { background: #181a20; padding: 15px; border-radius: 15px; margin-bottom: 10px; border-left: 4px solid var(--up); }
 
-        /* Responsive Overlay */
-        .overlay { 
-            position: fixed; top: 0; left: 0; width: 100%; height: 100%; 
-            background: rgba(0,0,0,0.9); display: none; align-items: center; justify-content: center; z-index: 9999; 
-        }
-        .modal { background: var(--card); width: 90%; max-width: 400px; border-radius: 25px; padding: 25px; border: 1px solid var(--border); }
-
-        .footer {position: fixed; bottom: 0; width: 100%; height: 75px; background: #0b0e11; display: flex; justify-content: space-around; align-items: center; border-top: 1px solid var(--border);}
-        .f-nav {text-decoration: none; color: var(--text-sec); text-align: center; font-size: 12px; flex: 1; display: flex; flex-direction: column; gap: 4px; }
+        .footer {position: fixed; bottom: 0; width: 100%; height: 75px; background: #0b0e11; display: flex; justify-content: space-around; align-items: center; z-index: 4000; border-top: 1px solid var(--border); }
+        .f-nav {text-decoration: none; color: var(--text-sec); text-align: center; font-size: 12px; flex: 1; display: flex; flex-direction: column; align-items: center; gap: 4px; }
         .f-nav.active { color: var(--primary); }
     </style>
 </head>
 <body>
 
     <div class="header">
-        <h1>STAKING HUB</h1>
-        <p style="font-size: 12px; color: var(--text-sec);">Stake Assets, Earn Passive Rewards</p>
+        <h1>Staking Hub</h1>
+        <p style="font-size: 11px; color: var(--text-sec); margin-top: 5px;">Earn Passive Income with SMATBIT</p>
     </div>
 
-    <div class="staking-container" id="stakingPools">
-        <div style="text-align: center; padding: 50px; color: var(--text-sec);">
-            <i class="fas fa-spinner fa-spin" style="font-size: 30px;"></i>
-            <p>Loading Pools...</p>
+    <div class="container">
+        <div class="stats-bar">
+            <div class="stat-card">
+                <small>Global Staked</small>
+                <b id="globalTotal">0.00000000</b>
+            </div>
+            <div class="stat-card">
+                <small>My Total Yield</small>
+                <b id="myTotalYield">0.00000000</b>
+            </div>
+        </div>
+
+        <div id="stakingPools">
+            </div>
+
+        <div class="my-stakes-list" id="myActiveStakes">
+            <h3 style="margin-bottom: 15px; font-size: 16px; font-family: var(--font-bold);">Active Stakes</h3>
+            <div id="activeList"></div>
         </div>
     </div>
 
     <div class="overlay" id="stakeOverlay">
-        <div class="modal" id="modalContent"></div>
+        <div class="modal" id="modalBody"></div>
     </div>
 
     <footer class="footer">
@@ -93,169 +109,239 @@
     </footer>
 
 <script>
-    // Firebase Config (Same as your wallet)
-    const firebaseConfig = { apiKey: "AIzaSyAMxtJedkehhxJRMPZLjhpKHqneHEWsGlE", authDomain: "smat-exchange.firebaseapp.com", projectId: "smat-exchange", databaseURL: "https://smat-exchange-default-rtdb.firebaseio.com" };
-    if (!firebase.apps.length) firebase.initializeApp(firebaseConfig);
-    const db = firebase.database();
-    const auth = firebase.auth();
+// --- FIREBASE INITIALIZATION ---
+const firebaseConfig = { apiKey: "AIzaSyAMxtJedkehhxJRMPZLjhpKHqneHEWsGlE", authDomain: "smat-exchange.firebaseapp.com", projectId: "smat-exchange", databaseURL: "https://smat-exchange-default-rtdb.firebaseio.com" };
+if (!firebase.apps.length) firebase.initializeApp(firebaseConfig);
+const db = firebase.database();
+const auth = firebase.auth();
 
-    let userData = {};
-    let stakingSettings = {}; // Admin controlled
+let userData = {}, stakingSettings = {}, liveGlobalStaked = 0;
 
-    function init() {
-        auth.onAuthStateChanged(user => {
-            if (user) {
-                // ১. স্ট্যাকিং সেটিং আনা (এডমিন প্যানেল থেকে)
-                db.ref('staking_settings').on('value', snap => {
-                    stakingSettings = snap.val() || {};
-                    loadPools();
-                });
-                // ২. ইউজার ডাটা আনা
-                db.ref('users/' + user.uid).on('value', snap => {
-                    userData = snap.val() || {};
-                });
-            } else { location.href = "logIn.html"; }
+// --- 8 DECIMAL FORMATTER ---
+function f8(num) {
+    if(!num) return "0.00000000";
+    return parseFloat(num).toFixed(8);
+}
+
+function init() {
+    auth.onAuthStateChanged(user => {
+        if (user) {
+            db.ref('staking_settings').on('value', snap => {
+                stakingSettings = snap.val() || {};
+                renderPools();
+            });
+            db.ref('users/' + user.uid).on('value', snap => {
+                userData = snap.val() || {};
+                renderMyStakes();
+            });
+        } else { location.href = "logIn.html"; }
+    });
+}
+
+function renderPools() {
+    const cont = document.getElementById('stakingPools');
+    let html = "";
+    liveGlobalStaked = 0;
+
+    Object.keys(stakingSettings).forEach(key => {
+        const c = stakingSettings[key];
+        const staked = c.totalStaked || 0;
+        const max = c.maxPool || 1000000;
+        const progress = (staked / max) * 100;
+        liveGlobalStaked += staked;
+
+        // Dynamic APY (Pool বাড়লে APY কমে)
+        const currentAPY = (c.startingAPY * (1 - (staked / max))).toFixed(2);
+
+        html += `
+            <div class="stake-card">
+                <div class="coin-header">
+                    <img src="${c.logopath}" class="coin-logo" onerror="this.src='assets/logos/generic.png'">
+                    <div>
+                        <p style="font-size:14px;">${c.name}</p>
+                        <small style="color:var(--text-sec)">${c.network}</small>
+                    </div>
+                    <div class="apy-tag">${currentAPY}% APY</div>
+                </div>
+                <div style="display:flex; justify-content:space-between; font-size:10px; color:var(--text-sec)">
+                    <span>Pool Filled</span>
+                    <span>${f8(staked)} / ${f8(max)}</span>
+                </div>
+                <div class="pool-progress"><div class="progress-fill" style="width:${progress}%"></div></div>
+                <div class="action-btns">
+                    <div class="btn-opt" onclick="openModal('${key}', 'flexible')">FLEXIBLE</div>
+                    <div class="btn-opt" onclick="openModal('${key}', 'fixed')" style="border-color:var(--primary); color:var(--primary)">FIXED</div>
+                </div>
+            </div>
+        `;
+    });
+    cont.innerHTML = html;
+    document.getElementById('globalTotal').innerText = f8(liveGlobalStaked);
+}
+
+function openModal(key, type) {
+    const c = stakingSettings[key];
+    const s = c.symbol.toLowerCase();
+    const bal = userData[s + '_balance'] || 0;
+    
+    document.getElementById('modalBody').innerHTML = `
+        <div style="display:flex; justify-content:space-between; align-items:center;">
+            <h3 style="font-family:var(--font-bold)">STAKE ${c.symbol}</h3>
+            <i class="fas fa-times" onclick="closeModal()" style="color:var(--text-sec)"></i>
+        </div>
+        <p style="font-size:11px; color:var(--text-sec); margin-top:10px;">Balance: ${f8(bal)} ${c.symbol}</p>
+        
+        <div class="input-box">
+            <input type="number" id="stkAmt" placeholder="0.00" oninput="updateCalc('${key}', '${type}')">
+            <span class="max-btn" onclick="setMax('${bal}', '${key}', '${type}')">MAX</span>
+        </div>
+
+        ${type === 'fixed' ? `
+            <div class="duration-grid" id="durGrid">
+                <div class="dur-tab active" data-d="15" data-m="1.1">15D</div>
+                <div class="dur-tab" data-d="30" data-m="1.2">30D</div>
+                <div class="dur-tab" data-d="90" data-m="1.5">90D</div>
+                <div class="dur-tab" data-d="180" data-m="2.0">180D</div>
+            </div>
+        ` : `<p style="font-size:11px; color:var(--up); margin-top:15px;"><i class="fas fa-check-circle"></i> Flexible: Unstake any time</p>`}
+
+        <div class="calc-info">
+            <div class="calc-row"><span>Estimated APY</span><b id="estApy" style="color:var(--up)">0.00%</b></div>
+            <div class="calc-row"><span>Daily Earnings</span><b id="dailyEarn" style="color:white">0.00000000</b></div>
+        </div>
+
+        <button class="btn-confirm" id="confirmBtn" onclick="executeStake('${key}', '${type}')">STAKE NOW</button>
+    `;
+    
+    document.getElementById('stakeOverlay').style.display = 'flex';
+    if(type === 'fixed') {
+        document.querySelectorAll('.dur-tab').forEach(t => t.onclick = () => {
+            document.querySelectorAll('.dur-tab').forEach(r => r.classList.remove('active'));
+            t.classList.add('active');
+            updateCalc(key, type);
         });
     }
+    updateCalc(key, type);
+}
 
-    function loadPools() {
-        const container = document.getElementById('stakingPools');
-        let html = "";
+function updateCalc(key, type) {
+    const c = stakingSettings[key];
+    const amt = parseFloat(document.getElementById('stkAmt').value) || 0;
+    let apy = c.startingAPY * (1 - ((c.totalStaked || 0) / (c.maxPool || 1000000)));
+    
+    if(type === 'fixed') {
+        const multiplier = parseFloat(document.querySelector('.dur-tab.active').dataset.m);
+        apy = apy * multiplier; // Fixed এ মেয়াদ বাড়লে APY বাড়বে
+    }
 
-        Object.keys(stakingSettings).forEach(key => {
-            const coin = stakingSettings[key];
-            const sym = coin.symbol.toLowerCase();
-            
-            // Dynamic APY Calculation (Total Pool জমা বাড়লে APY কমে)
-            const totalStaked = coin.totalStaked || 0;
-            const maxPool = coin.maxPool || 1000000;
-            const currentAPY = (coin.startingAPY * (1 - (totalStaked / maxPool))).toFixed(2);
+    const daily = (amt * (apy / 100)) / 365;
+    document.getElementById('estApy').innerText = apy.toFixed(2) + "%";
+    document.getElementById('dailyEarn').innerText = f8(daily);
+}
 
+function setMax(bal, key, type) {
+    document.getElementById('stkAmt').value = bal;
+    updateCalc(key, type);
+}
+
+async function executeStake(key, type) {
+    const c = stakingSettings[key];
+    const amt = parseFloat(document.getElementById('stkAmt').value);
+    const s = c.symbol.toLowerCase();
+    const bal = userData[s + '_balance'] || 0;
+    const btn = document.getElementById('confirmBtn');
+
+    if(!amt || amt <= 0 || amt > bal) return alert("Invalid amount!");
+
+    btn.disabled = true;
+    btn.innerText = "PROCESSING...";
+
+    const txId = db.ref(`users/${auth.currentUser.uid}/stakes`).push().key;
+    const sSym = 's' + s; // s শব্দ যুক্ত করা (যেমন sbnb)
+    const apy = parseFloat(document.getElementById('estApy').innerText);
+    const ts = Date.now();
+
+    const updates = {};
+    // ১. মেইন ব্যালেন্স থেকে কাটা
+    updates[`users/${auth.currentUser.uid}/${s}_balance`] = parseFloat((bal - amt).toFixed(8));
+    // ২. স্ট্যাকিং এসেটে যোগ করা
+    updates[`users/${auth.currentUser.uid}/${sSym}_balance`] = parseFloat(((userData[sSym + '_balance'] || 0) + amt).toFixed(8));
+    // ৩. স্টেক ডাটা সেভ
+    updates[`users/${auth.currentUser.uid}/stakes/${txId}`] = {
+        coin: c.symbol, amount: amt, type: type, apy: apy, startTime: ts, status: 'active',
+        duration: type === 'fixed' ? parseInt(document.querySelector('.dur-tab.active').dataset.d) : 0
+    };
+    // ৪. গ্লোবাল পুল আপডেট
+    updates[`staking_settings/${key}/totalStaked`] = (c.totalStaked || 0) + amt;
+    // ৫. ওয়ালেট হিস্ট্রি (OUTGOING)
+    updates[`users/${auth.currentUser.uid}/history/${txId}`] = {
+        method: 'Stake Out', coin: c.symbol, amount: f8(amt), status: 'success', 
+        timestamp: ts, address: 'Staking Pool', hash: 'STK-'+txId.substring(1,8).toUpperCase()
+    };
+
+    await db.ref().update(updates);
+    alert("Staking Successful!");
+    closeModal();
+}
+
+function renderMyStakes() {
+    const cont = document.getElementById('activeList');
+    const myStakes = userData.stakes;
+    let html = "";
+    let totalYield = 0;
+
+    if(!myStakes) {
+        cont.innerHTML = "<p style='text-align:center; color:var(--text-sec); font-size:12px;'>No active stakes found.</p>";
+        return;
+    }
+
+    Object.keys(myStakes).forEach(id => {
+        const stk = myStakes[id];
+        if(stk.status === 'active') {
             html += `
-                <div class="stake-card">
-                    <div class="coin-info">
-                        <img src="${coin.logopath}" class="coin-logo" onerror="this.src='assets/logos/generic.png'">
-                        <div style="flex:1">
-                            <h4>${coin.name} (${coin.symbol})</h4>
-                            <p style="font-size:10px; color:var(--text-sec)">Network: ${coin.network}</p>
-                        </div>
-                        <div class="apy-badge">Up to ${currentAPY}% APY</div>
+                <div class="active-stake-item">
+                    <div style="display:flex; justify-content:space-between; align-items:center;">
+                        <b>${f8(stk.amount)} ${stk.coin}</b>
+                        <span style="color:var(--up); font-size:12px;">+${stk.apy}% APY</span>
                     </div>
-                    
-                    <div class="tabs">
-                        <div class="tab" onclick="openStakeModal('${key}', 'flexible')">Flexible</div>
-                        <div class="tab" onclick="openStakeModal('${key}', 'fixed')">Fixed (High Yield)</div>
+                    <div style="display:flex; justify-content:space-between; align-items:center; margin-top:8px;">
+                        <small style="color:var(--text-sec)">Type: ${stk.type.toUpperCase()} (${stk.duration}D)</small>
+                        <button onclick="unstake('${id}')" style="background:var(--down); color:white; border:none; padding:4px 10px; border-radius:5px; font-size:10px;">UNSTAKE</button>
                     </div>
                 </div>
             `;
-        });
-        container.innerHTML = html || "<p style='text-align:center;'>No Staking Pools Available.</p>";
-    }
-
-    function openStakeModal(coinKey, type) {
-        const coin = stakingSettings[coinKey];
-        const userBal = userData[coin.symbol.toLowerCase() + '_balance'] || 0;
-        const overlay = document.getElementById('stakeOverlay');
-        
-        let optionsHtml = type === 'fixed' ? `
-            <div class="tabs" id="durationTabs">
-                <div class="tab active" data-days="15">15D</div>
-                <div class="tab" data-days="30">30D</div>
-                <div class="tab" data-days="90">90D</div>
-                <div class="tab" data-days="180">180D</div>
-            </div>` : `<p style="font-size:11px; color:var(--up); margin-top:10px;">Flexible: Withdraw anytime</p>`;
-
-        document.getElementById('modalContent').innerHTML = `
-            <div style="display:flex; justify-content:space-between; margin-bottom:20px;">
-                <h3>Stake ${coin.symbol}</h3>
-                <i class="fas fa-times" onclick="closeModal()"></i>
-            </div>
-            <p style="font-size:12px; color:var(--text-sec)">Balance: ${userBal} ${coin.symbol}</p>
-            
-            <div class="input-group">
-                <input type="number" id="stakeAmount" placeholder="0.00" oninput="calculateReward('${coinKey}', '${type}')">
-            </div>
-
-            ${optionsHtml}
-
-            <div class="calc-box">
-                <div class="calc-row"><span>Daily Profit</span><span id="dailyEarn">0.00</span></div>
-                <div class="calc-row"><span>Estimated Total</span><span id="totalEarn">0.00</span></div>
-            </div>
-
-            <button class="btn-stake" onclick="processStaking('${coinKey}', '${type}')">CONFIRM STAKE</button>
-        `;
-        overlay.style.display = 'flex';
-
-        // Fixed Duration Click Listener
-        if(type === 'fixed'){
-            document.querySelectorAll('#durationTabs .tab').forEach(t => {
-                t.onclick = function() {
-                    document.querySelectorAll('#durationTabs .tab').forEach(x => x.classList.remove('active'));
-                    this.classList.add('active');
-                    calculateReward(coinKey, type);
-                }
-            });
         }
-    }
+    });
+    cont.innerHTML = html;
+}
 
-    function calculateReward(coinKey, type) {
-        const coin = stakingSettings[coinKey];
-        const amt = parseFloat(document.getElementById('stakeAmount').value) || 0;
-        let apy = coin.startingAPY;
-        
-        // Fixed bonus
-        if(type === 'fixed') {
-            const days = parseInt(document.querySelector('#durationTabs .tab.active').dataset.days);
-            apy += (days / 10); // বেশি দিন থাকলে কিছুটা বেশি মুনাফা
-        }
+async function unstake(id) {
+    if(!confirm("Are you sure you want to unstake?")) return;
+    
+    const stk = userData.stakes[id];
+    const s = stk.coin.toLowerCase();
+    const sSym = 's' + s;
+    const ts = Date.now();
 
-        const daily = (amt * (apy / 100)) / 365;
-        document.getElementById('dailyEarn').innerText = daily.toFixed(6) + " " + coin.symbol;
-        document.getElementById('totalEarn').innerText = (daily * (type === 'fixed' ? parseInt(document.querySelector('#durationTabs .tab.active').dataset.days) : 30)).toFixed(4);
-    }
+    const updates = {};
+    updates[`users/${auth.currentUser.uid}/${s}_balance`] = parseFloat(((userData[s + '_balance'] || 0) + stk.amount).toFixed(8));
+    updates[`users/${auth.currentUser.uid}/${sSym}_balance`] = parseFloat(((userData[sSym + '_balance'] || 0) - stk.amount).toFixed(8));
+    updates[`users/${auth.currentUser.uid}/stakes/${id}/status`] = 'closed';
+    // গ্লোবাল পুল থেকে কমানো
+    const poolKey = Object.keys(stakingSettings).find(k => stakingSettings[k].symbol === stk.coin);
+    updates[`staking_settings/${poolKey}/totalStaked`] = Math.max(0, (stakingSettings[poolKey].totalStaked || 0) - stk.amount);
+    // ওয়ালেট হিস্ট্রি (INCOMING)
+    updates[`users/${auth.currentUser.uid}/history/${id}_un`] = {
+        method: 'Unstake In', coin: stk.coin, amount: f8(stk.amount), status: 'success', 
+        timestamp: ts, address: 'From Pool', hash: 'USTK-'+id.substring(1,8).toUpperCase()
+    };
 
-    async function processStaking(coinKey, type) {
-        const coin = stakingSettings[coinKey];
-        const amt = parseFloat(document.getElementById('stakeAmount').value);
-        const userBal = userData[coin.symbol.toLowerCase() + '_balance'] || 0;
-        
-        if(!amt || amt <= 0 || amt > userBal) {
-            alert("Invalid amount or insufficient balance!");
-            return;
-        }
+    await db.ref().update(updates);
+    alert("Unstaked successfully!");
+}
 
-        const sSym = 's' + coin.symbol.toLowerCase(); // আপনার শর্ত: s শব্দ যুক্ত হবে
-        const days = type === 'fixed' ? parseInt(document.querySelector('#durationTabs .tab.active').dataset.days) : 0;
-        
-        const stakeData = {
-            coin: coin.symbol,
-            amount: amt,
-            type: type,
-            duration: days,
-            startTime: Date.now(),
-            apy: coin.startingAPY,
-            status: 'active'
-        };
-
-        const updates = {};
-        // ১. মেইন ব্যালেন্স থেকে কাটা
-        updates[`users/${auth.currentUser.uid}/${coin.symbol.toLowerCase()}_balance`] = userBal - amt;
-        // ২. স্ট্যাকিং ব্যালেন্সে (sSymbol) যোগ করা
-        updates[`users/${auth.currentUser.uid}/${sSym}_balance`] = (userData[sSym + '_balance'] || 0) + amt;
-        // ৩. স্ট্যাকিং হিস্ট্রিতে সেভ করা
-        const stakeId = db.ref('users/' + auth.currentUser.uid + '/stakes').push().key;
-        updates[`users/${auth.currentUser.uid}/stakes/${stakeId}`] = stakeData;
-        // ৪. গ্লোবাল পুলে জমা দেখানো (APY কমানোর জন্য)
-        updates[`staking_settings/${coinKey}/totalStaked`] = (coin.totalStaked || 0) + amt;
-
-        await db.ref().update(updates);
-        alert("Staking Successful!");
-        closeModal();
-    }
-
-    function closeModal() { document.getElementById('stakeOverlay').style.display = 'none'; }
-    window.onload = init;
+function closeModal() { document.getElementById('stakeOverlay').style.display = 'none'; }
+window.onload = init;
 </script>
 </body>
 </html>
