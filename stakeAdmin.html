@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SmatBit Admin | Staking Control</title>
+    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-database-compat.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --bg: #0b0e11; --card: #1e2329; --primary: #f0b90b;
+            --border: rgba(255, 255, 255, 0.08); --text: #ffffff;
+        }
+        body { background: var(--bg); color: var(--text); font-family: 'Inter', sans-serif; margin: 0; padding: 20px; }
+        .container { max-width: 1000px; margin: 0 auto; }
+        h1 { color: var(--primary); font-family: 'Montserrat', sans-serif; border-bottom: 2px solid var(--primary); padding-bottom: 10px; }
+        
+        .admin-grid { display: grid; grid-template-columns: 1fr 1.5fr; gap: 20px; margin-top: 20px; }
+        .card { background: var(--card); padding: 20px; border-radius: 15px; border: 1px solid var(--border); }
+        
+        .form-group { margin-bottom: 15px; }
+        .form-group label { display: block; font-size: 12px; color: #848e9c; margin-bottom: 5px; }
+        .form-group input, .form-group select { 
+            width: 100%; background: #181a20; border: 1px solid var(--border); 
+            padding: 10px; border-radius: 8px; color: white; outline: none;
+        }
+        
+        .btn-add { 
+            width: 100%; background: var(--primary); color: #000; border: none; 
+            padding: 12px; border-radius: 10px; font-weight: bold; cursor: pointer; transition: 0.3s;
+        }
+        .btn-add:hover { opacity: 0.8; }
+
+        /* Pool List Styling */
+        .pool-item { 
+            background: #181a20; padding: 15px; border-radius: 10px; 
+            margin-bottom: 10px; display: flex; align-items: center; justify-content: space-between;
+            border-left: 4px solid var(--primary);
+        }
+        .coin-meta { display: flex; align-items: center; gap: 10px; }
+        .coin-meta img { width: 35px; height: 35px; border-radius: 50%; }
+        .btn-del { color: #f6465d; cursor: pointer; background: none; border: none; font-size: 18px; }
+
+        @media (max-width: 768px) { .admin-grid { grid-template-columns: 1fr; } }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h1><i class="fas fa-layer-group"></i> STAKING ADMIN CONTROL</h1>
+
+    <div class="admin-grid">
+        <div class="card">
+            <h3 style="margin-bottom: 20px;">List New Staking Coin</h3>
+            <div class="form-group">
+                <label>Coin Name (e.g. Bitcoin)</label>
+                <input type="text" id="cName" placeholder="Ethereum">
+            </div>
+            <div class="form-group">
+                <label>Symbol (e.g. ETH)</label>
+                <input type="text" id="cSymbol" placeholder="ETH">
+            </div>
+            <div class="form-group">
+                <label>Logo Path / URL</label>
+                <input type="text" id="cLogo" placeholder="assets/logos/eth.png">
+            </div>
+            <div class="form-group">
+                <label>Network</label>
+                <select id="cNet">
+                    <option value="BEP20">BEP20 (BSC)</option>
+                    <option value="ERC20">ERC20 (ETH)</option>
+                    <option value="Mainnet">SMATBit Mainnet</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label>Starting APY (%)</label>
+                <input type="number" id="cAPY" placeholder="12.5">
+            </div>
+            <div class="form-group">
+                <label>Max Pool Limit (For APY Reduction Logic)</label>
+                <input type="number" id="cMax" placeholder="1000000">
+            </div>
+            <button class="btn-add" onclick="addNewStaking()">LIST COIN FOR STAKING</button>
+        </div>
+
+        <div class="card">
+            <h3 style="margin-bottom: 20px;">Active Staking Pools</h3>
+            <div id="poolList">
+                <p style="text-align: center; color: #848e9c;">Loading pools...</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    // ফায়ারবেজ কনফিগারেশন
+    const firebaseConfig = { 
+        apiKey: "AIzaSyAMxtJedkehhxJRMPZLjhpKHqneHEWsGlE", 
+        authDomain: "smat-exchange.firebaseapp.com", 
+        projectId: "smat-exchange", 
+        databaseURL: "https://smat-exchange-default-rtdb.firebaseio.com" 
+    };
+    firebase.initializeApp(firebaseConfig);
+    const db = firebase.database();
+
+    // ১. নতুন স্ট্যাকিং কয়েন যোগ করা
+    async function addNewStaking() {
+        const name = document.getElementById('cName').value;
+        const sym = document.getElementById('cSymbol').value.toUpperCase();
+        const logo = document.getElementById('cLogo').value;
+        const net = document.getElementById('cNet').value;
+        const apy = parseFloat(document.getElementById('cAPY').value);
+        const max = parseFloat(document.getElementById('cMax').value);
+
+        if(!name || !sym || !apy) return alert("Please fill all fields!");
+
+        const coinKey = sym.toLowerCase();
+        const data = {
+            name: name,
+            symbol: sym,
+            logopath: logo,
+            network: net,
+            startingAPY: apy,
+            maxPool: max,
+            totalStaked: 0, // শুরুতে ০ থাকবে
+            status: 'active'
+        };
+
+        try {
+            await db.ref('staking_settings/' + coinKey).set(data);
+            alert(sym + " Staking Pool Created Successfully!");
+            document.querySelectorAll('input').forEach(i => i.value = ""); // Clear form
+        } catch (e) {
+            alert("Error: " + e.message);
+        }
+    }
+
+    // ২. অ্যাক্টিভ পুলগুলো রিয়েল-টাইমে দেখানো
+    function loadAdminPools() {
+        db.ref('staking_settings').on('value', snap => {
+            const pools = snap.val();
+            const listCont = document.getElementById('poolList');
+            let html = "";
+
+            if(!pools) {
+                listCont.innerHTML = "<p style='text-align:center;'>No active pools found.</p>";
+                return;
+            }
+
+            Object.keys(pools).forEach(key => {
+                const p = pools[key];
+                html += `
+                    <div class="pool-item">
+                        <div class="coin-meta">
+                            <img src="${p.logopath}" onerror="this.src='assets/logos/generic.png'">
+                            <div>
+                                <b style="display:block;">${p.name} (${p.symbol})</b>
+                                <small style="color:var(--primary)">APY: ${p.startingAPY}% | Pool: ${p.totalStaked}/${p.maxPool}</small>
+                            </div>
+                        </div>
+                        <button class="btn-del" onclick="deletePool('${key}')"><i class="fas fa-trash-alt"></i></button>
+                    </div>
+                `;
+            });
+            listCont.innerHTML = html;
+        });
+    }
+
+    // ৩. পুল ডিলিট করা
+    async function deletePool(key) {
+        if(confirm("Are you sure you want to remove this staking pool?")) {
+            await db.ref('staking_settings/' + key).remove();
+            alert("Pool removed.");
+        }
+    }
+
+    window.onload = loadAdminPools;
+</script>
+</body>
+</html>
