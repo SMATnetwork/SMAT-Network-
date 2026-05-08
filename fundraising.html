@@ -9,98 +9,103 @@
     <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-database-compat.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@700;900&family=Inter:wght@400;600&display=swap" rel="stylesheet">
-    
+<link rel="icon" type="image/svg+xml" href="data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNTEyIiBoZWlnaHQ9IjUxMiIgdmlld0JveD0iMCAwIDUxMiA1MTIiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+CiAgPGNpcmNsZSBjeD0iMjU2IiBjeT0iMjU2IiByPSIyNDAiIGZpbGw9IiNmM2JhMmYiLz4KICA8Y2lyY2xlIGN4PSIyNTYiIGN5PSIyNTYiIHI9IjIxNSIgc3Ryb2tlPSJ3aGl0ZSIgc3Ryb2tlLXdpZHRoPSI4IiBmaWxsPSJ0cmFuc3BhcmVudCIvPgogIDxwYXRoIGQ9Ik0xNTAgMTcwIEMxNTAgMTQ1IDE3MCAxMzUgMjAwIDEzNSBMMzQwIDEzNSBDMzU1IDEzNSAzNjUgMTQ1IDM2NSAxNjAgQzM2NSAxNzUgMzU1IDE4NSAzNDAgMTg1IEwyMDUgMTg1IEMxOTAgMTg1IDE4NSAxOTAgMTg1IDIwNSBDMTg1IDIyMCAxOTAgMjI1IDIwNSAyMjUgTDM0MCAyMjUgQzM3MCAyMjUgMzkwIDI0NSAzOTAgMjc1IEwzOTAgMzI1IEMzOTAgMzU1IDM3MCAzNzUgMzQwIDM3NSBMMTcwIDM3NSBDMTU1IDM3NSAxNDUgMzY1IDE0NSAzNTAgQzE0NSAzMzUgMTU1IDMyNSAxNzAgMzI1IEwzMzUgMzI1IEMzNTAgMzI1IDM1NSAzMjAgMzU1IDMwNSBDMzU1IDI5MCAzNTAgMjg1IDMzNSAyODUgTDIwMCAyODUgQzE3MCAyODUgMTUwIDI2NSAxNTAgMjM1IFoiIGZpbGw9IndoaXRlIi8+Cjwvc3ZnPg==">    
     <style>
         :root {
-            --bg: #0b0e11; --card: #1e2329; --primary: #f0b90b;
-            --accent: #00ffff; --up: #0ecb81; --down: #f6465d;
-            --text-sec: #848e9c; --border: rgba(255, 255, 255, 0.08);
+            --bg: #0b0e11; --card: #1e2329; --primary: #ffff00;
+            --accent: #00ffff; --up: #0ecb81; --text-sec: #848e9c;
+            --border: rgba(255, 255, 255, 0.08);
             --font-mont: 'Montserrat', sans-serif;
         }
-        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Inter', sans-serif; -webkit-tap-highlight-color: transparent; }
-        body { background: var(--bg); color: white; padding-bottom: 100px; display: none; }
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Inter', sans-serif; font-weight: 700; -webkit-tap-highlight-color: transparent; }
+        body { background: var(--bg); color: white; padding-bottom: 100px; display: none; overflow-x: hidden; }
 
-        /* Header & Project Info */
+        /* Empty State */
+        #emptyState { display: none; text-align: center; padding: 100px 20px; }
+        #emptyState i { font-size: 60px; color: var(--border); margin-bottom: 20px; }
+        #emptyState p { color: var(--text-sec); font-size: 14px; font-weight: 400; }
+
+        /* Main Content Wrapper */
+        #mainContent { display: none; }
+
         .project-header { padding: 40px 20px; text-align: center; background: linear-gradient(180deg, rgba(0, 255, 255, 0.05) 0%, var(--bg) 100%); }
-        .project-logo { width: 80px; height: 80px; border-radius: 20px; border: 2px solid var(--accent); margin-bottom: 15px; box-shadow: 0 0 20px rgba(0, 255, 255, 0.2); }
-        .project-title { font-family: var(--font-mont); font-size: 24px; color: var(--accent); text-transform: uppercase; }
+        .project-logo { width: 85px; height: 85px; border-radius: 20px; border: 2px solid var(--accent); margin-bottom: 15px; box-shadow: 0 0 20px rgba(0, 255, 255, 0.2); object-fit: cover; }
+        .project-title { font-family: var(--font-mont); font-size: 24px; color: var(--accent); text-transform: uppercase; letter-spacing: 1px; }
         
-        .social-links { display: flex; justify-content: center; gap: 15px; margin: 20px 0; }
-        .social-links a { color: var(--text-sec); font-size: 18px; transition: 0.3s; }
+        .social-links { display: flex; justify-content: center; gap: 20px; margin: 20px 0; }
+        .social-links a { color: var(--text-sec); font-size: 20px; transition: 0.3s; }
         .social-links a:hover { color: var(--accent); }
 
-        .token-details { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; padding: 0 15px; margin-bottom: 25px; }
-        .detail-box { background: var(--card); padding: 12px; border-radius: 12px; border: 1px solid var(--border); font-size: 11px; }
-        .detail-box span { color: var(--text-sec); display: block; margin-bottom: 4px; text-transform: uppercase; }
-        .detail-box b { font-size: 13px; color: white; }
+        .token-details { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; padding: 0 15px; margin-bottom: 25px; }
+        .detail-box { background: var(--card); padding: 15px; border-radius: 12px; border: 1px solid var(--border); }
+        .detail-box span { color: var(--text-sec); display: block; font-size: 9px; text-transform: uppercase; margin-bottom: 5px; }
+        .detail-box b { font-size: 12px; color: white; word-break: break-all; }
 
-        .description { padding: 0 20px; font-size: 13px; color: var(--text-sec); line-height: 1.6; margin-bottom: 30px; font-weight: 400; }
+        .description { padding: 0 20px; font-size: 13px; color: var(--text-sec); line-height: 1.6; margin-bottom: 30px; font-weight: 400; text-align: justify; }
 
-        /* Glowing Funding Card */
-        .funding-card { margin: 0 15px; background: #161a1e; border-radius: 24px; padding: 25px; border: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; position: relative; overflow: hidden; }
-        .fund-side { text-align: center; flex: 1; z-index: 2; }
+        /* Glowing Card */
+        .funding-card { margin: 0 15px; background: #161a1e; border-radius: 24px; padding: 25px; border: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; position: relative; }
+        .fund-side { text-align: center; flex: 1; }
         .fund-side span { font-size: 10px; color: var(--text-sec); text-transform: uppercase; display: block; margin-bottom: 5px; }
-        .fund-side b { font-size: 16px; font-family: var(--font-mont); color: white; }
+        .fund-side b { font-size: 15px; font-family: var(--font-mont); color: white; }
 
-        .glowing-center { position: relative; width: 80px; text-align: center; z-index: 2; }
-        .venture-text { font-family: var(--font-mont); font-size: 10px; color: var(--accent); animation: glow 2s infinite alternate; }
-        @keyframes glow { from { text-shadow: 0 0 5px var(--accent); opacity: 0.6; } to { text-shadow: 0 0 20px var(--accent), 0 0 30px var(--accent); opacity: 1; } }
+        .glowing-center { position: relative; width: 100px; text-align: center; }
+        .venture-text { font-family: var(--font-mont); font-size: 10px; color: var(--accent); line-height: 1.2; animation: glow 1.5s infinite alternate; font-weight: 900; }
+        @keyframes glow { from { text-shadow: 0 0 2px var(--accent); opacity: 0.5; } to { text-shadow: 0 0 15px var(--accent), 0 0 25px var(--accent); opacity: 1; } }
 
-        /* Funding Input */
+        /* Contribution Input */
         .input-area { padding: 25px 15px; }
-        .input-group { background: var(--card); border-radius: 16px; padding: 15px; border: 1px solid var(--border); display: flex; align-items: center; margin-bottom: 15px; }
-        .input-group input { background: transparent; border: none; color: white; flex: 1; font-size: 18px; outline: none; font-weight: 700; }
-        .input-group span { color: var(--primary); font-weight: 900; }
+        .input-group { background: var(--card); border-radius: 18px; padding: 18px; border: 1px solid var(--border); display: flex; align-items: center; margin-bottom: 15px; }
+        .input-group input { background: transparent; border: none; color: white; flex: 1; font-size: 22px; outline: none; font-weight: 900; width: 100%; }
+        .input-group span { color: var(--primary); font-weight: 900; font-size: 14px; }
 
-        .btn-fund { width: 100%; background: var(--accent); color: #000; border: none; padding: 16px; border-radius: 16px; font-weight: 900; font-size: 14px; cursor: pointer; box-shadow: 0 10px 20px rgba(0, 255, 255, 0.2); }
+        .btn-fund { width: 100%; background: var(--accent); color: #000; border: none; padding: 18px; border-radius: 18px; font-weight: 900; font-size: 14px; cursor: pointer; box-shadow: 0 10px 20px rgba(0, 255, 255, 0.15); text-transform: uppercase; }
 
         /* Leaderboard Table */
         .leaderboard { margin-top: 30px; padding: 0 15px; }
-        .leaderboard h3 { font-family: var(--font-mont); font-size: 16px; margin-bottom: 15px; color: var(--text-sec); }
-        table { width: 100%; border-collapse: collapse; }
-        th { text-align: left; font-size: 10px; color: var(--text-sec); text-transform: uppercase; padding: 10px; border-bottom: 1px solid var(--border); }
+        .leaderboard h3 { font-family: var(--font-mont); font-size: 14px; margin-bottom: 15px; color: var(--text-sec); text-transform: uppercase; }
+        .table-container { overflow-x: auto; }
+        table { width: 100%; border-collapse: collapse; min-width: 320px; }
+        th { text-align: left; font-size: 10px; color: var(--text-sec); text-transform: uppercase; padding: 12px 10px; border-bottom: 1px solid var(--border); }
         td { padding: 15px 10px; font-size: 12px; border-bottom: 1px solid var(--border); }
-        .my-row { background: rgba(0, 255, 255, 0.1) !important; color: var(--accent); }
+        .my-row { background: rgba(0, 255, 255, 0.08) !important; color: var(--accent); }
+        .my-row td { border-bottom: 1px solid var(--accent); }
 
-        .show-more { text-align: center; padding: 20px; color: var(--accent); font-size: 13px; cursor: pointer; }
+        .show-more { text-align: center; padding: 25px; color: var(--accent); font-size: 13px; cursor: pointer; text-decoration: underline; }
 
-        /* Toast & Overlay */
-        #toast-box { position: fixed; top: 30px; left: 50%; transform: translateX(-50%); z-index: 10000; }
-        .g-toast { background: var(--card); border-left: 4px solid var(--accent); padding: 15px 25px; border-radius: 12px; color: white; font-size: 13px; margin-bottom: 10px; box-shadow: 0 10px 30px rgba(0,0,0,0.5); }
+        #toast-box { position: fixed; top: 30px; left: 50%; transform: translateX(-50%); z-index: 10001; pointer-events: none; }
+        .g-toast { background: var(--card); border-left: 4px solid var(--accent); padding: 15px 25px; border-radius: 12px; color: white; font-size: 13px; margin-bottom: 10px; box-shadow: 0 10px 30px rgba(0,0,0,0.5); display: flex; align-items: center; gap: 10px; }
     </style>
 </head>
 <body>
 
     <div id="toast-box"></div>
 
-    <div id="appContent">
-        <div class="project-header" id="projHeader">
+    <div id="emptyState">
+        <i class="fas fa-rocket"></i>
+        <p>No active fundraising projects at the moment.<br>Please check back later.</p>
+    </div>
+
+    <div id="mainContent">
+        <div class="project-header">
             <img src="" class="project-logo" id="projLogo">
-            <h1 class="project-title" id="projTitle">Loading...</h1>
+            <h1 class="project-title" id="projTitle"></h1>
             <div class="social-links" id="projSocials"></div>
         </div>
 
         <div class="token-details">
-            <div class="detail-box"><span>Token Name</span><b id="tName">-</b></div>
-            <div class="detail-box"><span>Total Supply</span><b id="tSupply">-</b></div>
-            <div class="detail-box"><span>BlockScan</span><b id="tScan">-</b></div>
-            <div class="detail-box"><span>Vesting Lock</span><b id="tVesting">-</b></div>
+            <div class="detail-box"><span>Token Name</span><b id="tName"></b></div>
+            <div class="detail-box"><span>Total Supply</span><b id="tSupply"></b></div>
+            <div class="detail-box"><span>BlockScan</span><b id="tScan"></b></div>
+            <div class="detail-box"><span>Vesting Rule</span><b id="tVesting"></b></div>
         </div>
 
         <div class="description" id="projDesc"></div>
 
         <div class="funding-card">
-            <div class="fund-side">
-                <span>My Funding</span>
-                <b id="myFund">0.00 USDT</b>
-            </div>
-            <div class="glowing-center">
-                <div class="venture-text">SMAT<br>VENTURE</div>
-            </div>
-            <div class="fund-side">
-                <span>SMAT Funding</span>
-                <b id="totalFund">0.00 USDT</b>
-            </div>
+            <div class="fund-side"><span>My Funding</span><b id="myFund">0.00 USDT</b></div>
+            <div class="glowing-center"><div class="venture-text">SMAT<br>VENTURE</div></div>
+            <div class="fund-side"><span>Total Funding</span><b id="totalFund">0.00 USDT</b></div>
         </div>
 
         <div class="input-area">
@@ -108,17 +113,17 @@
                 <input type="number" id="fundAmount" placeholder="0.00">
                 <span>USDT</span>
             </div>
-            <button class="btn-fund" onclick="contribute()">CONTRIBUTE NOW</button>
+            <button class="btn-fund" onclick="contribute()">SUBMIT FUNDING</button>
         </div>
 
         <div class="leaderboard">
-            <h3>Top Contributors</h3>
-            <table>
-                <thead>
-                    <tr><th>SMAT ID</th><th>Method</th><th>Amount</th></tr>
-                </thead>
-                <tbody id="leaderTable"></tbody>
-            </table>
+            <h3>Leaderboard (Top Contributors)</h3>
+            <div class="table-container">
+                <table>
+                    <thead><tr><th>SMAT ID</th><th>Method</th><th>Amount</th></tr></thead>
+                    <tbody id="leaderTable"></tbody>
+                </table>
+            </div>
             <div class="show-more" onclick="loadMore()" id="moreBtn">Show More</div>
         </div>
     </div>
@@ -135,7 +140,7 @@ firebase.initializeApp(firebaseConfig);
 const db = firebase.database();
 const auth = firebase.auth();
 
-let userData = {}, activeProject = {}, allContributors = [];
+let userData = {}, activeProject = null, allContributors = [];
 let displayLimit = 50;
 
 auth.onAuthStateChanged(user => {
@@ -147,22 +152,31 @@ function loadUser(uid) {
     db.ref('users/' + uid).on('value', snap => {
         userData = snap.val() || {};
         userData.uid = uid;
-        renderLeaderboard();
+        if(activeProject) renderLeaderboard();
     });
 }
 
 function loadProject() {
-    // এডমিন প্যানেল থেকে 'active_fundraising' নোডে প্রজেক্ট থাকবে
+    // এডমিন প্যানেল থেকে 'active_fundraising' নোডে ডেটা সেট করলেই পেজ দেখাবে
     db.ref('active_fundraising').on('value', snap => {
-        activeProject = snap.val() || {};
-        if(!activeProject.id) return;
+        activeProject = snap.val();
+        
+        if (!activeProject || !activeProject.id) {
+            document.getElementById('emptyState').style.display = 'block';
+            document.getElementById('mainContent').style.display = 'none';
+            return;
+        }
+
+        // ডেটা থাকলে পেজ প্রদর্শন হবে
+        document.getElementById('emptyState').style.display = 'none';
+        document.getElementById('mainContent').style.display = 'block';
 
         document.getElementById('projTitle').innerText = activeProject.title;
         document.getElementById('projLogo').src = activeProject.logo;
         document.getElementById('tName').innerText = activeProject.tokenName;
         document.getElementById('tSupply').innerText = activeProject.supply;
         document.getElementById('tScan').innerText = activeProject.scan;
-        document.getElementById('tVesting').innerText = activeProject.vesting || "No Lock";
+        document.getElementById('tVesting').innerText = activeProject.vesting;
         document.getElementById('projDesc').innerText = activeProject.description;
         
         document.getElementById('projSocials').innerHTML = `
@@ -196,75 +210,62 @@ function renderLeaderboard() {
     const table = document.getElementById('leaderTable');
     table.innerHTML = "";
     
-    // ১. নিজের ডাটা সবার উপরে যদি জমা দিয়ে থাকে
+    // নিজের ডাটা (আলাদা কালার)
     const myData = allContributors.find(x => x.uid === userData.uid);
     if(myData) {
         table.innerHTML += `<tr class="my-row"><td>${userData.smat_id || 'Me'}</td><td>USDT</td><td>${myData.amount.toFixed(2)}</td></tr>`;
     }
 
-    // ২. টপ ৫০ জন (নিজেরটা বাদ দিয়ে যাতে ডাবল না হয়)
+    // বাকিদের ডাটা
     allContributors.slice(0, displayLimit).forEach(item => {
         if(item.uid === userData.uid) return;
         table.innerHTML += `<tr><td>${item.smat_id}</td><td>USDT</td><td>${item.amount.toFixed(2)}</td></tr>`;
     });
 
-    if(allContributors.length <= displayLimit) document.getElementById('moreBtn').style.display = 'none';
+    document.getElementById('moreBtn').style.display = allContributors.length > displayLimit ? 'block' : 'none';
 }
 
 async function contribute() {
     const amt = parseFloat(document.getElementById('fundAmount').value);
     const balance = parseFloat(userData.usdt_balance || 0);
 
-    if(!amt || amt <= 0) return showToast("Enter valid amount");
-    if(amt > balance) return showToast("Insufficient USDT balance");
-
-    const confirmContribute = confirm(`Contribute ${amt} USDT to ${activeProject.title}?`);
-    if(!confirmContribute) return;
+    if(!amt || amt <= 0 || amt > balance) return showToast("Invalid amount or balance!");
 
     const up = {};
-    const newBalance = (balance - amt).toFixed(8);
     const projId = activeProject.id;
     
-    // ১. ব্যালেন্স আপডেট
-    up[`users/${userData.uid}/usdt_balance`] = parseFloat(newBalance);
+    // ব্যালেন্স কমানো (usdt_balance)
+    up[`users/${userData.uid}/usdt_balance`] = parseFloat((balance - amt).toFixed(8));
     
-    // ২. প্রজেক্ট কন্ট্রিবিউশন রেকর্ড
-    let prevAmt = 0;
+    // কন্ট্রিবিউশন আপডেট
+    let current = 0;
     const existing = allContributors.find(x => x.uid === userData.uid);
-    if(existing) prevAmt = existing.amount;
+    if(existing) current = existing.amount;
 
     up[`fundraising_contributions/${projId}/${userData.uid}`] = {
-        amount: prevAmt + amt,
+        amount: current + amt,
         smat_id: userData.smat_id || "User",
         timestamp: Date.now()
     };
 
-    // ৩. ওয়ালেট হিস্টোরি (Funding Out)
+    // হিস্টোরি (Funding Out)
     const tid = "FUND_OUT_" + Date.now();
     up[`users/${userData.uid}/history/${tid}`] = {
-        method: 'Funding Out',
-        coin: 'USDT',
-        amount: amt.toFixed(2),
-        project: activeProject.title,
-        timestamp: Date.now(),
-        status: 'success'
+        method: 'Funding Out', coin: 'USDT', amount: amt.toFixed(2), timestamp: Date.now(), status: 'success'
     };
 
     await db.ref().update(up);
     document.getElementById('fundAmount').value = "";
-    showToast("Contribution Successful!");
+    showToast("Contribution Successful!", "success");
 }
 
-function loadMore() {
-    displayLimit += 50;
-    renderLeaderboard();
-}
+function loadMore() { displayLimit += 50; renderLeaderboard(); }
 
 function showToast(msg) {
     const box = document.getElementById('toast-box');
     const t = document.createElement('div');
     t.className = 'g-toast';
-    t.innerText = msg;
+    t.innerHTML = `<i class="fas fa-check-circle"></i><span>${msg}</span>`;
     box.appendChild(t);
     setTimeout(() => { t.remove(); }, 3000);
 }
