@@ -1,0 +1,69 @@
+<div class="card" style="border-color: var(--accent); margin-top: 50px;">
+    <h3 class="mon-900" style="color:var(--accent); font-size:14px; margin-bottom:15px;">Post to News Feed</h3>
+    <div class="input-box">
+        <label>News Title</label>
+        <input type="text" id="newsTitle" placeholder="Enter headline">
+    </div>
+    <div class="grid-inputs">
+        <div class="input-box">
+            <label>Image URL (Optional)</label>
+            <input type="text" id="newsImg" placeholder="https://image-url.com">
+        </div>
+        <div class="input-box">
+            <label>Category</label>
+            <input type="text" id="newsCat" placeholder="Update / Promo">
+        </div>
+    </div>
+    <div class="input-box">
+        <label>Full Content</label>
+        <textarea id="newsContent" rows="4" style="width:100%; background:#0b0e11; border:1px solid var(--border); color:white; padding:12px; border-radius:10px;"></textarea>
+    </div>
+    <button class="btn-launch" onclick="uploadNews()" style="background:var(--accent)">POST NEWS</button>
+
+    <h4 class="mon-900" style="font-size:10px; margin:20px 0 10px; color:gray;">Active News Management</h4>
+    <div id="adminNewsList"></div>
+</div>
+
+<script>
+// --- News Functions ---
+async function uploadNews() {
+    const title = document.getElementById('newsTitle').value;
+    const desc = document.getElementById('newsContent').value;
+    if(!title || !desc) return showToast("Title and Content are required!", "#f6465d");
+
+    const id = "NEWS" + Date.now();
+    const data = {
+        id, title,
+        image: document.getElementById('newsImg').value,
+        category: document.getElementById('newsCat').value || 'Announcement',
+        description: desc,
+        timestamp: Date.now()
+    };
+
+    await db.ref('news_feed/' + id).set(data);
+    showToast("News Posted Successfully!", "#0ecb81");
+    // Reset inputs
+    document.getElementById('newsTitle').value = "";
+    document.getElementById('newsContent').value = "";
+}
+
+// Admin News List with Delete
+db.ref('news_feed').on('value', snap => {
+    const container = document.getElementById('adminNewsList');
+    container.innerHTML = "";
+    const data = snap.val() || {};
+    Object.keys(data).forEach(k => {
+        container.innerHTML += `
+            <div style="background:#161a1e; padding:10px; border-radius:10px; margin-bottom:8px; display:flex; justify-content:space-between; align-items:center; border:1px solid #333;">
+                <span style="font-size:11px;">${data[k].title.substring(0,30)}...</span>
+                <i class="fas fa-trash" onclick="deleteNews('${k}')" style="color:#f6465d; cursor:pointer;"></i>
+            </div>
+        `;
+    });
+});
+
+async function deleteNews(id) {
+    await db.ref('news_feed/' + id).remove();
+    showToast("News Deleted", "#f6465d");
+}
+</script>
