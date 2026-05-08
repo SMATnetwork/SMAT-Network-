@@ -166,14 +166,6 @@ body {
 .tab-logo img { width: 100%; height: 100%; object-fit: cover; }
 
 /* পপআপের ভেতরের পেয়ার স্টাইল */
-.pair-row {
-    display: grid;
-    grid-template-columns: 1.5fr 1.1fr 0.9fr; 
-    padding: 12px 15px;
-    align-items: center;
-    border-bottom: 1px solid #f1f1f1;
-}
-
 /* পপআপের ভেতরের পেয়ার স্টাইল */
 .pair-row {
     display: grid;
@@ -192,16 +184,15 @@ body {
 .pair-main-name { font-weight: 700; color: var(--text-main); font-size: 14px; }
 .pair-vol { font-size: 10px; color: var(--text-sec); display: block; }
 
-/* কয়েনের দাম - এটি সবসময় সাধারণ থাকবে, কোনো কালার চেঞ্জ হবে না */
+/* প্রাইস কলাম - এটি সবসময় ফিক্সড ডার্ক থাকবে */
 .pair-price-col { 
     font-weight: 700; 
     font-size: 14px; 
     text-align: left; 
-    color: var(--text-main); 
-    padding: 0;
+    color: var(--text-main) !important; /* জোরপূর্বক ডার্ক কালার দেওয়া হয়েছে */
 }
 
-/* শুধুমাত্র এই change-badge এর ব্যাকগ্রাউন্ড লাল/সবুজ হবে */
+/* শুধুমাত্র চেইঞ্জ ব্যাজের ব্যাকগ্রাউন্ড পরিবর্তন হবে */
 .change-badge {
     display: block;
     padding: 6px 0;
@@ -213,25 +204,17 @@ body {
     float: right;
 }
 
-/* দাম বাড়লে শুধু চেঞ্জ ট্যাবের ব্যাকগ্রাউন্ড সবুজ */
-.change-badge.up-bg { 
-    background: var(--up); 
-    color: #fff; 
-    box-shadow: 0 4px 8px rgba(3, 166, 109, 0.15); 
-}
+/* মার্কেট পেজ থেকে কালার কোড */
+.up-bg { background: var(--up); color: #fff; box-shadow: 0 4px 8px rgba(3, 166, 109, 0.15); }
+.down-bg { background: var(--down); color: #fff; box-shadow: 0 4px 8px rgba(207, 48, 74, 0.15); }
 
-/* দাম কমলে শুধু চেঞ্জ ট্যাবের ব্যাকগ্রাউন্ড লাল */
-.change-badge.down-bg { 
-    background: var(--down); 
-    color: #fff; 
-    box-shadow: 0 4px 8px rgba(207, 48, 74, 0.15); 
-}
+/* --- সমস্যা সমাধান এখানে --- */
+/* নিচের এই ক্লাসগুলো থেকে টেক্সট কালার লজিক ফেলে দেওয়া হয়েছে */
+.up { color: inherit; } /* এখন আর সবুজ হবে না */
+.down { color: inherit; } /* এখন আর লাল হবে না */
 
-/* ডিফল্ট বা ০% থাকলে গ্রে ব্যাকগ্রাউন্ড (ঐচ্ছিক) */
-.change-badge.neutral-bg {
-    background: #eee;
-    color: #666;
-}
+@keyframes spin { 100% { transform: rotate(360deg); } }
+
 
 
 /* Trade Layout */
