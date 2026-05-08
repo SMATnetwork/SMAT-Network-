@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>SmatBit | Launchpad</title>
+    <title>SmatBit | Launchpad Pro</title>
     <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-auth-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-database-compat.js"></script>
@@ -20,59 +20,76 @@
         * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Inter', sans-serif; font-weight: 700; -webkit-tap-highlight-color: transparent; }
         body { background: var(--bg); color: white; padding-bottom: 100px; display: none; }
 
-        .header { padding: 30px 20px; text-align: left; background: linear-gradient(180deg, rgba(240, 185, 11, 0.05) 0%, var(--bg) 100%); }
-        .header h1 { font-family: var(--font-mont); color: var(--primary); font-size: 24px; text-transform: uppercase; }
-        .header p { font-size: 11px; color: var(--text-sec); margin-top: 5px; font-weight: 400; }
+        /* Centered Header */
+        .header { padding: 40px 20px; text-align: center; background: linear-gradient(180deg, rgba(240, 185, 11, 0.08) 0%, var(--bg) 100%); }
+        .header h1 { font-family: var(--font-mont); color: var(--primary); font-size: 26px; text-transform: uppercase; letter-spacing: 1.5px; }
+        .header p { font-size: 12px; color: var(--text-sec); margin-top: 8px; font-weight: 400; }
 
         .container { padding: 0 15px; }
 
-        /* Launchpad Item Row Style (Not Card) */
-        .lp-item { border-bottom: 1px solid var(--border); padding: 20px 0; position: relative; }
-        .lp-desc { font-size: 12px; color: var(--text-sec); font-weight: 400; margin-bottom: 15px; line-height: 1.5; background: rgba(255,255,255,0.03); padding: 12px; border-radius: 10px; border-left: 3px solid var(--primary); }
+        /* Launchpad Row Style */
+        .lp-item { border-bottom: 1px solid var(--border); padding: 25px 0; animation: fadeIn 0.5s ease-in; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+
+        .lp-desc { font-size: 12px; color: var(--text-sec); font-weight: 400; margin-bottom: 18px; line-height: 1.6; background: rgba(255,255,255,0.03); padding: 15px; border-radius: 12px; border-left: 4px solid var(--primary); }
         
         .lp-main-row { display: flex; align-items: center; gap: 15px; }
-        .lp-logo { width: 48px; height: 48px; border-radius: 50%; border: 1px solid var(--border); padding: 2px; background: #000; }
+        .lp-logo { width: 52px; height: 52px; border-radius: 50%; border: 2px solid var(--border); background: #000; object-fit: cover; }
         
         .lp-info { flex: 1; }
-        .lp-info h2 { font-size: 16px; font-family: var(--font-mont); display: flex; align-items: center; gap: 8px; }
-        .lp-badge { font-size: 9px; background: var(--primary); color: #000; padding: 2px 6px; border-radius: 4px; }
+        .lp-info h2 { font-size: 18px; font-family: var(--font-mont); display: flex; align-items: center; gap: 10px; }
+        .lp-badge { font-size: 9px; background: var(--primary); color: #000; padding: 3px 8px; border-radius: 5px; text-transform: uppercase; }
 
-        .lp-stats-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; margin-top: 15px; background: rgba(0,0,0,0.2); padding: 12px; border-radius: 12px; }
+        /* Global Reward Rate Display */
+        .global-ratio-tag { background: rgba(240, 185, 11, 0.05); border: 1px dashed rgba(240, 185, 11, 0.3); padding: 12px; border-radius: 12px; margin: 15px 0; text-align: center; }
+        .global-ratio-tag span { display: block; font-size: 9px; color: var(--text-sec); text-transform: uppercase; margin-bottom: 4px; letter-spacing: 0.5px; }
+        .global-ratio-tag b { font-size: 14px; color: var(--primary); font-family: var(--font-mont); }
+
+        .lp-stats-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 12px; margin-top: 15px; background: rgba(0,0,0,0.3); padding: 15px; border-radius: 15px; border: 1px solid var(--border); }
         .stat-box { text-align: center; }
-        .stat-label { font-size: 9px; color: var(--text-sec); display: block; margin-bottom: 4px; }
+        .stat-label { font-size: 9px; color: var(--text-sec); display: block; margin-bottom: 5px; text-transform: uppercase; }
         .stat-val { font-size: 11px; color: white; }
 
-        .timer-box { margin-top: 10px; font-size: 11px; color: var(--up); display: flex; align-items: center; gap: 5px; }
+        .timer-box { margin-top: 12px; font-size: 11px; color: var(--up); display: flex; align-items: center; gap: 6px; }
+        .live-dot { height: 7px; width: 7px; background: var(--up); border-radius: 50%; display: inline-block; animation: pulse 1.5s infinite; }
+        @keyframes pulse { 0% { transform: scale(0.9); opacity: 1; } 100% { transform: scale(1.2); opacity: 0.5; } }
 
-        .btn-lock { background: var(--primary); color: #000; border: none; padding: 12px 25px; border-radius: 10px; font-weight: 900; font-size: 12px; margin-top: 15px; width: 100%; cursor: pointer; }
+        .btn-lock { background: var(--primary); color: #000; border: none; padding: 15px; border-radius: 14px; font-weight: 900; font-size: 13px; margin-top: 18px; width: 100%; cursor: pointer; transition: 0.3s; }
         .btn-lock:disabled { background: #2b3139; color: var(--text-sec); cursor: not-allowed; }
 
-        /* Popups */
-        .overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.95); display: none; align-items: center; justify-content: center; z-index: 9000; padding: 25px; }
-        .modal { background: var(--card); width: 100%; max-width: 380px; border-radius: 24px; padding: 25px; border: 1px solid var(--border); }
+        /* Graphic Popups */
+        .overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.94); display: none; align-items: center; justify-content: center; z-index: 9000; padding: 25px; backdrop-filter: blur(5px); }
+        .modal { background: var(--card); width: 100%; max-width: 400px; border-radius: 28px; padding: 30px; border: 1px solid var(--border); box-shadow: 0 20px 40px rgba(0,0,0,0.5); text-align: center; }
         
-        .input-group { background: #0b0e11; border-radius: 15px; padding: 15px; margin: 15px 0; border: 1px solid var(--border); position: relative; }
-        .input-group input { width: 70%; background: transparent; border: none; color: white; font-size: 18px; outline: none; }
-        .max-tag { position: absolute; right: 15px; color: var(--primary); font-size: 11px; top: 50%; transform: translateY(-50%); }
+        .input-group { background: #0b0e11; border-radius: 18px; padding: 18px; margin: 20px 0 10px 0; border: 1px solid var(--border); position: relative; display: flex; align-items: center; }
+        .input-group input { width: 100%; background: transparent; border: none; color: white; font-size: 20px; outline: none; font-weight: 900; }
+        .max-tag { color: var(--primary); font-size: 12px; cursor: pointer; padding-left: 10px; }
 
-        /* Nav */
+        .prop-box { background: rgba(14, 203, 129, 0.1); border: 1px solid rgba(14, 203, 129, 0.2); border-radius: 12px; padding: 12px; margin-bottom: 20px; font-size: 11px; display: flex; justify-content: space-between; align-items: center; }
+        .prop-val { color: var(--up); font-weight: 900; }
+
+        .btn-cancel { color: var(--text-sec); background: none; border: none; font-size: 13px; font-weight: 400; margin-top: 15px; cursor: pointer; display: block; width: 100%; }
+        
+        /* Toast */
+        #toast-box { position: fixed; top: 30px; left: 50%; transform: translateX(-50%); z-index: 10001; pointer-events: none; }
+        .g-toast { background: var(--card); border-left: 4px solid var(--primary); padding: 15px 25px; border-radius: 12px; color: white; font-size: 13px; margin-bottom: 10px; display: flex; align-items: center; gap: 12px; animation: slideDown 0.4s ease-out forwards; }
+        @keyframes slideDown { from { opacity: 0; transform: translateY(-20px); } to { opacity: 1; transform: translateY(0); } }
+
         .footer { position: fixed; bottom: 0; width: 100%; height: 75px; background: var(--bg); display: flex; border-top: 1px solid var(--border); z-index: 4000; }
-        .nav-item { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; text-decoration: none; color: var(--text-sec); font-size: 11px; gap: 4px; }
+        .nav-item { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; text-decoration: none; color: var(--text-sec); font-size: 11px; gap: 5px; }
         .nav-item.active { color: var(--primary); }
-
-        @keyframes pulse { 0% { opacity: 1; } 50% { opacity: 0.5; } 100% { opacity: 1; } }
-        .live-dot { height: 6px; width: 6px; background: var(--up); border-radius: 50%; display: inline-block; animation: pulse 1s infinite; }
     </style>
 </head>
 <body>
+
+    <div id="toast-box"></div>
 
     <div class="header">
         <h1>Launchpad</h1>
         <p>Stake your assets to earn new tokens early.</p>
     </div>
 
-    <div class="container" id="launchContainer">
-        </div>
+    <div class="container" id="launchContainer"></div>
 
     <div class="overlay" id="lpOverlay"><div class="modal" id="lpModal"></div></div>
 
@@ -84,7 +101,7 @@
     </footer>
 
 <script>
-// --- FIREBASE SETUP ---
+// --- CONFIG & FIREBASE ---
 const firebaseConfig = { 
     apiKey: "AIzaSyAMxtJedkehhxJRMPZLjhpKHqneHEWsGlE", 
     authDomain: "smat-exchange.firebaseapp.com", 
@@ -104,10 +121,9 @@ auth.onAuthStateChanged(user => {
 });
 
 function syncData(uid) {
-    // Admin uploads launchpad to 'launchpad_list'
     db.ref('launchpad_list').on('value', snap => {
         const val = snap.val() || {};
-        // Sort by timestamp descending (newest first)
+        // সর্টিং: নতুন লঞ্চপ্যাড সবার আগে
         launchpads = Object.keys(val).map(k => ({id: k, ...val[k]})).sort((a,b) => b.startTime - a.startTime);
         renderLaunchpad();
     });
@@ -125,7 +141,12 @@ function renderLaunchpad() {
         const userLock = (userData.launch_locks && userData.launch_locks[lp.id]) ? userData.launch_locks[lp.id].amount : 0;
         const now = Date.now();
         const isEnded = now > lp.endTime;
-        const isStarted = now > lp.startTime;
+        
+        // গ্লোবাল রিওয়ার্ড ক্যালকুলেশন (২৪ ঘণ্টার গড়)
+        const totalDays = Math.ceil((lp.endTime - lp.startTime) / (1000 * 60 * 60 * 24)) || 1;
+        const dailyRelease = parseFloat(lp.poolSize) / totalDays;
+        const globalLocked = parseFloat(lp.globalLocked) || 0;
+        const ratioPerCoin = globalLocked > 0 ? (dailyRelease / globalLocked) : 0;
 
         html += `
             <div class="lp-item">
@@ -136,18 +157,23 @@ function renderLaunchpad() {
                         <h2>${lp.tokenName} <span class="lp-badge">${lp.tokenSymbol}</span></h2>
                         <div class="timer-box">
                             <span class="live-dot" style="background:${isEnded?'#555':''}"></span>
-                            ${isEnded ? 'Subscription Ended' : (isStarted ? 'Ends in: '+calcTime(lp.endTime) : 'Starts in: '+calcTime(lp.startTime))}
+                            ${isEnded ? 'Subscription Ended' : 'Ends in: '+calcTime(lp.endTime)}
                         </div>
                     </div>
                 </div>
 
+                <div class="global-ratio-tag">
+                    <span>Est. Reward (Per 1 ${lp.lockToken} / 24h)</span>
+                    <b>${f8(ratioPerCoin)} ${lp.tokenSymbol}</b>
+                </div>
+
                 <div class="lp-stats-grid">
                     <div class="stat-box">
-                        <span class="stat-label">Launchpad Pool</span>
+                        <span class="stat-label">Launch Pool</span>
                         <span class="stat-val">${lp.poolSize} ${lp.tokenSymbol}</span>
                     </div>
                     <div class="stat-box">
-                        <span class="stat-label">My Locked (${lp.lockToken})</span>
+                        <span class="stat-label">My Locked</span>
                         <span class="stat-val">${f8(userLock)}</span>
                     </div>
                     <div class="stat-box">
@@ -157,45 +183,56 @@ function renderLaunchpad() {
                 </div>
 
                 <button class="btn-lock" ${isEnded?'disabled':''} onclick="openLockPop('${lp.id}')">
-                    ${isEnded ? 'CLOSED' : 'LOCK '+lp.lockToken+' TO EARN'}
+                    ${isEnded ? 'OFFERING CLOSED' : 'PARTICIPATE NOW'}
                 </button>
             </div>
         `;
     });
-    area.innerHTML = html || "<p style='text-align:center; padding-top:50px;'>No Active Launchpad.</p>";
+    area.innerHTML = html || "<p style='text-align:center; padding:50px;'>No active projects.</p>";
 }
 
 function calcTime(target) {
     const diff = target - Date.now();
+    if(diff <= 0) return "0d 0h";
     const days = Math.floor(diff / (1000 * 60 * 60 * 24));
     const hours = Math.floor((diff / (1000 * 60 * 60)) % 24);
     return `${days}d ${hours}h`;
 }
 
-// --- LOCK POPUP ---
 function openLockPop(id) {
     const lp = launchpads.find(x => x.id === id);
     const balance = userData[lp.lockToken.toLowerCase() + '_balance'] || 0;
     const content = document.getElementById('lpModal');
 
     content.innerHTML = `
-        <h2 style="font-family:var(--font-mont); text-align:center">Lock ${lp.lockToken}</h2>
-        <p style="font-size:11px; text-align:center; color:var(--text-sec); margin-top:5px">Available: ${f8(balance)} ${lp.lockToken}</p>
+        <h2 style="font-family:var(--font-mont); color:var(--primary); font-size:20px">Lock ${lp.lockToken}</h2>
+        <p style="font-size:11px; color:var(--text-sec); margin:8px 0">Available: ${f8(balance)} ${lp.lockToken}</p>
         
         <div class="input-group">
-            <input type="number" id="lockAmt" placeholder="0.00">
-            <span class="max-tag" onclick="document.getElementById('lockAmt').value='${balance}'">MAX</span>
+            <input type="number" id="lockAmt" placeholder="0.00" oninput="calcProportion('${id}')">
+            <span class="max-tag" onclick="document.getElementById('lockAmt').value='${balance}'; calcProportion('${id}')">MAX</span>
         </div>
 
-        <div style="font-size:11px; color:var(--text-sec); line-height:1.6; margin-bottom:20px">
-            * Your assets will be locked until the launchpad ends.<br>
-            * Rewards are distributed every 24 hours based on your share.
+        <div class="prop-box">
+            <span>Your Daily Share:</span>
+            <span class="prop-val" id="propDisplay">0.0000 ${lp.tokenSymbol}</span>
         </div>
 
-        <button class="btn-lock" onclick="executeLock('${id}')">CONFIRM LOCK</button>
-        <button class="btn-cancel" onclick="closePop()">Cancel</button>
+        <button class="btn-lock" style="margin-top:0" onclick="executeLock('${id}')">CONFIRM LOCK</button>
+        <button class="btn-cancel" onclick="closePop()">Cancel participation</button>
     `;
     document.getElementById('lpOverlay').style.display = 'flex';
+}
+
+function calcProportion(id) {
+    const lp = launchpads.find(x => x.id === id);
+    const amt = parseFloat(document.getElementById('lockAmt').value) || 0;
+    const totalDays = Math.ceil((lp.endTime - lp.startTime) / (1000 * 60 * 60 * 24)) || 1;
+    const dailyRelease = parseFloat(lp.poolSize) / totalDays;
+    const global = (lp.globalLocked || 0) + amt;
+    
+    let estimation = global > 0 ? (amt / global) * dailyRelease : 0;
+    document.getElementById('propDisplay').innerText = f8(estimation) + " " + lp.tokenSymbol;
 }
 
 async function executeLock(id) {
@@ -204,13 +241,12 @@ async function executeLock(id) {
     const sym = lp.lockToken.toLowerCase();
     const balance = userData[sym + '_balance'] || 0;
 
-    if(!amt || amt <= 0 || amt > balance) return alert("Invalid amount!");
+    if(!amt || amt <= 0 || amt > balance) return showToast("Invalid amount or balance", "error");
 
     const tid = "LP_LOCK_" + Date.now();
     const up = {};
-    // 1. Deduct from wallet
     up[`users/${auth.currentUser.uid}/${sym}_balance`] = parseFloat((balance - amt).toFixed(8));
-    // 2. Add to locked data
+    
     const currentLocked = (userData.launch_locks && userData.launch_locks[id]) ? userData.launch_locks[id].amount : 0;
     up[`users/${auth.currentUser.uid}/launch_locks/${id}`] = {
         amount: parseFloat((currentLocked + amt).toFixed(8)),
@@ -219,20 +255,25 @@ async function executeLock(id) {
         unlockTime: lp.endTime,
         startTime: Date.now()
     };
-    // 3. Update Global Locked for this LP
+    
     up[`launchpad_list/${id}/globalLocked`] = (lp.globalLocked || 0) + amt;
-    // 4. Push History
     up[`users/${auth.currentUser.uid}/history/${tid}`] = {
-        method: 'Launchpad Locked',
-        coin: lp.lockToken,
-        amount: f8(amt),
-        timestamp: Date.now(),
-        status: 'success'
+        method: 'Launchpad Lock', coin: lp.lockToken, amount: f8(amt), timestamp: Date.now(), status: 'success'
     };
 
     await db.ref().update(up);
-    alert("Locked Successfully!");
+    showToast("Assets locked successfully!", "success");
     closePop();
+}
+
+function showToast(msg, type) {
+    const box = document.getElementById('toast-box');
+    const t = document.createElement('div');
+    t.className = `g-toast`;
+    t.style.borderLeftColor = type === 'success' ? 'var(--up)' : 'var(--down)';
+    t.innerHTML = `<i class="fas ${type==='success'?'fa-check-circle':'fa-exclamation-circle'}" style="color:${type==='success'?'var(--up)':'var(--down)'}"></i><span>${msg}</span>`;
+    box.appendChild(t);
+    setTimeout(() => { t.style.opacity = '0'; setTimeout(()=>t.remove(), 500); }, 3000);
 }
 
 function closePop() { document.getElementById('lpOverlay').style.display = 'none'; }
