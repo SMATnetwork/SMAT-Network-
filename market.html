@@ -13,8 +13,10 @@
 <link rel="icon" type="image/svg+xml" href="data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNTEyIiBoZWlnaHQ9IjUxMiIgdmlld0JveD0iMCAwIDUxMiA1MTIiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+CiAgPGNpcmNsZSBjeD0iMjU2IiBjeT0iMjU2IiByPSIyNDAiIGZpbGw9IiNmM2JhMmYiLz4KICA8Y2lyY2xlIGN4PSIyNTYiIGN5PSIyNTYiIHI9IjIxNSIgc3Ryb2tlPSJ3aGl0ZSIgc3Ryb2tlLXdpZHRoPSI4IiBmaWxsPSJ0cmFuc3BhcmVudCIvPgogIDxwYXRoIGQ9Ik0xNTAgMTcwIEMxNTAgMTQ1IDE3MCAxMzUgMjAwIDEzNSBMMzQwIDEzNSBDMzU1IDEzNSAzNjUgMTQ1IDM2NSAxNjAgQzM2NSAxNzUgMzU1IDE4NSAzNDAgMTg1IEwyMDUgMTg1IEMxOTAgMTg1IDE4NSAxOTAgMTg1IDIwNSBDMTg1IDIyMCAxOTAgMjI1IDIwNSAyMjUgTDM0MCAyMjUgQzM3MCAyMjUgMzkwIDI0NSAzOTAgMjc1IEwzOTAgMzI1IEMzOTAgMzU1IDM3MCAzNzUgMzQwIDM3NSBMMTcwIDM3NSBDMTU1IDM3NSAxNDUgMzY1IDE0NSAzNTAgQzE0NSAzMzUgMTU1IDMyNSAxNzAgMzI1IEwzMzUgMzI1IEMzNTAgMzI1IDM1NSAzMjAgMzU1IDMwNSBDMzU1IDI5MCAzNTAgMjg1IDMzNSAyODUgTDIwMCAyODUgQzE3MCAyODUgMTUwIDI2NSAxNTAgMjM1IFoiIGZpbGw9IndoaXRlIi8+Cjwvc3ZnPg==">   
 
 
+<style>
+    /* Google Fonts Import - Montserrat এবং Inter নিশ্চিত করার জন্য */
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Montserrat:wght@500;600;700;800&display=swap');
 
- <style>
     :root {
         /* ডে-মোড কালার প্যালেট - ১ বিন্দুও লজিক পরিবর্তন ছাড়া */
         --bg: #f8f9fa; 
@@ -41,6 +43,7 @@
         color: var(--text-main); 
         padding-bottom: 85px; 
         overflow-x: hidden; 
+        /* অতিরিক্ত মোটা ভাব দূর করতে গ্লোবাল বোল্ডনেস কমানো হয়েছে */
     }
 
     /* Header & Search */
@@ -102,7 +105,7 @@
         cursor: pointer; 
         white-space: nowrap; 
         transition: 0.3s; 
-        font-weight: 700; 
+        font-weight: 600; /* পিকচার ১ অনুযায়ী সেমি-বোল্ড */
         border: 1px solid var(--border);
     }
 
@@ -154,18 +157,18 @@
     .c-name-box { display: flex; flex-direction: column; }
     .c-name { 
         font-family: var(--font-bold); 
-        font-weight: 900; 
-        font-size: 16px; 
+        font-weight: 700; /* পিকচার ১ অনুযায়ী বোল্ডনেস অ্যাডজাস্ট করা হয়েছে */
+        font-size: 15px; 
         color: var(--text-main); 
-        letter-spacing: -0.5px; 
+        letter-spacing: -0.3px; 
     }
 
-    .c-vol { font-size: 11px; color: var(--text-sec); margin-top: 2px; }
+    .c-vol { font-size: 11px; color: var(--text-sec); margin-top: 2px; font-weight: 500; }
 
-    /* ফিক্সড প্রাইস কালার - এটি সবসময় ব্ল্যাক থাকবে */
+    /* ফিক্সড প্রাইস কালার - ব্ল্যাক এবং মডারেট বোল্ড */
     .c-price { 
         font-family: var(--font-bold); 
-        font-weight: 900; 
+        font-weight: 700; 
         font-size: 15px; 
         text-align: left; 
         color: #000000 !important; 
@@ -174,10 +177,10 @@
     /* Advanced % Change Box */
     .c-change { 
         justify-self: end; 
-        padding: 8px 0; 
+        padding: 6px 0; 
         border-radius: 8px; 
         font-family: var(--font-bold); 
-        font-weight: 900; 
+        font-weight: 700; 
         width: 78px; 
         text-align: center; 
         font-size: 12px; 
@@ -187,18 +190,18 @@
     .up-bg { 
         background: var(--up) !important; 
         color: #fff !important; 
-        box-shadow: 0 4px 12px rgba(14, 203, 129, 0.2); 
+        box-shadow: 0 4px 12px rgba(14, 203, 129, 0.15); 
     }
 
     .down-bg { 
         background: var(--down) !important; 
         color: #fff !important; 
-        box-shadow: 0 4px 12px rgba(246, 70, 93, 0.2); 
+        box-shadow: 0 4px 12px rgba(246, 70, 93, 0.15); 
     }
 
     /* Footer Section */
     .footer {
-        font-weight: 900; 
+        font-weight: 600; 
         position: fixed; 
         bottom: 0; 
         width: 100%; 
@@ -223,7 +226,7 @@
     }
 
     .f-nav i { font-size: 22px; margin-bottom: 5px; }
-    .f-nav.active { color: var(--primary); }
+    .f-nav.active { color: var(--primary); font-weight: 700; }
 
     .fab-wrapper { position: relative; width: 75px; display: flex; justify-content: center; }       
     
@@ -246,7 +249,7 @@
         padding: 18px 18px; 
         border-radius: 50px;  
         text-decoration: none; 
-        font-weight: 800; 
+        font-weight: 700; 
         font-size: 12px;   
         box-shadow: 0 10px 25px rgba(0,0,0,0.2); 
         transition: all 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);  
@@ -293,6 +296,7 @@
     @keyframes subtle-pulse { 0% { transform: scale(1); } 50% { transform: scale(1.05); } 100% { transform: scale(1); } }
     .main-fab:not(.active) { animation: subtle-pulse 3s infinite ease-in-out; }
 </style>
+
 
 
 </head>
