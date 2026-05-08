@@ -10,103 +10,115 @@
 
 
 <style>
-        :root {
-            --primary: #00ff88;
-            --bg: #000000;
-            --card: rgba(15, 18, 22, 0.96);
-            --text-muted: #848e9c;
-        }
+    :root {
+        /* ডে-মোড কালার প্যালেট */
+        --primary: #f3ba2f;           /* আপনার সিগনেচার গোল্ডেন কালার */
+        --bg: #f8f9fa;               /* হালকা গ্রে ব্যাকগ্রাউন্ড */
+        --card: rgba(255, 255, 255, 0.98); /* সাদা কার্ড */
+        --text-main: #1e2329;        /* গাঢ় টেক্সট */
+        --text-muted: #5e6673;       /* হালকা টেক্সট */
+        --input-bg: #f1f4f7;         /* ইনপুট ফিল্ড ব্যাকগ্রাউন্ড */
+        --border-color: rgba(0, 0, 0, 0.08);
+    }
 
-        /* ক্লিক গ্লিচ বন্ধ এবং ইন্টারফেস রিসেট */
-        * { 
-            margin: 0; padding: 0; box-sizing: border-box; 
-            font-family: 'Inter', sans-serif;
-            -webkit-tap-highlight-color: transparent;
-            outline: none !important;
-        }
+    /* ক্লিক গ্লিচ বন্ধ এবং ইন্টারফেস রিসেট */
+    * { 
+        margin: 0; padding: 0; box-sizing: border-box; 
+        font-family: 'Inter', sans-serif;
+        -webkit-tap-highlight-color: transparent;
+        outline: none !important;
+    }
 
-        body {
-            background-color: var(--bg);
-            height: 100vh; display: flex;
-            justify-content: center; align-items: center;
-            overflow: hidden; position: relative;
-        }
+    body {
+        background-color: var(--bg);
+        height: 100vh; display: flex;
+        justify-content: center; align-items: center;
+        overflow: hidden; position: relative;
+    }
 
-        /* --- Pure Code Digital Graphics --- */
-        #graphicsCanvas {
-            position: absolute; top: 0; left: 0;
-            width: 100%; height: 100%;
-            z-index: 1;
-        }
+    /* --- Digital Graphics Canvas --- */
+    #graphicsCanvas {
+        position: absolute; top: 0; left: 0;
+        width: 100%; height: 100%;
+        z-index: 1;
+        opacity: 0.6; /* লাইট মোডে গ্রাফিক্স একটু হালকা রাখা হয়েছে */
+    }
 
-        /* ওল্ড স্কুল ডিজিটাল ফিল্টার */
-        .scanlines {
-            position: absolute; width: 100%; height: 100%;
-            background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.25) 50%), 
-                        linear-gradient(90deg, rgba(255, 0, 0, 0.06), rgba(0, 255, 0, 0.02), rgba(0, 0, 255, 0.06));
-            background-size: 100% 4px, 3px 100%;
-            z-index: 2; pointer-events: none;
-        }
+    /* ওল্ড স্কুল ডিজিটাল ফিল্টার - ডে মোড এডজাস্টেড */
+    .scanlines {
+        position: absolute; width: 100%; height: 100%;
+        background: linear-gradient(rgba(255, 255, 255, 0) 50%, rgba(0, 0, 0, 0.02) 50%), 
+                    linear-gradient(90deg, rgba(243, 186, 47, 0.03), rgba(0, 0, 0, 0.01), rgba(243, 186, 47, 0.03));
+        background-size: 100% 4px, 3px 100%;
+        z-index: 2; pointer-events: none;
+    }
 
-        /* --- Auth Card --- */
-        .auth-container {
-            position: relative; z-index: 10;
-            width: 90%; max-width: 420px;
-            background: var(--card);
-            padding: 45px 30px;
-            border-radius: 32px;
-            border: 1px solid rgba(0, 255, 136, 0.2);
-            box-shadow: 0 0 40px rgba(0, 0, 0, 0.8);
-            text-align: center;
-            backdrop-filter: blur(10px);
-        }
+    /* --- Auth Card --- */
+    .auth-container {
+        position: relative; z-index: 10;
+        width: 90%; max-width: 420px;
+        background: var(--card);
+        padding: 45px 30px;
+        border-radius: 32px;
+        border: 1px solid var(--border-color);
+        box-shadow: 0 10px 40px rgba(0, 0, 0, 0.05); /* হালকা শ্যাডো */
+        text-align: center;
+        backdrop-filter: blur(10px);
+    }
 
-        .logo-circle {
-            width: 90px; height: 90px; margin: 0 auto 20px;
-            background: #fff; border-radius: 60%; overflow: hidden;
-        }
-        .logo-circle img { width: 100%; height: 100%; object-fit: cover; border-radius: 50%; }
+    .logo-circle {
+        width: 90px; height: 90px; margin: 0 auto 20px;
+        background: #fff; border-radius: 50%; overflow: hidden;
+        box-shadow: 0 4px 15px rgba(0,0,0,0.08); /* লোগোর নিচে হালকা ডেপথ */
+    }
+    .logo-circle img { width: 100%; height: 100%; object-fit: cover; border-radius: 50%; }
 
-        .brand-name { font-size: 28px; font-weight: 900; color: #fff; margin-bottom: 8px; }
-        .brand-name span { color: var(--primary); }
-        .sub-desc { color: var(--text-muted); font-size: 14px; margin-bottom: 35px; }
+    .brand-name { font-size: 28px; font-weight: 900; color: var(--text-main); margin-bottom: 8px; }
+    .brand-name span { color: var(--primary); }
+    .sub-desc { color: var(--text-muted); font-size: 14px; margin-bottom: 35px; }
 
-        .form-group { text-align: left; margin-bottom: 25px; }
-        label { display: block; font-size: 11px; color: var(--text-muted); margin-bottom: 8px; font-weight: 800; text-transform: uppercase; letter-spacing: 1px; }
+    .form-group { text-align: left; margin-bottom: 25px; }
+    label { display: block; font-size: 11px; color: var(--text-muted); margin-bottom: 8px; font-weight: 800; text-transform: uppercase; letter-spacing: 1px; }
 
-        input {
-            width: 100%; padding: 18px;
-            background: #1e2329; border: 1px solid transparent;
-            border-radius: 14px; color: #fff; font-size: 16px;
-        }
-        input:focus { border-color: var(--primary); background: #000; }
+    input {
+        width: 100%; padding: 18px;
+        background: var(--input-bg); border: 1px solid transparent;
+        border-radius: 14px; color: var(--text-main); font-size: 16px;
+        transition: 0.3s;
+    }
+    input::placeholder { color: #929aa5; }
+    input:focus { border-color: var(--primary); background: #ffffff; box-shadow: 0 0 10px rgba(243, 186, 47, 0.1); }
 
-        .pass-box { position: relative; }
-        .eye-icon { position: absolute; right: 18px; top: 50%; transform: translateY(-50%); color: var(--text-muted); cursor: pointer; padding: 5px; }
+    .pass-box { position: relative; }
+    .eye-icon { position: absolute; right: 18px; top: 50%; transform: translateY(-50%); color: var(--text-muted); cursor: pointer; padding: 5px; }
 
-        #actionBtn {
-            width: 100%; padding: 18px;
-            background: var(--primary); color: #000;
-            border: none; border-radius: 14px;
-            font-size: 18px; font-weight: 900;
-            cursor: pointer; margin-top: 10px; transition: 0.3s;
-        }
-        #actionBtn:disabled { background: #2b3139; color: #5e6673; cursor: not-allowed; }
+    #actionBtn {
+        width: 100%; padding: 18px;
+        background: var(--primary); color: #000;
+        border: none; border-radius: 14px;
+        font-size: 18px; font-weight: 900;
+        cursor: pointer; margin-top: 10px; transition: 0.3s;
+        box-shadow: 0 4px 15px rgba(243, 186, 47, 0.3);
+    }
+    #actionBtn:active { transform: scale(0.98); }
+    #actionBtn:disabled { background: #e6e9ed; color: #b7bdc6; cursor: not-allowed; box-shadow: none; }
 
-        /* লিঙ্ক গ্লিচ বন্ধ করার মাস্টার ফিক্স */
-        .auth-footer { margin-top: 25px; padding-top: 20px; border-top: 1px solid rgba(255, 255, 255, 0.05); }
-        .link-primary { color: var(--primary); cursor: pointer; font-weight: 800; font-size: 14px; background: none !important; }
-        .link-secondary { color: var(--text-muted); cursor: pointer; font-size: 13px; display: block; margin-top: 15px; background: none !important; }
+    /* লিঙ্ক গ্লিচ বন্ধ করার মাস্টার ফিক্স */
+    .auth-footer { margin-top: 25px; padding-top: 20px; border-top: 1px solid var(--border-color); }
+    .link-primary { color: var(--primary); cursor: pointer; font-weight: 800; font-size: 14px; background: none !important; text-decoration: none; }
+    .link-secondary { color: var(--text-muted); cursor: pointer; font-size: 13px; display: block; margin-top: 15px; background: none !important; text-decoration: none; }
 
-        /* টোস্ট */
-        #customToast {
-            position: fixed; top: -100px; left: 50%; transform: translateX(-50%);
-            background: #1e2329; color: #fff; padding: 16px 25px; border-radius: 12px;
-            z-index: 1000; border-left: 5px solid var(--primary); transition: 0.5s;
-            display: flex; align-items: center; gap: 12px; box-shadow: 0 10px 30px rgba(0,0,0,0.5);
-        }
-        #customToast.active { top: 30px; }
-    </style>
+    /* টোস্ট - ডে মোড */
+    #customToast {
+        position: fixed; top: -100px; left: 50%; transform: translateX(-50%);
+        background: #ffffff; color: var(--text-main); padding: 16px 25px; border-radius: 12px;
+        z-index: 1000; border-left: 5px solid var(--primary); transition: 0.5s;
+        display: flex; align-items: center; gap: 12px; box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+        font-weight: 600;
+    }
+    #customToast.active { top: 30px; }
+</style>
+
 </head>
 <body>
 
