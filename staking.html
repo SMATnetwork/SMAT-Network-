@@ -1,0 +1,261 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>SMAT | Staking</title>
+    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-database-compat.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@900&family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg: #0b0e11; --card: #1e2329; --primary: #f0b90b;
+            --up: #0ecb81; --down: #f6465d; --text-sec: #848e9c;
+            --border: rgba(255, 255, 255, 0.08);
+            --font-bold: 'Montserrat', sans-serif;
+        }
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Inter', sans-serif; font-weight: 900; }
+        body { background: var(--bg); color: white; padding-bottom: 100px; }
+
+        .header { padding: 30px 20px; background: linear-gradient(180deg, rgba(240, 185, 11, 0.15) 0%, var(--bg) 100%); text-align: center; }
+        .header h1 { font-family: var(--font-bold); color: var(--primary); font-size: 28px; }
+
+        .staking-container { padding: 15px; }
+        
+        /* Dynamic Coin Card */
+        .stake-card {
+            background: var(--card); border: 1px solid var(--border); border-radius: 20px;
+            padding: 20px; margin-bottom: 15px; transition: 0.3s;
+        }
+        .coin-info { display: flex; align-items: center; gap: 12px; margin-bottom: 15px; }
+        .coin-logo { width: 45px; height: 45px; border-radius: 50%; border: 2px solid var(--primary); }
+        
+        .apy-badge { background: rgba(14, 203, 129, 0.1); color: var(--up); padding: 5px 12px; border-radius: 8px; font-size: 12px; }
+
+        .tabs { display: flex; gap: 10px; margin-top: 15px; }
+        .tab { 
+            flex: 1; padding: 10px; text-align: center; border-radius: 10px; 
+            background: #181a20; border: 1px solid var(--border); font-size: 11px; cursor: pointer;
+        }
+        .tab.active { border-color: var(--primary); color: var(--primary); }
+
+        .input-group { background: #181a20; border-radius: 12px; padding: 12px; margin-top: 15px; border: 1px solid var(--border); }
+        .input-group input { width: 100%; background: transparent; border: none; color: white; font-size: 18px; outline: none; }
+        
+        .calc-box { 
+            margin-top: 15px; padding: 15px; border-radius: 12px; 
+            background: rgba(255,255,255,0.03); font-size: 12px;
+        }
+        .calc-row { display: flex; justify-content: space-between; margin-bottom: 5px; color: var(--text-sec); }
+
+        .btn-stake { 
+            width: 100%; background: var(--primary); color: black; border: none; 
+            padding: 15px; border-radius: 15px; margin-top: 15px; cursor: pointer;
+        }
+
+        /* Responsive Overlay */
+        .overlay { 
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%; 
+            background: rgba(0,0,0,0.9); display: none; align-items: center; justify-content: center; z-index: 9999; 
+        }
+        .modal { background: var(--card); width: 90%; max-width: 400px; border-radius: 25px; padding: 25px; border: 1px solid var(--border); }
+
+        .footer {position: fixed; bottom: 0; width: 100%; height: 75px; background: #0b0e11; display: flex; justify-content: space-around; align-items: center; border-top: 1px solid var(--border);}
+        .f-nav {text-decoration: none; color: var(--text-sec); text-align: center; font-size: 12px; flex: 1; display: flex; flex-direction: column; gap: 4px; }
+        .f-nav.active { color: var(--primary); }
+    </style>
+</head>
+<body>
+
+    <div class="header">
+        <h1>STAKING HUB</h1>
+        <p style="font-size: 12px; color: var(--text-sec);">Stake Assets, Earn Passive Rewards</p>
+    </div>
+
+    <div class="staking-container" id="stakingPools">
+        <div style="text-align: center; padding: 50px; color: var(--text-sec);">
+            <i class="fas fa-spinner fa-spin" style="font-size: 30px;"></i>
+            <p>Loading Pools...</p>
+        </div>
+    </div>
+
+    <div class="overlay" id="stakeOverlay">
+        <div class="modal" id="modalContent"></div>
+    </div>
+
+    <footer class="footer">
+        <a href="home.html" class="f-nav"><i class="fas fa-home"></i>Home</a>
+        <a href="wallet.html" class="f-nav"><i class="fas fa-wallet"></i>Wallet</a>
+        <a href="staking.html" class="f-nav active"><i class="fas fa-layer-group"></i>Stake</a>
+        <a href="mining.html" class="f-nav"><i class="fas fa-microchip"></i>Mining</a>
+    </footer>
+
+<script>
+    // Firebase Config (Same as your wallet)
+    const firebaseConfig = { apiKey: "AIzaSyAMxtJedkehhxJRMPZLjhpKHqneHEWsGlE", authDomain: "smat-exchange.firebaseapp.com", projectId: "smat-exchange", databaseURL: "https://smat-exchange-default-rtdb.firebaseio.com" };
+    if (!firebase.apps.length) firebase.initializeApp(firebaseConfig);
+    const db = firebase.database();
+    const auth = firebase.auth();
+
+    let userData = {};
+    let stakingSettings = {}; // Admin controlled
+
+    function init() {
+        auth.onAuthStateChanged(user => {
+            if (user) {
+                // ১. স্ট্যাকিং সেটিং আনা (এডমিন প্যানেল থেকে)
+                db.ref('staking_settings').on('value', snap => {
+                    stakingSettings = snap.val() || {};
+                    loadPools();
+                });
+                // ২. ইউজার ডাটা আনা
+                db.ref('users/' + user.uid).on('value', snap => {
+                    userData = snap.val() || {};
+                });
+            } else { location.href = "logIn.html"; }
+        });
+    }
+
+    function loadPools() {
+        const container = document.getElementById('stakingPools');
+        let html = "";
+
+        Object.keys(stakingSettings).forEach(key => {
+            const coin = stakingSettings[key];
+            const sym = coin.symbol.toLowerCase();
+            
+            // Dynamic APY Calculation (Total Pool জমা বাড়লে APY কমে)
+            const totalStaked = coin.totalStaked || 0;
+            const maxPool = coin.maxPool || 1000000;
+            const currentAPY = (coin.startingAPY * (1 - (totalStaked / maxPool))).toFixed(2);
+
+            html += `
+                <div class="stake-card">
+                    <div class="coin-info">
+                        <img src="${coin.logopath}" class="coin-logo" onerror="this.src='assets/logos/generic.png'">
+                        <div style="flex:1">
+                            <h4>${coin.name} (${coin.symbol})</h4>
+                            <p style="font-size:10px; color:var(--text-sec)">Network: ${coin.network}</p>
+                        </div>
+                        <div class="apy-badge">Up to ${currentAPY}% APY</div>
+                    </div>
+                    
+                    <div class="tabs">
+                        <div class="tab" onclick="openStakeModal('${key}', 'flexible')">Flexible</div>
+                        <div class="tab" onclick="openStakeModal('${key}', 'fixed')">Fixed (High Yield)</div>
+                    </div>
+                </div>
+            `;
+        });
+        container.innerHTML = html || "<p style='text-align:center;'>No Staking Pools Available.</p>";
+    }
+
+    function openStakeModal(coinKey, type) {
+        const coin = stakingSettings[coinKey];
+        const userBal = userData[coin.symbol.toLowerCase() + '_balance'] || 0;
+        const overlay = document.getElementById('stakeOverlay');
+        
+        let optionsHtml = type === 'fixed' ? `
+            <div class="tabs" id="durationTabs">
+                <div class="tab active" data-days="15">15D</div>
+                <div class="tab" data-days="30">30D</div>
+                <div class="tab" data-days="90">90D</div>
+                <div class="tab" data-days="180">180D</div>
+            </div>` : `<p style="font-size:11px; color:var(--up); margin-top:10px;">Flexible: Withdraw anytime</p>`;
+
+        document.getElementById('modalContent').innerHTML = `
+            <div style="display:flex; justify-content:space-between; margin-bottom:20px;">
+                <h3>Stake ${coin.symbol}</h3>
+                <i class="fas fa-times" onclick="closeModal()"></i>
+            </div>
+            <p style="font-size:12px; color:var(--text-sec)">Balance: ${userBal} ${coin.symbol}</p>
+            
+            <div class="input-group">
+                <input type="number" id="stakeAmount" placeholder="0.00" oninput="calculateReward('${coinKey}', '${type}')">
+            </div>
+
+            ${optionsHtml}
+
+            <div class="calc-box">
+                <div class="calc-row"><span>Daily Profit</span><span id="dailyEarn">0.00</span></div>
+                <div class="calc-row"><span>Estimated Total</span><span id="totalEarn">0.00</span></div>
+            </div>
+
+            <button class="btn-stake" onclick="processStaking('${coinKey}', '${type}')">CONFIRM STAKE</button>
+        `;
+        overlay.style.display = 'flex';
+
+        // Fixed Duration Click Listener
+        if(type === 'fixed'){
+            document.querySelectorAll('#durationTabs .tab').forEach(t => {
+                t.onclick = function() {
+                    document.querySelectorAll('#durationTabs .tab').forEach(x => x.classList.remove('active'));
+                    this.classList.add('active');
+                    calculateReward(coinKey, type);
+                }
+            });
+        }
+    }
+
+    function calculateReward(coinKey, type) {
+        const coin = stakingSettings[coinKey];
+        const amt = parseFloat(document.getElementById('stakeAmount').value) || 0;
+        let apy = coin.startingAPY;
+        
+        // Fixed bonus
+        if(type === 'fixed') {
+            const days = parseInt(document.querySelector('#durationTabs .tab.active').dataset.days);
+            apy += (days / 10); // বেশি দিন থাকলে কিছুটা বেশি মুনাফা
+        }
+
+        const daily = (amt * (apy / 100)) / 365;
+        document.getElementById('dailyEarn').innerText = daily.toFixed(6) + " " + coin.symbol;
+        document.getElementById('totalEarn').innerText = (daily * (type === 'fixed' ? parseInt(document.querySelector('#durationTabs .tab.active').dataset.days) : 30)).toFixed(4);
+    }
+
+    async function processStaking(coinKey, type) {
+        const coin = stakingSettings[coinKey];
+        const amt = parseFloat(document.getElementById('stakeAmount').value);
+        const userBal = userData[coin.symbol.toLowerCase() + '_balance'] || 0;
+        
+        if(!amt || amt <= 0 || amt > userBal) {
+            alert("Invalid amount or insufficient balance!");
+            return;
+        }
+
+        const sSym = 's' + coin.symbol.toLowerCase(); // আপনার শর্ত: s শব্দ যুক্ত হবে
+        const days = type === 'fixed' ? parseInt(document.querySelector('#durationTabs .tab.active').dataset.days) : 0;
+        
+        const stakeData = {
+            coin: coin.symbol,
+            amount: amt,
+            type: type,
+            duration: days,
+            startTime: Date.now(),
+            apy: coin.startingAPY,
+            status: 'active'
+        };
+
+        const updates = {};
+        // ১. মেইন ব্যালেন্স থেকে কাটা
+        updates[`users/${auth.currentUser.uid}/${coin.symbol.toLowerCase()}_balance`] = userBal - amt;
+        // ২. স্ট্যাকিং ব্যালেন্সে (sSymbol) যোগ করা
+        updates[`users/${auth.currentUser.uid}/${sSym}_balance`] = (userData[sSym + '_balance'] || 0) + amt;
+        // ৩. স্ট্যাকিং হিস্ট্রিতে সেভ করা
+        const stakeId = db.ref('users/' + auth.currentUser.uid + '/stakes').push().key;
+        updates[`users/${auth.currentUser.uid}/stakes/${stakeId}`] = stakeData;
+        // ৪. গ্লোবাল পুলে জমা দেখানো (APY কমানোর জন্য)
+        updates[`staking_settings/${coinKey}/totalStaked`] = (coin.totalStaked || 0) + amt;
+
+        await db.ref().update(updates);
+        alert("Staking Successful!");
+        closeModal();
+    }
+
+    function closeModal() { document.getElementById('stakeOverlay').style.display = 'none'; }
+    window.onload = init;
+</script>
+</body>
+</html>
