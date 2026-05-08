@@ -17,13 +17,13 @@
  <style>
     :root {
         /* ডে-মোড কালার প্যালেট - ১ বিন্দুও লজিক পরিবর্তন ছাড়া */
-        --bg: #f8f9fa;             /* ডার্ক থেকে লাইট গ্রে */
-        --card: #ffffff;           /* সাদা কার্ড */
-        --primary: #f3ba2f;        /* আপনার সিগনেচার গোল্ডেন */
+        --bg: #f8f9fa; 
+        --card: #ffffff;
+        --primary: #f3ba2f;
         --up: #0ecb81; 
         --down: #f6465d; 
-        --text-main: #1e2329;      /* ডার্ক টেক্সট */
-        --text-sec: #5e6673;       /* মিউটেড টেক্সট */
+        --text-main: #1e2329; /* মেইন ব্ল্যাক টেক্সট */
+        --text-sec: #5e6673; 
         --border: rgba(0, 0, 0, 0.06);
         --font-bold: 'Montserrat', sans-serif;
     }
@@ -77,10 +77,6 @@
         width: 100%; 
         outline: none; 
         font-size: 15px; 
-    }
-
-    .search-box input::placeholder {
-        color: var(--text-sec);
     }
 
     /* Market Tabs */
@@ -166,16 +162,39 @@
 
     .c-vol { font-size: 11px; color: var(--text-sec); margin-top: 2px; }
 
-    .c-price { font-family: var(--font-bold); font-weight: 900; font-size: 15px; text-align: left; }
-        
-        /* Advanced % Change Box */
-        .c-change { 
-            justify-self: end; padding: 8px 0; border-radius: 8px; 
-            font-family: var(--font-bold); font-weight: 900; width: 78px; 
-            text-align: center; font-size: 12px; transition: 0.3s;
-        }
-        .up-bg { background:green; color: #000; box-shadow: 0 4px 12px rgba(14, 203, 129, 0.2); }
-        .down-bg { background:red; color: #fff; box-shadow: 0 4px 12px rgba(246, 70, 93, 0.2); }
+    /* ফিক্সড প্রাইস কালার - এটি সবসময় ব্ল্যাক থাকবে */
+    .c-price { 
+        font-family: var(--font-bold); 
+        font-weight: 900; 
+        font-size: 15px; 
+        text-align: left; 
+        color: #000000 !important; 
+    }
+    
+    /* Advanced % Change Box */
+    .c-change { 
+        justify-self: end; 
+        padding: 8px 0; 
+        border-radius: 8px; 
+        font-family: var(--font-bold); 
+        font-weight: 900; 
+        width: 78px; 
+        text-align: center; 
+        font-size: 12px; 
+        transition: 0.3s;
+    }
+
+    .up-bg { 
+        background: var(--up) !important; 
+        color: #fff !important; 
+        box-shadow: 0 4px 12px rgba(14, 203, 129, 0.2); 
+    }
+
+    .down-bg { 
+        background: var(--down) !important; 
+        color: #fff !important; 
+        box-shadow: 0 4px 12px rgba(246, 70, 93, 0.2); 
+    }
 
     /* Footer Section */
     .footer {
@@ -223,7 +242,7 @@
 
     .popup-btn {   
         position: absolute; 
-        background: #333; /* ডার্ক বাটন ফর কন্ট্রাস্ট ইন ডে মোড */
+        background: #333; 
         padding: 18px 18px; 
         border-radius: 50px;  
         text-decoration: none; 
@@ -274,6 +293,7 @@
     @keyframes subtle-pulse { 0% { transform: scale(1); } 50% { transform: scale(1.05); } 100% { transform: scale(1); } }
     .main-fab:not(.active) { animation: subtle-pulse 3s infinite ease-in-out; }
 </style>
+
 
 </head>
 <body>
