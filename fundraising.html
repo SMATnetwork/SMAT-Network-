@@ -25,59 +25,46 @@
 
         /* Header */
         .v-header { padding: 40px 20px; text-align: center; border-bottom: 1px solid var(--border); }
-        .v-header h1 { font-size: 22px; color: var(--primary); margin-bottom: 8px; }
-        .v-header h3 { font-size: 11px; color: var(--text-sec); letter-spacing: 0.5px; }
+        .v-header h1 { font-size: 20px; color: var(--primary); margin-bottom: 8px; }
+        .v-header h3 { font-size: 10px; color: var(--text-sec); letter-spacing: 0.5px; }
 
-        /* Main List Container */
         #projectListContainer { padding: 15px; max-width: 600px; margin: auto; }
 
-        /* Project Card */
+        /* Card Design */
         .proj-card { 
-            position: relative;
-            background: var(--card); border-radius: 24px; padding: 20px; 
-            border: 1px solid var(--border); margin-bottom: 25px; 
-            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+            position: relative; background: var(--card); border-radius: 24px; padding: 20px; 
+            border: 1px solid var(--border); margin-bottom: 25px; overflow: hidden;
         }
 
-        /* Status Badge Style */
         .status-badge {
-            position: absolute; top: 20px; right: 20px;
-            padding: 5px 12px; border-radius: 8px; font-size: 9px;
-            font-family: var(--font-mon); text-transform: uppercase;
-            border: 1px solid rgba(255,255,255,0.1);
+            position: absolute; top: 20px; right: 20px; padding: 5px 12px; 
+            border-radius: 8px; font-size: 9px; font-family: var(--font-mon);
         }
-        .ongoing { color: var(--status-ongoing); background: rgba(14, 203, 129, 0.1); }
-        .completed { color: var(--status-completed); background: rgba(246, 70, 93, 0.1); }
+        .ongoing { color: var(--status-ongoing); background: rgba(14, 203, 129, 0.1); border: 1px solid var(--status-ongoing); }
+        .completed { color: var(--status-completed); background: rgba(246, 70, 93, 0.1); border: 1px solid var(--status-completed); }
 
         .proj-top { display: flex; align-items: center; gap: 15px; margin-bottom: 20px; padding-right: 80px; }
-        .proj-logo { width: 60px; height: 60px; border-radius: 15px; border: 2px solid var(--accent); object-fit: cover; }
+        .proj-logo { width: 55px; height: 55px; border-radius: 15px; border: 2px solid var(--accent); object-fit: cover; }
         
-        /* Description Fix */
-        .description { 
-            font-size: 13px; color: #b7bdc6; line-height: 1.6; 
-            margin: 20px 0; text-align: justify; font-weight: 400;
-            white-space: pre-wrap; 
-            overflow-wrap: break-word; 
-            word-wrap: break-word;
-        }
-
         /* Links Grid */
         .links-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 20px; }
         .link-item { 
             background: #0b0e11; padding: 12px; border-radius: 12px; 
             display: flex; justify-content: space-between; align-items: center; 
-            border: 1px solid var(--border); text-decoration: none; color: white; 
+            border: 1px solid var(--border); text-decoration: none; color: white; font-size: 12px;
         }
         .link-item i { color: var(--accent); }
 
-        /* Stats Card */
-        .stats-card { 
-            background: #161a1e; border-radius: 18px; padding: 15px; 
-            display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 5px; 
-            text-align: center; border: 1px solid var(--accent); margin-bottom: 15px;
+        /* Description: সঠিক স্থানে এবং ফন্টে প্রদর্শনের জন্য */
+        .description-box { 
+            font-size: 13px; color: #b7bdc6; line-height: 1.6; 
+            margin: 15px 0; text-align: justify; font-weight: 400;
+            white-space: pre-wrap; word-wrap: break-word;
+            padding: 10px 0; border-top: 1px solid var(--border);
         }
-        .stat-box span { font-size: 8px; color: var(--text-sec); display: block; }
-        .stat-box b { font-size: 11px; color: white; }
+
+        .tokenomics-box { margin-bottom: 15px; }
+        .token-row { display: flex; justify-content: space-between; font-size: 11px; margin-bottom: 5px; }
 
         .btn-participate { 
             width: 100%; background: var(--primary); color: #000; border: none; 
@@ -85,17 +72,25 @@
         }
         .btn-participate:disabled { background: #474d57; color: #848e9c; cursor: not-allowed; }
 
-        /* History */
+        .stats-card { 
+            background: #161a1e; border-radius: 18px; padding: 15px; 
+            display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 5px; 
+            text-align: center; border: 1px solid var(--accent); margin-top: 20px;
+        }
+        .stat-box span { font-size: 8px; color: var(--text-sec); display: block; }
+        .stat-box b { font-size: 11px; color: white; }
+
+        /* History Table */
         .history-box { margin-top: 20px; border-top: 1px solid var(--border); padding-top: 15px; }
         table { width: 100%; border-collapse: collapse; margin-top: 10px; }
         th { text-align: left; font-size: 10px; color: var(--text-sec); padding: 8px; }
         td { padding: 10px 8px; font-size: 11px; border-bottom: 1px solid rgba(255,255,255,0.03); }
         .my-row { background: rgba(0, 255, 255, 0.05); color: var(--accent); }
 
+        /* Modal & Footer (Same as before) */
         .modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.9); display: none; align-items: center; justify-content: center; z-index: 5000; padding: 20px; }
         .modal-content { background: var(--card); border: 1px solid var(--accent); border-radius: 24px; padding: 25px; width: 100%; max-width: 380px; text-align: center; }
         .f-input { width: 100%; background: #0b0e11; border: 1px solid var(--border); padding: 15px; border-radius: 10px; color: white; font-size: 18px; margin: 15px 0; outline: none; }
-
         .footer { position: fixed; bottom: 0; width: 100%; height: 75px; background: #0b0e11; display: flex; justify-content: space-around; align-items: center; border-top: 1px solid var(--border); }
         .f-nav { text-decoration: none; color: var(--text-sec); text-align: center; font-size: 10px; flex: 1; }
         .f-nav i { font-size: 20px; display: block; margin-bottom: 5px; }
@@ -115,7 +110,7 @@
             <h2 class="mon-900" style="color:var(--accent)">Participate</h2>
             <p id="userBalDisplay" style="font-size:12px; margin-top:10px; color:var(--text-sec)"></p>
             <input type="number" id="investAmt" class="f-input" placeholder="0.00">
-            <button class="btn-participate mon-900" id="modalConfirmBtn" onclick="confirmInvestment()">Confirm</button>
+            <button class="btn-participate mon-900" onclick="confirmInvestment()">Confirm</button>
             <button onclick="closeModal()" style="background:none; border:none; color:white; margin-top:15px; cursor:pointer">Close</button>
         </div>
     </div>
@@ -158,39 +153,27 @@ async function renderUI() {
     const container = document.getElementById('projectListContainer');
     container.innerHTML = "";
 
-    if(allProjects.length === 0) {
-        container.innerHTML = "<p style='text-align:center; color:gray; margin-top:50px;'>No Available Project</p>";
-        return;
-    }
-
     for (let proj of allProjects) {
         const contSnap = await db.ref('fundraising_contributions/' + proj.id).once('value');
         const contributions = contSnap.val() || {};
-        
         const historyArr = Object.keys(contributions).map(uid => ({uid, ...contributions[uid]})).sort((a,b) => b.amount - a.amount);
         const globalTotal = historyArr.reduce((acc, cur) => acc + cur.amount, 0);
         const myCont = historyArr.find(x => x.uid === userData.uid);
         const myTotal = myCont ? myCont.amount : 0;
 
-        // Status Logic
+        // Status ও বাটনের লজিক
         const isCompleted = proj.status === 'Completed';
-        const statusText = isCompleted ? 'Completed' : 'Ongoing';
         const statusClass = isCompleted ? 'completed' : 'ongoing';
+        const statusLabel = isCompleted ? 'Completed' : 'Ongoing';
 
-        let visibleRows = "";
-        let hiddenRows = "";
-        
-        historyArr.forEach((item, index) => {
-            const isMe = item.uid === userData.uid;
-            const row = `<tr class="${isMe ? 'my-row' : ''}"><td>${item.smat_id || 'User'}</td><td>${item.amount.toFixed(2)} USDT</td><td>#${index + 1}</td></tr>`;
-            if (index < 5) visibleRows += row;
-            else hiddenRows += row;
+        let rowsHtml = "";
+        historyArr.slice(0, 5).forEach((item, index) => {
+            rowsHtml += `<tr class="${item.uid === userData.uid ? 'my-row' : ''}"><td>${item.smat_id}</td><td>${item.amount.toFixed(2)}</td><td>#${index+1}</td></tr>`;
         });
 
         const card = `
             <div class="proj-card">
-                <div class="status-badge ${statusClass}">${statusText}</div>
-                
+                <div class="status-badge ${statusClass}">${statusLabel}</div>
                 <div class="proj-top">
                     <img src="${proj.logo}" class="proj-logo">
                     <h2 class="mon-900" style="color:var(--accent); font-size:16px;">${proj.title}</h2>
@@ -203,19 +186,21 @@ async function renderUI() {
                     <a href="${proj.discord_url || '#'}" target="_blank" class="link-item"><span>Discord</span><i class="fab fa-discord"></i></a>
                 </div>
 
-                <div class="mon-900" style="color:var(--primary); font-size:12px; margin-bottom:10px;">Tokenomics</div>
-                <div style="display:flex; justify-content:space-between; font-size:11px; margin-bottom:5px;"><span>Total Tokens:</span><b>${proj.total_tokens}</b></div>
-                <div style="display:flex; justify-content:space-between; font-size:11px; margin-bottom:15px;"><span>Vesting:</span><b>${proj.vesting_percent}%</b></div>
+                <div class="tokenomics-box">
+                    <div class="mon-900" style="color:var(--primary); font-size:11px; margin-bottom:8px;">Tokenomics</div>
+                    <div class="token-row"><span>Total Tokens:</span><b>${proj.total_tokens}</b></div>
+                    <div class="token-row"><span>Vesting:</span><b>${proj.vesting_percent}%</b></div>
+                </div>
 
-                <div class="description">${proj.description}</div>
+                <div class="description-box">${proj.description || 'No description provided.'}</div>
 
                 <button class="btn-participate mon-900" 
                     ${isCompleted ? 'disabled' : ''} 
                     onclick="openModal('${proj.id}')">
-                    ${isCompleted ? 'Finished' : 'Participate Now'}
+                    ${isCompleted ? 'SALE FINISHED' : 'PARTICIPATE NOW'}
                 </button>
 
-                <div class="stats-card" style="margin-top:20px;">
+                <div class="stats-card">
                     <div class="stat-box"><span>MY FUNDING</span><b>${myTotal.toFixed(2)}</b></div>
                     <div class="stat-box"><b style="color:var(--accent); font-size:8px;">SMAT VENTURE<br>GROWING</b></div>
                     <div class="stat-box"><span>GLOBAL FUNDING</span><b>${globalTotal.toFixed(2)}</b></div>
@@ -225,10 +210,8 @@ async function renderUI() {
                     <span class="mon-900" style="font-size:10px; color:var(--text-sec)">Funding History</span>
                     <table>
                         <thead><tr><th>SMAT ID</th><th>AMOUNT</th><th>RANK</th></tr></thead>
-                        <tbody>${visibleRows || '<tr><td colspan="3" style="text-align:center">No contributions yet</td></tr>'}</tbody>
-                        <tbody id="more-${proj.id}" style="display:none">${hiddenRows}</tbody>
+                        <tbody>${rowsHtml || '<tr><td colspan="3" style="text-align:center">No contributions</td></tr>'}</tbody>
                     </table>
-                    ${hiddenRows ? `<div style="text-align:center; margin-top:10px;"><button onclick="toggleHistory('${proj.id}', this)" style="background:none; border:none; color:var(--accent); font-size:10px; cursor:pointer;" class="mon-900">+ Show More</button></div>` : ''}
                 </div>
             </div>
         `;
@@ -236,21 +219,9 @@ async function renderUI() {
     }
 }
 
-window.toggleHistory = (projId, btn) => {
-    const moreList = document.getElementById(`more-${projId}`);
-    if (moreList.style.display === "none") {
-        moreList.style.display = "table-row-group";
-        btn.innerText = "- Show Less";
-    } else {
-        moreList.style.display = "none";
-        btn.innerText = "+ Show More";
-    }
-};
-
 function openModal(id) {
     activeInvestProj = allProjects.find(p => p.id === id);
-    if(activeInvestProj.status === 'Completed') return;
-    document.getElementById('userBalDisplay').innerText = "Available: " + (userData.usdt_balance || 0).toFixed(2) + " USDT";
+    document.getElementById('userBalDisplay').innerText = "Balance: " + (userData.usdt_balance || 0).toFixed(2) + " USDT";
     document.getElementById('fundModal').style.display = 'flex';
 }
 
@@ -258,26 +229,20 @@ function closeModal() { document.getElementById('fundModal').style.display = 'no
 
 async function confirmInvestment() {
     const amt = parseFloat(document.getElementById('investAmt').value);
-    const myBal = parseFloat(userData.usdt_balance || 0);
-    if(!amt || amt <= 0 || amt > myBal) return alert("Invalid Balance or Amount!");
+    if(!amt || amt <= 0 || amt > (userData.usdt_balance || 0)) return alert("Invalid Amount!");
 
     const pid = activeInvestProj.id;
     db.ref(`fundraising_contributions/${pid}/${userData.uid}`).once('value', s => {
         const prev = s.val() ? s.val().amount : 0;
         const updates = {};
-        updates[`users/${userData.uid}/usdt_balance`] = parseFloat((myBal - amt).toFixed(8));
+        updates[`users/${userData.uid}/usdt_balance`] = parseFloat((userData.usdt_balance - amt).toFixed(8));
         updates[`fundraising_contributions/${pid}/${userData.uid}`] = {
             amount: prev + amt,
             smat_id: userData.smatID || "User",
             timestamp: Date.now()
         };
-        const tid = "VENTURE_" + Date.now();
-        updates[`users/${userData.uid}/history/${tid}`] = {
-            method: 'Venture Invest', coin: 'USDT', amount: amt.toFixed(2), timestamp: Date.now(), status: 'success'
-        };
-
         db.ref().update(updates).then(() => {
-            alert("Success!");
+            alert("Contribution Successful!");
             closeModal();
         });
     });
