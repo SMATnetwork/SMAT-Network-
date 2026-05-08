@@ -3,93 +3,136 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>SMAT Venture | Admin Control</title>
+    <title>SMAT | Venture Admin</title>
     <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-database-compat.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@700;900&family=Inter:wght@400;600&display=swap" rel="stylesheet">
-    
+  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNTEyIiBoZWlnaHQ9IjUxMiIgdmlld0JveD0iMCAwIDUxMiA1MTIiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+CiAgPGNpcmNsZSBjeD0iMjU2IiBjeT0iMjU2IiByPSIyNDAiIGZpbGw9IiNmM2JhMmYiLz4KICA8Y2lyY2xlIGN4PSIyNTYiIGN5PSIyNTYiIHI9IjIxNSIgc3Ryb2tlPSJ3aGl0ZSIgc3Ryb2tlLXdpZHRoPSI4IiBmaWxsPSJ0cmFuc3BhcmVudCIvPgogIDxwYXRoIGQ9Ik0xNTAgMTcwIEMxNTAgMTQ1IDE3MCAxMzUgMjAwIDEzNSBMMzQwIDEzNSBDMzU1IDEzNSAzNjUgMTQ1IDM2NSAxNjAgQzM2NSAxNzUgMzU1IDE4NSAzNDAgMTg1IEwyMDUgMTg1IEMxOTAgMTg1IDE4NSAxOTAgMTg1IDIwNSBDMTg1IDIyMCAxOTAgMjI1IDIwNSAyMjUgTDM0MCAyMjUgQzM3MCAyMjUgMzkwIDI0NSAzOTAgMjc1IEwzOTAgMzI1IEMzOTAgMzU1IDM3MCAzNzUgMzQwIDM3NSBMMTcwIDM3NSBDMTU1IDM3NSAxNDUgMzY1IDE0NSAzNTAgQzE0NSAzMzUgMTU1IDMyNSAxNzAgMzI1IEwzMzUgMzI1IEMzNTAgMzI1IDM1NSAzMjAgMzU1IDMwNSBDMzU1IDI5MCAzNTAgMjg1IDMzNSAyODUgTDIwMCAyODUgQzE3MCAyODUgMTUwIDI2NSAxNTAgMjM1IFoiIGZpbGw9IndoaXRlIi8+Cjwvc3ZnPg==">  
     <style>
         :root {
-            --bg: #0b0e11; --card: #1e2329; --primary: #f0b90b;
+            --bg: #0b0e11; --card: #1e2329; --primary: #ffff00;
             --accent: #00ffff; --border: rgba(255, 255, 255, 0.08);
+            --font-mont: 'Montserrat', sans-serif;
         }
-        body { background: var(--bg); color: white; font-family: 'Inter', sans-serif; padding: 20px; }
-        .admin-container { max-width: 900px; margin: 0 auto; }
-        h1 { font-family: 'Montserrat'; color: var(--primary); margin-bottom: 20px; text-align: center; }
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Inter', sans-serif; }
+        body { background: var(--bg); color: white; padding: 30px 15px; }
 
-        .section { background: var(--card); padding: 25px; border-radius: 15px; border: 1px solid var(--border); margin-bottom: 30px; }
-        .section h2 { font-size: 18px; margin-bottom: 20px; color: var(--accent); border-bottom: 1px solid var(--border); padding-bottom: 10px; }
+        .container { max-width: 1000px; margin: 0 auto; }
+        h1 { font-family: var(--font-mont); color: var(--primary); text-align: center; margin-bottom: 30px; letter-spacing: 2px; }
 
-        .grid-form { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; }
-        input, textarea, select { background: #0b0e11; border: 1px solid var(--border); padding: 12px; border-radius: 8px; color: white; outline: none; width: 100%; }
-        textarea { grid-column: span 2; height: 80px; }
+        .glass-card { background: var(--card); border-radius: 20px; border: 1px solid var(--border); padding: 25px; margin-bottom: 25px; box-shadow: 0 10px 30px rgba(0,0,0,0.3); }
+        .section-title { font-family: var(--font-mont); font-size: 16px; color: var(--accent); margin-bottom: 20px; display: flex; align-items: center; gap: 10px; text-transform: uppercase; }
 
-        .btn { background: var(--primary); color: black; border: none; padding: 12px 25px; border-radius: 8px; font-weight: 900; cursor: pointer; margin-top: 10px; }
-        .btn-distribute { background: var(--accent); }
+        /* Form Styling */
+        .grid-inputs { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; }
+        input, textarea, select { background: #0b0e11; border: 1px solid var(--border); padding: 14px; border-radius: 10px; color: white; font-weight: 600; outline: none; transition: 0.3s; }
+        input:focus { border-color: var(--accent); box-shadow: 0 0 10px rgba(0,255,255,0.1); }
+        textarea { grid-column: span 1; min-height: 100px; }
 
-        table { width: 100%; border-collapse: collapse; margin-top: 20px; font-size: 13px; }
-        th, td { text-align: left; padding: 12px; border-bottom: 1px solid var(--border); }
-        th { color: var(--text-sec); }
-        
-        .status-badge { padding: 4px 8px; border-radius: 4px; font-size: 10px; background: rgba(0,255,255,0.1); color: var(--accent); }
+        .btn-group { display: flex; gap: 10px; margin-top: 15px; }
+        .btn { flex: 1; padding: 15px; border-radius: 12px; border: none; font-weight: 900; cursor: pointer; font-family: var(--font-mont); transition: 0.3s; text-transform: uppercase; font-size: 12px; }
+        .btn-primary { background: var(--primary); color: #000; }
+        .btn-accent { background: var(--accent); color: #000; }
+        .btn:hover { transform: translateY(-3px); opacity: 0.9; }
+
+        /* Project Selector */
+        .selector-box { margin-bottom: 30px; }
+        select { width: 100%; font-size: 16px; border: 2px solid var(--primary); }
+
+        /* Contributor Table */
+        .table-wrapper { overflow-x: auto; margin-top: 15px; }
+        table { width: 100%; border-collapse: collapse; min-width: 600px; }
+        th { text-align: left; padding: 15px; color: var(--text-sec); border-bottom: 1px solid var(--border); font-size: 11px; text-transform: uppercase; }
+        td { padding: 15px; border-bottom: 1px solid var(--border); font-size: 13px; font-weight: 600; }
+        .share-badge { background: rgba(0, 255, 255, 0.1); color: var(--accent); padding: 4px 8px; border-radius: 6px; font-size: 11px; }
+
+        /* Graphic Modal (Custom Popup) */
+        .modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.85); backdrop-filter: blur(8px); display: none; align-items: center; justify-content: center; z-index: 9999; padding: 20px; }
+        .modal-content { background: var(--card); border: 1px solid var(--accent); border-radius: 25px; padding: 30px; max-width: 450px; width: 100%; text-align: center; position: relative; animation: popIn 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
+        @keyframes popIn { from { transform: scale(0.8); opacity: 0; } to { transform: scale(1); opacity: 1; } }
+        .modal-content i { font-size: 50px; color: var(--accent); margin-bottom: 15px; }
+        .modal-content h2 { font-family: var(--font-mont); margin-bottom: 10px; font-size: 20px; }
+        .modal-content p { color: var(--text-sec); font-size: 14px; margin-bottom: 25px; }
+
+        /* Graphic Toast */
+        #toast-container { position: fixed; top: 20px; right: 20px; z-index: 10000; }
+        .g-toast { background: #1e2329; border-left: 5px solid var(--primary); padding: 15px 25px; border-radius: 12px; margin-bottom: 10px; color: white; display: flex; align-items: center; gap: 15px; box-shadow: 0 10px 30px rgba(0,0,0,0.5); animation: slideIn 0.4s ease; }
+        @keyframes slideIn { from { transform: translateX(100%); } to { transform: translateX(0); } }
+
     </style>
 </head>
 <body>
 
-    <div class="admin-container">
-        <h1>SMAT VENTURE ADMIN</h1>
+    <div id="toast-container"></div>
 
-        <div class="section">
-            <h2><i class="fas fa-plus-circle"></i> Create New Fundraising Project</h2>
-            <div class="grid-form">
+    <div class="modal-overlay" id="modalOverlay">
+        <div class="modal-content">
+            <i id="modalIcon" class="fas fa-info-circle"></i>
+            <h2 id="modalTitle">Confirm Action</h2>
+            <p id="modalMsg">Are you sure you want to proceed?</p>
+            <div class="btn-group">
+                <button class="btn btn-primary" id="modalConfirmBtn">YES, PROCEED</button>
+                <button class="btn" style="background:#333; color:white" onclick="closeModal()">CANCEL</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="container">
+        <h1>SMAT VENTURE PANEL</h1>
+
+        <div class="glass-card selector-box">
+            <div class="section-title"><i class="fas fa-list"></i> Select Project to Manage</div>
+            <select id="projectSelector" onchange="switchProject(this.value)">
+                <option value="">-- Select a Project --</option>
+            </select>
+        </div>
+
+        <div class="glass-card">
+            <div class="section-title"><i class="fas fa-rocket"></i> Launch New Fundraising</div>
+            <div class="grid-inputs">
                 <input type="text" id="pTitle" placeholder="Project Title">
-                <input type="text" id="pLogo" placeholder="Logo Image URL">
-                <input type="text" id="pTokenName" placeholder="Token Name (e.g. Bitcoin)">
-                <input type="text" id="pSymbol" placeholder="Token Symbol">
+                <input type="text" id="pLogo" placeholder="Logo URL">
+                <input type="text" id="pTokenName" placeholder="Token Name">
+                <input type="text" id="pSymbol" placeholder="Symbol (BTC)">
                 <input type="text" id="pSupply" placeholder="Total Supply">
-                <input type="text" id="pScan" placeholder="BlockScan Link">
-                <input type="text" id="pWeb" placeholder="Official Website">
-                <input type="text" id="pTg" placeholder="Telegram Link">
-                <input type="text" id="pTw" placeholder="Twitter Link">
-                <input type="text" id="pDs" placeholder="Discord Link">
-                <input type="text" id="pVesting" placeholder="Vesting Info (e.g. 10% TGE, 6 Months Linear)">
-                <textarea id="pDesc" placeholder="Project Detailed Description..."></textarea>
+                <input type="text" id="pScan" placeholder="BlockScan URL">
+                <input type="text" id="pWeb" placeholder="Website URL">
+                <input type="text" id="pTg" placeholder="Telegram URL">
+                <input type="text" id="pTw" placeholder="Twitter URL">
+                <input type="text" id="pDs" placeholder="Discord URL">
+                <input type="text" id="pVesting" placeholder="Vesting Rule">
+                <textarea id="pDesc" placeholder="Full Project Description..."></textarea>
             </div>
-            <button class="btn" onclick="uploadProject()">LAUNCH PROJECT</button>
-        </div>
-
-        <div class="section">
-            <h2><i class="fas fa-coins"></i> Token Distribution (Vesting Release)</h2>
-            <p style="font-size: 12px; color: #848e9c; margin-bottom: 15px;">
-                এখানে ডিস্ট্রিবিউট বাটনে ক্লিক করলে সকল ইউজারের কন্ট্রিবিউশন অনুযায়ী তাদের ওয়ালেটে অটো টোকেন যোগ হবে।
-            </p>
-            <div class="grid-form" style="grid-template-columns: 2fr 1fr 1fr;">
-                <input type="text" id="distTokenSymbol" placeholder="Token Symbol (e.g. BTC)">
-                <input type="number" id="totalTokensToGive" placeholder="Total Tokens for Users">
-                <button class="btn btn-distribute" onclick="distributeTokens()">RELEASE TO ALL</button>
+            <div class="btn-group">
+                <button class="btn btn-primary" onclick="handleProjectUpload()">CREATE PROJECT</button>
             </div>
         </div>
 
-        <div class="section">
-            <h2><i class="fas fa-users"></i> Contributor Records</h2>
-            <div id="statsInfo" style="margin-bottom: 10px; font-weight: bold; color: var(--primary);"></div>
-            <table>
-                <thead>
-                    <tr>
-                        <th>SMAT ID</th>
-                        <th>USDT Contributed</th>
-                        <th>Share (%)</th>
-                        <th>Action</th>
-                    </tr>
-                </thead>
-                <tbody id="contributorTable"></tbody>
-            </table>
+        <div class="glass-card" id="distSection" style="opacity: 0.5; pointer-events: none;">
+            <div class="section-title"><i class="fas fa-coins"></i> Dynamic Token Distribution</div>
+            <div class="grid-inputs" style="grid-template-columns: 1fr 1fr 1fr;">
+                <input type="text" id="distSymbol" placeholder="Reward Token Symbol">
+                <input type="number" id="distTotal" placeholder="Total Tokens to Distribute">
+                <button class="btn btn-accent" onclick="handleDistribution()">RELEASE ALL</button>
+            </div>
+        </div>
+
+        <div class="glass-card">
+            <div class="section-title"><i class="fas fa-users"></i> Contributor Records (<span id="totalRaised">0</span> USDT)</div>
+            <div class="table-wrapper">
+                <table>
+                    <thead>
+                        <tr><th>SMAT ID</th><th>Amount</th><th>Share</th><th>Action</th></tr>
+                    </thead>
+                    <tbody id="contributorTable"></tbody>
+                </table>
+            </div>
         </div>
     </div>
 
 <script>
-// --- FIREBASE CONFIG ---
+// --- FIREBASE INITIALIZATION ---
 const firebaseConfig = { 
     apiKey: "AIzaSyAMxtJedkehhxJRMPZLjhpKHqneHEWsGlE", 
     authDomain: "smat-exchange.firebaseapp.com", 
@@ -99,115 +142,143 @@ const firebaseConfig = {
 firebase.initializeApp(firebaseConfig);
 const db = firebase.database();
 
-let activeProjectId = "";
-let contributors = [];
-let totalRaised = 0;
+let allProjects = [], currentPid = "", contributors = [], totalAmount = 0;
 
-// প্রজেক্ট লোড করা (রেকর্ড দেখার জন্য)
-db.ref('active_fundraising').on('value', snap => {
-    const data = snap.val();
-    if(data) {
-        activeProjectId = data.id;
-        loadContributions(data.id);
-    }
+// ১. সকল প্রজেক্ট লোড করা (ডায়নামিক ড্রপডাউন)
+db.ref('fundraising_projects').on('value', snap => {
+    const val = snap.val() || {};
+    allProjects = Object.keys(val).map(k => ({id: k, ...val[k]}));
+    
+    const selector = document.getElementById('projectSelector');
+    selector.innerHTML = '<option value="">-- Select a Project --</option>';
+    allProjects.forEach(p => {
+        selector.innerHTML += `<option value="${p.id}">${p.title} (${p.tokenSymbol})</option>`;
+    });
 });
 
-async function uploadProject() {
-    const id = "PROJ_" + Date.now();
-    const data = {
-        id: id,
-        title: document.getElementById('pTitle').value,
-        logo: document.getElementById('pLogo').value,
-        tokenName: document.getElementById('pTokenName').value,
-        tokenSymbol: document.getElementById('pSymbol').value,
-        supply: document.getElementById('pSupply').value,
-        scan: document.getElementById('pScan').value,
-        web: document.getElementById('pWeb').value,
-        tg: document.getElementById('pTg').value,
-        tw: document.getElementById('pTw').value,
-        ds: document.getElementById('pDs').value,
-        vesting: document.getElementById('pVesting').value,
-        description: document.getElementById('pDesc').value,
-        startTime: Date.now()
-    };
-
-    await db.ref('active_fundraising').set(data);
-    alert("Project Launched Successfully!");
-}
-
-function loadContributions(pid) {
+// ২. প্রজেক্ট সুইচ করা
+function switchProject(pid) {
+    if(!pid) return;
+    currentPid = pid;
+    document.getElementById('distSection').style.opacity = "1";
+    document.getElementById('distSection').style.pointer-events = "auto";
+    
+    // কন্ট্রিবিউটর ডাটা লোড
     db.ref('fundraising_contributions/' + pid).on('value', snap => {
         const val = snap.val() || {};
         contributors = Object.keys(val).map(k => ({uid: k, ...val[k]}));
-        totalRaised = contributors.reduce((sum, item) => sum + item.amount, 0);
-        
-        document.getElementById('statsInfo').innerText = `Total Raised: ${totalRaised.toFixed(2)} USDT`;
+        totalAmount = contributors.reduce((s, i) => s + i.amount, 0);
+        document.getElementById('totalRaised').innerText = totalAmount.toFixed(2);
         renderTable();
     });
 }
 
+// ৩. টেবিল রেন্ডার
 function renderTable() {
     const table = document.getElementById('contributorTable');
     table.innerHTML = "";
-    contributors.forEach(c => {
-        const share = ((c.amount / totalRaised) * 100).toFixed(2);
+    contributors.sort((a,b) => b.amount - a.amount).forEach(c => {
+        const share = ((c.amount / totalAmount) * 100).toFixed(2);
         table.innerHTML += `
             <tr>
                 <td>${c.smat_id}</td>
                 <td>${c.amount} USDT</td>
-                <td><span class="status-badge">${share}%</span></td>
-                <td><button onclick="refundUser('${c.uid}', ${c.amount})">Refund</button></td>
+                <td><span class="share-badge">${share}%</span></td>
+                <td><button class="btn" style="padding:5px 10px; background: #f6465d; color:white" onclick="handleRefund('${c.uid}', ${c.amount})">Refund</button></td>
             </tr>
         `;
     });
 }
 
-// --- অটো ডিস্ট্রিবিউশন লজিক ---
-async function distributeTokens() {
-    const symbol = document.getElementById('distTokenSymbol').value.toLowerCase();
-    const totalTokens = parseFloat(document.getElementById('totalTokensToGive').value);
+// ৪. কাস্টম পপআপ লজিক (Graphic Modal)
+function openModal(title, msg, icon, onConfirm) {
+    document.getElementById('modalTitle').innerText = title;
+    document.getElementById('modalMsg').innerText = msg;
+    document.getElementById('modalIcon').className = `fas ${icon}`;
+    document.getElementById('modalOverlay').style.display = 'flex';
+    document.getElementById('modalConfirmBtn').onclick = () => { onConfirm(); closeModal(); };
+}
+function closeModal() { document.getElementById('modalOverlay').style.display = 'none'; }
 
-    if(!symbol || !totalTokens || totalRaised <= 0) return alert("Invalid Input");
+// ৫. গ্রাফিক টোস্ট
+function showToast(msg, color = "#ffff00") {
+    const container = document.getElementById('toast-container');
+    const t = document.createElement('div');
+    t.className = 'g-toast';
+    t.style.borderLeftColor = color;
+    t.innerHTML = `<i class="fas fa-check-circle" style="color:${color}"></i> <span>${msg}</span>`;
+    container.appendChild(t);
+    setTimeout(() => { t.style.opacity = '0'; setTimeout(() => t.remove(), 500); }, 3000);
+}
 
-    const confirmAction = confirm(`Release ${totalTokens} ${symbol.toUpperCase()} to all contributors?`);
-    if(!confirmAction) return;
+// --- ফাংশনালিটি ---
 
-    const updates = {};
-    contributors.forEach(c => {
-        const userShareProportion = c.amount / totalRaised;
-        const userReward = (userShareProportion * totalTokens).toFixed(8);
-        
-        // ১. ইউজারের ব্যালেন্স যোগ (Funding In)
-        // আমরা ধরে নিচ্ছি ইউজারের ব্যালেন্স পাথ: users/uid/token_balance
-        const balancePath = `users/${c.uid}/${symbol}_balance`;
-        
-        // এই লজিকটি ইউজার ডাটা থেকে কারেন্ট ব্যালেন্স নিয়ে যোগ করবে (Admin Action)
-        // বাস্তব ক্ষেত্রে এটি ট্রান্সাকশন হিসেবে চালানো ভালো
-        db.ref(balancePath).transaction(current => (parseFloat(current || 0) + parseFloat(userReward)));
+function handleProjectUpload() {
+    const title = document.getElementById('pTitle').value;
+    if(!title) return showToast("Project Title Required!", "#f6465d");
 
-        // ২. হিস্টোরি পুশ
-        const tid = "FUND_IN_" + Date.now();
-        updates[`users/${c.uid}/history/${tid}`] = {
-            method: 'Funding In',
-            coin: symbol.toUpperCase(),
-            amount: userReward,
-            timestamp: Date.now(),
-            status: 'success'
+    openModal("Launch Project?", `This will list ${title} for all users.`, "fa-rocket", async () => {
+        const id = "PROJ_" + Date.now();
+        const data = {
+            id: id,
+            title: title,
+            logo: document.getElementById('pLogo').value,
+            tokenName: document.getElementById('pTokenName').value,
+            tokenSymbol: document.getElementById('pSymbol').value,
+            supply: document.getElementById('pSupply').value,
+            scan: document.getElementById('pScan').value,
+            web: document.getElementById('pWeb').value,
+            tg: document.getElementById('pTg').value,
+            tw: document.getElementById('pTw').value,
+            ds: document.getElementById('pDs').value,
+            vesting: document.getElementById('pVesting').value,
+            description: document.getElementById('pDesc').value,
+            status: 'active'
         };
+        await db.ref('fundraising_projects/' + id).set(data);
+        await db.ref('active_fundraising').set(data); // ইউজার পেজে যেটা লাইভ দেখাবে
+        showToast("Project Launched Successfully!");
     });
-
-    await db.ref().update(updates);
-    alert("Tokens Distributed Successfully!");
 }
 
-async function refundUser(uid, amt) {
-    if(confirm("Refund this user?")) {
-        // রিফান্ড লজিক (USDT ফেরত দেওয়া)
-        await db.ref(`users/${uid}/usdt_balance`).transaction(curr => (curr || 0) + amt);
-        await db.ref(`fundraising_contributions/${activeProjectId}/${uid}`).remove();
-        alert("Refunded!");
-    }
+function handleDistribution() {
+    const symbol = document.getElementById('distSymbol').value.toUpperCase();
+    const totalTokens = parseFloat(document.getElementById('distTotal').value);
+    
+    if(!symbol || !totalTokens || totalAmount <= 0) return showToast("Invalid Distribution Data", "#f6465d");
+
+    openModal("Release Tokens?", `Distribute ${totalTokens} ${symbol} based on share.`, "fa-coins", async () => {
+        const updates = {};
+        contributors.forEach(c => {
+            const userReward = ((c.amount / totalAmount) * totalTokens).toFixed(8);
+            const lowSymbol = symbol.toLowerCase();
+            
+            // ব্যালেন্স আপডেট লজিক
+            db.ref(`users/${c.uid}/${lowSymbol}_balance`).transaction(curr => (parseFloat(curr || 0) + parseFloat(userReward)));
+
+            // হিস্টোরি পুশ
+            const tid = "FUND_IN_" + Date.now();
+            updates[`users/${c.uid}/history/${tid}`] = {
+                method: 'Funding In',
+                coin: symbol,
+                amount: userReward,
+                timestamp: Date.now(),
+                status: 'success'
+            };
+        });
+        await db.ref().update(updates);
+        showToast("Tokens Distributed to All Wallets!");
+    });
 }
+
+function handleRefund(uid, amt) {
+    openModal("Refund User?", `Return ${amt} USDT to user wallet?`, "fa-undo", async () => {
+        await db.ref(`users/${uid}/usdt_balance`).transaction(curr => (parseFloat(curr || 0) + amt));
+        await db.ref(`fundraising_contributions/${currentPid}/${uid}`).remove();
+        showToast("User Refunded Successfully!");
+    });
+}
+
 </script>
 </body>
 </html>
