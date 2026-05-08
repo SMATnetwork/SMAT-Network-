@@ -422,24 +422,111 @@ body {
  </div>
  </section>
  
-<style>
-        .footer {font-weight: 900; position: fixed; bottom: 0; width: 100%; height: 80px; background: #0b0e11; display: flex; justify-content: space-around; align-items: center; z-index: 3000; }
-        .f-nav { text-decoration: none; color: var(--text-sec); text-align: center; font-size: 10px; flex: 1; display: flex; flex-direction: column; align-items: center; }
+ <style>
+        /* Footer - Day Mode */
+        .footer {
+            font-weight: 900; 
+            position: fixed; 
+            bottom: 0; 
+            width: 100%; 
+            height: 80px; 
+            background: #ffffff; /* গাঢ় থেকে সাদা করা হলো */
+            display: flex; 
+            justify-content: space-around; 
+            align-items: center; 
+            z-index: 3000; 
+            border-top: 1px solid #eaecef; /* হালকা বর্ডার যোগ করা হয়েছে */
+            box-shadow: 0 -2px 10px rgba(0,0,0,0.05);
+        }
+
+        .f-nav { 
+            text-decoration: none; 
+            color: var(--text-sec); 
+            text-align: center; 
+            font-size: 10px; 
+            flex: 1; 
+            display: flex; 
+            flex-direction: column; 
+            align-items: center; 
+        }
+
         .f-nav i { font-size: 22px; margin-bottom: 5px; }
         .f-nav.active { color: var(--primary); }
+
+        /* FAB Wrapper */
         .fab-wrapper { position: relative; width: 75px; display: flex; justify-content: center; }       
-        .fab-options {  position: absolute; bottom: 30px; display: flex; justify-content: center;   align-items: center; pointer-events: none; width: 250px; height: 180px;  }
-        .fab-options i{font-size:20px;background :none;color:black;}
-        .popup-btn {   position: absolute; background:silver; padding: 18px 18px; border-radius: 50px;  text-decoration: none; font-weight: 800; font-size: 12px;   box-shadow: 0 10px 25px rgba(0,0,0,0.6); transition: all 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);  opacity: 0; transform: scale(0.3) translateY(120px); pointer-events: auto; white-space: nowrap; z-index: 2900;}
+        
+        .fab-options {  
+            position: absolute; 
+            bottom: 30px; 
+            display: flex; 
+            justify-content: center;   
+            align-items: center; 
+            pointer-events: none; 
+            width: 250px; 
+            height: 180px;  
+        }
+
+        /* পপআপ বাটনের আইকন কালার */
+        .fab-options i { font-size: 20px; background: none; color: #ffffff; } /* আইকন সাদা রাখা হয়েছে গাঢ় ব্যাকগ্রাউন্ডের ওপর */
+
+        /* Popup Buttons - Day Mode */
+        .popup-btn {   
+            position: absolute; 
+            background: #1e2329; /* সিলভার থেকে গাঢ় গ্রে/ব্ল্যাক করা হলো যাতে সাদার ওপর ফুটে ওঠে */
+            padding: 18px 18px; 
+            border-radius: 50px;  
+            text-decoration: none; 
+            font-weight: 800; 
+            font-size: 12px;   
+            box-shadow: 0 8px 20px rgba(0,0,0,0.15); /* শ্যাডো হালকা করা হয়েছে */
+            transition: all 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);  
+            opacity: 0; 
+            transform: scale(0.3) translateY(120px); 
+            pointer-events: auto; 
+            white-space: nowrap; 
+            z-index: 2900;
+            color: #ffffff;
+        }
+
         .fab-options.show .btn-left { opacity: 1; transform: translate(-95px, -45px) scale(1); }
         .fab-options.show .btn-center { opacity: 1; transform: translate(0, -115px) scale(1); }
         .fab-options.show .btn-right { opacity: 1; transform: translate(95px, -45px) scale(1); }
-        .main-fab {   width: 65px; height: 65px; background: var(--primary);border: none; border-radius: 50%; cursor: pointer;   box-shadow: 0 0 20px rgba(243, 186, 47, 0.4); display: flex; justify-content: center; align-items: center;  z-index: 3100; margin-top: -35px; outline: none;   transition: background 0.3s, box-shadow 0.3s;} @keyframes continuous-spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
-        .main-fab.active {  animation: continuous-spin 2s linear infinite;  background: var(--down); box-shadow: 0 0 35px rgba(246, 70, 93, 0.5);}
+
+        /* Main FAB Button */
+        .main-fab {   
+            width: 65px; 
+            height: 65px; 
+            background: var(--primary); 
+            border: 4px solid #ffffff; /* ডে মোডে আলাদা করার জন্য সাদা বর্ডার */
+            border-radius: 50%; 
+            cursor: pointer;   
+            box-shadow: 0 4px 15px rgba(243, 186, 47, 0.4); 
+            display: flex; 
+            justify-content: center; 
+            align-items: center;  
+            z-index: 3100; 
+            margin-top: -35px; 
+            outline: none;   
+            transition: background 0.3s, box-shadow 0.3s;
+        }
+
+        @keyframes continuous-spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+        
+        .main-fab.active {  
+            animation: continuous-spin 2s linear infinite;  
+            background: var(--down); 
+            box-shadow: 0 0 25px rgba(246, 70, 93, 0.4);
+            border-color: #ffffff;
+        }
+
         .gaming-icon { font-size: 30px; color: #000; transition: color 0.3s; }
-        .main-fab.active .gaming-icon { color: #fff; } @keyframes subtle-pulse { 0% { transform: scale(1); } 50% { transform: scale(1.05); } 100% { transform: scale(1); } }
+        .main-fab.active .gaming-icon { color: #fff; } 
+
+        @keyframes subtle-pulse { 0% { transform: scale(1); } 50% { transform: scale(1.03); } 100% { transform: scale(1); } }
         .main-fab:not(.active) { animation: subtle-pulse 3s infinite ease-in-out; }
  </style>
+
  <script>
  window.currentActiveTab = 'hot';
  function openSidebar() { document.getElementById('sidebar').classList.add('active'); document.getElementById('overlay').style.display='block'; }
