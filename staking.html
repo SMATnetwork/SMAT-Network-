@@ -21,12 +21,15 @@
         body { background: var(--bg); color: white; padding-bottom: 100px; display: none; }
 
         .header { padding: 30px 20px; text-align: center; background: linear-gradient(180deg, rgba(240, 185, 11, 0.1) 0%, var(--bg) 100%); }
-        .header h1 { font-family: var(--font-mont); color: var(--primary); font-size: 22px; text-transform: uppercase; }
+        .header h1 { font-family: var(--font-mont); color: var(--primary); font-size: 22px; text-transform: uppercase; letter-spacing: 1px; }
         
         .container { padding: 0 15px; }
-        .stake-card { background: var(--card); border-radius: 20px; padding: 18px; margin-bottom: 20px; border: 1px solid var(--border); }
+
+        /* Pool Card Styling */
+        .stake-card { background: var(--card); border-radius: 20px; padding: 18px; margin-bottom: 20px; border: 1px solid var(--border); box-shadow: 0 4px 15px rgba(0,0,0,0.2); }
         
         .card-top-info { display: flex; justify-content: space-between; font-size: 10px; margin-bottom: 15px; padding-bottom: 10px; border-bottom: 1px solid var(--border); }
+        .card-top-info span { color: var(--text-sec); }
         .card-top-info b { color: var(--primary); }
 
         .coin-info { display: flex; align-items: center; gap: 12px; margin-bottom: 15px; }
@@ -38,31 +41,41 @@
 
         .btn-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 15px; }
         .btn-opt { padding: 12px; border-radius: 12px; background: #2b3139; color: white; text-align: center; font-size: 11px; cursor: pointer; border: 1px solid var(--border); }
-        .btn-opt.highlight { border-color: var(--primary); color: var(--primary); }
+        .btn-opt.highlight { border-color: var(--primary); color: var(--primary); font-weight: 900; }
 
-        /* Internal Active Stakes */
+        /* Internal Stake History */
         .internal-stakes { margin-top: 15px; padding-top: 10px; border-top: 1px dashed var(--border); }
         .stake-mini-item { background: rgba(0,0,0,0.2); padding: 12px; border-radius: 12px; display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; font-size: 11px; }
+        .locked-tag { color: var(--down); font-size: 9px; display: block; margin-top: 2px; }
+        .unlocked-tag { color: var(--up); font-size: 9px; display: block; margin-top: 2px; }
 
-        /* Modal & Popups */
-        .overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.95); display: none; align-items: center; justify-content: center; z-index: 9000; padding: 25px; }
-        .modal { background: var(--card); width: 100%; max-width: 380px; border-radius: 28px; padding: 25px; border: 1px solid var(--border); }
+        /* Custom Graphic Popups */
+        .overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.92); display: none; align-items: center; justify-content: center; z-index: 9000; padding: 25px; backdrop-filter: blur(4px); }
+        .modal { background: var(--card); width: 100%; max-width: 380px; border-radius: 28px; padding: 25px; border: 1px solid var(--border); position: relative; }
         
         /* Duration Tabs */
-        .dur-flex { display: flex; gap: 8px; margin: 15px 0; }
-        .dur-btn { flex: 1; padding: 10px; background: #0b0e11; border-radius: 10px; border: 1px solid var(--border); color: var(--text-sec); text-align: center; font-size: 11px; cursor: pointer; }
+        .dur-flex { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin: 15px 0; }
+        .dur-btn { padding: 10px; background: #0b0e11; border-radius: 10px; border: 1px solid var(--border); color: var(--text-sec); text-align: center; font-size: 11px; cursor: pointer; }
         .dur-btn.active { border-color: var(--primary); color: var(--primary); }
 
         .input-group { background: #0b0e11; border-radius: 15px; padding: 15px; margin: 15px 0; border: 1px solid var(--border); position: relative; }
         .input-group input { width: 75%; background: transparent; border: none; color: white; font-size: 18px; outline: none; }
         .max-btn { position: absolute; right: 15px; color: var(--primary); font-size: 11px; cursor: pointer; top: 50%; transform: translateY(-50%); }
 
-        .btn-main { width: 100%; padding: 16px; background: var(--primary); color: #000; border: none; border-radius: 16px; font-weight: 900; cursor: pointer; }
-        .btn-cancel { width: 100%; padding: 14px; background: transparent; color: var(--text-sec); border: none; font-size: 12px; cursor: pointer; }
+        .btn-main { width: 100%; padding: 16px; background: var(--primary); color: #000; border: none; border-radius: 16px; font-weight: 900; cursor: pointer; margin-top: 10px; }
+        .btn-cancel { width: 100%; padding: 14px; background: transparent; color: var(--text-sec); border: none; font-size: 12px; cursor: pointer; margin-top: 5px; text-align: center; display: block; width: 100%; }
+
+        /* Toast Styling */
+        .toast-container { position: fixed; top: 20px; left: 50%; transform: translateX(-50%); z-index: 10000; width: 90%; max-width: 350px; }
+        .toast { background: #1e2329; border-left: 4px solid var(--primary); padding: 15px; border-radius: 12px; display: flex; align-items: center; gap: 12px; margin-bottom: 10px; animation: slideIn 0.3s ease forwards; box-shadow: 0 10px 20px rgba(0,0,0,0.4); }
+        .toast.success { border-left-color: var(--up); }
+        .toast.error { border-left-color: var(--down); }
 
         .footer { position: fixed; bottom: 0; width: 100%; height: 75px; background: var(--bg); display: flex; border-top: 1px solid var(--border); z-index: 4000; }
         .nav-item { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; text-decoration: none; color: var(--text-sec); font-size: 11px; gap: 4px; }
         .nav-item.active { color: var(--primary); }
+
+        @keyframes slideIn { from { opacity: 0; transform: translateY(-20px); } to { opacity: 1; transform: translateY(0); } }
     </style>
 </head>
 <body>
@@ -80,6 +93,7 @@
     </footer>
 
 <script>
+// --- CONFIG & INIT ---
 const firebaseConfig = { 
     apiKey: "AIzaSyAMxtJedkehhxJRMPZLjhpKHqneHEWsGlE", 
     authDomain: "smat-exchange.firebaseapp.com", 
@@ -109,6 +123,7 @@ function syncData(uid) {
     });
 }
 
+// --- RENDER LOGIC ---
 function renderAll() {
     const area = document.getElementById('poolContainer');
     let html = "";
@@ -131,10 +146,13 @@ function renderAll() {
                     myStakeItems += `
                         <div class="stake-mini-item">
                             <div>
-                                <b>${f8(stk.amount)} ${sym}</b><br>
-                                <small style="color:${isLocked?'var(--down)':'var(--up)'}">${isLocked ? 'Locked' : 'Unlocked'}</small>
+                                <b>${f8(stk.amount)} ${sym}</b>
+                                <span class="${isLocked?'locked-tag':'unlocked-tag'}">
+                                    <i class="fas ${isLocked?'fa-lock':'fa-lock-open'}"></i> 
+                                    ${isLocked ? 'Locked Asset' : 'Unlocked'}
+                                </span>
                             </div>
-                            <button onclick="confirmUnstakePop('${id}')" style="background:var(--down); border:none; padding:6px 12px; border-radius:8px; color:white; font-size:10px">UNSTAKE</button>
+                            <button onclick="confirmUnstakePop('${id}')" style="background:${isLocked?'#2b3139':'var(--up)'}; border:none; padding:6px 12px; border-radius:8px; color:${isLocked?'var(--text-sec)':'white'}; font-size:10px">UNSTAKE</button>
                         </div>`;
                 }
             });
@@ -144,7 +162,7 @@ function renderAll() {
             <div class="stake-card">
                 <div class="card-top-info">
                     <span>My Stake: <b>${f8(sBal)}</b></span>
-                    <span>Global: <b>${f8(staked)}</b></span>
+                    <span>Global Stake: <b>${f8(staked)}</b></span>
                 </div>
                 <div class="coin-info">
                     <img src="${p.logopath}" class="coin-logo">
@@ -159,17 +177,18 @@ function renderAll() {
                 ${myStakeItems ? `<div class="internal-stakes">${myStakeItems}</div>` : ''}
             </div>`;
     });
-    area.innerHTML = html;
+    area.innerHTML = html || "<p style='text-align:center'>Loading Pools...</p>";
 }
 
+// --- STAKE MODAL ---
 function openStakePop(key, type) {
     const p = pools[key];
     const bal = userData[p.symbol.toLowerCase() + '_balance'] || 0;
     const content = document.getElementById('modalContent');
 
     content.innerHTML = `
-        <h3 style="text-align:center; font-family:var(--font-mont)">STAKE ${p.symbol}</h3>
-        <p style="text-align:center; font-size:11px; color:var(--text-sec); margin-top:5px">Balance: ${f8(bal)}</p>
+        <h3 style="text-align:center; font-family:var(--font-mont); color:var(--primary)">STAKE ${p.symbol}</h3>
+        <p style="text-align:center; font-size:11px; color:var(--text-sec); margin-top:5px">Wallet Balance: ${f8(bal)}</p>
         
         <div class="input-group">
             <input type="number" id="stkAmt" placeholder="0.00" oninput="updatePreview('${key}', '${type}')">
@@ -178,15 +197,16 @@ function openStakePop(key, type) {
 
         ${type === 'fixed' ? `
             <div class="dur-flex">
-                <div class="dur-btn active" data-d="15" data-m="1.2" onclick="setDur(this, '${key}', '${type}')">15D</div>
-                <div class="dur-btn" data-d="30" data-m="1.5" onclick="setDur(this, '${key}', '${type}')">30D</div>
-                <div class="dur-btn" data-d="90" data-m="2.5" onclick="setDur(this, '${key}', '${type}')">90D</div>
+                <div class="dur-btn active" data-d="15" data-m="1.2" onclick="setDur(this, '${key}', '${type}')">15 Days</div>
+                <div class="dur-btn" data-d="30" data-m="1.5" onclick="setDur(this, '${key}', '${type}')">30 Days</div>
+                <div class="dur-btn" data-d="90" data-m="2.5" onclick="setDur(this, '${key}', '${type}')">90 Days</div>
+                <div class="dur-btn" data-d="180" data-m="4.0" onclick="setDur(this, '${key}', '${type}')">180 Days</div>
             </div>
         ` : ''}
 
         <div style="background:rgba(255,255,255,0.05); padding:15px; border-radius:15px; font-size:12px; margin-bottom:15px">
-            <div style="display:flex; justify-content:space-between"><span>Est. APY</span><b id="prevAPY" style="color:var(--up)">0.00%</b></div>
-            <div style="display:flex; justify-content:space-between; margin-top:5px"><span>Daily</span><b id="prevDaily">0.00000000</b></div>
+            <div style="display:flex; justify-content:space-between"><span>Estimted APY</span><b id="prevAPY" style="color:var(--up)">0.00%</b></div>
+            <div style="display:flex; justify-content:space-between; margin-top:5px"><span>Daily Reward</span><b id="prevDaily">0.00000000</b></div>
         </div>
 
         <button class="btn-main" onclick="executeStake('${key}', '${type}')">CONFIRM STAKE</button>
@@ -206,23 +226,20 @@ function updatePreview(key, type) {
     const p = pools[key];
     const amt = parseFloat(document.getElementById('stkAmt').value) || 0;
     let apy = p.startingAPY * (1 - ((p.totalStaked||0)/(p.maxPool||1000000)));
-
-    if(type === 'fixed') {
-        const mult = parseFloat(document.querySelector('.dur-btn.active').dataset.m);
-        apy *= mult;
-    }
-
+    if(type === 'fixed') apy *= parseFloat(document.querySelector('.dur-btn.active').dataset.m);
+    
     document.getElementById('prevAPY').innerText = apy.toFixed(2) + "%";
     document.getElementById('prevDaily').innerText = f8((amt * (apy/100)) / 365);
 }
 
+// --- EXECUTE STAKE ---
 async function executeStake(key, type) {
     const p = pools[key];
     const amt = parseFloat(document.getElementById('stkAmt').value);
     const sym = p.symbol.toLowerCase();
     const bal = userData[sym + '_balance'] || 0;
 
-    if(!amt || amt <= 0 || amt > bal) return toast("Invalid amount", "error");
+    if(!amt || amt <= 0 || amt > bal) return toast("Invalid amount!", "error");
 
     const tid = "STK" + Date.now();
     const ts = Date.now();
@@ -242,28 +259,48 @@ async function executeStake(key, type) {
         startTime: ts, unlockTime: unlockTime, status: 'active'
     };
     up[`staking_settings/${key}/totalStaked`] = (p.totalStaked||0) + amt;
+    up[`users/${auth.currentUser.uid}/history/${tid}`] = {
+        method: 'Stake Out', coin: p.symbol, amount: f8(amt), status: 'success', timestamp: ts
+    };
 
     await db.ref().update(up);
-    toast("Staked Successfully!", "success");
+    toast(`${p.symbol} Staked Successfully!`, "success");
     closePop();
 }
 
+// --- HARD LOCK UNSTAKE POPUP ---
 function confirmUnstakePop(id) {
     const item = userData.stakes[id];
-    const isLocked = item.unlockTime > Date.now();
+    const now = Date.now();
+    const isLocked = item.unlockTime > now;
     const content = document.getElementById('modalContent');
 
-    content.innerHTML = `
-        <div style="text-align:center">
-            <i class="fas fa-exclamation-triangle" style="font-size:40px; color:${isLocked?'var(--down)':'var(--up)'}"></i>
-            <h3 style="margin-top:15px">${isLocked ? 'Still Locked!' : 'Confirm Unstake'}</h3>
-            <p style="font-size:12px; color:var(--text-sec); margin:15px 0">
-                ${isLocked ? 'Your asset is currently locked. If you unstake now, you will lose all accumulated rewards.' : 'Your lock period is over. You can safely return assets to wallet.'}
-            </p>
-            <button class="btn-main" style="background:${isLocked?'#333':''}" onclick="executeUnstake('${id}')">UNSTAKE ANYWAY</button>
-            <button class="btn-cancel" onclick="closePop()">Cancel</button>
-        </div>
-    `;
+    if (isLocked && item.type === 'fixed') {
+        const diff = item.unlockTime - now;
+        const days = Math.floor(diff / (1000 * 60 * 60 * 24));
+        const hours = Math.floor((diff / (1000 * 60 * 60)) % 24);
+
+        content.innerHTML = `
+            <div style="text-align:center">
+                <i class="fas fa-lock" style="font-size:45px; color:var(--down); margin-bottom:15px"></i>
+                <h3 style="font-family:var(--font-mont)">Fixed Stake Locked</h3>
+                <p style="font-size:13px; color:var(--text-sec); margin:15px 0; line-height:1.6">
+                    You cannot unstake this asset before the lock period ends.<br>
+                    <b style="color:var(--primary); font-size:16px">${days}d ${hours}h Remaining</b>
+                </p>
+                <p style="font-size:10px; color:var(--text-sec)">Daily rewards are auto-credited to your wallet every morning.</p>
+                <button class="btn-main" style="background:#2b3139; color:var(--text-sec)" onclick="closePop()">UNDERSTOOD</button>
+            </div>`;
+    } else {
+        content.innerHTML = `
+            <div style="text-align:center">
+                <i class="fas fa-unlock-alt" style="font-size:45px; color:var(--up); margin-bottom:15px"></i>
+                <h3 style="font-family:var(--font-mont)">Unstake Asset</h3>
+                <p style="font-size:13px; color:var(--text-sec); margin:15px 0">Return <b>${f8(item.amount)} ${item.coin}</b> to your main wallet balance?</p>
+                <button class="btn-main" style="background:var(--up)" onclick="executeUnstake('${id}')">CONFIRM UNSTAKE</button>
+                <button class="btn-cancel" onclick="closePop()">Cancel</button>
+            </div>`;
+    }
     document.getElementById('globalOverlay').style.display = 'flex';
 }
 
@@ -277,18 +314,27 @@ async function executeUnstake(id) {
     
     const pKey = Object.keys(pools).find(k => pools[k].symbol === item.coin);
     up[`staking_settings/${pKey}/totalStaked`] = Math.max(0, (pools[pKey].totalStaked||0) - item.amount);
+    up[`users/${auth.currentUser.uid}/history/${id}_un`] = {
+        method: 'Unstake In', coin: item.coin, amount: f8(item.amount), status: 'success', timestamp: Date.now()
+    };
 
     await db.ref().update(up);
-    toast("Unstaked successfully!", "success");
+    toast("Asset returned to wallet", "success");
     closePop();
 }
 
+// --- UTILS ---
 function toast(msg, type) {
-    const d = document.createElement('div');
-    d.style.cssText = `position:fixed; top:20px; left:50%; transform:translateX(-50%); background:#1e2329; border-left:4px solid ${type==='success'?'var(--up)':'var(--down)'}; padding:15px; border-radius:10px; z-index:10000; font-size:12px; min-width:250px; box-shadow:0 10px 30px #000;`;
-    d.innerHTML = `<b>${type==='success'?'Success':'Error'}</b><br>${msg}`;
-    document.body.appendChild(d);
-    setTimeout(() => d.remove(), 3000);
+    const c = document.getElementById('toastContainer') || (() => {
+        const d = document.createElement('div'); d.id = 'toastContainer'; d.className = 'toast-container';
+        document.body.appendChild(d); return d;
+    })();
+    const t = document.createElement('div');
+    t.className = `toast ${type}`;
+    t.innerHTML = `<div style="background:rgba(255,255,255,0.1); width:30px; height:30px; border-radius:50%; display:flex; align-items:center; justify-content:center"><i class="fas ${type==='success'?'fa-check':'fa-times'}"></i></div>
+                   <div><b style="font-size:12px; display:block">${type==='success'?'Success':'Error'}</b><span style="font-size:10px; color:var(--text-sec)">${msg}</span></div>`;
+    c.appendChild(t);
+    setTimeout(() => { t.style.opacity = '0'; setTimeout(()=>t.remove(), 400); }, 3000);
 }
 
 function closePop() { document.getElementById('globalOverlay').style.display = 'none'; }
