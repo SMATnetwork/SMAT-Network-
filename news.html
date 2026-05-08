@@ -24,21 +24,23 @@
         body { 
             background: var(--bg); 
             color: white; 
-            height: 100vh;
-            height: 100dvh; /* আধুনিক ব্রাউজারের জন্য ডাইনামিক হাইট */
+            margin: 0;
             display: flex; 
-            flex-direction: column; 
-            overflow: hidden; 
+            flex-direction: column;
+            min-height: 100vh;
+            overflow: hidden; /* বডি স্ক্রল বন্ধ */
         }
 
         /* Fixed Header */
         .news-header {
-            flex-shrink: 0;
+            position: fixed;
+            top: 0;
+            width: 100%;
             padding: 20px;
             text-align: center;
             background: var(--bg);
             border-bottom: 1px solid var(--border);
-            z-index: 1000;
+            z-index: 2000;
         }
         
         .news-header h1 {
@@ -52,9 +54,11 @@
 
         /* Scrollable News Area */
         .scroll-area {
-            flex: 1; /* ফ্লেক্স গ্রো করবে যাতে মাঝখানের জায়গা পুরোটাই নেয় */
+            margin-top: 75px; /* হেডারের জন্য জায়গা */
+            margin-bottom: 70px; /* ফুটারের জন্য জায়গা */
             overflow-y: auto; 
             padding: 15px;
+            height: calc(100vh - 145px); /* ডাইনামিক হাইট ক্যালকুলেশন */
             -webkit-overflow-scrolling: touch;
         }
 
@@ -114,6 +118,7 @@
             color: #b7bdc6;
             line-height: 1.5;
             margin-bottom: 15px;
+            word-wrap: break-word; /* লম্বা টেক্সট যাতে ভেঙ্গে যায় */
         }
 
         .meta-footer {
@@ -125,16 +130,17 @@
             border-top: 1px solid rgba(255,255,255,0.05);
         }
 
-        /* Fixed Footer Nav - Optimized */
+        /* Fixed Footer Nav - স্ক্রিনের একদম নিচে ফিক্সড */
         .footer-nav {
-            flex-shrink: 0;
+            position: fixed;
+            bottom: 0;
+            width: 100%;
             background: var(--bg);
             display: flex;
             justify-content: space-around;
-            padding: 12px 0;
-            padding-bottom: calc(12px + env(safe-area-inset-bottom)); /* আইফোন বা আধুনিক ফোনের নচ এর জন্য */
+            padding: 15px 0;
             border-top: 1px solid var(--border);
-            z-index: 1000;
+            z-index: 2000;
         }
 
         .nav-item { 
@@ -179,7 +185,8 @@
         function loadNewsData() {
             db.ref('news_feed').on('value', snap => {
                 const newsList = document.getElementById('news-list');
-                document.getElementById('loading-ui').style.display = 'none';
+                const loader = document.getElementById('loading-ui');
+                if (loader) loader.style.display = 'none';
                 newsList.innerHTML = "";
                 
                 const data = snap.val() || {};
