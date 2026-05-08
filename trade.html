@@ -811,12 +811,24 @@ function togglePopup(show) {
 function renderMarketTabs() {
     const tabContainer = document.getElementById('marketTabs');
     const markets = ['USDT', 'USDC', 'SMAT'];
-    tabContainer.innerHTML = markets.map(m => `
-        <div class="m-tab ${activeMarket === m ? 'active' : ''}" onclick="setMarketTab('${m}')">
-            <div class="tab-logo">${m[0]}</div> ${m}
-        </div>
-    `).join('');
+    
+    tabContainer.innerHTML = markets.map(m => {
+        // কয়েনের নাম ছোট হাতের অক্ষরে রূপান্তর করা হচ্ছে (যেমন: usdt, usdc, smat)
+        const symbolLower = m.toLowerCase(); 
+        
+        return `
+            <div class="m-tab ${activeMarket === m ? 'active' : ''}" onclick="setMarketTab('${m}')">
+                <div class="tab-logo">
+                    <img src="assets/logos/${symbolLower}.png" 
+                         alt="${m}" 
+                         onerror="this.parentElement.innerText='${m[0]}'">
+                </div> 
+                ${m}
+            </div>
+        `;
+    }).join('');
 }
+
 
 function setMarketTab(m) {
     activeMarket = m;
