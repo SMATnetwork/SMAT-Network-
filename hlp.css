@@ -150,8 +150,8 @@ body {
 .theme-action-grid { display: flex; justify-content: space-around; align-items: center; margin: 25px 10px; padding: 0; }
 .theme-action-item { flex: 1; display: flex; flex-direction: column; align-items: center; cursor: pointer; gap: 8px; }
 .theme-action-icon {
-    width: 50px; height: 50px; background: #ffffff; border-radius: 50%;
-    display: flex; align-items: center; justify-content: center; font-size: 20px; color:silver;
+    width: 50px; height: 50px; background: silver; border-radius: 50%;
+    display: flex; align-items: center; justify-content: center; font-size: 20px; color:var(--primary);
     box-shadow: rgba(0, 0, 0, 0.05) 0px 4px 12px,
                 0px 10px 20px rgba(0, 0, 0, 0.04);
     border: 1px solid #eee; transition: 0.3s;
@@ -172,9 +172,10 @@ body {
 .menu-grid-theme { display: grid; grid-template-columns: repeat(4, 1fr); gap: 20px 10px; text-align: center; }
 .menu-item-theme { display: flex; flex-direction: column; align-items: center; color: var(--text-main); }
 .menu-item-theme i {
-    width: 45px; height: 45px; background: #ffffff; border-radius: 50%;
-    display: flex; align-items: center; justify-content: center; font-size: 12px; color: var(--primary);
-    box-shadow: rgba(0, 0, 0, 0.05) 0px 2px 8px; border: 1px solid #eee; margin-bottom: 5px;
+    width: 50px; height: 50px; background: silver; border-radius: 50%;
+    display: flex; align-items: center; justify-content: center; font-size: 20px; color: var(--primary);
+    box-shadow: rgba(0, 0, 0, 0.05) 0px 4px 12px,
+                0px 10px 20px rgba(0, 0, 0, 0.04); border: 1px solid #eee; margin-bottom: 5px;
 }
 .menu-item-theme span { font-size: 11px; color: var(--text-main); font-weight: 600; }
 
