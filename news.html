@@ -3,126 +3,209 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>SmatBit | News Feed</title>
+    <title>SmatBit | Elite News</title>
     <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-database-compat.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@900&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;700;900&display=swap" rel="stylesheet">
     
     <style>
         :root {
-            --bg: #0b0e11; --card: #1e2329; --primary: #ffff00;
-            --accent: #00ffff; --text-sec: #848e9c; --border: rgba(255, 255, 255, 0.08);
+            --bg: #0b0e11;
+            --card: #1e2329;
+            --primary: #ffff00;
+            --accent: #00ffff;
+            --border: rgba(255, 255, 255, 0.08);
             --font-mon: 'Montserrat', sans-serif;
         }
-        * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
-        body { background: var(--bg); color: white; font-family: 'Inter', sans-serif; padding-bottom: 100px; }
-        
-        .mon-900 { font-family: var(--font-mon); font-weight: 900; text-transform: uppercase; }
 
-        /* Header */
-        .news-header { 
-            position: sticky; top: 0; background: rgba(11, 14, 17, 0.95);
-            backdrop-filter: blur(10px); z-index: 100;
-            padding: 20px; text-align: center; border-bottom: 1px solid var(--border); 
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Inter', sans-serif; }
+        body { background: var(--bg); color: white; padding-bottom: 90px; overflow-x: hidden; }
+
+        /* Header Styling */
+        .news-header {
+            padding: 40px 20px 20px;
+            text-align: center;
+            background: linear-gradient(to bottom, rgba(0,255,255,0.05), transparent);
         }
-        .news-header h1 { font-size: 22px; color: var(--primary); letter-spacing: 1px; }
+        .news-header h1 {
+            font-family: var(--font-mon);
+            font-weight: 900;
+            font-size: 28px;
+            text-transform: uppercase;
+            color: var(--primary);
+            letter-spacing: 2px;
+            margin-bottom: 5px;
+        }
+        .header-line {
+            width: 50px;
+            height: 3px;
+            background: var(--accent);
+            margin: 0 auto;
+            border-radius: 10px;
+        }
 
-        .news-container { padding: 15px; max-width: 600px; margin: auto; }
+        .container { padding: 15px; max-width: 500px; margin: auto; }
 
-        /* News Card */
+        /* Modern News Card */
         .news-card {
-            background: var(--card); border-radius: 20px; border: 1px solid var(--border);
-            margin-bottom: 20px; overflow: hidden; animation: slideIn 0.5s ease-out;
+            background: var(--card);
+            border-radius: 24px;
+            border: 1px solid var(--border);
+            margin-bottom: 25px;
+            overflow: hidden;
+            position: relative;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.4);
+            transition: 0.3s;
         }
-        @keyframes slideIn { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+        .news-card:active { transform: scale(0.98); }
 
-        .news-img { width: 100%; height: 200px; object-fit: cover; border-bottom: 1px solid var(--border); }
-        .news-content { padding: 18px; }
-        
-        .news-tag { 
-            display: inline-block; background: rgba(0, 255, 255, 0.1); color: var(--accent);
-            padding: 4px 10px; border-radius: 6px; font-size: 10px; margin-bottom: 10px;
+        .img-wrapper {
+            width: 100%;
+            height: 220px;
+            overflow: hidden;
+            background: #000;
+            position: relative;
+        }
+        .news-img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            opacity: 0.8;
+        }
+        /* Gradient Overlay on Image */
+        .img-wrapper::after {
+            content: '';
+            position: absolute;
+            bottom: 0; left: 0;
+            width: 100%; height: 50%;
+            background: linear-gradient(to top, var(--card), transparent);
         }
 
-        .news-title { font-size: 17px; margin-bottom: 10px; line-height: 1.4; color: #fff; }
-        .news-desc { font-size: 13px; color: var(--text-sec); line-height: 1.6; font-weight: 400; }
-
-        .news-footer { 
-            display: flex; justify-content: space-between; align-items: center; 
-            margin-top: 15px; padding-top: 15px; border-top: 1px solid rgba(255,255,255,0.03);
-            font-size: 11px; color: var(--text-sec);
+        .category-badge {
+            position: absolute;
+            top: 15px; right: 15px;
+            background: var(--accent);
+            color: #000;
+            padding: 5px 12px;
+            border-radius: 8px;
+            font-size: 10px;
+            font-family: var(--font-mon);
+            font-weight: 900;
+            text-transform: uppercase;
+            z-index: 2;
         }
 
-        /* Footer Nav */
-        .footer { 
-            position: fixed; bottom: 0; width: 100%; height: 75px; 
-            background: #0b0e11; display: flex; justify-content: space-around; 
-            align-items: center; border-top: 1px solid var(--border); z-index: 1000;
+        .news-info { padding: 20px; }
+        .news-title {
+            font-family: var(--font-mon);
+            font-weight: 900;
+            font-size: 18px;
+            color: #fff;
+            margin-bottom: 10px;
+            line-height: 1.3;
         }
-        .f-nav { text-decoration: none; color: var(--text-sec); text-align: center; font-size: 10px; flex: 1; }
-        .f-nav i { font-size: 20px; display: block; margin-bottom: 5px; }
-        .f-nav.active { color: var(--primary); }
+        .news-desc {
+            font-size: 13px;
+            color: #848e9c;
+            line-height: 1.5;
+            margin-bottom: 15px;
+            display: -webkit-box;
+            -webkit-line-clamp: 3;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+        }
 
-        /* Shimmer Effect for Loading */
-        #loading { text-align: center; padding: 50px; color: var(--accent); }
+        .meta-data {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-top: 1px solid rgba(255,255,255,0.05);
+            padding-top: 15px;
+            font-size: 11px;
+            color: #5e6673;
+        }
+        .official-tag { color: var(--primary); font-weight: 700; }
+
+        /* Navigation Footer */
+        .footer {
+            position: fixed; bottom: 0; width: 100%;
+            background: rgba(11, 14, 17, 0.95);
+            backdrop-filter: blur(10px);
+            display: flex; justify-content: space-around;
+            padding: 15px 0; border-top: 1px solid var(--border);
+            z-index: 100;
+        }
+        .nav-item { text-align: center; color: #848e9c; text-decoration: none; flex: 1; transition: 0.3s; }
+        .nav-item i { font-size: 20px; display: block; margin-bottom: 4px; }
+        .nav-item span { font-size: 10px; font-weight: 600; }
+        .nav-item.active { color: var(--primary); }
+
+        /* Shimmer/Loading */
+        #loader { text-align: center; padding: 50px; color: var(--accent); font-family: var(--font-mon); font-weight: 900; font-size: 12px; letter-spacing: 2px; }
     </style>
 </head>
 <body>
 
     <div class="news-header">
-        <h1 class="mon-900">News Feed</h1>
+        <h1>News Feed</h1>
+        <div class="header-line"></div>
     </div>
 
-    <div id="newsList" class="news-container">
-        <div id="loading"><i class="fas fa-circle-notch fa-spin"></i> Fetching Updates...</div>
-    </div>
+    <div id="loader"><i class="fas fa-spinner fa-spin"></i> LOADING SYNC...</div>
+    
+    <div id="newsList" class="container">
+        </div>
 
     <footer class="footer">
-        <a href="home.html" class="f-nav"><i class="fas fa-home"></i>Home</a>
-        <a href="market.html" class="f-nav"><i class="fas fa-chart-line"></i>Market</a>
-        <a href="news.html" class="f-nav active"><i class="fas fa-newspaper"></i>News</a>
-        <a href="wallet.html" class="f-nav"><i class="fas fa-wallet"></i>Wallet</a>
+        <a href="home.html" class="nav-item"><i class="fas fa-home"></i><span>Home</span></a>
+        <a href="market.html" class="nav-item"><i class="fas fa-chart-line"></i><span>Market</span></a>
+        <a href="news.html" class="nav-item active"><i class="fas fa-newspaper"></i><span>News</span></a>
+        <a href="wallet.html" class="nav-item"><i class="fas fa-wallet"></i><span>Wallet</span></a>
     </footer>
 
-<script>
-const firebaseConfig = { apiKey: "AIzaSyAMxtJedkehhxJRMPZLjhpKHqneHEWsGlE", databaseURL: "https://smat-exchange-default-rtdb.firebaseio.com" };
-firebase.initializeApp(firebaseConfig);
-const db = firebase.database();
+    <script>
+        const firebaseConfig = { apiKey: "AIzaSyAMxtJedkehhxJRMPZLjhpKHqneHEWsGlE", databaseURL: "https://smat-exchange-default-rtdb.firebaseio.com" };
+        firebase.initializeApp(firebaseConfig);
+        const db = firebase.database();
 
-function loadNews() {
-    db.ref('news_feed').on('value', snap => {
-        const list = document.getElementById('newsList');
-        list.innerHTML = "";
-        const data = snap.val() || {};
-        const newsItems = Object.keys(data).map(k => ({id: k, ...data[k]})).sort((a,b) => b.timestamp - a.timestamp);
+        function fetchNews() {
+            db.ref('news_feed').on('value', snap => {
+                const list = document.getElementById('newsList');
+                document.getElementById('loader').style.display = 'none';
+                list.innerHTML = "";
+                const data = snap.val() || {};
+                const sortedKeys = Object.keys(data).sort((a, b) => data[b].timestamp - data[a].timestamp);
 
-        if(newsItems.length === 0) {
-            list.innerHTML = `<p style="text-align:center; color:gray; margin-top:50px;">No news available.</p>`;
-            return;
-        }
+                if(sortedKeys.length === 0) {
+                    list.innerHTML = `<p style="text-align:center; color:gray; font-size:12px; margin-top:50px;">No updates from SmatBit yet.</p>`;
+                    return;
+                }
 
-        newsItems.forEach(news => {
-            const date = new Date(news.timestamp).toLocaleDateString();
-            list.innerHTML += `
-                <div class="news-card">
-                    ${news.image ? `<img src="${news.image}" class="news-img">` : ''}
-                    <div class="news-content">
-                        <span class="news-tag mon-900">${news.category || 'Announcement'}</span>
-                        <h2 class="news-title mon-900">${news.title}</h2>
-                        <p class="news-desc">${news.description}</p>
-                        <div class="news-footer">
-                            <span><i class="far fa-calendar-alt"></i> ${date}</span>
-                            <span style="color:var(--primary)">SmatBit Official</span>
+                sortedKeys.forEach(k => {
+                    const news = data[k];
+                    const date = new Date(news.timestamp).toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' });
+                    
+                    list.innerHTML += `
+                        <div class="news-card">
+                            <span class="category-badge">${news.category || 'NEWS'}</span>
+                            <div class="img-wrapper">
+                                <img src="${news.image || 'https://via.placeholder.com/500x300/1e2329/ffff00?text=SmatBit+Update'}" class="news-img" onerror="this.src='https://via.placeholder.com/500x300/1e2329/ffff00?text=SmatBit+Official'">
+                            </div>
+                            <div class="news-info">
+                                <h2 class="news-title">${news.title}</h2>
+                                <p class="news-desc">${news.description}</p>
+                                <div class="meta-data">
+                                    <span><i class="far fa-calendar-alt"></i> ${date}</span>
+                                    <span class="official-tag"><i class="fas fa-check-circle"></i> SmatBit Official</span>
+                                </div>
+                            </div>
                         </div>
-                    </div>
-                </div>
-            `;
-        });
-    });
-}
-
-loadNews();
-</script>
+                    `;
+                });
+            });
+        }
+        fetchNews();
+    </script>
 </body>
 </html>
