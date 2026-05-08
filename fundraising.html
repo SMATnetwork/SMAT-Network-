@@ -1,0 +1,273 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>SMAT Venture | Fundraising</title>
+    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-database-compat.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@700;900&family=Inter:wght@400;600&display=swap" rel="stylesheet">
+    
+    <style>
+        :root {
+            --bg: #0b0e11; --card: #1e2329; --primary: #f0b90b;
+            --accent: #00ffff; --up: #0ecb81; --down: #f6465d;
+            --text-sec: #848e9c; --border: rgba(255, 255, 255, 0.08);
+            --font-mont: 'Montserrat', sans-serif;
+        }
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Inter', sans-serif; -webkit-tap-highlight-color: transparent; }
+        body { background: var(--bg); color: white; padding-bottom: 100px; display: none; }
+
+        /* Header & Project Info */
+        .project-header { padding: 40px 20px; text-align: center; background: linear-gradient(180deg, rgba(0, 255, 255, 0.05) 0%, var(--bg) 100%); }
+        .project-logo { width: 80px; height: 80px; border-radius: 20px; border: 2px solid var(--accent); margin-bottom: 15px; box-shadow: 0 0 20px rgba(0, 255, 255, 0.2); }
+        .project-title { font-family: var(--font-mont); font-size: 24px; color: var(--accent); text-transform: uppercase; }
+        
+        .social-links { display: flex; justify-content: center; gap: 15px; margin: 20px 0; }
+        .social-links a { color: var(--text-sec); font-size: 18px; transition: 0.3s; }
+        .social-links a:hover { color: var(--accent); }
+
+        .token-details { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; padding: 0 15px; margin-bottom: 25px; }
+        .detail-box { background: var(--card); padding: 12px; border-radius: 12px; border: 1px solid var(--border); font-size: 11px; }
+        .detail-box span { color: var(--text-sec); display: block; margin-bottom: 4px; text-transform: uppercase; }
+        .detail-box b { font-size: 13px; color: white; }
+
+        .description { padding: 0 20px; font-size: 13px; color: var(--text-sec); line-height: 1.6; margin-bottom: 30px; font-weight: 400; }
+
+        /* Glowing Funding Card */
+        .funding-card { margin: 0 15px; background: #161a1e; border-radius: 24px; padding: 25px; border: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; position: relative; overflow: hidden; }
+        .fund-side { text-align: center; flex: 1; z-index: 2; }
+        .fund-side span { font-size: 10px; color: var(--text-sec); text-transform: uppercase; display: block; margin-bottom: 5px; }
+        .fund-side b { font-size: 16px; font-family: var(--font-mont); color: white; }
+
+        .glowing-center { position: relative; width: 80px; text-align: center; z-index: 2; }
+        .venture-text { font-family: var(--font-mont); font-size: 10px; color: var(--accent); animation: glow 2s infinite alternate; }
+        @keyframes glow { from { text-shadow: 0 0 5px var(--accent); opacity: 0.6; } to { text-shadow: 0 0 20px var(--accent), 0 0 30px var(--accent); opacity: 1; } }
+
+        /* Funding Input */
+        .input-area { padding: 25px 15px; }
+        .input-group { background: var(--card); border-radius: 16px; padding: 15px; border: 1px solid var(--border); display: flex; align-items: center; margin-bottom: 15px; }
+        .input-group input { background: transparent; border: none; color: white; flex: 1; font-size: 18px; outline: none; font-weight: 700; }
+        .input-group span { color: var(--primary); font-weight: 900; }
+
+        .btn-fund { width: 100%; background: var(--accent); color: #000; border: none; padding: 16px; border-radius: 16px; font-weight: 900; font-size: 14px; cursor: pointer; box-shadow: 0 10px 20px rgba(0, 255, 255, 0.2); }
+
+        /* Leaderboard Table */
+        .leaderboard { margin-top: 30px; padding: 0 15px; }
+        .leaderboard h3 { font-family: var(--font-mont); font-size: 16px; margin-bottom: 15px; color: var(--text-sec); }
+        table { width: 100%; border-collapse: collapse; }
+        th { text-align: left; font-size: 10px; color: var(--text-sec); text-transform: uppercase; padding: 10px; border-bottom: 1px solid var(--border); }
+        td { padding: 15px 10px; font-size: 12px; border-bottom: 1px solid var(--border); }
+        .my-row { background: rgba(0, 255, 255, 0.1) !important; color: var(--accent); }
+
+        .show-more { text-align: center; padding: 20px; color: var(--accent); font-size: 13px; cursor: pointer; }
+
+        /* Toast & Overlay */
+        #toast-box { position: fixed; top: 30px; left: 50%; transform: translateX(-50%); z-index: 10000; }
+        .g-toast { background: var(--card); border-left: 4px solid var(--accent); padding: 15px 25px; border-radius: 12px; color: white; font-size: 13px; margin-bottom: 10px; box-shadow: 0 10px 30px rgba(0,0,0,0.5); }
+    </style>
+</head>
+<body>
+
+    <div id="toast-box"></div>
+
+    <div id="appContent">
+        <div class="project-header" id="projHeader">
+            <img src="" class="project-logo" id="projLogo">
+            <h1 class="project-title" id="projTitle">Loading...</h1>
+            <div class="social-links" id="projSocials"></div>
+        </div>
+
+        <div class="token-details">
+            <div class="detail-box"><span>Token Name</span><b id="tName">-</b></div>
+            <div class="detail-box"><span>Total Supply</span><b id="tSupply">-</b></div>
+            <div class="detail-box"><span>BlockScan</span><b id="tScan">-</b></div>
+            <div class="detail-box"><span>Vesting Lock</span><b id="tVesting">-</b></div>
+        </div>
+
+        <div class="description" id="projDesc"></div>
+
+        <div class="funding-card">
+            <div class="fund-side">
+                <span>My Funding</span>
+                <b id="myFund">0.00 USDT</b>
+            </div>
+            <div class="glowing-center">
+                <div class="venture-text">SMAT<br>VENTURE</div>
+            </div>
+            <div class="fund-side">
+                <span>SMAT Funding</span>
+                <b id="totalFund">0.00 USDT</b>
+            </div>
+        </div>
+
+        <div class="input-area">
+            <div class="input-group">
+                <input type="number" id="fundAmount" placeholder="0.00">
+                <span>USDT</span>
+            </div>
+            <button class="btn-fund" onclick="contribute()">CONTRIBUTE NOW</button>
+        </div>
+
+        <div class="leaderboard">
+            <h3>Top Contributors</h3>
+            <table>
+                <thead>
+                    <tr><th>SMAT ID</th><th>Method</th><th>Amount</th></tr>
+                </thead>
+                <tbody id="leaderTable"></tbody>
+            </table>
+            <div class="show-more" onclick="loadMore()" id="moreBtn">Show More</div>
+        </div>
+    </div>
+
+<script>
+// --- FIREBASE CONFIG ---
+const firebaseConfig = { 
+    apiKey: "AIzaSyAMxtJedkehhxJRMPZLjhpKHqneHEWsGlE", 
+    authDomain: "smat-exchange.firebaseapp.com", 
+    projectId: "smat-exchange", 
+    databaseURL: "https://smat-exchange-default-rtdb.firebaseio.com" 
+};
+firebase.initializeApp(firebaseConfig);
+const db = firebase.database();
+const auth = firebase.auth();
+
+let userData = {}, activeProject = {}, allContributors = [];
+let displayLimit = 50;
+
+auth.onAuthStateChanged(user => {
+    if (user) { document.body.style.display = "block"; loadProject(); loadUser(user.uid); }
+    else { window.location.href = "logIn.html"; }
+});
+
+function loadUser(uid) {
+    db.ref('users/' + uid).on('value', snap => {
+        userData = snap.val() || {};
+        userData.uid = uid;
+        renderLeaderboard();
+    });
+}
+
+function loadProject() {
+    // এডমিন প্যানেল থেকে 'active_fundraising' নোডে প্রজেক্ট থাকবে
+    db.ref('active_fundraising').on('value', snap => {
+        activeProject = snap.val() || {};
+        if(!activeProject.id) return;
+
+        document.getElementById('projTitle').innerText = activeProject.title;
+        document.getElementById('projLogo').src = activeProject.logo;
+        document.getElementById('tName').innerText = activeProject.tokenName;
+        document.getElementById('tSupply').innerText = activeProject.supply;
+        document.getElementById('tScan').innerText = activeProject.scan;
+        document.getElementById('tVesting').innerText = activeProject.vesting || "No Lock";
+        document.getElementById('projDesc').innerText = activeProject.description;
+        
+        document.getElementById('projSocials').innerHTML = `
+            <a href="${activeProject.web}"><i class="fas fa-globe"></i></a>
+            <a href="${activeProject.tg}"><i class="fab fa-telegram"></i></a>
+            <a href="${activeProject.tw}"><i class="fab fa-twitter"></i></a>
+            <a href="${activeProject.ds}"><i class="fab fa-discord"></i></a>
+        `;
+
+        loadContributors();
+    });
+}
+
+function loadContributors() {
+    db.ref('fundraising_contributions/' + activeProject.id).on('value', snap => {
+        const val = snap.val() || {};
+        allContributors = Object.keys(val).map(k => ({uid: k, ...val[k]}))
+            .sort((a,b) => b.amount - a.amount);
+        
+        let total = allContributors.reduce((sum, item) => sum + item.amount, 0);
+        document.getElementById('totalFund').innerText = total.toFixed(2) + " USDT";
+        
+        const myData = allContributors.find(x => x.uid === userData.uid);
+        document.getElementById('myFund').innerText = (myData ? myData.amount : 0).toFixed(2) + " USDT";
+
+        renderLeaderboard();
+    });
+}
+
+function renderLeaderboard() {
+    const table = document.getElementById('leaderTable');
+    table.innerHTML = "";
+    
+    // ১. নিজের ডাটা সবার উপরে যদি জমা দিয়ে থাকে
+    const myData = allContributors.find(x => x.uid === userData.uid);
+    if(myData) {
+        table.innerHTML += `<tr class="my-row"><td>${userData.smat_id || 'Me'}</td><td>USDT</td><td>${myData.amount.toFixed(2)}</td></tr>`;
+    }
+
+    // ২. টপ ৫০ জন (নিজেরটা বাদ দিয়ে যাতে ডাবল না হয়)
+    allContributors.slice(0, displayLimit).forEach(item => {
+        if(item.uid === userData.uid) return;
+        table.innerHTML += `<tr><td>${item.smat_id}</td><td>USDT</td><td>${item.amount.toFixed(2)}</td></tr>`;
+    });
+
+    if(allContributors.length <= displayLimit) document.getElementById('moreBtn').style.display = 'none';
+}
+
+async function contribute() {
+    const amt = parseFloat(document.getElementById('fundAmount').value);
+    const balance = parseFloat(userData.usdt_balance || 0);
+
+    if(!amt || amt <= 0) return showToast("Enter valid amount");
+    if(amt > balance) return showToast("Insufficient USDT balance");
+
+    const confirmContribute = confirm(`Contribute ${amt} USDT to ${activeProject.title}?`);
+    if(!confirmContribute) return;
+
+    const up = {};
+    const newBalance = (balance - amt).toFixed(8);
+    const projId = activeProject.id;
+    
+    // ১. ব্যালেন্স আপডেট
+    up[`users/${userData.uid}/usdt_balance`] = parseFloat(newBalance);
+    
+    // ২. প্রজেক্ট কন্ট্রিবিউশন রেকর্ড
+    let prevAmt = 0;
+    const existing = allContributors.find(x => x.uid === userData.uid);
+    if(existing) prevAmt = existing.amount;
+
+    up[`fundraising_contributions/${projId}/${userData.uid}`] = {
+        amount: prevAmt + amt,
+        smat_id: userData.smat_id || "User",
+        timestamp: Date.now()
+    };
+
+    // ৩. ওয়ালেট হিস্টোরি (Funding Out)
+    const tid = "FUND_OUT_" + Date.now();
+    up[`users/${userData.uid}/history/${tid}`] = {
+        method: 'Funding Out',
+        coin: 'USDT',
+        amount: amt.toFixed(2),
+        project: activeProject.title,
+        timestamp: Date.now(),
+        status: 'success'
+    };
+
+    await db.ref().update(up);
+    document.getElementById('fundAmount').value = "";
+    showToast("Contribution Successful!");
+}
+
+function loadMore() {
+    displayLimit += 50;
+    renderLeaderboard();
+}
+
+function showToast(msg) {
+    const box = document.getElementById('toast-box');
+    const t = document.createElement('div');
+    t.className = 'g-toast';
+    t.innerText = msg;
+    box.appendChild(t);
+    setTimeout(() => { t.remove(); }, 3000);
+}
+</script>
+</body>
+</html>
