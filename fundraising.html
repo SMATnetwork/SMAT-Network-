@@ -15,6 +15,8 @@
             --bg: #0b0e11; --card: #1e2329; --primary: #ffff00;
             --accent: #00ffff; --text-sec: #848e9c; --border: rgba(255, 255, 255, 0.08);
             --font-mon: 'Montserrat', sans-serif;
+            --status-ongoing: #0ecb81;
+            --status-completed: #f6465d;
         }
         * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
         body { background: var(--bg); color: white; font-family: 'Inter', sans-serif; font-weight: 700; padding-bottom: 100px; }
@@ -31,14 +33,26 @@
 
         /* Project Card */
         .proj-card { 
+            position: relative;
             background: var(--card); border-radius: 24px; padding: 20px; 
             border: 1px solid var(--border); margin-bottom: 25px; 
             box-shadow: 0 10px 30px rgba(0,0,0,0.3);
         }
-        .proj-top { display: flex; align-items: center; gap: 15px; margin-bottom: 20px; }
+
+        /* Status Badge Style */
+        .status-badge {
+            position: absolute; top: 20px; right: 20px;
+            padding: 5px 12px; border-radius: 8px; font-size: 9px;
+            font-family: var(--font-mon); text-transform: uppercase;
+            border: 1px solid rgba(255,255,255,0.1);
+        }
+        .ongoing { color: var(--status-ongoing); background: rgba(14, 203, 129, 0.1); }
+        .completed { color: var(--status-completed); background: rgba(246, 70, 93, 0.1); }
+
+        .proj-top { display: flex; align-items: center; gap: 15px; margin-bottom: 20px; padding-right: 80px; }
         .proj-logo { width: 60px; height: 60px; border-radius: 15px; border: 2px solid var(--accent); object-fit: cover; }
         
-        /* Description: Auto-adjust and word wrap */
+        /* Description Fix */
         .description { 
             font-size: 13px; color: #b7bdc6; line-height: 1.6; 
             margin: 20px 0; text-align: justify; font-weight: 400;
@@ -56,7 +70,7 @@
         }
         .link-item i { color: var(--accent); }
 
-        /* Funding Stats */
+        /* Stats Card */
         .stats-card { 
             background: #161a1e; border-radius: 18px; padding: 15px; 
             display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 5px; 
@@ -65,25 +79,23 @@
         .stat-box span { font-size: 8px; color: var(--text-sec); display: block; }
         .stat-box b { font-size: 11px; color: white; }
 
-        /* Buttons */
         .btn-participate { 
             width: 100%; background: var(--primary); color: #000; border: none; 
             padding: 16px; border-radius: 12px; font-size: 15px; cursor: pointer; 
         }
+        .btn-participate:disabled { background: #474d57; color: #848e9c; cursor: not-allowed; }
 
-        /* History Table */
+        /* History */
         .history-box { margin-top: 20px; border-top: 1px solid var(--border); padding-top: 15px; }
         table { width: 100%; border-collapse: collapse; margin-top: 10px; }
         th { text-align: left; font-size: 10px; color: var(--text-sec); padding: 8px; }
         td { padding: 10px 8px; font-size: 11px; border-bottom: 1px solid rgba(255,255,255,0.03); }
         .my-row { background: rgba(0, 255, 255, 0.05); color: var(--accent); }
 
-        /* Modals */
         .modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.9); display: none; align-items: center; justify-content: center; z-index: 5000; padding: 20px; }
         .modal-content { background: var(--card); border: 1px solid var(--accent); border-radius: 24px; padding: 25px; width: 100%; max-width: 380px; text-align: center; }
         .f-input { width: 100%; background: #0b0e11; border: 1px solid var(--border); padding: 15px; border-radius: 10px; color: white; font-size: 18px; margin: 15px 0; outline: none; }
 
-        /* Footer */
         .footer { position: fixed; bottom: 0; width: 100%; height: 75px; background: #0b0e11; display: flex; justify-content: space-around; align-items: center; border-top: 1px solid var(--border); }
         .f-nav { text-decoration: none; color: var(--text-sec); text-align: center; font-size: 10px; flex: 1; }
         .f-nav i { font-size: 20px; display: block; margin-bottom: 5px; }
@@ -103,7 +115,7 @@
             <h2 class="mon-900" style="color:var(--accent)">Participate</h2>
             <p id="userBalDisplay" style="font-size:12px; margin-top:10px; color:var(--text-sec)"></p>
             <input type="number" id="investAmt" class="f-input" placeholder="0.00">
-            <button class="btn-participate mon-900" onclick="confirmInvestment()">Confirm</button>
+            <button class="btn-participate mon-900" id="modalConfirmBtn" onclick="confirmInvestment()">Confirm</button>
             <button onclick="closeModal()" style="background:none; border:none; color:white; margin-top:15px; cursor:pointer">Close</button>
         </div>
     </div>
@@ -137,7 +149,7 @@ auth.onAuthStateChanged(user => {
 function loadProjects() {
     db.ref('fundraising_history').on('value', snap => {
         const data = snap.val() || {};
-        allProjects = Object.keys(data).map(k => data[k]).sort((a,b) => b.timestamp - a.timestamp);
+        allProjects = Object.keys(data).map(k => ({id: k, ...data[k]})).sort((a,b) => b.timestamp - a.timestamp);
         renderUI();
     });
 }
@@ -160,6 +172,11 @@ async function renderUI() {
         const myCont = historyArr.find(x => x.uid === userData.uid);
         const myTotal = myCont ? myCont.amount : 0;
 
+        // Status Logic
+        const isCompleted = proj.status === 'Completed';
+        const statusText = isCompleted ? 'Completed' : 'Ongoing';
+        const statusClass = isCompleted ? 'completed' : 'ongoing';
+
         let visibleRows = "";
         let hiddenRows = "";
         
@@ -172,9 +189,11 @@ async function renderUI() {
 
         const card = `
             <div class="proj-card">
+                <div class="status-badge ${statusClass}">${statusText}</div>
+                
                 <div class="proj-top">
                     <img src="${proj.logo}" class="proj-logo">
-                    <h2 class="mon-900" style="color:var(--accent); font-size:18px;">${proj.title}</h2>
+                    <h2 class="mon-900" style="color:var(--accent); font-size:16px;">${proj.title}</h2>
                 </div>
 
                 <div class="links-grid">
@@ -190,7 +209,11 @@ async function renderUI() {
 
                 <div class="description">${proj.description}</div>
 
-                <button class="btn-participate mon-900" onclick="openModal('${proj.id}')">Participate Now</button>
+                <button class="btn-participate mon-900" 
+                    ${isCompleted ? 'disabled' : ''} 
+                    onclick="openModal('${proj.id}')">
+                    ${isCompleted ? 'Finished' : 'Participate Now'}
+                </button>
 
                 <div class="stats-card" style="margin-top:20px;">
                     <div class="stat-box"><span>MY FUNDING</span><b>${myTotal.toFixed(2)}</b></div>
@@ -226,6 +249,7 @@ window.toggleHistory = (projId, btn) => {
 
 function openModal(id) {
     activeInvestProj = allProjects.find(p => p.id === id);
+    if(activeInvestProj.status === 'Completed') return;
     document.getElementById('userBalDisplay').innerText = "Available: " + (userData.usdt_balance || 0).toFixed(2) + " USDT";
     document.getElementById('fundModal').style.display = 'flex';
 }
