@@ -1,0 +1,190 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SmatBit | Admin Control</title>
+    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-database-compat.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root { --bg: #0b0e11; --card: #1e2329; --primary: #f0b90b; --border: rgba(255,255,255,0.1); --text: #eaeaea; }
+        body { background: var(--bg); color: var(--text); font-family: 'Segoe UI', sans-serif; margin: 0; padding: 20px; }
+        h1, h2 { color: var(--primary); text-transform: uppercase; letter-spacing: 1px; }
+        
+        .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(350px, 1fr)); gap: 20px; }
+        .admin-card { background: var(--card); padding: 25px; border-radius: 15px; border: 1px solid var(--border); box-shadow: 0 10px 30px rgba(0,0,0,0.3); }
+
+        .form-group { margin-bottom: 15px; }
+        label { display: block; font-size: 12px; margin-bottom: 5px; color: #848e9c; }
+        input, textarea, select { width: 100%; padding: 12px; background: #0b0e11; border: 1px solid var(--border); border-radius: 8px; color: white; outline: none; box-sizing: border-box; }
+        input:focus { border-color: var(--primary); }
+
+        .btn-push { background: var(--primary); color: #000; border: none; padding: 15px; width: 100%; border-radius: 10px; font-weight: bold; cursor: pointer; margin-top: 10px; transition: 0.3s; }
+        .btn-push:hover { opacity: 0.9; transform: translateY(-2px); }
+
+        .list-item { background: #0b0e11; padding: 10px; border-radius: 8px; margin-top: 10px; display: flex; justify-content: space-between; align-items: center; border: 1px solid var(--border); }
+        .btn-del { background: #f6465d; color: white; border: none; padding: 5px 10px; border-radius: 5px; cursor: pointer; }
+        
+        hr { border: 0; border-top: 1px solid var(--border); margin: 20px 0; }
+    </style>
+</head>
+<body>
+
+    <h1>SmatBit Master Admin</h1>
+    <p style="color: #848e9c; margin-bottom: 30px;">Manage Launchpad and Staking Ecosystem</p>
+
+    <div class="grid">
+        
+        <div class="admin-card">
+            <h2><i class="fas fa-rocket"></i> New Launchpad</h2>
+            <div class="form-group">
+                <label>Token Name</label>
+                <input type="text" id="lpName" placeholder="e.g. SmatBit Coin">
+            </div>
+            <div class="form-group">
+                <label>Token Symbol</label>
+                <input type="text" id="lpSymbol" placeholder="e.g. SMB">
+            </div>
+            <div class="form-group">
+                <label>Logo URL</label>
+                <input type="text" id="lpLogo" placeholder="https://path-to-logo.png">
+            </div>
+            <div class="form-group">
+                <label>Lock Which Token? (Requirement)</label>
+                <input type="text" id="lpLockToken" placeholder="e.g. USDT or BNB">
+            </div>
+            <div class="form-group">
+                <label>Total Pool Size (Rewards)</label>
+                <input type="number" id="lpPool" placeholder="1000000">
+            </div>
+            <div class="form-group">
+                <label>Duration (Days)</label>
+                <input type="number" id="lpDays" placeholder="7">
+            </div>
+            <div class="form-group">
+                <label>Description</label>
+                <textarea id="lpDesc" rows="3" placeholder="Explain the project..."></textarea>
+            </div>
+            <button class="btn-push" onclick="pushLaunchpad()">LAUNCH PROJECT</button>
+            
+            <hr>
+            <h3>Active Launchpads</h3>
+            <div id="lpList"></div>
+        </div>
+
+        <div class="admin-card">
+            <h2><i class="fas fa-layer-group"></i> Staking Settings</h2>
+            <div class="form-group">
+                <label>Coin Symbol</label>
+                <input type="text" id="stkSym" placeholder="BTC">
+            </div>
+            <div class="form-group">
+                <label>Base APY (%)</label>
+                <input type="number" id="stkApy" placeholder="12.5">
+            </div>
+            <div class="form-group">
+                <label>Network</label>
+                <input type="text" id="stkNet" placeholder="SmatBit Chain">
+            </div>
+            <div class="form-group">
+                <label>Max Pool Limit</label>
+                <input type="number" id="stkMax" placeholder="5000000">
+            </div>
+            <div class="form-group">
+                <label>Logo URL</label>
+                <input type="text" id="stkLogo" placeholder="url...">
+            </div>
+            <button class="btn-push" style="background: #0ecb81;" onclick="addStakingPool()">ADD STAKING POOL</button>
+            
+            <hr>
+            <h3>Existing Pools</h3>
+            <div id="stkList"></div>
+        </div>
+
+    </div>
+
+<script>
+// --- FIREBASE INIT ---
+const firebaseConfig = { 
+    apiKey: "AIzaSyAMxtJedkehhxJRMPZLjhpKHqneHEWsGlE", 
+    authDomain: "smat-exchange.firebaseapp.com", 
+    projectId: "smat-exchange", 
+    databaseURL: "https://smat-exchange-default-rtdb.firebaseio.com" 
+};
+firebase.initializeApp(firebaseConfig);
+const db = firebase.database();
+
+// --- LAUNCHPAD LOGIC ---
+function pushLaunchpad() {
+    const id = "LP" + Date.now();
+    const days = parseInt(document.getElementById('lpDays').value);
+    const data = {
+        tokenName: document.getElementById('lpName').value,
+        tokenSymbol: document.getElementById('lpSymbol').value,
+        logoPath: document.getElementById('lpLogo').value,
+        lockToken: document.getElementById('lpLockToken').value,
+        poolSize: document.getElementById('lpPool').value,
+        description: document.getElementById('lpDesc').value,
+        startTime: Date.now(),
+        endTime: Date.now() + (days * 24 * 60 * 60 * 1000),
+        globalLocked: 0
+    };
+
+    if(!data.tokenName || !days) return alert("Fill all fields!");
+    
+    db.ref('launchpad_list/' + id).set(data)
+    .then(() => { alert("Launchpad Live!"); location.reload(); });
+}
+
+// --- STAKING LOGIC ---
+function addStakingPool() {
+    const sym = document.getElementById('stkSym').value.toUpperCase();
+    if(!sym) return alert("Enter Symbol!");
+    
+    const data = {
+        symbol: sym,
+        name: sym + " Staking",
+        startingAPY: parseFloat(document.getElementById('stkApy').value),
+        network: document.getElementById('stkNet').value,
+        maxPool: parseFloat(document.getElementById('stkMax').value),
+        logopath: document.getElementById('stkLogo').value,
+        totalStaked: 0
+    };
+
+    db.ref('staking_settings/' + sym).set(data)
+    .then(() => { alert("Staking Pool Added!"); location.reload(); });
+}
+
+// --- REALTIME LISTING ---
+db.ref('launchpad_list').on('value', snap => {
+    const list = document.getElementById('lpList');
+    list.innerHTML = "";
+    snap.forEach(child => {
+        list.innerHTML += `
+            <div class="list-item">
+                <span><b>${child.val().tokenSymbol}</b> - ${child.val().poolSize} Pool</span>
+                <button class="btn-del" onclick="deleteItem('launchpad_list/${child.key}')">Delete</button>
+            </div>`;
+    });
+});
+
+db.ref('staking_settings').on('value', snap => {
+    const list = document.getElementById('stkList');
+    list.innerHTML = "";
+    snap.forEach(child => {
+        list.innerHTML += `
+            <div class="list-item">
+                <span><b>${child.val().symbol}</b> - ${child.val().startingAPY}% APY</span>
+                <button class="btn-del" onclick="deleteItem('staking_settings/${child.key}')">Delete</button>
+            </div>`;
+    });
+});
+
+function deleteItem(path) {
+    if(confirm("Are you sure?")) db.ref(path).remove();
+}
+</script>
+</body>
+</html>
