@@ -178,122 +178,108 @@
     const auth = getAuth(app);
     const db = getDatabase(app);
 
-      // --- ১. Pure Code Graphics (S-Shape Node Flow) ---
-   const canvas = document.getElementById('graphicsCanvas');
-   const ctx = canvas.getContext('2d');
-   let w, h;
-   
-   function resize() {
-   w = canvas.width = window.innerWidth;
-   h = canvas.height = window.innerHeight;
-   }
-   window.addEventListener('resize', resize);
-   resize();
-   
-   const nodes = [];
-   
-   // নোড বা ব্লক তৈরি
-   class Node {
-   constructor() {
-   this.x = Math.random() * w;
-   this.y = Math.random() * h;
-   // আপনার দেওয়া গতিপথ (velocity) ঠিক রাখা হয়েছে
-   this.vx = (Math.random() - 0.5) * 2; 
-   this.vy = (Math.random() - 0.5) * 2;
-   this.radius = 20; // 'S' লেখার জন্য রেডিয়াস একটু বাড়ানো হয়েছে
-   this.color = Math.random() > 0.5 ? "#f3ba2f" : "#00ffff"; // Yellow or Cyan
-   }
-   
-   draw() {
-   // ১. গিটের বৃত্ত বা বাবল আঁকা
-   ctx.beginPath();
-   ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2);
-   ctx.fillStyle = this.color;
-   ctx.shadowBlur = 15;
-   ctx.shadowColor = this.color;
-   ctx.globalAlpha = 0.8; // একটু স্বচ্ছ রাখা হয়েছে যাতে টেক্সট ফোটে
-   ctx.fill();
-   ctx.shadowBlur = 0;
-   ctx.globalAlpha = 1;
-   
-   // ২. প্রতিটি গিটের মাঝখানে 'S' অক্ষরটি লেখা
-   ctx.font = "900 12px Montserrat"; // আপনার পছন্দের Montserrat 900
-   ctx.fillStyle = "#000000"; // সাদার ওপর কালো 'S' স্পষ্ট দেখাবে
-   ctx.textAlign = "center";
-   ctx.textBaseline = "middle";
-   ctx.fillText("SMAT", this.x, this.y);
-   }
-   
-   update() {
-   this.x += this.vx;
-   this.y += this.vy;
-   if (this.x < 0 || this.x > w) this.vx *= -1;
-   if (this.y < 0 || this.y > h) this.vy *= -1;
-   }
-   }
-   
-   // --- 'S' আকৃতির পাথ থেকে নোড জেনারেট করার ফাংশন ---
-   function createSNodes() {
-   const totalNodes = 15;
-   const centerX = w / 2;
-   const centerY = h / 2;
-   
-   for (let i = 0; i < totalNodes; i++) {
-   let t = (i / totalNodes) * Math.PI * 2.5; // পাথের অ্যাঙ্গেল
-   
-   // 'S' শেপের গাণিতিক সূত্র (Lissajous curve variation)
-   let xOffset = Math.sin(t) * 100;
-   let yOffset = Math.cos(t * 0.5) * 150;
-   
-   let startX = centerX + xOffset;
-   let startY = centerY + yOffset;
-   
-   // নোডগুলো যাতে সেন্টার থেকে বাইরের দিকে ছড়িয়ে যায়
-   let vx = (Math.random() - 0.5) * 2;
-   let vy = (Math.random() - 0.5) * 2;
-   
-   nodes.push(new Node(startX, startY, vx, vy));
-   }
-   }
-   
-   // শুরুতে নোডগুলো তৈরি করা
-   createSNodes();
-   
-   function animate() {
-   ctx.fillStyle = "rgba(248, 249, 250, 0.2)"; // ডে-মোড ব্যাকগ্রাউন্ড ট্রেইল
-   ctx.fillRect(0, 0, w, h);
-   
-   nodes.forEach((n, index) => {
-   n.update();
-   n.draw();
-   
-   for (let j = index + 1; j < nodes.length; j++) {
-   const n2 = nodes[j];
-   const dist = Math.hypot(n.x - n2.x, n.y - n2.y);
-   
-   if (dist < 200) {
-   ctx.beginPath();
-   ctx.moveTo(n.x, n.y);
-   ctx.lineTo(n2.x, n2.y);
-   
-   const grad = ctx.createLinearGradient(n.x, n.y, n2.x, n2.y);
-   grad.addColorStop(0, n.color);
-   grad.addColorStop(1, n2.color);
-   
-   ctx.strokeStyle = grad;
-   ctx.globalAlpha = 1 - (dist / 150);
-   ctx.lineWidth = 1.5;
-   ctx.stroke();
-   ctx.globalAlpha = 1;
-   }
-   }
-   });
-   
-   requestAnimationFrame(animate);
-   }
-   
-   animate();
-    
+    // --- ১. Pure Code Graphics (Optimized for SmatBit) ---
+const canvas = document.getElementById('graphicsCanvas');
+const ctx = canvas.getContext('2d');
+let w, h;
+
+function resize() {
+    w = canvas.width = window.innerWidth;
+    h = canvas.height = window.innerHeight;
+}
+window.addEventListener('resize', resize);
+resize();
+
+const nodes = [];
+
+class Node {
+    constructor(x, y, vx, vy) {
+        this.x = x || Math.random() * w;
+        this.y = y || Math.random() * h;
+        this.vx = vx || (Math.random() - 0.5) * 1.5; 
+        this.vy = vy || (Math.random() - 0.5) * 1.5;
+        this.radius = 18; // সামান্য ছোট করা হয়েছে পারফরম্যান্সের জন্য
+        this.color = Math.random() > 0.5 ? "#f3ba2f" : "#00ffff"; 
+    }
+
+    draw() {
+        ctx.beginPath();
+        ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2);
+        ctx.fillStyle = this.color;
+        
+        // শ্যাডো ব্লার ব্রাউজারকে স্লো করে, তাই এটি কমিয়ে ৫ করা হয়েছে
+        ctx.shadowBlur = 5; 
+        ctx.shadowColor = this.color;
+        ctx.globalAlpha = 0.7; 
+        ctx.fill();
+        ctx.shadowBlur = 0; // ড্রয়িং শেষে সাথে সাথে রিসেট
+        ctx.globalAlpha = 1;
+
+        // Montserrat 900 ফন্ট
+        ctx.font = "900 9px Montserrat"; 
+        ctx.fillStyle = "#000000"; 
+        ctx.textAlign = "center";
+        ctx.textBaseline = "middle";
+        ctx.fillText("SMAT", this.x, this.y);
+    }
+
+    update() {
+        this.x += this.vx;
+        this.y += this.vy;
+        if (this.x < 0 || this.x > w) this.vx *= -1;
+        if (this.y < 0 || this.y > h) this.vy *= -1;
+    }
+}
+
+function createSNodes() {
+    const totalNodes = 20; // ১৫ থেকে বাড়িয়ে ২৫ করা হলো, ল্যাগ হবে না
+    const centerX = w / 2;
+    const centerY = h / 2;
+    for (let i = 0; i < totalNodes; i++) {
+        let t = (i / totalNodes) * Math.PI * 2.5; 
+        let xOffset = Math.sin(t) * 100;
+        let yOffset = Math.cos(t * 0.5) * 150;
+        nodes.push(new Node(centerX + xOffset, centerY + yOffset));
+    }
+}
+
+createSNodes();
+
+function animate() {
+    // স্ক্রিন ক্লিয়ারিং এবং ট্রেইল
+    ctx.fillStyle = "rgba(248, 249, 250, 0.3)"; 
+    ctx.fillRect(0, 0, w, h);
+
+    nodes.forEach((n, index) => {
+        n.update();
+        n.draw();
+
+        for (let j = index + 1; j < nodes.length; j++) {
+            const n2 = nodes[j];
+            const dist = Math.hypot(n.x - n2.x, n.y - n2.y);
+
+            if (dist < 180) {
+                ctx.beginPath();
+                ctx.moveTo(n.x, n.y);
+                ctx.lineTo(n2.x, n2.y);
+                
+                const grad = ctx.createLinearGradient(n.x, n.y, n2.x, n2.y);
+                grad.addColorStop(0, n.color);
+                grad.addColorStop(1, n2.color);
+                
+                ctx.strokeStyle = grad;
+                // অপাসিটি ক্যালকুলেশন ফিক্স করা হয়েছে
+                ctx.globalAlpha = Math.max(0, 1 - (dist / 180));
+                ctx.lineWidth = 1; 
+                ctx.stroke();
+                ctx.globalAlpha = 1;
+            }
+        }
+    });
+    requestAnimationFrame(animate);
+}
+animate();
+
 
     // --- ২. আপনার অরিজিনাল লজিক (SMAT ID, Referral, Firebase) ---
     let loginMode = true;
