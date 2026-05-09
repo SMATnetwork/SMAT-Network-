@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Costa Group | Official Application</title>
+    <title>Costa Group Official Application</title>
     <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;700;900&display=swap" rel="stylesheet">
     <style>
     :root {
@@ -34,7 +34,6 @@
         box-shadow: 0 4px 15px rgba(0,0,0,0.05);
     }
 
-    /* Top Brand Header */
     .top-brand-header {
         text-align: center;
         margin-bottom: 25px;
@@ -48,20 +47,16 @@
     }
     .map-img { width: 80px; margin-top: 5px; }
 
-    /* Layout Split: Left Logo, Right Photo */
     .header-split {
         display: flex;
-        justify-content: space-between; /* এটি লোগোকে বামে এবং ফটোকে ডানে ঠেলে দিবে */
-        align-items: center; /* লম্বালম্বিভাবে মাঝখানে রাখবে */
+        justify-content: space-between;
+        align-items: center;
         margin-bottom: 20px;
         width: 100%;
         gap: 20px;
     }
 
-    .logo-side { 
-        flex: 1; 
-        text-align: left; 
-    }
+    .logo-side { flex: 1; text-align: left; }
     .logo-side h2 { 
         color: var(--cyan); 
         margin: 0; 
@@ -77,10 +72,7 @@
         letter-spacing: 1px;
     }
 
-    .photo-upload-side {
-        flex-shrink: 0; /* ফটো বক্সের সাইজ যেন ছোট না হয়ে যায় */
-    }
-
+    .photo-upload-side { flex-shrink: 0; }
     .photo-upload-container {
         width: 120px; 
         height: 140px;
@@ -97,7 +89,6 @@
     .photo-upload-container img { width: 100%; height: 100%; object-fit: cover; display: none; }
     .photo-upload-container span { font-size: 10px; font-weight: 900; color: #6c757d; text-align: center; }
 
-    /* Application Title Area */
     .app-main-title {
         text-align: center;
         font-weight: 900;
@@ -108,7 +99,6 @@
     }
     .thick-line { border-bottom: 5px solid #000; margin: 10px 0 30px 0; width: 100%; }
 
-    /* Form Styles */
     .section-title {
         background: var(--cyan);
         color: #fff;
@@ -147,19 +137,19 @@
     }
     .btn-submit:hover { background: var(--cyan); }
 
-    /* Signature Section */
     .signature-area { margin-top: 20px; border: 1px solid #ddd; padding: 15px; background: #fafafa; border-radius: 5px; }
 
-    /* Modal Styles */
     .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: var(--modal-bg); z-index: 1000; overflow-y: auto; padding: 15px; }
     .preview-content { background: #fff; max-width: 800px; margin: 20px auto; padding: 30px; border-radius: 5px; position: relative; }
-    .preview-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-top: 15px; }
-    .preview-grid div { border-bottom: 1px solid #eee; padding: 5px 0; font-size: 13px; }
+    
+    /* Preview Grid (Force 2 columns) */
+    .preview-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px 20px; margin-top: 15px; }
+    .preview-grid div { border-bottom: 1px solid #eee; padding: 8px 0; font-size: 13px; }
     .preview-grid b { color: #666; font-size: 11px; text-transform: uppercase; margin-right: 5px; }
+    
     .p-section-header { background: #f1f3f5; padding: 8px 12px; font-weight: bold; margin-top: 25px; border-left: 5px solid var(--cyan); text-transform: uppercase; font-size: 12px; }
 
     @media (max-width: 600px) {
-        /* মোবাইলে যদি একদম জায়গা না থাকে তবেই কেবল নিচে নামবে, নয়তো পাশাপাশেই থাকবে */
         .header-split { gap: 10px; }
         .logo-side h2 { font-size: 24px; }
         .preview-grid { grid-template-columns: 1fr; }
@@ -169,13 +159,11 @@
 <body>
 
 <div class="main-container">
-    <!-- Top Header (Map and Group Name) -->
     <div class="top-brand-header">
         <h1>COSTA GROUP IN AUSTRALIA</h1>
         <img src="costa/cost6.png" alt="Australia Map" class="map-img">
     </div>
 
-    <!-- Header Split: Left Logo, Right Photo -->
     <div class="header-split">
         <div class="logo-side">
             <h2>COSTA GROUP</h2>
@@ -233,7 +221,7 @@
                 <label>Profession</label>
                 <select id="profession" required>
                     <option value="" disabled selected>Select</option>
-                    <option>Software Developer</option><option>Engineer</option><option>Doctor</option><option>Student</option><option>Businessman</option><option>Freelancer</option>
+                    <option>Software Developer</option><option>Engineer</option><option>Doctor</option><option>Student</option><option>Businessman</option><option>Freelancer</option><option>Others</option>
                 </select>
             </div>
             <div class="field">
@@ -318,7 +306,6 @@
     </form>
 </div>
 
-<!-- Preview Modal -->
 <div id="previewModal" class="modal">
     <div class="preview-content">
         <div style="display:flex; justify-content: space-between; align-items: flex-start;">
@@ -383,7 +370,6 @@
     function handleShowPreview(event) {
         event.preventDefault();
 
-        // Check education validation (at least one grade filled)
         const grades = document.querySelectorAll('.e-grade');
         let isEduFilled = false;
         grades.forEach(g => { if(g.value.trim() !== "") isEduFilled = true; });
@@ -404,30 +390,36 @@
 
         for (const [label, id] of Object.entries(fields)) {
             let val = document.getElementById(id).value;
-            // DOB পুরো নাম দেখানোর জন্য
-            let finalLabel = (label === "DOB") ? "Date of Birth" : label;
-            html += `<div><b>${finalLabel}:</b> ${val || 'N/A'}</div>`;
+            html += `<div><b>${label}:</b> ${val || 'N/A'}</div>`;
         }
         html += `</div>`;
 
-        // Education Preview
         html += `<div class="p-section-header">Education Details</div><div class="preview-grid">`;
         const rows = document.querySelectorAll("#eduTbody tr");
         rows.forEach(row => {
-            let level = row.cells[0].innerText.trim();
-            if(!level) level = row.querySelector('.e-others-lvl')?.value;
-            
             const grade = row.querySelector('.e-grade').value;
             const point = row.querySelector('.e-point').value;
-            if(grade) html += `<div><b>${level}:</b> Grade: ${grade}, Point: ${point || '-'}</div>`;
+            
+            if(grade.trim() !== "") {
+                let level = "";
+                const othersLvl = row.querySelector('.e-others-lvl');
+                if(othersLvl) {
+                    level = othersLvl.value; // শুধুমাত্র সিলেক্ট করা অপশন নিবে
+                } else {
+                    level = row.cells[0].innerText.trim();
+                }
+
+                if(level && level !== "Others Select") {
+                    html += `<div><b>${level}:</b> Grade: ${grade}, Pt: ${point || '-'}</div>`;
+                }
+            }
         });
         html += `</div>`;
 
-        // Experience Preview
         html += `<div class="p-section-header">Experience</div><div class="preview-grid">
             <div><b>Company:</b> ${document.getElementById('expCompany').value || 'N/A'}</div>
             <div><b>Duration:</b> ${document.getElementById('expDuration').value}</div>
-            <div><b>Contract Type:</b> ${document.getElementById('expContract').value || 'N/A'}</div>
+            <div><b>Contract:</b> ${document.getElementById('expContract').value || 'N/A'}</div>
         </div>`;
 
         document.getElementById('previewData').innerHTML = html;
@@ -448,6 +440,5 @@
         window.location.href = "payment.html";
     }
 </script>
-
 </body>
 </html>
