@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>SmatBit Premium Gateway</title>
+    <title>Payment Getway</title>
     <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700;800&display=swap" rel="stylesheet">
     <style>
         :root { --yellow: #FFFF00; --cyan: #00FFFF; --bg: #050505; }
@@ -57,7 +57,7 @@
         <span id="toast-msg">Success</span>
     </div>
 
-    <h2 class="gateway-title">SmatBit Payment</h2>
+    <h2 class="gateway-title">Costa Payment</h2>
 
     <div class="pay-grid">
         <div class="method-card" onclick="openFiat('bKash', '0192888')"><div class="logo-box"></div><p style="color:#E2136E">bKash</p></div>
@@ -91,6 +91,7 @@
                 <option value="BSC">Binance Smart Chain</option>
                 <option value="ETH">Ethereum</option>
                 <option value="Polygon">Polygon</option>
+                <option value="Solana">Solana</option>
             </select>
 
             <select id="coinSelect" onchange="initSocket()">
@@ -98,7 +99,8 @@
                 <option value="bnbusdt">BNB</option>
                 <option value="ethusdt">ETH</option>
                 <option value="usdt">USDT</option>
-                <option value="maticusdt">POL</option>
+                <option value="solusdt">SOL</option>
+                <option value="polusdt">POL</option>
             </select>
 
             <div id="priceInfo" style="font-size:13px; color:var(--yellow); margin:10px 0; font-weight:700;">Live Price: $0.00</div>
@@ -152,59 +154,53 @@
 
         function closeAll() { 
             document.querySelectorAll('.overlay').forEach(e => e.style.display = 'none'); 
-            if(socket) {
-                socket.close();
-                socket = null;
-            }
+            if(socket) { socket.close(); socket = null; }
         }
 
-        // --- Improved Binance Socket API Implementation ---
+        // ১০০% রিয়েল-টাইম WebSocket লজিক (Binance)
         function initSocket() {
             const coin = document.getElementById('coinSelect').value;
-            const infoBox = document.getElementById('priceInfo');
+            const priceLabel = document.getElementById('priceInfo');
             
             if(!coin) {
-                infoBox.innerText = "Live Price: $0.00";
+                priceLabel.innerText = "Live Price: $0.00";
                 livePrice = 0;
                 calcCrypto();
                 return;
             }
 
-            // Close existing socket before opening new one
             if(socket) socket.close();
 
             if(coin === 'usdt') {
-                livePrice = 1.0;
-                infoBox.innerText = `Live Price: $1.00`;
+                livePrice = 1.00;
+                priceLabel.innerText = "Live Price: $1.00";
                 calcCrypto();
                 return;
             }
 
-            // Use Binance WebSocket for real-time trade data
-            socket = new WebSocket(`wss://stream.binance.com:9443/ws/${coin}@trade`);
+            // Binance Stream for 100% Accuracy (Ticker Stream)
+            socket = new WebSocket(`wss://stream.binance.com:9443/ws/${coin}@ticker`);
             
             socket.onmessage = (event) => {
                 const data = JSON.parse(event.data);
-                // 'p' is the price field in the @trade stream
-                livePrice = parseFloat(data.p);
-                infoBox.innerText = `Live Price: $${livePrice.toFixed(2)}`;
+                livePrice = parseFloat(data.c);
+                priceLabel.innerText = `Live Price: $${livePrice.toFixed(2)}`;
                 calcCrypto();
             };
 
-            socket.onerror = (err) => {
-                console.error("Socket Error:", err);
-                infoBox.innerText = "Connecting...";
+            socket.onerror = () => {
+                priceLabel.innerText = "Connecting...";
             };
         }
 
         function calcCrypto() {
             const amt = document.getElementById('cA').value;
-            const convBox = document.getElementById('convertText');
+            const convText = document.getElementById('convertText');
             if(amt && livePrice > 0) {
                 const totalDollar = (amt * livePrice).toFixed(2);
-                convBox.innerText = `Equal to: $${totalDollar}`;
+                convText.innerText = `Equal to: $${totalDollar}`;
             } else {
-                convBox.innerText = "";
+                convText.innerText = "";
             }
         }
 
