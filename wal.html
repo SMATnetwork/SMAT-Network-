@@ -17,132 +17,291 @@
 <link rel="icon" type="image/svg+xml" href="data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNTEyIiBoZWlnaHQ9IjUxMiIgdmlld0JveD0iMCAwIDUxMiA1MTIiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+CiAgPGNpcmNsZSBjeD0iMjU2IiBjeT0iMjU2IiByPSIyNDAiIGZpbGw9IiNmM2JhMmYiLz4KICA8Y2lyY2xlIGN4PSIyNTYiIGN5PSIyNTYiIHI9IjIxNSIgc3Ryb2tlPSJ3aGl0ZSIgc3Ryb2tlLXdpZHRoPSI4IiBmaWxsPSJ0cmFuc3BhcmVudCIvPgogIDxwYXRoIGQ9Ik0xNTAgMTcwIEMxNTAgMTQ1IDE3MCAxMzUgMjAwIDEzNSBMMzQwIDEzNSBDMzU1IDEzNSAzNjUgMTQ1IDM2NSAxNjAgQzM2NSAxNzUgMzU1IDE4NSAzNDAgMTg1IEwyMDUgMTg1IEMxOTAgMTg1IDE4NSAxOTAgMTg1IDIwNSBDMTg1IDIyMCAxOTAgMjI1IDIwNSAyMjUgTDM0MCAyMjUgQzM3MCAyMjUgMzkwIDI0NSAzOTAgMjc1IEwzOTAgMzI1IEMzOTAgMzU1IDM3MCAzNzUgMzQwIDM3NSBMMTcwIDM3NSBDMTU1IDM3NSAxNDUgMzY1IDE0NSAzNTAgQzE0NSAzMzUgMTU1IDMyNSAxNzAgMzI1IEwzMzUgMzI1IEMzNTAgMzI1IDM1NSAzMjAgMzU1IDMwNSBDMzU1IDI5MCAzNTAgMjg1IDMzNSAyODUgTDIwMCAyODUgQzE3MCAyODUgMTUwIDI2NSAxNTAgMjM1IFoiIGZpbGw9IndoaXRlIi8+Cjwvc3ZnPg==">
     
     <style>
-        :root {
-            --bg: #0b0e11; --card: #1e2329; --primary: #f0b90b;
-            --up: #0ecb81; --down: #f6465d; --text-sec: #848e9c;
-            --border: rgba(255, 255, 255, 0.08);
-            --font-bold: 'Montserrat', sans-serif;
-        }
-        * {font-weight: 900; box-sizing: border-box; margin: 0; padding: 0; font-family: 'Inter', sans-serif; -webkit-tap-highlight-color: transparent; }
-        body { background: var(--bg); color: white; padding-bottom: 90px; overflow-x: hidden; }
+    :root {
+        /* লাইট থিমের জন্য কালার পরিবর্তন */
+        --bg: #ffffff;             /* সাদা ব্যাকগ্রাউন্ড */
+        --card: #f8f9fa;           /* হালকা গ্রে কার্ড */
+        --primary: #f0b90b;        /* সিগনেচার ইয়োলো */
+        --up: #03a66d;             /* ডার্ক গ্রিন (পড়তে সুবিধা হয়) */
+        --down: #cf304a;           /* ডার্ক রেড */
+        --text-main: #1e2329;      /* মেইন টেক্সট কালার */
+        --text-sec: #707a8a;       /* সেকেন্ডারি টেক্সট কালার */
+        --border: #eaecef;         /* হালকা বর্ডার কালার */
+        --font-bold: 'Montserrat', sans-serif;
+    }
 
-       
+    * {
+        font-weight: 900; 
+        box-sizing: border-box; 
+        margin: 0; 
+        padding: 0; 
+        font-family: 'Inter', sans-serif; 
+        -webkit-tap-highlight-color: transparent; 
+    }
 
-/* --- Optimized Responsive History Table --- */
-/* --- History Table (Responsive) --- */
+    body { 
+        background: var(--bg); 
+        color: var(--text-main); 
+        padding-bottom: 90px; 
+        overflow-x: hidden; 
+    }
+
+    /* --- History Table (Responsive) --- */
     .hist-table-header, .hist-row {
         display: grid;
         grid-template-columns: 1fr 1.4fr 0.8fr 0.8fr 80px;
         padding: 12px 10px;
         align-items: center;
     }
+
     .hist-table-header {
-        background: #181a20; font-size: 10px; color: var(--text-sec);
-        border-bottom: 1px solid var(--border); position: sticky; top: 0; z-index: 10;
+        background: #f1f2f4;      /* হেডার একটু ডার্ক গ্রে */
+        font-size: 10px; 
+        color: var(--text-sec);
+        border-bottom: 1px solid var(--border); 
+        position: sticky; 
+        top: 0; 
+        z-index: 10;
         text-transform: uppercase;
     }
-    .hist-row { border-bottom: 1px solid rgba(255,255,255,0.03); font-size: 11px; cursor: pointer; transition: 0.2s; }
-    .hist-row:active { background: rgba(255,255,255,0.08); }
+
+    .hist-row { 
+        border-bottom: 1px solid var(--border); 
+        font-size: 11px; 
+        cursor: pointer; 
+        transition: 0.2s; 
+        color: var(--text-main);
+    }
+
+    .hist-row:active { 
+        background: #f1f2f4; 
+    }
     
     .name-col { display: flex; align-items: center; gap: 6px; overflow: hidden; }
-    .small-logo { width: 20px; height: 20px; border-radius: 50%; min-width: 20px; }
+    .small-logo { width: 20px; height: 20px; border-radius: 50%; min-width: 20px; background: #eee; }
 
+    /* ব্যাজ কালার অ্যাডজাস্টমেন্ট */
     .status-badge { font-size: 9px; padding: 3px 6px; border-radius: 5px; text-align: center; display: inline-block; width: 100%; }
-    .status-success { background: rgba(14, 203, 129, 0.15); color: var(--up); }
-    .status-pending { background: rgba(240, 185, 11, 0.15); color: var(--primary); }
-    .status-failed { background: rgba(246, 70, 93, 0.15); color: var(--down); }
+    .status-success { background: rgba(3, 166, 109, 0.1); color: var(--up); }
+    .status-pending { background: rgba(240, 185, 11, 0.15); color: #b78400; }
+    .status-failed { background: rgba(207, 48, 74, 0.1); color: var(--down); }
 
-    /* --- Details Popup (Responsive Hash Fix) --- */
+    /* --- Details Popup --- */
     .details-overlay {
         position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-        background: rgba(0,0,0,0.85); z-index: 8000;
+        background: rgba(0,0,0,0.5); /* একটু হালকা অন্ধকার ওভারলে */
+        z-index: 8000;
         display: none; align-items: center; justify-content: center; padding: 15px;
     }
+
     .details-card {
-        background: #1e2329; width: 100%; max-width: 360px;
-        border-radius: 24px; padding: 25px; border: 1px solid var(--border);
-        box-shadow: 0 20px 40px rgba(0,0,0,0.6);
+        background: #ffffff; 
+        width: 100%; 
+        max-width: 360px;
+        border-radius: 24px; 
+        padding: 25px; 
+        border: 1px solid var(--border);
+        box-shadow: 0 15px 35px rgba(0,0,0,0.1);
     }
+
     .detail-item {
         display: flex; justify-content: space-between; margin-bottom: 14px;
-        font-size: 12px; border-bottom: 1px dashed rgba(255,255,255,0.05);
+        font-size: 12px; border-bottom: 1px dashed var(--border);
         padding-bottom: 6px; align-items: flex-start;
     }
+
     .responsive-text {
-        font-family: monospace; font-size: 10px !important; word-break: break-all;
-        text-align: right; flex: 1; margin-left: 20px; color: white;
+        font-family: monospace; 
+        font-size: 10px !important; 
+        word-break: break-all;
+        text-align: right; 
+        flex: 1; 
+        margin-left: 20px; 
+        color: var(--text-main);
     }
 
+    /* Day Mode CSS Adjustments */
+    .wallet-header { 
+        padding: 40px 20px 20px; 
+        text-align: center; 
+        /* ব্যাকগ্রাউন্ড হালকা ইয়োলো গ্রেডিয়েন্ট থেকে সাদার দিকে */
+        background: linear-gradient(180deg, rgba(240, 185, 11, 0.1) 0%, #ffffff 100%); 
+    }
+    
+    .total-balance { 
+        font-family: var(--font-bold); 
+        font-size: 38px; 
+        font-weight: 900; 
+        color: #1e2329; /* ডার্ক টেক্সট */
+    }
+    
+    .quick-actions { 
+        font-weight: 900; 
+        display: grid; 
+        grid-template-columns: repeat(3, 1fr); 
+        gap: 15px; 
+        padding: 0 20px 25px; 
+    }
+    
+    .q-btn { 
+        font-weight: 900; 
+        background: #f8f9fa; /* হালকা গ্রে বাটন */
+        border: 1px solid #eaecef; 
+        border-radius: 16px; 
+        padding: 15px; 
+        text-align: center; 
+        cursor: pointer; 
+        color: #1e2329;
+    }
 
+    .asset-list { 
+        padding: 0 15px; 
+        max-width: 100%; 
+        overflow-x: hidden; 
+    }
 
+    .asset-card {
+        background: transparent; 
+        border-radius: 2px; 
+        padding: 15px; 
+        margin-bottom: 8px;
+        display: flex; 
+        justify-content: space-between; 
+        align-items: center; 
+        gap: 8px;
+        width: 100%; 
+        border-bottom: 1px solid #f1f2f4; /* হালকা সেপারেটর */
+    }
+    
+    .a-logo { 
+        width: 40px; height: 40px; 
+        border-radius: 50%; 
+        overflow: hidden; 
+        background: #f1f2f4; 
+    }
+    
+    .a-logo img { width: 100%; height: 100%; object-fit: cover; }
 
+    .overlay { 
+        position: fixed; top: 0; left: 0; width: 100%; height: 100%; 
+        background: rgba(0,0,0,0.5); /* ওভারলে একটু হালকা করা হয়েছে */
+        z-index: 5000; display: none; align-items: flex-end; 
+    }
+    
+    .popup { 
+        background: #ffffff; /* সাদা পপআপ */
+        width: 100%; 
+        border-radius: 25px 25px 0 0; 
+        padding: 25px; 
+        max-height: 90vh; 
+        overflow-y: auto; 
+        border-top: 2px solid var(--primary); 
+        animation: slideUp 0.3s; 
+        color: #1e2329;
+    }
+    
+    @keyframes slideUp { from { transform: translateY(100%); } to { transform: translateY(0); } }
 
- .wallet-header { padding: 40px 20px 20px; text-align: center; background: linear-gradient(180deg, rgba(240, 185, 11, 0.1) 0%, var(--bg) 100%); }
-        .total-balance { font-family: var(--font-bold); font-size: 38px; font-weight: 900; }
-        .quick-actions { font-weight: 900;display: grid; grid-template-columns: repeat(3, 1fr); gap: 15px; padding: 0 20px 25px; }
-        .q-btn { font-weight: 900;background: var(--card); border: 1px solid var(--border); border-radius: 16px; padding: 15px; text-align: center; cursor: pointer; }
+    .selector-popup { 
+        position: fixed; top: 0; left: 0; width: 100%; height: 100%; 
+        background: #ffffff; 
+        z-index: 7000; display: none; flex-direction: column; 
+    }
+    
+    .search-box { 
+        padding: 15px 20px; 
+        background: #ffffff; 
+        border-bottom: 1px solid #eaecef; 
+    }
+    
+    .search-input { 
+        width: 100%; 
+        background: #f1f2f4; 
+        border: 1px solid #eaecef; 
+        padding: 12px 15px; 
+        border-radius: 10px; 
+        color: #000; 
+        outline: none; 
+    }
 
-        ..asset-list { 
-    padding: 0 15px; 
-    max-width: 100%; /* কন্টেইনার যেন স্ক্রিনের বাইরে না যায় */
-    overflow-x: hidden; /* সাইড স্ক্রল বন্ধ করবে */
-}
+    .qr-box { 
+        background: #f8f9fa; /* হালকা গ্রে বক্স কিউআর কোডের জন্য */
+        width: 170px; height: 170px; 
+        margin: 15px auto; 
+        padding: 8px; 
+        border-radius: 12px; 
+        position: relative; 
+        display: flex; 
+        align-items: center; 
+        justify-content: center; 
+        border: 1px solid #eaecef;
+    }
+    
+    .qr-logo { position: absolute; width: 35px; height: 35px; background: white; border-radius: 50%; padding: 2px; z-index: 5; }
+    
+    .btn-main { 
+        width: 100%; 
+        background: var(--primary); 
+        color: #000; 
+        border: none; 
+        padding: 15px; 
+        border-radius: 12px; 
+        font-weight: 900; 
+        margin-top: 15px; 
+    }
+    
+    .opt-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px; margin-bottom: 20px; }
+    
+    .opt-btn { 
+        background: #f1f2f4; 
+        border: 1px solid #eaecef; 
+        padding: 12px 5px; 
+        border-radius: 12px; 
+        text-align: center; 
+        font-size: 11px; 
+        font-weight: 800; 
+        cursor: pointer; 
+        color: #707a8a;
+    }
+    
+    .opt-btn.active { 
+        border-color: var(--primary); 
+        color: var(--primary); 
+        background: rgba(240, 185, 11, 0.05); 
+    }
 
-.asset-card {
-    background:transparent; 
-    border-radius: 2px; 
-    padding: 15px; 
-    margin-bottom: 8px;
-    display: flex; /* Grid এর বদলে Flex ব্যবহার করা ডেক্সটপ/মোবাইল সব ভিউতে নিরাপদ */
-    justify-content: space-between; 
-    align-items: center; 
-    gap: 8px;
-    width: 100%; /* কার্ড যেন কন্টেইনারের সমান থাকে */
-}
-        .a-logo { width: 40px; height: 40px; border-radius: 50%; overflow: hidden; background: #000; }
-        .a-logo img { width: 100%; height: 100%; object-fit: cover; }
+    /* Wallet History Table */
+    .history-table {
+        width: 100%;
+        border-collapse: collapse;
+        margin-top: 15px;
+    }
 
-        .overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.9); z-index: 5000; display: none; align-items: flex-end; }
-        .popup { background: #181a20; width: 100%; border-radius: 25px 25px 0 0; padding: 25px; max-height: 90vh; overflow-y: auto; border-top: 2px solid var(--primary); animation: slideUp 0.3s; }
-        @keyframes slideUp { from { transform: translateY(100%); } to { transform: translateY(0); } }
+    .history-table th, .history-table td {
+        padding: 12px 8px;
+        text-align: left;
+        font-size: 13px;
+        border-bottom: 1px solid #f1f2f4;
+        color: #1e2329;
+    }
+    
+    .history-table th {
+        color: #707a8a; /* হালকা টেক্সট হেডারের জন্য */
+        font-size: 11px;
+        text-transform: uppercase;
+    }
 
-        .selector-popup { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: var(--bg); z-index: 7000; display: none; flex-direction: column; }
-        .search-box { padding: 15px 20px; background: #181a20; border-bottom: 1px solid var(--border); }
-        .search-input { width: 100%; background: var(--card); border: 1px solid var(--border); padding: 12px 15px; border-radius: 10px; color: white; outline: none; }
-
-        .qr-box { background: white; width: 170px; height: 170px; margin: 15px auto; padding: 8px; border-radius: 12px; position: relative; display: flex; align-items: center; justify-content: center; }
-        .qr-logo { position: absolute; width: 35px; height: 35px; background: white; border-radius: 50%; padding: 2px; z-index: 5; }
-        .btn-main { width: 100%; background: var(--primary); color: #000; border: none; padding: 15px; border-radius: 12px; font-weight: 900; margin-top: 15px; }
-        .opt-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px; margin-bottom: 20px; }
-        .opt-btn { background: var(--card); border: 1px solid var(--border); padding: 12px 5px; border-radius: 12px; text-align: center; font-size: 11px; font-weight: 800; cursor: pointer; }
-        .opt-btn.active { border-color: var(--primary); color: var(--primary); }
-
-/* Wallet History Table Container */
-.history-table {
-    width: 100%;
-    border-collapse: collapse;
-    margin-top: 15px;
-}
-
-/* কলামগুলোর স্পেসিং ঠিক করার জন্য */
-.history-table th, .history-table td {
-    padding: 12px 8px;
-    text-align: left; /* ডিফল্ট লেফট অ্যালাইন */
-    font-size: 13px;
-    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
-}
-
-/* কলাম ওয়াইজ উইডথ ফিক্স (৫ কলামের জন্য পারফেক্ট রেশিও) */
+/* --- Wallet History Table Column Widths (৫ কলামের রেশিও) --- */
 .history-table th:nth-child(1), .history-table td:nth-child(1) { width: 20%; } /* NAME */
 .history-table th:nth-child(2), .history-table td:nth-child(2) { width: 25%; } /* AMOUNT */
 .history-table th:nth-child(3), .history-table td:nth-child(3) { width: 20%; } /* METHOD */
 .history-table th:nth-child(4), .history-table td:nth-child(4) { width: 20%; } /* TIME */
 .history-table th:nth-child(5), .history-table td:nth-child(5) { width: 15%; text-align: right; } /* ACTION */
 
-/* সাকসেস বাটনের সুন্দর লুক (আপনার স্ক্রিনশট অনুযায়ী) */
+/* সাকসেস বাটনের ডে-মোড লুক */
 .status-success {
-    background: rgba(14, 203, 129, 0.15);
-    color: #0ecb81;
+    background: rgba(3, 166, 109, 0.1); /* হালকা সবুজ ব্যাকগ্রাউন্ড */
+    color: #03a66d; /* গাঢ় সবুজ টেক্সট যাতে পরিষ্কার দেখা যায় */
     padding: 4px 10px;
     border-radius: 4px;
     font-weight: bold;
@@ -150,83 +309,119 @@
     text-transform: uppercase;
 }
 
-
-
-
-
-        .history-popup { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: var(--bg); z-index: 6000; display: none; flex-direction: column; }
-        .hist-card { background: var(--card); padding: 15px; border-radius: 15px; margin-bottom: 12px; border-left: 4px solid var(--primary); }
-        .status-spin { animation: spin 2s linear infinite; }
-        @keyframes spin { 100% { transform: rotate(360deg); } }
-
-         .footer {position: fixed; bottom: 0; width: 100%; height: 75px; background: #0b0e11; display: flex; justify-content: space-around; align-items: center; z-index: 4000; }
-        .f-nav {font-weight: 900; text-decoration: none; color: var(--text-sec); text-align: center; font-size: 12px; flex: 1; display: flex; flex-direction: column; align-items: center; gap: 4px; }
-        .f-nav.active { color: var(--primary); }
-  .footer a i {font-size:20px;}
-        /* FAB CENTRAL MENU STYLES */
-        .main-fab-container { position: relative; width: 60px; height: 60px; margin-top: -30px; }
-        .main-fab { width: 60px; height: 60px; background: var(--primary); border-radius: 50%; display: flex; justify-content: center; align-items: center; box-shadow: 0 0 15px rgba(240, 185, 11, 0.4); z-index: 4005; position: relative; transition: 0.3s; }
-        .main-fab.active { transform: rotate(45deg); background: var(--down); }
-
-        .fab-menu { position: absolute; bottom: 75px; left: 50%; transform: translateX(-50%); display: none; flex-direction: column; gap: 15px; z-index: 4004; align-items: center; }
-        .fab-item { width: 50px; height: 50px; background:silver; border-radius: 50%; display: flex; justify-content: center; align-items: center; color: black; box-shadow: 0 5px 15px rgba(0,0,0,0.5); text-decoration: none; animation: popIn 0.3s ease-out forwards; position: relative; }
-        .fab-label { font-weight: 900;position: absolute; left: 60px; background: var(--card); color: white; padding: 4px 10px; border-radius: 6px; font-size: 11px; font-weight: bold; border: 1px solid var(--border); white-space: nowrap; }
-        
-        @keyframes popIn { from { transform: scale(0) translateY(50px); opacity: 0; } to { transform: scale(1) translateY(0); opacity: 1; } }
-    
-/* বড় ভিজ্যুয়াল কন্টেইনার */
-.status-visual {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    padding: 20px 0;
-    background: radial-gradient(circle, rgba(240, 185, 11, 0.05) 0%, transparent 70%);
-    border-radius: 20px;
-    margin-bottom: 20px;
+/* History Popup Daymode */
+.history-popup { 
+    position: fixed; top: 0; left: 0; width: 100%; height: 100%; 
+    background: #ffffff; /* সাদা ব্যাকগ্রাউন্ড */
+    z-index: 6000; display: none; flex-direction: column; 
 }
 
-/* হাই-টেক স্পিনার */
+/* হিস্ট্রি কার্ডের ডে-মোড স্টাইল */
+.hist-card { 
+    background: #f8f9fa; /* হালকা গ্রে কার্ড */
+    padding: 15px; border-radius: 15px; margin-bottom: 12px; 
+    border-left: 4px solid var(--primary); 
+    color: #1e2329; /* ডার্ক টেক্সট */
+}
+
+.status-spin { animation: spin 2s linear infinite; }
+@keyframes spin { 100% { transform: rotate(360deg); } }
+
+/* Footer Daymode */
+.footer {
+    position: fixed; bottom: 0; width: 100%; height: 75px; 
+    background: #ffffff; /* সাদা ফুটার */
+    display: flex; justify-content: space-around; align-items: center; 
+    z-index: 4000; border-top: 1px solid #eaecef; /* হালকা বর্ডার */
+}
+
+.f-nav {
+    font-weight: 900; text-decoration: none; 
+    color: #707a8a; /* হালকা গ্রে টেক্সট */
+    text-align: center; font-size: 12px; flex: 1; 
+    display: flex; flex-direction: column; align-items: center; gap: 4px; 
+}
+
+.f-nav.active { color: var(--primary); }
+.footer a i { font-size: 20px; }
+
+/* FAB CENTRAL MENU STYLES (Daymode Adjustments) */
+.main-fab-container { position: relative; width: 60px; height: 60px; margin-top: -30px; }
+.main-fab { 
+    width: 60px; height: 60px; background: var(--primary); 
+    border-radius: 50%; display: flex; justify-content: center; align-items: center; 
+    box-shadow: 0 4px 12px rgba(240, 185, 11, 0.3); 
+    z-index: 4005; position: relative; transition: 0.3s; 
+    border: 4px solid #ffffff; /* সাদার ওপর সুন্দর বর্ডার */
+}
+
+.main-fab.active { transform: rotate(45deg); background: #f6465d; }
+
+.fab-menu { 
+    position: absolute; bottom: 75px; left: 50%; transform: translateX(-50%); 
+    display: none; flex-direction: column; gap: 15px; z-index: 4004; align-items: center; 
+}
+
+.fab-item { 
+    width: 50px; height: 50px; 
+    background: #1e2329; /* বাটনগুলো ডার্ক রাখা হয়েছে সাদার ওপর সলিড লুকের জন্য */
+    border-radius: 50%; display: flex; justify-content: center; align-items: center; 
+    color: #ffffff; box-shadow: 0 5px 15px rgba(0,0,0,0.1); 
+    text-decoration: none; animation: popIn 0.3s ease-out forwards; position: relative; 
+}
+
+.fab-label { 
+    font-weight: 900; position: absolute; left: 60px; 
+    background: #ffffff; color: #1e2329; 
+    padding: 4px 10px; border-radius: 6px; font-size: 11px; 
+    font-weight: bold; border: 1px solid #eaecef; white-space: nowrap; 
+}
+
+@keyframes popIn { from { transform: scale(0) translateY(50px); opacity: 0; } to { transform: scale(1) translateY(0); opacity: 1; } }
+
+/* বড় ভিজ্যুয়াল কন্টেইনার (Daymode) */
+.status-visual {
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
+    padding: 20px 0; 
+    background: radial-gradient(circle, rgba(240, 185, 11, 0.08) 0%, transparent 70%); 
+    border-radius: 20px; margin-bottom: 20px;
+}
+
+/* হাই-টেক স্পিনার (Daymode) */
 .big-spinner {
-    width: 50px;
-    height: 50px;
-    border: 6px solid rgba(255, 255, 255, 0.05);
-    border-top: 6px solid var(--primary);
+    width: 50px; height: 50px; 
+    border: 6px solid #f1f2f4; /* ব্যাকগ্রাউন্ড বর্ডার হালকা গ্রে */
+    border-top: 6px solid var(--primary); 
     border-right: 6px solid var(--primary);
-    border-radius: 50%;
+    border-radius: 50%; 
     animation: spin 1s cubic-bezier(0.4, 0, 0.2, 1) infinite;
-    filter: drop-shadow(0 0 10px var(--primary));
     margin-bottom: 15px;
 }
 
-/* গ্লোয়িং আইকনস */
+/* গ্লোয়িং আইকনস (Daymode Adjustments) */
 .big-check { 
-    font-size: 50px; 
-    color: #0ecb81; 
-    filter: drop-shadow(0 0 15px rgba(14, 203, 129, 0.5));
+    font-size: 50px; color: #03a66d; 
+    filter: drop-shadow(0 4px 10px rgba(3, 166, 109, 0.2));
     animation: popIn 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
 }
 
 .big-cross { 
-    font-size: 50px; 
-    color: #f6465d; 
-    filter: drop-shadow(0 0 15px rgba(246, 70, 93, 0.5));
+    font-size: 50px; color: #cf304a; 
+    filter: drop-shadow(0 4px 10px rgba(207, 48, 74, 0.2));
     animation: popIn 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
 }
 
 /* অ্যানিমেশনস */
-@keyframes spin { 100% { transform: rotate(360deg); } }
 @keyframes popIn { 0% { transform: scale(0); opacity: 0; } 100% { transform: scale(1); opacity: 1; } }
 
 /* ডিটেইলস রো ডিজাইন */
 .detail-item {
-    display: flex;
-    justify-content: space-between;
-    padding: 8px 5px;
-    border-bottom: 1px solid rgba(255,255,255,0.03);
+    display: flex; justify-content: space-between;
+    padding: 8px 5px; 
+    border-bottom: 1px solid #f1f2f4; /* হালকা বর্ডার */
+    color: #1e2329; /* ডার্ক টেক্সট */
 }
-
-/* হ্যাশ টেক্সট অটো ব্রেক করার জন্য */
+/* --- হ্যাশ টেক্সট অটো ব্রেক করার জন্য (Daymode) --- */
 .hash-text {
     font-size: 9px;
     font-family: 'Courier New', monospace;
@@ -235,35 +430,41 @@
     display: block;            /* পুরো ব্লক জুড়ে থাকবে */
     line-height: 1.4;
     text-align: left;
+    color: #707a8a;            /* ডার্ক মোডের বদলে হালকা চারকোল গ্রে */
 }
 
-/* অ্যাড্রেস টেক্সটের জন্য */
+/* --- অ্যাড্রেস টেক্সটের জন্য (Daymode) --- */
 .responsive-text {
     word-break: break-all;
     max-width: 60%;            /* বাম পাশের লেবেলের জন্য জায়গা রাখবে */
     text-align: right;
+    color: #1e2329;            /* সলিড ডার্ক টেক্সট দিনের আলোতে পড়ার জন্য */
 }
 
-/* পপআপ রেসপনসিভ ডিজাইন */
+/* --- পপআপ রেসপনসিভ ডিজাইন (Daymode) --- */
 #detailsOverlay {
     padding: 2px;
     align-items: center;
     justify-content: center;
+    background: rgba(0, 0, 0, 0.4); /* ওভারলে একটু হালকা করা হয়েছে */
 }
 
 #detailsContent {
     width: 100%;
-    max-width: 400px; /* বড় ডিসপ্লের জন্য */
+    max-width: 400px;         /* বড় ডিসপ্লের জন্য */
     max-height: 90vh;
     overflow-y: auto;
     border-radius: 20px;
     position: relative;
+    background: #ffffff;      /* ডার্কের বদলে সাদা ব্যাকগ্রাউন্ড */
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1); /* হালকা শ্যাডো */
+    border: 1px solid #eaecef;
 }
 
-/* কপি বাটন স্টাইল */
+/* --- কপি বাটন স্টাইল (Daymode Adjustments) --- */
 .copy-btn {
-    background: rgba(240, 185, 11, 0.1);
-    color: #f0b90b;
+    background: rgba(240, 185, 11, 0.1); /* হালকা ইয়োলো টিন্ট */
+    color: #b78400;            /* একটু গাঢ় ইয়োলো/গোল্ডেন যাতে সাদার ওপর ফুটে ওঠে */
     border: 1px solid rgba(240, 185, 11, 0.3);
     padding: 3px 10px;
     border-radius: 5px;
@@ -272,20 +473,25 @@
     display: flex;
     align-items: center;
     gap: 5px;
+    font-weight: 900;
 }
 
-.copy-btn:hover { background: rgba(240, 185, 11, 0.2); }
+.copy-btn:hover { 
+    background: rgba(240, 185, 11, 0.2); 
+}
 
-/* হ্যাশ কন্টেইনার */
+/* --- হ্যাশ কন্টেইনার (Daymode) --- */
 .hash-container {
     display: flex;
     align-items: flex-start;
     justify-content: space-between;
     gap: 10px;
+    background: #f8f9fa;      /* হ্যাশ এরিয়া আলাদা করার জন্য হালকা গ্রে ব্যাকগ্রাউন্ড */
+    padding: 8px;
+    border-radius: 8px;
 }
-
-
 </style>
+
 </head>
 <body>
 
