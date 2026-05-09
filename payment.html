@@ -150,37 +150,61 @@
             document.getElementById('cryptoPop').style.display = 'flex';
         }
 
-        function closeAll() { document.querySelectorAll('.overlay').forEach(e => e.style.display = 'none'); if(socket) socket.close(); }
+        function closeAll() { 
+            document.querySelectorAll('.overlay').forEach(e => e.style.display = 'none'); 
+            if(socket) {
+                socket.close();
+                socket = null;
+            }
+        }
 
-        // Binance Socket API Implementation
+        // --- Improved Binance Socket API Implementation ---
         function initSocket() {
             const coin = document.getElementById('coinSelect').value;
-            if(!coin) return;
-            if(socket) socket.close();
-
-            if(coin === 'usdt') {
-                livePrice = 1.0;
-                document.getElementById('priceInfo').innerText = `Live Price: $1.00`;
+            const infoBox = document.getElementById('priceInfo');
+            
+            if(!coin) {
+                infoBox.innerText = "Live Price: $0.00";
+                livePrice = 0;
                 calcCrypto();
                 return;
             }
 
-            socket = new WebSocket(`wss://stream.binance.com:9443/ws/${coin}@ticker`);
+            // Close existing socket before opening new one
+            if(socket) socket.close();
+
+            if(coin === 'usdt') {
+                livePrice = 1.0;
+                infoBox.innerText = `Live Price: $1.00`;
+                calcCrypto();
+                return;
+            }
+
+            // Use Binance WebSocket for real-time trade data
+            socket = new WebSocket(`wss://stream.binance.com:9443/ws/${coin}@trade`);
+            
             socket.onmessage = (event) => {
                 const data = JSON.parse(event.data);
-                livePrice = parseFloat(data.c);
-                document.getElementById('priceInfo').innerText = `Live Price: $${livePrice.toFixed(2)}`;
+                // 'p' is the price field in the @trade stream
+                livePrice = parseFloat(data.p);
+                infoBox.innerText = `Live Price: $${livePrice.toFixed(2)}`;
                 calcCrypto();
+            };
+
+            socket.onerror = (err) => {
+                console.error("Socket Error:", err);
+                infoBox.innerText = "Connecting...";
             };
         }
 
         function calcCrypto() {
             const amt = document.getElementById('cA').value;
-            if(amt && livePrice) {
+            const convBox = document.getElementById('convertText');
+            if(amt && livePrice > 0) {
                 const totalDollar = (amt * livePrice).toFixed(2);
-                document.getElementById('convertText').innerText = `Equal to: $${totalDollar}`;
+                convBox.innerText = `Equal to: $${totalDollar}`;
             } else {
-                document.getElementById('convertText').innerText = "";
+                convBox.innerText = "";
             }
         }
 
