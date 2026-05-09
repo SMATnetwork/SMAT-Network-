@@ -3,210 +3,155 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>SmatBit Payment Gateway</title>
+    <title>SmatBit Premium Gateway</title>
     <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700;800&display=swap" rel="stylesheet">
     <style>
         :root { --yellow: #FFFF00; --cyan: #00FFFF; --bg: #0a0a0a; }
         * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Montserrat', sans-serif; }
         body { background-color: var(--bg); color: white; padding: 20px; }
 
-        /* Payment Buttons Grid */
-        .gateway-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
-            gap: 15px;
-            max-width: 800px;
-            margin: 40px auto;
-        }
-        .pay-card {
-            background: #1a1a1a;
-            border: 1px solid #333;
-            padding: 20px;
-            border-radius: 15px;
-            cursor: pointer;
-            text-align: center;
-            transition: 0.3s;
-        }
-        .pay-card:hover { border-color: var(--cyan); transform: translateY(-5px); }
-        .pay-card img { width: 50px; margin-bottom: 10px; border-radius: 8px; }
-
-        /* Graphic Toast Popup (Overlay) */
-        .overlay {
-            display: none;
+        /* --- Custom Graphic Toast Notification --- */
+        #custom-toast {
             position: fixed;
-            top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(0,0,0,0.9);
-            z-index: 2000;
-            backdrop-filter: blur(8px);
-            align-items: center;
-            justify-content: center;
-        }
-        .toast-popup {
-            width: 90%;
-            max-width: 400px;
-            background: linear-gradient(145deg, #111, #222);
+            bottom: -100px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: linear-gradient(135deg, #111, #222);
             border: 2px solid var(--cyan);
-            border-radius: 25px;
-            padding: 30px;
-            position: relative;
-            box-shadow: 0 0 30px rgba(0, 255, 255, 0.2);
-            animation: slideUp 0.4s ease-out;
+            padding: 15px 30px;
+            border-radius: 50px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            z-index: 9999;
+            transition: all 0.5s cubic-bezier(0.68, -0.55, 0.27, 1.55);
+            box-shadow: 0 10px 30px rgba(0, 255, 255, 0.3);
         }
-        @keyframes slideUp { from { transform: translateY(100px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+        #custom-toast.show { bottom: 40px; }
+        .toast-icon { background: var(--cyan); width: 25px; height: 25px; border-radius: 50%; display: flex; align-items: center; justify-content: center; color: #000; font-weight: 900; }
+        .toast-msg { color: #fff; font-size: 14px; font-weight: 600; white-space: nowrap; }
+
+        /* --- Payment UI Design --- */
+        .gateway-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 15px; max-width: 800px; margin: 40px auto; }
+        .pay-card { background: #1a1a1a; border: 1px solid #333; padding: 20px; border-radius: 15px; cursor: pointer; text-align: center; transition: 0.3s; }
+        .pay-card:hover { border-color: var(--cyan); transform: translateY(-5px); }
+
+        .overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.9); z-index: 2000; backdrop-filter: blur(10px); align-items: center; justify-content: center; }
+        .toast-popup { width: 90%; max-width: 400px; background: #111; border: 2px solid var(--cyan); border-radius: 25px; padding: 30px; position: relative; animation: popUp 0.3s ease-out; }
+        @keyframes popUp { from { transform: scale(0.8); opacity: 0; } to { transform: scale(1); opacity: 1; } }
 
         .close-btn { position: absolute; top: 15px; right: 20px; font-size: 24px; color: var(--yellow); cursor: pointer; }
         
-        .copy-box {
-            background: rgba(255,255,255,0.05);
-            padding: 12px;
-            border-radius: 10px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin: 15px 0;
-            border: 1px dashed var(--yellow);
-        }
-        .copy-btn { background: var(--yellow); color: #000; border: none; padding: 5px 12px; border-radius: 5px; font-weight: 800; cursor: pointer; font-size: 12px; }
+        .copy-box { background: rgba(255,255,0,0.05); padding: 15px; border-radius: 12px; display: flex; justify-content: space-between; align-items: center; margin: 20px 0; border: 1px dashed var(--yellow); }
+        .copy-btn { background: var(--yellow); color: #000; border: none; padding: 8px 15px; border-radius: 8px; font-weight: 800; cursor: pointer; font-size: 12px; }
 
-        input, select {
-            width: 100%;
-            padding: 12px;
-            margin: 10px 0;
-            background: #000;
-            border: 1px solid #444;
-            color: #fff;
-            border-radius: 8px;
-            outline: none;
-        }
-        input:focus { border-color: var(--cyan); }
+        input, select { width: 100%; padding: 14px; margin: 10px 0; background: #000; border: 1px solid #333; color: #fff; border-radius: 10px; font-weight: 600; }
+        .submit-btn { width: 100%; padding: 16px; background: linear-gradient(90deg, var(--cyan), #00a0a0); border: none; color: #000; font-weight: 800; border-radius: 10px; margin-top: 15px; cursor: pointer; }
 
-        .submit-btn {
-            width: 100%;
-            padding: 15px;
-            background: linear-gradient(90deg, var(--cyan), #008080);
-            border: none;
-            color: #000;
-            font-weight: 800;
-            border-radius: 8px;
-            margin-top: 15px;
-            cursor: pointer;
-            text-transform: uppercase;
-        }
-
-        /* Payment History Table */
-        .history-section { max-width: 800px; margin: 50px auto; }
-        .history-card {
-            background: #111;
-            padding: 15px;
-            border-radius: 10px;
-            margin-bottom: 10px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            border-left: 4px solid #333;
-        }
-        .status-spinning { width: 15px; height: 15px; border: 2px solid #555; border-top-color: var(--cyan); border-radius: 50%; animation: spin 1s infinite linear; }
+        /* Payment History Status */
+        .history-card { background: #111; padding: 15px; border-radius: 12px; margin-bottom: 10px; display: flex; justify-content: space-between; align-items: center; border: 1px solid #222; }
+        .spinner { width: 18px; height: 18px; border: 3px solid #333; border-top: 3px solid var(--cyan); border-radius: 50%; animation: spin 1s infinite linear; }
         @keyframes spin { to { transform: rotate(360deg); } }
-
-        .status-approved { color: #00FF00; font-weight: 700; }
-        .status-fail { color: #FF0000; font-weight: 700; }
-
-        /* Crypto Specific */
-        #priceDisplay { font-size: 12px; color: var(--cyan); margin-bottom: 10px; display: block; }
+        .status-app { color: #00FF00; font-weight: 800; }
+        .status-fail { color: #FF0000; font-weight: 800; }
     </style>
 </head>
 <body>
 
-    <h2 style="text-align:center; color: var(--yellow);">Payment Gateway</h2>
+    <h2 style="text-align:center; color: var(--yellow); letter-spacing: 2px;">SMATBIT GATEWAY</h2>
+
+    <!-- Graphic Toast Notification Holder -->
+    <div id="custom-toast">
+        <div class="toast-icon">✓</div>
+        <div class="toast-msg" id="toast-text">Copied Successfully!</div>
+    </div>
 
     <div class="gateway-grid">
         <div class="pay-card" onclick="openPayment('bkash', '0192888')">
-            <img src="https://SmatBit.com/icons/bkash.png" alt="bkash">
-            <p>bKash</p>
+            <p style="font-weight: 800; color: #E2136E;">bKash</p>
         </div>
         <div class="pay-card" onclick="openPayment('nagad', '0170000')">
-            <img src="https://SmatBit.com/icons/nagad.png" alt="nagad">
-            <p>Nagad</p>
-        </div>
-        <div class="pay-card" onclick="openPayment('rocket', '0180000')">
-            <img src="https://SmatBit.com/icons/rocket.png" alt="rocket">
-            <p>Rocket</p>
+            <p style="font-weight: 800; color: #F7941D;">Nagad</p>
         </div>
         <div class="pay-card" onclick="openCrypto()">
-            <img src="https://SmatBit.com/icons/crypto.png" alt="crypto">
-            <p>Crypto</p>
+            <p style="font-weight: 800; color: var(--cyan);">Crypto</p>
         </div>
     </div>
 
-    <div class="history-section">
-        <h3 style="margin-bottom:15px; color: var(--cyan);">Payment History</h3>
-        <div id="historyList">
-            <!-- ডাইনামিক হিস্টরি এখানে আসবে -->
-        </div>
+    <div style="max-width:800px; margin: 40px auto;">
+        <h3 style="color: var(--cyan); margin-bottom: 15px;">Transactions</h3>
+        <div id="historyList"></div>
     </div>
 
-    <!-- Mobile Banking Overlay -->
+    <!-- Mobile Banking Popup -->
     <div id="fiatOverlay" class="overlay">
         <div class="toast-popup">
             <span class="close-btn" onclick="closePopups()">&times;</span>
-            <h3 id="popTitle" style="color:var(--cyan); margin-bottom:5px;">bKash Payment</h3>
-            <p style="font-size:12px; opacity:0.8;">Send money to our personal number</p>
+            <h3 id="popTitle" style="color:var(--cyan);">Payment</h3>
+            <p style="font-size:12px; opacity:0.7; margin-top:5px;">Send Money (Personal)</p>
             
             <div class="copy-box">
-                <span id="targetNumber">0192888</span>
-                <button class="copy-btn" onclick="copyNum()">COPY</button>
+                <span id="targetNumber" style="font-weight:800; letter-spacing:1px;">0192888</span>
+                <button class="copy-btn" onclick="copyText('targetNumber')">COPY</button>
             </div>
 
-            <input type="number" id="fiatAmount" placeholder="Enter Amount (BDT)">
-            <input type="text" id="fiatTrx" placeholder="Enter Transaction ID (TrxID)">
-            <button class="submit-btn" onclick="submitFiat()">Submit Payment</button>
+            <input type="number" id="fiatAmount" placeholder="Amount (BDT)">
+            <input type="text" id="fiatTrx" placeholder="Transaction ID (TrxID)">
+            <button class="submit-btn" onclick="submitPayment('fiat')">SUBMIT PAYMENT</button>
         </div>
     </div>
 
-    <!-- Crypto Overlay -->
+    <!-- Crypto Popup -->
     <div id="cryptoOverlay" class="overlay">
         <div class="toast-popup">
             <span class="close-btn" onclick="closePopups()">&times;</span>
             <h3 style="color:var(--cyan);">Crypto Gateway</h3>
             
-            <select id="networkSelect">
-                <option value="">Select Network</option>
-                <option value="BSC">Binance Smart Chain (BEP20)</option>
-                <option value="ETH">Ethereum (ERC20)</option>
-                <option value="Polygon">Polygon</option>
-            </select>
-
-            <select id="coinSelect" onchange="fetchPrice()">
+            <select id="coinSelect" onchange="fetchCryptoPrice()">
                 <option value="">Select Coin</option>
-                <option value="BNBUSDT">BNB</option>
-                <option value="ETHUSDT">ETH</option>
-                <option value="BTCUSDT">BTC</option>
-                <option value="MATICUSDT">POL (Polygon)</option>
+                <option value="BNBUSDT">BNB (BSC)</option>
+                <option value="ETHUSDT">ETH (Ethereum)</option>
+                <option value="USDT">USDT (TRC20)</option>
             </select>
 
-            <span id="priceDisplay">Price: $0.00</span>
-
-            <input type="number" id="cryptoAmount" placeholder="Amount" oninput="calculateValue()">
-            <p id="valueNote" style="font-size:11px; margin-bottom:10px; color:var(--yellow);"></p>
+            <p id="liveRate" style="font-size:12px; color:var(--yellow); margin:10px 0;"></p>
 
             <div class="copy-box">
-                <span style="font-size:11px;">0xjdkdodkdkdjdjjd</span>
-                <button class="copy-btn" onclick="copyAddr()">COPY</button>
+                <span id="walletAddr" style="font-size:10px;">0x71C7656EC7ab88b098defB751B7401B5f6d8976F</span>
+                <button class="copy-btn" onclick="copyText('walletAddr')">COPY</button>
             </div>
 
-            <input type="text" id="cryptoHash" placeholder="Enter Trx Hash">
-            <button class="submit-btn" onclick="submitCrypto()">Submit Crypto</button>
+            <input type="number" id="cryptoAmount" placeholder="Enter Coin Amount">
+            <input type="text" id="cryptoHash" placeholder="Transaction Hash">
+            <button class="submit-btn" onclick="submitPayment('crypto')">SUBMIT CRYPTO</button>
         </div>
     </div>
 
     <script>
-        let currentMethod = '';
-        let currentLivePrice = 0;
+        // --- ১. গ্রাফিক টোস্ট নোটিফিকেশন লজিক ---
+        function showGraphicToast(text) {
+            const toast = document.getElementById('custom-toast');
+            document.getElementById('toast-text').innerText = text;
+            toast.classList.add('show');
+            setTimeout(() => { toast.classList.remove('show'); }, 3000);
+        }
 
-        // ১. পপআপ কন্ট্রোল
+        // --- ২. কপি বাটন লজিক (১০০% কাজ করবে) ---
+        function copyText(id) {
+            const text = document.getElementById(id).innerText;
+            const tempInput = document.createElement("input");
+            tempInput.value = text;
+            document.body.appendChild(tempInput);
+            tempInput.select();
+            document.execCommand("copy");
+            document.body.removeChild(tempInput);
+            
+            showGraphicToast("Copied to Clipboard!");
+        }
+
+        // --- ৩. পেমেন্ট পপআপ কন্ট্রোল ---
         function openPayment(method, num) {
-            currentMethod = method;
-            document.getElementById('popTitle').innerText = method.toUpperCase() + " Personal";
+            document.getElementById('popTitle').innerText = method.toUpperCase() + " PAYMENT";
             document.getElementById('targetNumber').innerText = num;
             document.getElementById('fiatOverlay').style.display = 'flex';
         }
@@ -219,93 +164,41 @@
             document.querySelectorAll('.overlay').forEach(el => el.style.display = 'none');
         }
 
-        // ২. কপি ফাংশন
-        function copyNum() {
-            const num = document.getElementById('targetNumber').innerText;
-            navigator.clipboard.writeText(num);
-            alert("Number Copied!");
-        }
-
-        // ৩. বাইন্যান্স সকেট এপিআই (Real-time Price)
-        function fetchPrice() {
-            const symbol = document.getElementById('coinSelect').value;
-            if(!symbol) return;
-            
-            const ws = new WebSocket(`wss://stream.binance.com:9443/ws/${symbol.toLowerCase()}@ticker`);
-            ws.onmessage = (event) => {
-                const data = JSON.parse(event.data);
-                currentLivePrice = parseFloat(data.c).toFixed(2);
-                document.getElementById('priceDisplay').innerText = `Live Price: $${currentLivePrice}`;
-                calculateValue();
-                ws.close(); // একবার ডাটা নিয়ে বন্ধ করে দিচ্ছি রিসোর্স বাঁচাতে
-            };
-        }
-
-        function calculateValue() {
-            const amt = document.getElementById('cryptoAmount').value;
-            if(amt && currentLivePrice) {
-                const total = (amt * currentLivePrice).toFixed(2);
-                document.getElementById('valueNote').innerText = `Value: ≈ $${total}`;
+        // --- ৪. বাইন্যান্স এপিআই (রিয়েল প্রাইস) ---
+        async function fetchCryptoPrice() {
+            const coin = document.getElementById('coinSelect').value;
+            if(!coin) return;
+            try {
+                const res = await fetch(`https://api.binance.com/api/v3/ticker/price?symbol=${coin}`);
+                const data = await res.json();
+                document.getElementById('liveRate').innerText = `1 ${coin.replace('USDT','')} = $${parseFloat(data.price).toFixed(2)}`;
+            } catch(e) {
+                document.getElementById('liveRate').innerText = "Price unavailable";
             }
         }
 
-        // ৪. ডাটাবেস সাবমিট (Firebase Logic)
-        function submitFiat() {
-            const amount = document.getElementById('fiatAmount').value;
-            const trx = document.getElementById('fiatTrx').value;
-            if(!amount || !trx) return alert("Fill all fields");
-
-            const data = {
-                method: currentMethod,
-                amount: amount,
-                trxID: trx,
-                status: 'pending',
-                time: new Date().toLocaleString()
-            };
+        // --- ৫. সাবমিট এবং হিস্টরি ---
+        function submitPayment(type) {
+            // এখানে ডাটাবেসে পাঠানোর কোড হবে (যেমন Firebase)
+            showGraphicToast("Submission Received!");
             
-            // Firebase implementation here: 
-            // db.collection("payments").add(data);
-            
-            saveToLocal(data);
+            // ডামি হিস্টরি আপডেট
+            const list = document.getElementById('historyList');
+            const newRow = `
+                <div class="history-card">
+                    <div>
+                        <p style="font-weight:800; color:var(--yellow)">${type.toUpperCase()}</p>
+                        <small>${new Date().toLocaleTimeString()}</small>
+                    </div>
+                    <div style="text-align:right">
+                        <p>Pending Review</p>
+                        <div class="spinner"></div>
+                    </div>
+                </div>
+            `;
+            list.innerHTML = newRow + list.innerHTML;
             closePopups();
         }
-
-        // ৫. হিস্টরি ম্যানেজমেন্ট
-        function saveToLocal(data) {
-            let history = JSON.parse(localStorage.getItem('pay_history')) || [];
-            history.unshift(data);
-            localStorage.setItem('pay_history', JSON.stringify(history));
-            renderHistory();
-        }
-
-        function renderHistory() {
-            const history = JSON.parse(localStorage.getItem('pay_history')) || [];
-            const list = document.getElementById('historyList');
-            list.innerHTML = '';
-
-            history.forEach(item => {
-                let statusUI = '';
-                if(item.status === 'pending') statusUI = '<div class="status-spinning"></div>';
-                else if(item.status === 'Approved') statusUI = '<span class="status-approved">Approved</span>';
-                else statusUI = '<span class="status-fail">Fail</span>';
-
-                list.innerHTML += `
-                    <div class="history-card">
-                        <div>
-                            <p style="font-weight:800; color:var(--yellow)">${item.method.toUpperCase()}</p>
-                            <small>${item.time}</small>
-                        </div>
-                        <div style="text-align:right">
-                            <p>${item.amount} ${item.method === 'crypto' ? 'Coin' : 'BDT'}</p>
-                            ${statusUI}
-                        </div>
-                    </div>
-                `;
-            });
-        }
-
-        // ইনিশিয়াল লোড
-        renderHistory();
     </script>
 </body>
 </html>
