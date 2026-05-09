@@ -319,7 +319,6 @@
         
         <div id="previewData"></div>
 
-        <!-- Triple Signature Section -->
         <div style="margin-top:40px; display: flex; justify-content: space-between; align-items: flex-end; gap: 20px;">
             <div style="text-align: center; flex: 1;">
                 <img id="modalSig" style="max-width:140px; height:50px; object-fit: contain; display: block; margin: 0 auto 5px auto;">
@@ -329,7 +328,6 @@
             </div>
             
             <div style="text-align: center; flex: 1;">
-                <!-- Admin Signature Slot (For Admin Panel Use) -->
                 <img id="modalAdminSig" src="" style="max-width:140px; height:50px; object-fit: contain; display: block; margin: 0 auto 5px auto;">
                 <div style="border-top: 1px solid #000; padding-top: 5px;">
                     <b style="font-size: 10px; text-transform: uppercase; color: #333;">Admin Signature</b>
@@ -337,7 +335,6 @@
             </div>
 
             <div style="text-align: center; flex: 1;">
-                <!-- Authority Signature Slot (For Admin Panel Use) -->
                 <img id="modalAuthSig" src="" style="max-width:140px; height:50px; object-fit: contain; display: block; margin: 0 auto 5px auto;">
                 <div style="border-top: 1px solid #000; padding-top: 5px;">
                     <b style="font-size: 10px; text-transform: uppercase; color: #333;">Authority Signature</b>
@@ -358,10 +355,16 @@
     </div>
 </div>
 
+<!-- Firebase SDKs Placeholder - এগুলি পরে আপনার অরিজিনাল কনফিগার দিয়ে রিপ্লেস করবেন -->
+<script src="https://www.gstatic.com/firebasejs/9.x.x/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.x.x/firebase-firestore-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.x.x/firebase-auth-compat.js"></script>
+
 <script>
     let photoData = "";
     let sigData = "";
     let languages = [];
+    let applicationData = {}; // এই অবজেক্টে সব ডাটা জমা হবে Firebase এ পাঠানোর জন্য
 
     function previewFile(e, imgId, txtId) {
         const file = e.target.files[0];
@@ -390,57 +393,85 @@
     function handleShowPreview(event) {
         event.preventDefault();
 
+        // ১. এডুকেশন চেক
         const grades = document.querySelectorAll('.e-grade');
         let isEduFilled = false;
-        grades.forEach(g => { if(g.value.trim() !== "") isEduFilled = true; });
+        let eduDetails = [];
+        
+        const rows = document.querySelectorAll("#eduTbody tr");
+        rows.forEach(row => {
+            const grade = row.querySelector('.e-grade').value;
+            const point = row.querySelector('.e-point').value;
+            if(grade.trim() !== "") {
+                isEduFilled = true;
+                let level = row.querySelector('.e-others-lvl') ? row.querySelector('.e-others-lvl').value : row.cells[0].innerText.trim();
+                eduDetails.push({ level, grade, point });
+            }
+        });
         
         if(!isEduFilled) {
             alert("Please fill at least one education qualification row.");
             return;
         }
 
-        let html = `<div class="p-section-header">Personal & Contact Info</div><div class="preview-grid">`;
-        const fields = {
-            "First Name": "firstName", "Last Name": "lastName", "Father Name": "fatherName", 
-            "Mother Name": "motherName", "Date of Birth": "dob", "Gender": "gender", 
-            "Religion": "religion", "Marital Status": "maritalStatus", "Nationality": "nationality", 
-            "Profession": "profession", "Blood Group": "bloodGroup", "Email": "email", 
-            "Mobile": "mobile", "NID": "nid", "Passport No": "passport", "Passport Expiry": "passExpiry", "Address": "address"
+        // ২. ডাটা অবজেক্ট তৈরি (Firebase এর জন্য)
+        applicationData = {
+            personal: {
+                firstName: document.getElementById('firstName').value,
+                lastName: document.getElementById('lastName').value,
+                fatherName: document.getElementById('fatherName').value,
+                motherName: document.getElementById('motherName').value,
+                dob: document.getElementById('dob').value,
+                gender: document.getElementById('gender').value,
+                religion: document.getElementById('religion').value,
+                maritalStatus: document.getElementById('maritalStatus').value,
+                nationality: document.getElementById('nationality').value,
+                profession: document.getElementById('profession').value,
+                bloodGroup: document.getElementById('bloodGroup').value
+            },
+            contact: {
+                address: document.getElementById('address').value,
+                zip: document.getElementById('zip').value,
+                city: document.getElementById('city').value,
+                country: document.getElementById('country').value,
+                mobile: document.getElementById('mobile').value,
+                email: document.getElementById('email').value,
+                nid: document.getElementById('nid').value,
+                passport: document.getElementById('passport').value,
+                passExpiry: document.getElementById('passExpiry').value
+            },
+            education: eduDetails,
+            languages: languages,
+            experience: {
+                company: document.getElementById('expCompany').value,
+                contract: document.getElementById('expContract').value,
+                duration: document.getElementById('expDuration').value
+            },
+            images: {
+                userPhoto: photoData,
+                candidateSig: sigData,
+                adminSig: "", // অ্যাডমিন প্যানেল থেকে আসবে
+                authSig: ""   // অথরিটি প্যানেল থেকে আসবে
+            },
+            status: "Pending", // প্রাথমিক অবস্থা
+            createdAt: new Date().toISOString()
         };
 
-        for (const [label, id] of Object.entries(fields)) {
-            let val = document.getElementById(id).value;
-            html += `<div><b>${label}:</b> ${val || 'N/A'}</div>`;
+        // ৩. প্রিভিউ জেনারেট করা
+        let html = `<div class="p-section-header">Personal & Contact Info</div><div class="preview-grid">`;
+        for (const [key, val] of Object.entries(applicationData.personal)) {
+            html += `<div><b>${key.toUpperCase()}:</b> ${val || 'N/A'}</div>`;
+        }
+        for (const [key, val] of Object.entries(applicationData.contact)) {
+            html += `<div><b>${key.toUpperCase()}:</b> ${val || 'N/A'}</div>`;
         }
         html += `</div>`;
 
-        html += `<div class="p-section-header">Education Details</div><div class="preview-grid">`;
-        const rows = document.querySelectorAll("#eduTbody tr");
-        rows.forEach(row => {
-            const grade = row.querySelector('.e-grade').value;
-            const point = row.querySelector('.e-point').value;
-            
-            if(grade.trim() !== "") {
-                let level = "";
-                const othersLvl = row.querySelector('.e-others-lvl');
-                if(othersLvl) {
-                    level = othersLvl.value; 
-                } else {
-                    level = row.cells[0].innerText.trim();
-                }
-
-                if(level && level !== "Others Select") {
-                    html += `<div><b>${level}:</b> Grade: ${grade}, Pt: ${point || '-'}</div>`;
-                }
-            }
+        html += `<div class="p-section-header">Education</div><div class="preview-grid">`;
+        eduDetails.forEach(edu => {
+            html += `<div><b>${edu.level}:</b> Grade: ${edu.grade}, Pt: ${edu.point || '-'}</div>`;
         });
         html += `</div>`;
-
-        html += `<div class="p-section-header">Experience</div><div class="preview-grid">
-            <div><b>Company:</b> ${document.getElementById('expCompany').value || 'N/A'}</div>
-            <div><b>Duration:</b> ${document.getElementById('expDuration').value}</div>
-            <div><b>Contract:</b> ${document.getElementById('expContract').value || 'N/A'}</div>
-        </div>`;
 
         document.getElementById('previewData').innerHTML = html;
         document.getElementById('modalPhoto').src = photoData;
@@ -456,7 +487,33 @@
         document.getElementById('previewModal').style.display = 'none';
     }
 
-    function finalSubmit() {
+    // এই ফাংশনটি Firebase কনফিগার করার পর কাজ করবে
+    async function finalSubmit() {
+        // ফায়ারবেস অথেনটিকেশন চেক (লগইন করা আছে কি না)
+        /* 
+        const user = firebase.auth().currentUser;
+        if (!user) {
+            alert("Please Login First!");
+            return;
+        }
+        applicationData.uid = user.uid; // ইউজারের আইডি যোগ করা
+        */
+
+        console.log("Submitting to Firebase:", applicationData);
+        alert("Sending to Firebase... (Please configure Firebase to complete submission)");
+        
+        /* 
+        // Firebase Firestore এ সেভ করার কোড:
+        try {
+            await firebase.firestore().collection("applications").add(applicationData);
+            alert("Application Submitted Successfully!");
+            window.location.href = "status.html"; // ট্র্যাকিং পেজে নিয়ে যাবে
+        } catch (error) {
+            console.error("Error submitting: ", error);
+        }
+        */
+        
+        // সাময়িকভাবে পেমেন্ট পেজে রিডাইরেক্ট (আপনার আগের লজিক অনুযায়ী)
         window.location.href = "payment.html";
     }
 </script>
