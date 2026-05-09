@@ -3,14 +3,14 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>SmatBit | Ultimate Gateway</title>
+    <title>SmatBit Premium Gateway</title>
     <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700;800&display=swap" rel="stylesheet">
     <style>
-        :root { --yellow: #FFFF00; --cyan: #00FFFF; --bg: #050505; --card-bg: #0f0f0f; }
+        :root { --yellow: #FFFF00; --cyan: #00FFFF; --bg: #050505; }
         * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Montserrat', sans-serif; }
         body { background-color: var(--bg); color: white; padding: 15px; }
 
-        /* --- Graphic Toast --- */
+        /* Graphic Toast */
         #graphic-toast {
             position: fixed; top: -100px; left: 50%; transform: translateX(-50%);
             background: linear-gradient(135deg, #111, #222);
@@ -21,65 +21,29 @@
         }
         #graphic-toast.active { top: 30px; }
 
-        /* --- Payment Grid (3 on top, 2 on bottom) --- */
-        .gateway-title { 
-            text-align: center; 
-            color: var(--yellow); 
-            font-weight: 800; 
-            margin: 20px 0; 
-            text-transform: uppercase; 
-            letter-spacing: 2px;
-            text-shadow: 0 0 10px rgba(255, 255, 0, 0.5);
-        }
+        /* Grid Layout (3 on top, 2 on bottom) */
+        .gateway-title { text-align: center; color: var(--yellow); font-weight: 800; margin: 25px 0; text-transform: uppercase; letter-spacing: 2px; text-shadow: 0 0 10px rgba(255, 255, 0, 0.5); }
         
-        .pay-grid { 
-            display: grid; 
-            grid-template-columns: repeat(6, 1fr); 
-            gap: 15px; 
-            max-width: 500px; 
-            margin: 0 auto; 
-        }
-        
-        .method-card { 
-            grid-column: span 2;
-            background: var(--card-bg); 
-            border: 1px solid #222; 
-            padding: 20px 10px; 
-            border-radius: 20px; 
-            cursor: pointer; 
-            text-align: center; 
-            transition: 0.4s ease;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.5);
-        }
-
+        .pay-grid { display: grid; grid-template-columns: repeat(6, 1fr); gap: 15px; max-width: 500px; margin: 0 auto; }
+        .method-card { grid-column: span 2; background: #0f0f0f; border: 1px solid #222; padding: 20px 10px; border-radius: 20px; cursor: pointer; text-align: center; transition: 0.3s; }
+        .method-card:hover { border-color: var(--cyan); transform: scale(1.05); box-shadow: 0 0 15px var(--cyan); }
         .method-card:nth-child(4) { grid-column: 2 / span 2; }
         .method-card:nth-child(5) { grid-column: 4 / span 2; }
-
-        .method-card:hover { border-color: var(--cyan); transform: translateY(-5px); box-shadow: 0 0 15px var(--cyan); }
         
-        .logo-placeholder {
-            width: 45px; height: 45px;
-            background: rgba(255,255,255,0.05);
-            border-radius: 12px;
-            margin: 0 auto 10px;
-            display: flex; align-items: center; justify-content: center;
-            border: 1px solid #333;
-        }
+        .logo-box { width: 45px; height: 45px; background: rgba(255,255,255,0.05); border-radius: 12px; margin: 0 auto 10px; display: flex; align-items: center; justify-content: center; border: 1px solid #333; }
+        .method-card p { font-size: 13px; font-weight: 800; }
 
-        .method-card p { font-size: 13px; font-weight: 800; text-transform: uppercase; }
-
-        /* --- Popups --- */
-        .overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.95); z-index: 9000; backdrop-filter: blur(12px); align-items: center; justify-content: center; }
-        .popup-content { width: 92%; max-width: 400px; background: #0a0a0a; border: 2px solid var(--cyan); border-radius: 30px; padding: 30px; position: relative; animation: zoomIn 0.3s cubic-bezier(0.18, 0.89, 0.32, 1.28); }
-        @keyframes zoomIn { from { opacity: 0; transform: scale(0.7); } to { opacity: 1; transform: scale(1); } }
-        .close-pop { position: absolute; top: 15px; right: 20px; font-size: 28px; color: var(--yellow); cursor: pointer; font-weight: 800; }
+        /* Popups */
+        .overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.95); z-index: 9000; backdrop-filter: blur(15px); align-items: center; justify-content: center; }
+        .popup-content { width: 92%; max-width: 400px; background: #0a0a0a; border: 2px solid var(--cyan); border-radius: 30px; padding: 30px; position: relative; animation: zoomIn 0.3s ease; }
+        @keyframes zoomIn { from { opacity: 0; transform: scale(0.8); } to { opacity: 1; transform: scale(1); } }
+        .close-pop { position: absolute; top: 15px; right: 20px; font-size: 28px; color: var(--yellow); cursor: pointer; }
 
         .copy-area { background: rgba(255, 255, 0, 0.05); padding: 18px; border-radius: 15px; border: 1px dashed var(--yellow); display: flex; justify-content: space-between; align-items: center; margin: 15px 0; }
-        input, select { width: 100%; padding: 14px; margin: 10px 0; background: #000; border: 1px solid #333; color: #fff; border-radius: 10px; outline: none; font-weight: 600; transition: 0.3s; }
-        input:focus { border-color: var(--cyan); box-shadow: 0 0 10px rgba(0, 255, 255, 0.2); }
-        .sub-btn { width: 100%; padding: 16px; background: linear-gradient(90deg, var(--cyan), #008888); border: none; border-radius: 12px; color: #000; font-weight: 800; cursor: pointer; margin-top: 15px; text-transform: uppercase; letter-spacing: 1px; }
+        input, select { width: 100%; padding: 14px; margin: 10px 0; background: #000; border: 1px solid #333; color: #fff; border-radius: 10px; outline: none; font-weight: 600; }
+        .sub-btn { width: 100%; padding: 16px; background: linear-gradient(90deg, var(--cyan), #008888); border: none; border-radius: 12px; color: #000; font-weight: 800; cursor: pointer; margin-top: 15px; }
 
-        /* --- History --- */
+        /* History */
         .history-box { max-width: 500px; margin: 40px auto; }
         .h-item { background: #0f0f0f; padding: 15px; border-radius: 15px; margin-bottom: 12px; display: flex; justify-content: space-between; align-items: center; border: 1px solid #1a1a1a; }
         .spin { width: 20px; height: 20px; border: 3px solid #333; border-top-color: var(--cyan); border-radius: 50%; animation: rot 1s infinite linear; }
@@ -96,26 +60,11 @@
     <h2 class="gateway-title">SmatBit Payment</h2>
 
     <div class="pay-grid">
-        <div class="method-card" onclick="openFiat('bKash', '0192888')">
-            <div class="logo-placeholder"><img src="bkash-logo.png" style="max-width:80%; display:none;"></div>
-            <p style="color:#E2136E">bKash</p>
-        </div>
-        <div class="method-card" onclick="openFiat('Nagad', '0171111')">
-            <div class="logo-placeholder"></div>
-            <p style="color:#F7941D">Nagad</p>
-        </div>
-        <div class="method-card" onclick="openFiat('Rocket', '0181111')">
-            <div class="logo-placeholder"></div>
-            <p style="color:#8C3494">Rocket</p>
-        </div>
-        <div class="method-card" onclick="openFiat('Upay', '0161111')">
-            <div class="logo-placeholder"></div>
-            <p style="color:var(--cyan)">Upay</p>
-        </div>
-        <div class="method-card" onclick="openCrypto()">
-            <div class="logo-placeholder"></div>
-            <p style="color:var(--yellow)">Crypto</p>
-        </div>
+        <div class="method-card" onclick="openFiat('bKash', '0192888')"><div class="logo-box"></div><p style="color:#E2136E">bKash</p></div>
+        <div class="method-card" onclick="openFiat('Nagad', '0171111')"><div class="logo-box"></div><p style="color:#F7941D">Nagad</p></div>
+        <div class="method-card" onclick="openFiat('Rocket', '0181111')"><div class="logo-box"></div><p style="color:#8C3494">Rocket</p></div>
+        <div class="method-card" onclick="openFiat('Upay', '0161111')"><div class="logo-box"></div><p style="color:#007BFF">Upay</p></div>
+        <div class="method-card" onclick="openCrypto()"><div class="logo-box"></div><p style="color:var(--cyan)">Crypto</p></div>
     </div>
 
     <div id="fiatPop" class="overlay">
@@ -123,27 +72,33 @@
             <span class="close-pop" onclick="closeAll()">&times;</span>
             <h3 id="fiatTitle" style="color:var(--cyan); text-align:center;">Payment</h3>
             <div class="copy-area">
-                <span id="targetNum" style="font-weight:800; letter-spacing:1px">0192888</span>
+                <span id="targetNum" style="font-weight:800;">0192888</span>
                 <button onclick="copyIt('targetNum')" style="background:var(--yellow); border:none; padding:8px 12px; border-radius:8px; font-weight:800; cursor:pointer">COPY</button>
             </div>
             <input type="number" id="fA" placeholder="Ammount (BDT)">
             <input type="text" id="fT" placeholder="Trx ID">
-            <button class="sub-btn" onclick="submitData('fiat')">SUBMIT PAYMENT</button>
+            <button class="sub-btn" onclick="submitData('fiat')">SUBMIT</button>
         </div>
     </div>
 
     <div id="cryptoPop" class="overlay">
         <div class="popup-content">
             <span class="close-pop" onclick="closeAll()">&times;</span>
-            <h3 style="color:var(--cyan); text-align:center; margin-bottom:10px;">Cryptocurrency</h3>
+            <h3 style="color:var(--cyan); text-align:center;">Cryptocurrency</h3>
             
-            <select id="coinSelect" onchange="getLivePrice()">
+            <select id="netSelect">
+                <option value="">Select Network</option>
+                <option value="BSC">Binance Smart Chain</option>
+                <option value="ETH">Ethereum</option>
+                <option value="Polygon">Polygon</option>
+            </select>
+
+            <select id="coinSelect" onchange="initSocket()">
                 <option value="">Select Coin</option>
-                <option value="BNBUSDT">BNB (BEP20)</option>
-                <option value="USDT">USDT (TRC20)</option>
-                <option value="ETHUSDT">ETH (ERC20)</option>
-                <option value="SOLUSDT">SOL (Solana)</option>
-                <option value="MATICUSDT">POL (Polygon)</option>
+                <option value="bnbusdt">BNB</option>
+                <option value="ethusdt">ETH</option>
+                <option value="usdt">USDT</option>
+                <option value="maticusdt">POL</option>
             </select>
 
             <div id="priceInfo" style="font-size:13px; color:var(--yellow); margin:10px 0; font-weight:700;">Live Price: $0.00</div>
@@ -152,22 +107,23 @@
             <p id="convertText" style="font-size:12px; color:var(--cyan); margin-bottom:10px; font-weight:600;"></p>
 
             <div class="copy-area">
-                <span id="walletAddr" style="font-size:10px; overflow:hidden; text-overflow:ellipsis;">0x71C7656EC7ab88b098defB751B7401B5f6d8976F</span>
+                <span id="walletAddr" style="font-size:10px;">0x71C7656EC7ab88b098defB751B7401B5f6d8976F</span>
                 <button onclick="copyIt('walletAddr')" style="background:var(--yellow); border:none; padding:8px 12px; border-radius:8px; font-weight:800; cursor:pointer">COPY</button>
             </div>
 
             <input type="text" id="cH" placeholder="TrxHash">
-            <button class="sub-btn" onclick="submitData('crypto')">SUBMIT CRYPTO</button>
+            <button class="sub-btn" onclick="submitData('crypto')">SUBMIT</button>
         </div>
     </div>
 
     <div class="history-box">
-        <h3 style="color:var(--cyan); margin-bottom:15px; text-transform:uppercase; font-size:14px; letter-spacing:1px;">Transaction History</h3>
+        <h3 style="color:var(--cyan); margin-bottom:15px; text-transform:uppercase; font-size:14px;">History</h3>
         <div id="hList"></div>
     </div>
 
     <script>
         let livePrice = 0;
+        let socket;
         let activeMethod = '';
 
         function toast(msg) {
@@ -194,54 +150,54 @@
             document.getElementById('cryptoPop').style.display = 'flex';
         }
 
-        function closeAll() { document.querySelectorAll('.overlay').forEach(e => e.style.display = 'none'); }
+        function closeAll() { document.querySelectorAll('.overlay').forEach(e => e.style.display = 'none'); if(socket) socket.close(); }
 
-        async function getLivePrice() {
+        // Binance Socket API Implementation
+        function initSocket() {
             const coin = document.getElementById('coinSelect').value;
             if(!coin) return;
-            
-            // USDT Fix: Binance doesn't have USDTUSDT, it's usually pegged to USD or BUSD
-            let fetchSymbol = coin;
-            if(coin === "USDT") {
-                livePrice = 1.00;
-                document.getElementById('priceInfo').innerText = `Live Price: $${livePrice.toFixed(2)}`;
+            if(socket) socket.close();
+
+            if(coin === 'usdt') {
+                livePrice = 1.0;
+                document.getElementById('priceInfo').innerText = `Live Price: $1.00`;
                 calcCrypto();
                 return;
             }
 
-            try {
-                const res = await fetch(`https://api.binance.com/api/v3/ticker/price?symbol=${fetchSymbol}`);
-                const data = await res.json();
-                livePrice = parseFloat(data.price);
+            socket = new WebSocket(`wss://stream.binance.com:9443/ws/${coin}@ticker`);
+            socket.onmessage = (event) => {
+                const data = JSON.parse(event.data);
+                livePrice = parseFloat(data.c);
                 document.getElementById('priceInfo').innerText = `Live Price: $${livePrice.toFixed(2)}`;
                 calcCrypto();
-            } catch(e) { console.log("Price Error"); }
+            };
         }
 
         function calcCrypto() {
             const amt = document.getElementById('cA').value;
             if(amt && livePrice) {
-                document.getElementById('convertText').innerText = `Est. Value: $${(amt * livePrice).toFixed(2)}`;
+                const totalDollar = (amt * livePrice).toFixed(2);
+                document.getElementById('convertText').innerText = `Equal to: $${totalDollar}`;
+            } else {
+                document.getElementById('convertText').innerText = "";
             }
         }
 
         function submitData(type) {
             const amt = type === 'fiat' ? document.getElementById('fA').value : document.getElementById('cA').value;
             const trx = type === 'fiat' ? document.getElementById('fT').value : document.getElementById('cH').value;
-            
-            if(!amt || !trx) return toast("Missing Info!");
+            if(!amt || !trx) return toast("Empty Fields!");
 
             const payload = {
                 method: activeMethod,
-                amount: amt + (type === 'crypto' ? ' ' + document.getElementById('coinSelect').value.replace('USDT','') : ' BDT'),
-                time: new Date().toLocaleTimeString(),
+                amount: amt + (type === 'crypto' ? ' ' + document.getElementById('coinSelect').value.replace('usdt','').toUpperCase() : ' BDT'),
                 status: 'pending'
             };
 
             let history = JSON.parse(localStorage.getItem('sm_history')) || [];
             history.unshift(payload);
             localStorage.setItem('sm_history', JSON.stringify(history));
-            
             toast("Submitted!");
             closeAll();
             render();
@@ -252,13 +208,13 @@
             const history = JSON.parse(localStorage.getItem('sm_history')) || [];
             list.innerHTML = '';
             history.forEach(item => {
-                let statusIcon = item.status === 'pending' ? '<div class="spin"></div>' : 
+                let statusHtml = item.status === 'pending' ? '<div class="spin"></div>' : 
                                  item.status === 'Approved' ? '<span style="color:#00FF00; font-weight:800;">Approved</span>' : 
                                  '<span style="color:#FF0000; font-weight:800;">Failed</span>';
                 list.innerHTML += `
                     <div class="h-item">
-                        <div><p style="font-weight:800; color:var(--yellow)">${item.method}</p><small style="opacity:0.5">${item.time}</small></div>
-                        <div style="text-align:right"><p style="font-weight:600">${item.amount}</p>${statusIcon}</div>
+                        <div><p style="font-weight:800; color:var(--yellow)">${item.method}</p></div>
+                        <div style="text-align:right"><p>${item.amount}</p>${statusHtml}</div>
                     </div>
                 `;
             });
