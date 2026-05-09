@@ -3,18 +3,17 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>GogoGroup Official Application</title>
+    <title>Costa Group Official Application</title>
     <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;700;900&display=swap" rel="stylesheet">
     <style>
     :root {
-        /* Day Mode Colors */
-        --cyan: #008c95;           
-        --dark-bg: #f5f7fa;        
-        --card-bg: #ffffff;        
-        --border: #dee2e6;        
-        --text-main: #212529;      
-        --input-bg: #ffffff;       
-        --modal-bg: rgba(0,0,0,0.7); 
+        --cyan: #008c95;
+        --dark-bg: #f5f7fa;
+        --card-bg: #ffffff;
+        --border: #dee2e6;
+        --text-main: #212529;
+        --input-bg: #ffffff;
+        --modal-bg: rgba(0,0,0,0.7);
     }
     
     body {
@@ -24,89 +23,92 @@
         margin: 0;
         padding: 10px;
     }
-
-    @media (min-width: 768px) {
-        body { padding: 20px; }
-    }
     
     .main-container {
         max-width: 900px;
         margin: 0 auto;
         background: var(--card-bg);
-        padding: 20px;
+        padding: 30px;
         border: 1px solid var(--border);
         border-radius: 8px;
         box-shadow: 0 4px 15px rgba(0,0,0,0.05);
     }
 
-    @media (min-width: 768px) {
-        .main-container { padding: 40px; }
+    /* Top Brand Header */
+    .top-brand-header {
+        text-align: center;
+        margin-bottom: 25px;
     }
-    
-    .form-header {
-        display: flex;
-        flex-direction: column-reverse;
-        align-items: center;
-        gap: 20px;
-        margin-bottom: 40px;
-        border-bottom: 2px solid var(--cyan);
-        padding-bottom: 20px;
-    }
-
-    @media (min-width: 600px) {
-        .form-header {
-            flex-direction: row;
-            justify-content: space-between;
-            align-items: flex-start;
-        }
-    }
-    
-    .brand-info h1 { 
-        font-weight: 900; 
-        font-size: clamp(1.8rem, 5vw, 2.5rem); 
+    .top-brand-header h1 { 
         margin: 0; 
-        text-transform: uppercase; 
-        color: #000;
-        text-align: center;
-    }
-    @media (min-width: 600px) { .brand-info h1 { text-align: left; } }
-
-    .brand-info p { 
-        color: var(--cyan); 
-        margin: 5px 0; 
+        font-weight: 900; 
         letter-spacing: 2px; 
-        font-weight: 700; 
-        text-align: center;
+        font-size: 24px;
+        text-transform: uppercase;
     }
-    @media (min-width: 600px) { .brand-info p { text-align: left; } }
-    
+    .map-img { width: 80px; margin-top: 5px; }
+
+    /* Layout Split: Left Logo, Right Photo */
+    .header-split {
+        display: flex;
+        justify-content: space-between; /* এটি লোগোকে বামে এবং ফটোকে ডানে ঠেলে দিবে */
+        align-items: center; /* লম্বালম্বিভাবে মাঝখানে রাখবে */
+        margin-bottom: 20px;
+        width: 100%;
+        gap: 20px;
+    }
+
+    .logo-side { 
+        flex: 1; 
+        text-align: left; 
+    }
+    .logo-side h2 { 
+        color: var(--cyan); 
+        margin: 0; 
+        font-size: 32px; 
+        font-weight: 900;
+        text-transform: uppercase;
+    }
+    .logo-side p { 
+        font-size: 11px; 
+        margin: 5px 0 0 0; 
+        color: #444; 
+        font-weight: 700;
+        letter-spacing: 1px;
+    }
+
+    .photo-upload-side {
+        flex-shrink: 0; /* ফটো বক্সের সাইজ যেন ছোট না হয়ে যায় */
+    }
+
     .photo-upload-container {
-        width: 120px;
+        width: 120px; 
         height: 140px;
         border: 2px dashed #adb5bd;
-        display: flex;
+        display: flex; 
         flex-direction: column;
-        align-items: center;
+        align-items: center; 
         justify-content: center;
-        cursor: pointer;
+        cursor: pointer; 
         background: #f8f9fa;
-        position: relative;
+        position: relative; 
         overflow: hidden;
-        flex-shrink: 0;
     }
-    
-    .photo-upload-container img {
-        width: 100%; height: 100%; object-fit: cover; display: none; position: absolute;
+    .photo-upload-container img { width: 100%; height: 100%; object-fit: cover; display: none; }
+    .photo-upload-container span { font-size: 10px; font-weight: 900; color: #6c757d; text-align: center; }
+
+    /* Application Title Area */
+    .app-main-title {
+        text-align: center;
+        font-weight: 900;
+        text-transform: uppercase;
+        margin-top: 30px;
+        font-size: 22px;
+        letter-spacing: 1px;
     }
-    
-    .photo-upload-container span { 
-        font-size: 10px; 
-        font-weight: 900; 
-        color: #6c757d; 
-        text-align: center; 
-        z-index: 1; 
-    }
-    
+    .thick-line { border-bottom: 5px solid #000; margin: 10px 0 30px 0; width: 100%; }
+
+    /* Form Styles */
     .section-title {
         background: var(--cyan);
         color: #fff;
@@ -114,180 +116,84 @@
         font-weight: 900;
         text-transform: uppercase;
         margin: 30px 0 20px 0;
-        font-size: 13px;
-        width: 100%;
-        box-sizing: border-box;
+        font-size: 14px;
     }
     
-    .grid { 
-        display: grid; 
-        grid-template-columns: 1fr;
-        gap: 15px; 
-    }
-
-    @media (min-width: 480px) {
-        .grid { grid-template-columns: repeat(2, 1fr); }
-    }
-
-    @media (min-width: 768px) {
-        .grid { grid-template-columns: repeat(3, 1fr); }
-        .span-full { grid-column: span 3; }
-        .span-2 { grid-column: span 2; }
-    }
-
+    .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 15px; }
     .field { display: flex; flex-direction: column; }
-    label { 
-        font-size: 11px; 
-        font-weight: 700; 
-        color: #495057; 
-        margin-bottom: 5px; 
-        text-transform: uppercase; 
-    }
+    label { font-size: 11px; font-weight: 700; color: #495057; margin-bottom: 5px; text-transform: uppercase; }
     
     input, select, textarea {
         background: var(--input-bg);
         border: 1px solid var(--border);
-        color: #000;
         padding: 12px;
         font-family: 'Montserrat', sans-serif;
         font-size: 13px;
         outline: none;
-        transition: border 0.3s;
-        width: 100%;
-        box-sizing: border-box;
     }
-    
-    input:focus, select:focus {
-        border-color: var(--cyan);
-    }
-    
-    .edu-table-container { width: 100%; overflow-x: auto; }
 
-    .edu-table { width: 100%; min-width: 500px; border-collapse: collapse; margin-top: 10px; }
-    .edu-table th { 
-        background: #f1f3f5; 
-        color: #495057; 
-        font-size: 10px; 
-        text-align: left; 
-        padding: 10px; 
-        border: 1px solid var(--border);
-    }
-    .edu-table td { 
-        padding: 5px; 
-        border: 1px solid var(--border); 
-        color: #000;
-    }
-    
-    .lang-select-area { 
-        background: #f8f9fa; 
-        padding: 15px; 
-        border: 1px solid var(--border); 
-    }
-    #langList { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 10px; }
-    .lang-tag { 
-        background: var(--cyan); 
-        color: #fff; 
-        padding: 4px 12px; 
-        border-radius: 20px; 
-        font-size: 11px; 
-        font-weight: 900; 
-    }
+    .edu-table-container { overflow-x: auto; margin-top: 10px; }
+    .edu-table { width: 100%; border-collapse: collapse; min-width: 500px; }
+    .edu-table th { background: #f1f3f5; font-size: 10px; padding: 10px; border: 1px solid var(--border); text-align: left; }
+    .edu-table td { padding: 5px; border: 1px solid var(--border); }
+    .edu-table input, .edu-table select { width: 100%; border: none; padding: 8px; box-sizing: border-box; }
     
     .btn-submit {
-        width: 100%;
-        padding: 20px;
-        background: #000;
-        border: 2px solid #000;
-        color: #fff;
-        font-weight: 900;
-        font-size: 1.1rem;
-        text-transform: uppercase;
-        margin-top: 40px;
-        cursor: pointer;
-        transition: 0.3s;
+        width: 100%; padding: 20px;
+        background: #000; border: none;
+        color: #fff; font-weight: 900; font-size: 1.2rem;
+        text-transform: uppercase; margin-top: 40px; cursor: pointer;
+        transition: background 0.3s;
     }
-    
-    .btn-submit:hover { background: var(--cyan); border-color: var(--cyan); }
-    
-    /* Modal / Preview Style */
-    .modal {
-        display: none;
-        position: fixed;
-        top: 0; left: 0; width: 100%; height: 100%;
-        background: var(--modal-bg);
-        z-index: 2000;
-        overflow-y: auto;
-        padding: 10px;
-    }
-    
-    .preview-content {
-        background: #fff;
-        color: #000;
-        max-width: 800px;
-        margin: 20px auto;
-        padding: 20px;
-        border-radius: 5px;
-        position: relative; /* Watermark এর জন্য জরুরি */
-        box-shadow: 0 10px 30px rgba(0,0,0,0.5);
-        overflow: hidden; /* Watermark বাইরে যাবে না */
-    }
+    .btn-submit:hover { background: var(--cyan); }
 
-    /* --- জলছাপ (Watermark) CSS --- */
-    .preview-content::before {
-        content: "";
-        position: absolute;
-        top: 50%;
-        left: 50%;
-        transform: translate(-50%, -50%) rotate(-30deg); /* বাঁকা হয়ে থাকবে */
-        width: 80%;
-        height: 60%;
-        background-image: url('costa/cost6.png'); /* আপনার ইমেজের পাথ */
-        background-repeat: no-repeat;
-        background-position: center;
-        background-size: contain;
-        opacity: 0.08; /* অনেক হালকা (জলছাপ) করার জন্য */
-        pointer-events: none; /* যাতে মাউস ক্লিক আটকানো না হয় */
-        z-index: 0;
+    /* Signature Section */
+    .signature-area { margin-top: 20px; border: 1px solid #ddd; padding: 15px; background: #fafafa; border-radius: 5px; }
+
+    /* Modal Styles */
+    .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: var(--modal-bg); z-index: 1000; overflow-y: auto; padding: 15px; }
+    .preview-content { background: #fff; max-width: 800px; margin: 20px auto; padding: 30px; border-radius: 5px; position: relative; }
+    .preview-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-top: 15px; }
+    .preview-grid div { border-bottom: 1px solid #eee; padding: 5px 0; font-size: 13px; }
+    .preview-grid b { color: #666; font-size: 11px; text-transform: uppercase; margin-right: 5px; }
+    .p-section-header { background: #f1f3f5; padding: 8px 12px; font-weight: bold; margin-top: 25px; border-left: 5px solid var(--cyan); text-transform: uppercase; font-size: 12px; }
+
+    @media (max-width: 600px) {
+        /* মোবাইলে যদি একদম জায়গা না থাকে তবেই কেবল নিচে নামবে, নয়তো পাশাপাশেই থাকবে */
+        .header-split { gap: 10px; }
+        .logo-side h2 { font-size: 24px; }
+        .preview-grid { grid-template-columns: 1fr; }
     }
-
-    /* যাতে ডাটাগুলো জলছাপের উপরে থাকে */
-    #previewData, .modal-btns, .confirmation-box, h2, .preview-header-box {
-        position: relative;
-        z-index: 1;
-    }
-
-    @media (min-width: 768px) { .preview-content { padding: 40px; } }
-    
-    .preview-grid { display: grid; grid-template-columns: 1fr; gap: 10px; margin-top: 10px; }
-    @media (min-width: 600px) { .preview-grid { grid-template-columns: 1fr 1fr; } }
-    
-    .preview-grid div { border-bottom: 1px solid #eee; padding: 8px 0; font-size: 13px; color: #333; }
-    .preview-grid b { font-size: 11px; color: #666; text-transform: uppercase; margin-right: 10px; }
-    
-    .modal-btns { display: flex; flex-direction: column; gap: 10px; margin-top: 20px; }
-    @media (min-width: 480px) { .modal-btns { flex-direction: row; } }
-
-    .btn-confirm { flex: 1; padding: 15px; background: #000; color: #fff; border: none; cursor: pointer; font-weight: bold; text-transform: uppercase; }
-    .btn-close { flex: 1; padding: 15px; background: #e9ecef; color: #000; border: none; cursor: pointer; font-weight: bold; text-transform: uppercase; }
-    .btn-confirm:disabled { background: #adb5bd; }
     </style>
 </head>
 <body>
 
 <div class="main-container">
-    <form id="applicationForm" onsubmit="handleShowPreview(event)">
-        <div class="form-header">
-            <div class="brand-info">
-                <h1>GOGOGROUP</h1>
-                <p>BEYOND BOUNDARIES</p>
-            </div>
+    <!-- Top Header (Map and Group Name) -->
+    <div class="top-brand-header">
+        <h1>COSTA GROUP IN AUSTRALIA</h1>
+        <img src="costa/cost6.png" alt="Australia Map" class="map-img">
+    </div>
+
+    <!-- Header Split: Left Logo, Right Photo -->
+    <div class="header-split">
+        <div class="logo-side">
+            <h2>COSTA GROUP</h2>
+            <p>Commonwealth of Australia</p>
+        </div>
+        <div class="photo-upload-side">
             <div class="photo-upload-container" onclick="document.getElementById('pInput').click()">
                 <span id="pTxt">ATTACH<br>PHOTO</span>
                 <img id="pPreview">
-                <input type="file" id="pInput" hidden accept="image/*" onchange="previewFile(event)">
+                <input type="file" id="pInput" hidden accept="image/*" onchange="previewFile(event, 'pPreview', 'pTxt')">
             </div>
         </div>
+    </div>
 
+    <div class="app-main-title">Costa Official Application</div>
+    <div class="thick-line"></div>
+
+    <form id="applicationForm" onsubmit="handleShowPreview(event)">
         <div class="section-title">Personal Data</div>
         <div class="grid">
             <div class="field"><label>First Name</label><input type="text" id="firstName" required></div>
@@ -306,8 +212,7 @@
                 <label>Religion</label>
                 <select id="religion" required>
                     <option value="" disabled selected>Select</option>
-                    <option>Islam</option><option>Hinduism</option><option>Christianity</option>
-                    <option>Buddhism</option><option>Other</option>
+                    <option>Islam</option><option>Hinduism</option><option>Christianity</option><option>Buddhism</option><option>Other</option>
                 </select>
             </div>
             <div class="field">
@@ -321,33 +226,28 @@
                 <label>Nationality</label>
                 <select id="nationality" required>
                     <option value="" disabled selected>Select Country</option>
-                    <option value="Bangladesh">Bangladesh</option><option value="USA">USA</option>
-                    <option value="UK">UK</option><option value="Canada">Canada</option>
-                    <option value="Saudi Arabia">Saudi Arabia</option><option value="UAE">UAE</option>
-                    <option value="India">India</option><option value="Other">Other...</option>
+                    <option>Bangladesh</option><option>USA</option><option>UK</option><option>Canada</option><option>Australia</option><option>India</option><option>Other</option>
                 </select>
             </div>
             <div class="field">
                 <label>Profession</label>
                 <select id="profession" required>
                     <option value="" disabled selected>Select</option>
-                    <option>Software Developer</option><option>Engineer</option><option>Doctor</option>
-                    <option>Student</option><option>Businessman</option><option>Freelancer</option>
+                    <option>Software Developer</option><option>Engineer</option><option>Doctor</option><option>Student</option><option>Businessman</option><option>Freelancer</option>
                 </select>
             </div>
             <div class="field">
                 <label>Blood Group</label>
                 <select id="bloodGroup" required>
                     <option value="" disabled selected>Select</option>
-                    <option>A+</option><option>A-</option><option>B+</option><option>B-</option>
-                    <option>O+</option><option>O-</option><option>AB+</option><option>AB-</option>
+                    <option>A+</option><option>A-</option><option>B+</option><option>B-</option><option>O+</option><option>O-</option><option>AB+</option><option>AB-</option>
                 </select>
             </div>
         </div>
 
         <div class="section-title">Contact & Legal</div>
         <div class="grid">
-            <div class="field span-2"><label>Legal Address</label><input type="text" id="address" required></div>
+            <div class="field" style="grid-column: span 2;"><label>Legal Address</label><input type="text" id="address" required></div>
             <div class="field"><label>Zip Code</label><input type="text" id="zip" required></div>
             <div class="field"><label>City/Town</label><input type="text" id="city" required></div>
             <div class="field"><label>Country</label><input type="text" id="country" required></div>
@@ -355,28 +255,38 @@
             <div class="field"><label>Email</label><input type="email" id="email" required></div>
             <div class="field"><label>NID Number</label><input type="text" id="nid" required></div>
             <div class="field"><label>Passport No</label><input type="text" id="passport"></div>
+            <div class="field"><label>Passport Expiry Date</label><input type="date" id="passExpiry"></div>
         </div>
 
         <div class="section-title">Languages</div>
         <div class="lang-select-area">
             <select id="langInput" onchange="addLanguage()">
                 <option value="">-- Choose Language --</option>
-                <option>Bengali</option><option>English</option><option>Arabic</option><option>Hindi</option><option>Urdu</option><option>French</option>
+                <option>Bengali</option><option>English</option><option>Arabic</option><option>Hindi</option><option>Urdu</option>
             </select>
-            <div id="langList"></div>
+            <div id="langList" style="display:flex; flex-wrap:wrap; gap:8px; margin-top:10px;"></div>
         </div>
 
-        <div class="section-title">Education Qualification</div>
+        <div class="section-title">Education Qualification (Fill at least one)</div>
         <div class="edu-table-container">
             <table class="edu-table">
                 <thead>
                     <tr><th>LEVEL</th><th>SCALE</th><th>GRADE</th><th>POINT</th></tr>
                 </thead>
                 <tbody id="eduTbody">
-                    <tr><td>SSC</td><td>GPA 5.0</td><td><input type="text" class="e-grade" placeholder="A+"></td><td><input type="text" class="e-point" placeholder="5.00"></td></tr>
-                    <tr><td>HSC</td><td>GPA 5.0</td><td><input type="text" class="e-grade" placeholder="A+"></td><td><input type="text" class="e-point" placeholder="5.00"></td></tr>
-                    <tr><td>Honors</td><td>CGPA 4.0</td><td><input type="text" class="e-grade" placeholder="A"></td><td><input type="text" class="e-point" placeholder="3.80"></td></tr>
-                    <tr><td>Masters</td><td>CGPA 4.0</td><td><input type="text" class="e-grade" placeholder="B+"></td><td><input type="text" class="e-point" placeholder="3.50"></td></tr>
+                    <tr><td>SSC</td><td>GPA 5.0</td><td><input type="text" class="e-grade"></td><td><input type="text" class="e-point"></td></tr>
+                    <tr><td>HSC</td><td>GPA 5.0</td><td><input type="text" class="e-grade"></td><td><input type="text" class="e-point"></td></tr>
+                    <tr><td>Honors</td><td>CGPA 4.0</td><td><input type="text" class="e-grade"></td><td><input type="text" class="e-point"></td></tr>
+                    <tr><td>Masters</td><td>CGPA 4.0</td><td><input type="text" class="e-grade"></td><td><input type="text" class="e-point"></td></tr>
+                    <tr>
+                        <td>
+                            <select class="e-others-lvl">
+                                <option value="">Others Select</option>
+                                <option>Madrasha</option><option>Vocational</option><option>Training</option><option>Advance Level</option><option>Others</option>
+                            </select>
+                        </td>
+                        <td>-</td><td><input type="text" class="e-grade"></td><td><input type="text" class="e-point"></td>
+                    </tr>
                 </tbody>
             </table>
         </div>
@@ -388,8 +298,19 @@
             <div class="field">
                 <label>Duration</label>
                 <select id="expDuration">
-                    <option>None</option><option>1 Year</option><option>2 Year</option><option>3 Year</option>
+                    <option>No Experience</option>
+                    <option>1 Year</option><option>2 Year</option><option>3 Year</option><option>4 Year</option><option>5 Year</option>
                 </select>
+            </div>
+        </div>
+
+        <div class="section-title">Signature Upload</div>
+        <div class="signature-area">
+            <label>Upload Your Signature</label><br>
+            <input type="file" id="sigInput" accept="image/*" onchange="previewFile(event, 'sigPreview', 'sigTxt')" style="margin-top:10px;">
+            <div style="width: 200px; height: 70px; border: 1px solid #ccc; margin-top: 10px; background: #fff; display:flex; align-items:center; justify-content:center; overflow:hidden;">
+                <span id="sigTxt" style="font-size: 10px; color: #999;">SIGNATURE PREVIEW</span>
+                <img id="sigPreview" style="width: 100%; display:none;">
             </div>
         </div>
 
@@ -397,48 +318,54 @@
     </form>
 </div>
 
+<!-- Preview Modal -->
 <div id="previewModal" class="modal">
     <div class="preview-content">
-        <div class="preview-header-box" style="display:flex; justify-content: space-between; align-items:center; flex-wrap: wrap; gap:15px;">
-            <div style="text-align:left">
-                <h1 style="margin:0; font-size:24px">GOGOGROUP</h1>
-                <p style="margin:0; color:#00FFFF; font-weight:bold; background:#000; padding:2px 8px; display:inline-block">OFFICIAL RECORD</p>
+        <div style="display:flex; justify-content: space-between; align-items: flex-start;">
+            <div>
+                <h1 style="margin:0; font-size: 24px; font-weight: 900;">COSTA GROUP</h1>
+                <p style="background:#000; color:cyan; padding:2px 8px; display:inline-block; font-weight: 900; margin-top: 5px; font-size: 12px;">OFFICIAL RECORD</p>
             </div>
-            <img id="modalPhoto" style="width:100px; height:120px; border:1px solid #000; object-fit:cover; background:#eee">
+            <img id="modalPhoto" style="width:100px; height:120px; border:2px solid #000; object-fit:cover; background: #eee;">
         </div>
         
-        <h2 style="border-bottom: 2px solid #000; padding-bottom: 10px; text-align: center; margin-top:20px; font-size:18px;">PREVIEW APPLICATION</h2>
+        <h2 style="text-align:center; border-bottom:2px solid #000; padding-bottom:10px; margin-top: 20px; font-weight: 900;">PREVIEW APPLICATION</h2>
         
         <div id="previewData"></div>
 
-        <div class="confirmation-box">
-            <label style="color:#000; font-size:14px; cursor:pointer; font-weight:bold;">
-                <input type="checkbox" id="confirmTick" onchange="toggleConfirmBtn()"> 
-                Yes, All the information is Correct.
+        <div style="margin-top:25px; border-top: 1px dashed #ccc; padding-top: 15px;">
+            <b style="font-size: 11px; text-transform: uppercase; color: #666;">Candidate Signature:</b><br>
+            <img id="modalSig" style="max-width:200px; height:60px; margin-top: 10px; object-fit: contain;">
+        </div>
+
+        <div style="background:#fff9db; padding:20px; margin-top:30px; border: 1px solid #ffe066; text-align: center;">
+            <label style="cursor:pointer; font-weight:bold; font-size: 14px;">
+                <input type="checkbox" id="confirmTick" onchange="toggleConfirmBtn()"> Yes, All the information is Correct.
             </label>
         </div>
 
-        <div class="modal-btns">
-            <button class="btn-close" onclick="closeModal()">Edit Info</button>
-            <button class="btn-confirm" id="finalSubmitBtn" disabled onclick="finalSubmit()">Confirm & Submit</button>
+        <div style="display:flex; gap:15px; margin-top:20px;">
+            <button onclick="closeModal()" style="flex:1; padding:18px; background:#e9ecef; border:none; cursor:pointer; font-weight:900; text-transform: uppercase;">Edit Info</button>
+            <button id="finalSubmitBtn" disabled onclick="finalSubmit()" style="flex:1; padding:18px; background:#000; color:#fff; border:none; cursor:pointer; font-weight:900; text-transform: uppercase;">Confirm & Submit</button>
         </div>
     </div>
 </div>
 
 <script>
     let photoData = "";
+    let sigData = "";
     let languages = [];
 
-    function previewFile(e) {
+    function previewFile(e, imgId, txtId) {
         const file = e.target.files[0];
         if (file) {
             const reader = new FileReader();
             reader.onload = function() {
-                photoData = reader.result;
-                const img = document.getElementById('pPreview');
-                img.src = photoData;
-                img.style.display = 'block';
-                document.getElementById('pTxt').style.display = 'none';
+                if(imgId === 'pPreview') photoData = reader.result;
+                if(imgId === 'sigPreview') sigData = reader.result;
+                document.getElementById(imgId).src = reader.result;
+                document.getElementById(imgId).style.display = 'block';
+                document.getElementById(txtId).style.display = 'none';
             }
             reader.readAsDataURL(file);
         }
@@ -446,63 +373,66 @@
 
     function addLanguage() {
         const input = document.getElementById('langInput');
-        const val = input.value;
-        if (val && !languages.includes(val)) {
-            languages.push(val);
-            renderLangs();
+        if (input.value && !languages.includes(input.value)) {
+            languages.push(input.value);
+            document.getElementById('langList').innerHTML = languages.map(l => `<span style="background:var(--cyan); color:#fff; padding:5px 12px; border-radius:20px; font-size:11px; font-weight: 700;">${l}</span>`).join('');
         }
         input.value = "";
     }
 
-    function renderLangs() {
-        document.getElementById('langList').innerHTML = languages.map(l => `<span class="lang-tag">${l}</span>`).join('');
-    }
-
     function handleShowPreview(event) {
         event.preventDefault();
+
+        // Check education validation (at least one grade filled)
+        const grades = document.querySelectorAll('.e-grade');
+        let isEduFilled = false;
+        grades.forEach(g => { if(g.value.trim() !== "") isEduFilled = true; });
         
-        const pInfo = {
-            "First Name": document.getElementById('firstName').value,
-            "Last Name": document.getElementById('lastName').value,
-            "Father Name": document.getElementById('fatherName').value,
-            "Mother Name": document.getElementById('motherName').value,
-            "DOB": document.getElementById('dob').value,
-            "Gender": document.getElementById('gender').value,
-            "Religion": document.getElementById('religion').value,
-            "Marital Status": document.getElementById('maritalStatus').value,
-            "Nationality": document.getElementById('nationality').value,
-            "Profession": document.getElementById('profession').value,
-            "Blood Group": document.getElementById('bloodGroup').value,
-            "Email": document.getElementById('email').value,
-            "Mobile": document.getElementById('mobile').value,
-            "NID": document.getElementById('nid').value,
-            "Address": document.getElementById('address').value
+        if(!isEduFilled) {
+            alert("Please fill at least one education qualification row.");
+            return;
+        }
+
+        let html = `<div class="p-section-header">Personal & Contact Info</div><div class="preview-grid">`;
+        const fields = {
+            "First Name": "firstName", "Last Name": "lastName", "Father Name": "fatherName", 
+            "Mother Name": "motherName", "Date of Birth": "dob", "Gender": "gender", 
+            "Religion": "religion", "Marital Status": "maritalStatus", "Nationality": "nationality", 
+            "Profession": "profession", "Blood Group": "bloodGroup", "Email": "email", 
+            "Mobile": "mobile", "NID": "nid", "Passport No": "passport", "Passport Expiry": "passExpiry", "Address": "address"
         };
 
-        let html = `<div style="background:#f1f3f5; padding:5px 10px; font-weight:bold; margin-top:20px; border-left:5px solid var(--cyan);">Personal & Contact Info</div><div class="preview-grid">`;
-        for (const [key, value] of Object.entries(pInfo)) {
-            html += `<div><b>${key}:</b> ${value}</div>`;
+        for (const [label, id] of Object.entries(fields)) {
+            let val = document.getElementById(id).value;
+            // DOB পুরো নাম দেখানোর জন্য
+            let finalLabel = (label === "DOB") ? "Date of Birth" : label;
+            html += `<div><b>${finalLabel}:</b> ${val || 'N/A'}</div>`;
         }
         html += `</div>`;
 
-        html += `<div style="background:#f1f3f5; padding:5px 10px; font-weight:bold; margin-top:20px; border-left:5px solid var(--cyan);">Languages</div><div style="padding:10px; font-size:13px">${languages.join(', ') || 'None'}</div>`;
-
-        html += `<div style="background:#f1f3f5; padding:5px 10px; font-weight:bold; margin-top:20px; border-left:5px solid var(--cyan);">Education Details</div><div class="preview-grid">`;
-        document.querySelectorAll("#eduTbody tr").forEach(row => {
-            const level = row.cells[0].innerText;
-            const grade = row.querySelector('.e-grade').value || '-';
-            const point = row.querySelector('.e-point').value || '-';
-            html += `<div><b>${level}:</b> Grade: ${grade}, Point: ${point}</div>`;
+        // Education Preview
+        html += `<div class="p-section-header">Education Details</div><div class="preview-grid">`;
+        const rows = document.querySelectorAll("#eduTbody tr");
+        rows.forEach(row => {
+            let level = row.cells[0].innerText.trim();
+            if(!level) level = row.querySelector('.e-others-lvl')?.value;
+            
+            const grade = row.querySelector('.e-grade').value;
+            const point = row.querySelector('.e-point').value;
+            if(grade) html += `<div><b>${level}:</b> Grade: ${grade}, Point: ${point || '-'}</div>`;
         });
         html += `</div>`;
 
-        html += `<div style="background:#f1f3f5; padding:5px 10px; font-weight:bold; margin-top:20px; border-left:5px solid var(--cyan);">Experience</div><div class="preview-grid">
+        // Experience Preview
+        html += `<div class="p-section-header">Experience</div><div class="preview-grid">
             <div><b>Company:</b> ${document.getElementById('expCompany').value || 'N/A'}</div>
             <div><b>Duration:</b> ${document.getElementById('expDuration').value}</div>
+            <div><b>Contract Type:</b> ${document.getElementById('expContract').value || 'N/A'}</div>
         </div>`;
 
         document.getElementById('previewData').innerHTML = html;
-        document.getElementById('modalPhoto').src = photoData || "";
+        document.getElementById('modalPhoto').src = photoData;
+        document.getElementById('modalSig').src = sigData;
         document.getElementById('previewModal').style.display = 'block';
     }
 
@@ -515,9 +445,9 @@
     }
 
     function finalSubmit() {
-        alert("Application Submitted Successfully!");
-        location.reload();
+        window.location.href = "payment.html";
     }
 </script>
+
 </body>
 </html>
