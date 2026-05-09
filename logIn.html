@@ -37,14 +37,16 @@
     }
 
     /* --- Digital Graphics Canvas --- */
-    #graphicsCanvas {
-    position: absolute;
+ #graphicsCanvas {
+    position: fixed;
     top: 0; left: 0;
     width: 100%; height: 100%;
-    z-index: 1;
-    opacity: 0.8; /* জীবন্ত ফ্লো দেখার জন্য অপাসিটি বাড়ানো হয়েছে */
-    filter: blur(0.5px); /* হালকা গ্লো ইফেক্ট */
-    }
+    z-index: -1;
+    /* হার্ডওয়্যার এক্সিলারেশন চালু করার জন্য */
+    transform: translateZ(0);
+    will-change: transform;
+}
+
     
 
     /* ওল্ড স্কুল ডিজিটাল ফিল্টার - ডে মোড এডজাস্টেড */
