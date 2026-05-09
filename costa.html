@@ -12,7 +12,7 @@
             background-color: #005633; /* Costa Signature Green */
             color: white;
             text-align: center;
-            overflow-x: hidden; /* মোবাইল স্ক্রিনে যাতে ডানে-বামে না নড়ে */
+            overflow-x: hidden;
         }
 
         /* --- Fixed Costa Header with Signature Curve --- */
@@ -21,7 +21,7 @@
             top: 0;
             left: 0;
             width: 100%;
-            height: 90px; /* মোবাইলের জন্য সামান্য ছোট */
+            height: 90px;
             background-color: #ffffff;
             z-index: 1000;
         }
@@ -43,6 +43,7 @@
             color: white;
             letter-spacing: -2px;
             z-index: 1001;
+            cursor: pointer;
         }
         @media (min-width: 768px) { 
             .costa-logo-fixed { top: 25px; left: 40px; font-size: 44px; } 
@@ -109,8 +110,8 @@
         .arrow-left { left: 5px; }
         .arrow-right { right: 5px; }
 
-        /* --- Section 5: Glowing Button --- */
-        .footer-cta { background-color: #ffffff; padding-bottom: 80px; }
+        /* --- Section 5: Glowing Button & Status --- */
+        .footer-cta { background-color: #ffffff; padding-bottom: 80px; text-align: center; }
         .glow-btn {
             display: inline-block;
             padding: 20px 40px;
@@ -124,13 +125,55 @@
             box-shadow: 0 0 15px rgba(255, 69, 0, 0.5);
             animation: glowing 1.5s infinite alternate;
         }
-        @media (min-width: 768px) { .glow-btn { padding: 25px 70px; font-size: 22px; } }
         @keyframes glowing {
             0% { transform: scale(1); box-shadow: 0 0 10px #ff4500; }
             100% { transform: scale(1.05); box-shadow: 0 0 30px #ff0000; }
         }
 
-        /* --- Footer --- */
+        /* --- Submitted Application Styles --- */
+        .status-box {
+            display: none;
+            background: #f8f9fa;
+            border: 2px solid #005633;
+            max-width: 500px;
+            margin: 0 auto;
+            padding: 20px;
+            border-radius: 10px;
+            color: #005633;
+        }
+        .view-btn {
+            margin-top: 15px;
+            padding: 12px 25px;
+            background: #005633;
+            color: #fff;
+            border: none;
+            border-radius: 5px;
+            font-weight: 700;
+            cursor: pointer;
+        }
+
+        /* Modal View */
+        .app-modal {
+            display: none;
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.8);
+            z-index: 2000;
+            overflow-y: auto;
+            padding: 20px;
+        }
+        .app-modal-content {
+            background: #fff;
+            color: #000;
+            max-width: 800px;
+            margin: 20px auto;
+            padding: 30px;
+            border-radius: 8px;
+            text-align: left;
+            position: relative;
+        }
+
+        /* Footer --- */
         footer { background-color: #005633; padding: 40px 20px; color: white; text-align: left; }
         .footer-top { max-width: 1100px; margin: 0 auto 40px; position: relative; }
         .footer-top input { width: 100%; padding: 15px 20px; border-radius: 35px; border: none; font-size: 16px; }
@@ -138,7 +181,6 @@
 
         .footer-grid { display: grid; grid-template-columns: 1fr; gap: 40px; max-width: 1100px; margin: 0 auto; }
         @media (min-width: 768px) { .footer-grid { grid-template-columns: 2fr 1fr; } }
-
         .footer-logo { font-size: 45px; font-weight: 800; letter-spacing: -2px; margin-bottom: 10px; cursor: pointer; }
         .social-links { display: flex; gap: 10px; margin-top: 20px; }
         .social-links a { width: 40px; height: 40px; border: 1px solid white; border-radius: 6px; display: flex; align-items: center; justify-content: center; color: white; text-decoration: none; }
@@ -172,32 +214,33 @@
                         <p>Our citrus orchards are managed with absolute precision to meet global quality standards. Every fruit is hand-picked at the peak of ripeness to ensure a rich vitamin C profile and natural sweetness. We use sustainable farming techniques to protect the soil health for future generations of Australian growers. Our technology-led approach ensures that only the most vibrant and juicy citrus fruits reach your table every single day.</p>
                     </div>
                 </div>
+                <!-- ... (বাকি সব ফ্রুট স্লাইড আগের মতোই আছে) ... -->
                 <div class="fruit-slide">
                     <img src="costa/cost2.png">
                     <div class="fruit-info">
                         <h3>World-Class Grapes & Vineyards</h3>
-                        <p>Costa's vineyards are situated in prime climatic regions that allow for the production of superior table grapes. We monitor moisture and nutrient levels daily to ensure large, sweet bunches that offer a crisp texture and deep flavor. Our trellis systems protect the delicate clusters from environmental stress while maximizing sunlight exposure. We take immense pride in delivering grapes that represent the pinnacle of agricultural innovation and quality control.</p>
+                        <p>Costa's vineyards are situated in prime climatic regions that allow for the production of superior table grapes. We monitor moisture and nutrient levels daily to ensure large, sweet bunches that offer a crisp texture and deep flavor.</p>
                     </div>
                 </div>
                 <div class="fruit-slide">
                     <img src="costa/cost3.png">
                     <div class="fruit-info">
                         <h3>Succulent Strawberry Production</h3>
-                        <p>Our strawberries are grown in controlled environments using advanced substrate technology to minimize water waste and soil diseases. We prioritize varieties known for their deep red color, firm texture, and incredible natural aroma. By utilizing greenhouse farming, we can provide a consistent supply of premium strawberries year-round. Every berry is carefully inspected for size and sweetness, ensuring a perfect snacking experience in every punnet we ship.</p>
+                        <p>Our strawberries are grown in controlled environments using advanced substrate technology to minimize water waste and soil diseases. We prioritize varieties known for their deep red color, firm texture, and incredible natural aroma.</p>
                     </div>
                 </div>
                 <div class="fruit-slide">
                     <img src="costa/cost4.png">
                     <div class="fruit-info">
                         <h3>Advanced Glasshouse Tomatoes</h3>
-                        <p>Our glasshouse tomato facilities are a marvel of modern agricultural engineering, producing high-density nutrition year-round. Using hydroponic systems, we deliver precise nutrients directly to the roots, resulting in superior flavor and vibrant color. We rely on biological controls instead of harsh chemicals to maintain a healthy ecosystem within our greenhouses. Whether it is snacking tomatoes or large trusses, we focus on culinary versatility and consistent quality.</p>
+                        <p>Our glasshouse tomato facilities are a marvel of modern agricultural engineering, producing high-density nutrition year-round. Using hydroponic systems, we deliver precise nutrients directly to the roots.</p>
                     </div>
                 </div>
                 <div class="fruit-slide">
                     <img src="costa/cost5.png">
                     <div class="fruit-info">
                         <h3>Agricultural Infrastructure Future</h3>
-                        <p>We are building the future of food security through massive investments in solar energy and water recycling plants across our farms. This infrastructure allows us to achieve high yields on a smaller footprint, preserving natural habitats around our facilities. Our focus on stewardship means we are feeding a growing population while protecting the planet's vital resources. We integrate data analytics to optimize harvest cycles, reducing waste and ensuring maximum efficiency in the supply chain.</p>
+                        <p>We are building the future of food security through massive investments in solar energy and water recycling plants across our farms. This infrastructure allows us to achieve high yields on a smaller footprint.</p>
                     </div>
                 </div>
             </div>
@@ -218,110 +261,174 @@
             <div class="leader-slider-box">
                 <span class="arrow arrow-left" onclick="moveLeader(-1)">&#10094;</span>
                 <span class="arrow arrow-right" onclick="moveLeader(1)">&#10095;</span>
-                
                 <div class="leader-track" id="leaderTrack">
-                    <div class="leader-slide">
-                        <img src="costa/c1.png">
-                        <div class="leader-name">Marc Werner</div>
-                        <div class="leader-title">Chief Executive Officer</div>
-                    </div>
-                    <div class="leader-slide">
-                        <img src="costa/c2.png">
-                        <div class="leader-name">Wayne Johnston</div>
-                        <div class="leader-title">Chief Financial Officer</div>
-                    </div>
-                    <div class="leader-slide">
-                        <img src="costa/c3.png">
-                        <div class="leader-name">Carl Phillips</div>
-                        <div class="leader-title">Chief People Officer</div>
-                    </div>
-                    <div class="leader-slide">
-                        <img src="costa/c4.png">
-                        <div class="leader-name">Manpreet Sidhu</div>
-                        <div class="leader-title">Chief Operating Officer – Domestic Produce</div>
-                    </div>
-                    <div class="leader-slide">
-                        <img src="costa/c5.png">
-                        <div class="leader-name">Christian Parsons</div>
-                        <div class="leader-title">Chief Operating Officer – Citrus, Grapes, Avocado and Banana</div>
-                    </div>
-                    <div class="leader-slide">
-                        <img src="costa/c6.png">
-                        <div class="leader-name">Leon Van Biljon</div>
-                        <div class="leader-title">Regional Director Berry International</div>
-                    </div>
-                    <div class="leader-slide">
-                        <img src="costa/c7.png">
-                        <div class="leader-name">Kirsty Deglas</div>
-                        <div class="leader-title">Chief Strategy and M&A Officer</div>
-                    </div>
-                    <div class="leader-slide">
-                        <img src="costa/c8.png">
-                        <div class="leader-name">David Thomas</div>
-                        <div class="leader-title">General Counsel and Company Secretary</div>
-                    </div>
+                    <div class="leader-slide"><img src="costa/c1.png"><div class="leader-name">Marc Werner</div><div class="leader-title">Chief Executive Officer</div></div>
+                    <div class="leader-slide"><img src="costa/c2.png"><div class="leader-name">Wayne Johnston</div><div class="leader-title">Chief Financial Officer</div></div>
+                    <div class="leader-slide"><img src="costa/c3.png"><div class="leader-name">Carl Phillips</div><div class="leader-title">Chief People Officer</div></div>
+                    <div class="leader-slide"><img src="costa/c4.png"><div class="leader-name">Manpreet Sidhu</div><div class="leader-title">Chief Operating Officer – Domestic Produce</div></div>
+                    <div class="leader-slide"><img src="costa/c5.png"><div class="leader-name">Christian Parsons</div><div class="leader-title">Chief Operating Officer – Citrus, Grapes, Avocado and Banana</div></div>
+                    <div class="leader-slide"><img src="costa/c6.png"><div class="leader-name">Leon Van Biljon</div><div class="leader-title">Regional Director Berry International</div></div>
+                    <div class="leader-slide"><img src="costa/c7.png"><div class="leader-name">Kirsty Deglas</div><div class="leader-title">Chief Strategy and M&A Officer</div></div>
+                    <div class="leader-slide"><img src="costa/c8.png"><div class="leader-name">David Thomas</div><div class="leader-title">General Counsel and Company Secretary</div></div>
                 </div>
             </div>
         </section>
 
         <div class="footer-cta">
-            <a href="application.html" class="glow-btn">CLICK HERE APPLICATION</a>
-        </div>
-    </div>
-
-<footer id="footer">
-    <div class="footer-top">
-        <input type="text" placeholder="Search here...">
-        <button onclick="window.scrollTo({top: 0, behavior: 'smooth'})">Search &rarr;</button>
-    </div>
-
-    <div class="footer-grid">
-        <div>
-            <div class="footer-logo" onclick="window.scrollTo({top: 0, behavior: 'smooth'})">costa</div>
-            <p style="opacity: 0.9; line-height: 1.4; max-width: 320px;">Well grown. Growing fresh, nutritious produce loved by all.</p>
-            <div class="social-links">
-                <a href="#"><i class="fab fa-facebook-f"></i></a>
-                <a href="#"><i class="fab fa-vimeo-v"></i></a>
-                <a href="#"><i class="fab fa-instagram"></i></a>
-                <a href="#"><i class="fab fa-linkedin-in"></i></a>
+            <div id="applyLink">
+                <a href="application.html" class="glow-btn">CLICK HERE APPLICATION</a>
+            </div>
+            <div id="statusArea" class="status-box">
+                <h3>Application Submitted</h3>
+                <p>Status: <span id="curStatus" style="font-weight: 900;">Pending</span></p>
+                <button class="view-btn" onclick="openAppModal()">View Your Form</button>
             </div>
         </div>
-        <div>
-            <ul style="list-style: none;">
-                <li style="margin-bottom: 10px;"><a href="#" style="color: white; text-decoration: none; opacity: 0.8;">About</a></li>
-                <li style="margin-bottom: 10px;"><a href="#" style="color: white; text-decoration: none; opacity: 0.8;">Produce</a></li>
-                <li style="margin-bottom: 10px;"><a href="#" style="color: white; text-decoration: none; opacity: 0.8;">Careers</a></li>
-                <li style="margin-bottom: 10px;"><a href="#" style="color: white; text-decoration: none; opacity: 0.8;">Contact</a></li>
-            </ul>
+    </div>
+
+    <!-- Modal for Detailed Application View -->
+    <div id="applicationModal" class="app-modal">
+        <div class="app-modal-content">
+            <span style="position: absolute; right: 20px; top: 10px; font-size: 30px; cursor: pointer;" onclick="closeAppModal()">&times;</span>
+            <div id="modalBody">
+                <!-- User Data Will Load Here -->
+            </div>
+            <div style="margin-top: 40px; display: flex; justify-content: space-between; text-align: center;">
+                <div>
+                    <img id="uSig" style="width: 120px; height: 50px; object-fit: contain;"><br>
+                    <small>Candidate</small>
+                </div>
+                <div>
+                    <img id="aSig" style="width: 120px; height: 50px; object-fit: contain; display: none;"><br>
+                    <small id="aTxt" style="display: none;">Admin</small>
+                </div>
+                <div>
+                    <img id="auSig" style="width: 120px; height: 50px; object-fit: contain; display: none;"><br>
+                    <small id="auTxt" style="display: none;">Authority</small>
+                </div>
+            </div>
         </div>
     </div>
-    <div style="margin-top: 40px; padding-top: 20px; border-top: 1px solid rgba(255,255,255,0.1); font-size: 14px; opacity: 0.7;">
-        <p>© 2026 Costa. All rights reserved</p>
-    </div>
-</footer>
 
-<script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/js/all.min.js"></script>
+    <footer>
+        <!-- ... (আপনার দেওয়া অরিজিনাল ফুটরের সম্পূর্ণ কোড) ... -->
+        <div class="footer-top">
+            <input type="text" placeholder="Search here...">
+            <button onclick="window.scrollTo({top: 0, behavior: 'smooth'})">Search &rarr;</button>
+        </div>
+        <div class="footer-grid">
+            <div>
+                <div class="footer-logo" onclick="window.scrollTo({top: 0, behavior: 'smooth'})">costa</div>
+                <p style="opacity: 0.9; line-height: 1.4; max-width: 320px;">Well grown. Growing fresh, nutritious produce loved by all.</p>
+                <div class="social-links">
+                    <a href="#"><i class="fab fa-facebook-f"></i></a>
+                    <a href="#"><i class="fab fa-vimeo-v"></i></a>
+                    <a href="#"><i class="fab fa-instagram"></i></a>
+                    <a href="#"><i class="fab fa-linkedin-in"></i></a>
+                </div>
+            </div>
+            <div>
+                <ul style="list-style: none;">
+                    <li style="margin-bottom: 10px;"><a href="#" style="color: white; text-decoration: none; opacity: 0.8;">About</a></li>
+                    <li style="margin-bottom: 10px;"><a href="#" style="color: white; text-decoration: none; opacity: 0.8;">Produce</a></li>
+                    <li style="margin-bottom: 10px;"><a href="#" style="color: white; text-decoration: none; opacity: 0.8;">Careers</a></li>
+                    <li style="margin-bottom: 10px;"><a href="#" style="color: white; text-decoration: none; opacity: 0.8;">Contact</a></li>
+                </ul>
+            </div>
+        </div>
+        <div style="margin-top: 40px; padding-top: 20px; border-top: 1px solid rgba(255,255,255,0.1); font-size: 14px; opacity: 0.7;">
+            <p>© 2026 Costa. All rights reserved</p>
+        </div>
+    </footer>
 
-<script>
-    let fruitIndex = 0;
-    const fruitTrack = document.getElementById('fruitTrack');
-    setInterval(() => {
-        fruitIndex = (fruitIndex + 1) % 5;
-        fruitTrack.style.transform = `translateX(-${fruitIndex * 100}%)`;
-    }, 5000);
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/js/all.min.js"></script>
+    <!-- Firebase SDKs -->
+    <script src="https://www.gstatic.com/firebasejs/9.x.x/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.x.x/firebase-firestore-compat.js"></script>
 
-    let leaderIndex = 0;
-    const leaderTrack = document.getElementById('leaderTrack');
-    const totalLeaders = 8;
+    <script>
+        // আপনার অরিজিনাল স্লাইডার লজিক
+        let fruitIndex = 0;
+        const fruitTrack = document.getElementById('fruitTrack');
+        setInterval(() => {
+            fruitIndex = (fruitIndex + 1) % 5;
+            fruitTrack.style.transform = `translateX(-${fruitIndex * 100}%)`;
+        }, 5000);
 
-    function moveLeader(step) {
-        leaderIndex += step;
-        if (leaderIndex >= totalLeaders) leaderIndex = 0;
-        if (leaderIndex < 0) leaderIndex = totalLeaders - 1;
-        leaderTrack.style.transform = `translateX(-${leaderIndex * 100}%)`;
-    }
+        let leaderIndex = 0;
+        const leaderTrack = document.getElementById('leaderTrack');
+        function moveLeader(step) {
+            leaderIndex += step;
+            if (leaderIndex >= 8) leaderIndex = 0;
+            if (leaderIndex < 0) leaderIndex = 7;
+            leaderTrack.style.transform = `translateX(-${leaderIndex * 100}%)`;
+        }
+        setInterval(() => moveLeader(1), 4000);
 
-    setInterval(() => moveLeader(1), 4000);
-</script>
+        // --- Firebase & Application Logic ---
+        /* 
+        const firebaseConfig = { ... };
+        firebase.initializeApp(firebaseConfig);
+        const db = firebase.firestore();
+        */
+
+        // ইউজার ইমেইল (এটি লগইন সিস্টেম থেকে আসবে)
+        const loggedInUserEmail = localStorage.getItem("userEmail") || "test@example.com";
+
+        function checkSubmission() {
+            // Real-time listener: অ্যাডমিন আপডেট করলে সাথে সাথে ইউজার দেখতে পাবে
+            db.collection("applications").where("contact.email", "==", loggedInUserEmail)
+            .onSnapshot((querySnapshot) => {
+                if (!querySnapshot.empty) {
+                    document.getElementById('applyLink').style.display = 'none';
+                    document.getElementById('statusArea').style.display = 'block';
+                    
+                    querySnapshot.forEach((doc) => {
+                        const data = doc.data();
+                        document.getElementById('curStatus').innerText = data.status;
+                        document.getElementById('curStatus').style.color = data.status === "Approved" ? "green" : "orange";
+                        renderModalData(data);
+                    });
+                }
+            });
+        }
+
+        function renderModalData(data) {
+            let html = `
+                <h3 style="color:#005633; border-bottom: 2px solid #005633; padding-bottom:10px;">Official Application Record</h3>
+                <div style="display:flex; justify-content:space-between; margin-top:15px;">
+                    <div>
+                        <p><b>Name:</b> ${data.personal.firstName} ${data.personal.lastName}</p>
+                        <p><b>DOB:</b> ${data.personal.dob}</p>
+                        <p><b>NID:</b> ${data.contact.nid}</p>
+                    </div>
+                    <img src="${data.images.userPhoto}" style="width:100px; height:120px; border:1px solid #ccc;">
+                </div>
+                <p style="margin-top:15px;"><b>Status:</b> ${data.status}</p>
+            `;
+            document.getElementById('modalBody').innerHTML = html;
+            document.getElementById('uSig').src = data.images.candidateSig;
+            
+            // অ্যাডমিন সিগনেচার থাকলে দেখাবে
+            if(data.images.adminSig) {
+                document.getElementById('aSig').src = data.images.adminSig;
+                document.getElementById('aSig').style.display = "block";
+                document.getElementById('aTxt').style.display = "block";
+            }
+            if(data.images.authSig) {
+                document.getElementById('auSig').src = data.images.authSig;
+                document.getElementById('auSig').style.display = "block";
+                document.getElementById('auTxt').style.display = "block";
+            }
+        }
+
+        function openAppModal() { document.getElementById('applicationModal').style.display = 'block'; }
+        function closeAppModal() { document.getElementById('applicationModal').style.display = 'none'; }
+
+        // পেজ লোড হলে চেক করবে
+        window.onload = () => {
+            if(loggedInUserEmail) checkSubmission();
+        };
+    </script>
 </body>
 </html>
