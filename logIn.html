@@ -201,8 +201,15 @@ const totalNodes = 15;
 const connectionDst = 220; // কানেকশন রেঞ্জ বাড়ানো হলো
 const nodeSpeed = 2; // গতি উল্লেখযোগ্যভাবে বাড়ানো হলো
 
+// প্রতিটা নোডের জন্য আলাদা আলাদা নাম
+const nodeNames = [
+    "SMAT", "Audit", "Crash", "BTC", "BNB", 
+    "LAB", "oxSMAT", "Chat", "Spot", "Trade", 
+    "Stake", "SOL", "ETH", "Chain", "Swap"
+];
+
 class Node {
-    constructor(x, y) {
+    constructor(x, y, name) { // constructor এ name প্যারামিটার যোগ করা হলো
         this.x = x || Math.random() * w;
         this.y = y || Math.random() * h;
         // High Speed Velocity
@@ -210,6 +217,7 @@ class Node {
         this.vy = (Math.random() - 0.5) * nodeSpeed;
         this.radius = 20;
         this.color = Math.random() > 0.5 ? "#f3ba2f" : "#00ffff"; 
+        this.name = name; // নোডের নাম অ্যাসাইন করা হলো
     }
 
     draw() {
@@ -222,12 +230,13 @@ class Node {
         ctx.fill();
         ctx.globalAlpha = 1;
 
-        // SMAT টেক্সট
+        // নোডের নির্দিষ্ট টেক্সট আঁকা
         ctx.font = "900 10px Montserrat"; 
         ctx.fillStyle = "#000000"; 
         ctx.textAlign = "center";
         ctx.textBaseline = "middle";
-        ctx.fillText("SMAT", this.x, this.y);
+        // "SMAT" এর পরিবর্তে this.name ব্যবহার করা হলো
+        ctx.fillText(this.name, this.x, this.y); 
     }
 
     update() {
@@ -240,9 +249,10 @@ class Node {
     }
 }
 
-// নোড তৈরি
+// নোড তৈরি - লুপের মধ্যে নাম পাস করা হচ্ছে
 for (let i = 0; i < totalNodes; i++) {
-    nodes.push(new Node());
+    // nodeNames অ্যারে থেকে নাম নিয়ে Node অবজেক্ট তৈরি করা হচ্ছে
+    nodes.push(new Node(null, null, nodeNames[i]));
 }
 
 function animate() {
@@ -281,6 +291,7 @@ function animate() {
 }
 
 animate();
+
 
 
     // --- ২. আপনার অরিজিনাল লজিক (SMAT ID, Referral, Firebase) ---
