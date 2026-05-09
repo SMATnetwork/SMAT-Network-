@@ -124,122 +124,163 @@
     </div>
 
     <script>
-        let livePrice = 0;
-        let socket;
-        let activeMethod = '';
+    let livePrice = 0;
+    let socket = null;
+    let activeMethod = '';
 
-        function toast(msg) {
-            const t = document.getElementById('graphic-toast');
-            document.getElementById('toast-msg').innerText = msg;
-            t.classList.add('active');
-            setTimeout(() => t.classList.remove('active'), 2500);
+    function toast(msg) {
+        const t = document.getElementById('graphic-toast');
+        document.getElementById('toast-msg').innerText = msg;
+        t.classList.add('active');
+        setTimeout(() => t.classList.remove('active'), 2500);
+    }
+
+    function copyIt(id) {
+        const txt = document.getElementById(id).innerText;
+        navigator.clipboard.writeText(txt).then(() => toast("Copied!"));
+    }
+
+    function openFiat(name, num) {
+        activeMethod = name;
+        document.getElementById('fiatTitle').innerText = name + " Payment";
+        document.getElementById('targetNum').innerText = num;
+        document.getElementById('fiatPop').style.display = 'flex';
+    }
+
+    function openCrypto() {
+        activeMethod = 'Crypto';
+        document.getElementById('cryptoPop').style.display = 'flex';
+    }
+
+    function closeAll() { 
+        document.querySelectorAll('.overlay').forEach(e => e.style.display = 'none'); 
+        if(socket) { 
+            socket.close(); 
+            socket = null; 
+        }
+    }
+
+    // ১০০% রিয়েল-টাইম এবং সুপার ফাস্ট WebSocket লজিক
+    function initSocket() {
+        const coin = document.getElementById('coinSelect').value;
+        const priceLabel = document.getElementById('priceInfo');
+        const convText = document.getElementById('convertText');
+        
+        // রিসেট ওল্ড ডেটা
+        livePrice = 0;
+        priceLabel.innerText = "Connecting...";
+        convText.innerText = "";
+
+        if(!coin) {
+            priceLabel.innerText = "Live Price: $0.00";
+            return;
         }
 
-        function copyIt(id) {
-            const txt = document.getElementById(id).innerText;
-            navigator.clipboard.writeText(txt).then(() => toast("Copied!"));
+        if(socket) {
+            socket.close();
         }
 
-        function openFiat(name, num) {
-            activeMethod = name;
-            document.getElementById('fiatTitle').innerText = name + " Payment";
-            document.getElementById('targetNum').innerText = num;
-            document.getElementById('fiatPop').style.display = 'flex';
+        if(coin === 'usdt') {
+            livePrice = 1.00;
+            priceLabel.innerText = "Live Price: $1.00";
+            calcCrypto();
+            return;
         }
 
-        function openCrypto() {
-            activeMethod = 'Crypto';
-            document.getElementById('cryptoPop').style.display = 'flex';
+        // '@trade' স্ট্রিম ব্যবহার করা হয়েছে যা ১ সেকেন্ডের অনেক কম সময়ে (ইনস্ট্যান্ট) আপডেট দেয়
+        socket = new WebSocket(`wss://stream.binance.com:9443/ws/${coin}@trade`);
+        
+        socket.onmessage = (event) => {
+            const data = JSON.parse(event.data);
+            // 'p' মানে বর্তমান ট্রেড প্রাইস
+            livePrice = parseFloat(data.p);
+            priceLabel.innerText = `Live Price: $${livePrice.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 4})}`;
+            calcCrypto();
+        };
+
+        socket.onerror = () => {
+            priceLabel.innerText = "Price Error!";
+        };
+        
+        socket.onclose = () => {
+            console.log("Socket Closed");
+        };
+    }
+
+    function calcCrypto() {
+        const amt = document.getElementById('cA').value;
+        const convText = document.getElementById('convertText');
+        if(amt && livePrice > 0) {
+            const totalDollar = (amt * livePrice).toFixed(2);
+            convText.innerText = `Equal to: $${totalDollar}`;
+        } else {
+            convText.innerText = "";
+        }
+    }
+
+    function submitData(type) {
+        const amtInput = type === 'fiat' ? document.getElementById('fA') : document.getElementById('cA');
+        const trxInput = type === 'fiat' ? document.getElementById('fT') : document.getElementById('cH');
+        
+        const amt = amtInput.value;
+        const trx = trxInput.value;
+
+        if(!amt || !trx) return toast("Empty Fields!");
+
+        const coinName = type === 'crypto' ? document.getElementById('coinSelect').value.replace('usdt','').toUpperCase() : 'BDT';
+
+        const payload = {
+            method: activeMethod,
+            amount: `${amt} ${coinName}`,
+            status: 'pending',
+            time: new Date().toLocaleString()
+        };
+
+        let history = JSON.parse(localStorage.getItem('sm_history')) || [];
+        history.unshift(payload);
+        localStorage.setItem('sm_history', JSON.stringify(history));
+        
+        // ইনপুট ক্লিয়ার করা
+        amtInput.value = '';
+        trxInput.value = '';
+        
+        toast("Submitted!");
+        closeAll();
+        render();
+    }
+
+    function render() {
+        const list = document.getElementById('hList');
+        const history = JSON.parse(localStorage.getItem('sm_history')) || [];
+        list.innerHTML = '';
+        
+        if(history.length === 0) {
+            list.innerHTML = '<p style="text-align:center; opacity:0.5; font-size:12px;">No history found</p>';
+            return;
         }
 
-        function closeAll() { 
-            document.querySelectorAll('.overlay').forEach(e => e.style.display = 'none'); 
-            if(socket) { socket.close(); socket = null; }
-        }
-
-        // ১০০% রিয়েল-টাইম WebSocket লজিক (Binance)
-        function initSocket() {
-            const coin = document.getElementById('coinSelect').value;
-            const priceLabel = document.getElementById('priceInfo');
-            
-            if(!coin) {
-                priceLabel.innerText = "Live Price: $0.00";
-                livePrice = 0;
-                calcCrypto();
-                return;
-            }
-
-            if(socket) socket.close();
-
-            if(coin === 'usdt') {
-                livePrice = 1.00;
-                priceLabel.innerText = "Live Price: $1.00";
-                calcCrypto();
-                return;
-            }
-
-            // Binance Stream for 100% Accuracy (Ticker Stream)
-            socket = new WebSocket(`wss://stream.binance.com:9443/ws/${coin}@ticker`);
-            
-            socket.onmessage = (event) => {
-                const data = JSON.parse(event.data);
-                livePrice = parseFloat(data.c);
-                priceLabel.innerText = `Live Price: $${livePrice.toFixed(2)}`;
-                calcCrypto();
-            };
-
-            socket.onerror = () => {
-                priceLabel.innerText = "Connecting...";
-            };
-        }
-
-        function calcCrypto() {
-            const amt = document.getElementById('cA').value;
-            const convText = document.getElementById('convertText');
-            if(amt && livePrice > 0) {
-                const totalDollar = (amt * livePrice).toFixed(2);
-                convText.innerText = `Equal to: $${totalDollar}`;
-            } else {
-                convText.innerText = "";
-            }
-        }
-
-        function submitData(type) {
-            const amt = type === 'fiat' ? document.getElementById('fA').value : document.getElementById('cA').value;
-            const trx = type === 'fiat' ? document.getElementById('fT').value : document.getElementById('cH').value;
-            if(!amt || !trx) return toast("Empty Fields!");
-
-            const payload = {
-                method: activeMethod,
-                amount: amt + (type === 'crypto' ? ' ' + document.getElementById('coinSelect').value.replace('usdt','').toUpperCase() : ' BDT'),
-                status: 'pending'
-            };
-
-            let history = JSON.parse(localStorage.getItem('sm_history')) || [];
-            history.unshift(payload);
-            localStorage.setItem('sm_history', JSON.stringify(history));
-            toast("Submitted!");
-            closeAll();
-            render();
-        }
-
-        function render() {
-            const list = document.getElementById('hList');
-            const history = JSON.parse(localStorage.getItem('sm_history')) || [];
-            list.innerHTML = '';
-            history.forEach(item => {
-                let statusHtml = item.status === 'pending' ? '<div class="spin"></div>' : 
-                                 item.status === 'Approved' ? '<span style="color:#00FF00; font-weight:800;">Approved</span>' : 
-                                 '<span style="color:#FF0000; font-weight:800;">Failed</span>';
-                list.innerHTML += `
-                    <div class="h-item">
-                        <div><p style="font-weight:800; color:var(--yellow)">${item.method}</p></div>
-                        <div style="text-align:right"><p>${item.amount}</p>${statusHtml}</div>
+        history.forEach(item => {
+            let statusHtml = item.status === 'pending' ? '<div class="spin"></div>' : 
+                             item.status === 'Approved' ? '<span style="color:#00FF00; font-weight:800;">Approved</span>' : 
+                             '<span style="color:#FF0000; font-weight:800;">Failed</span>';
+            list.innerHTML += `
+                <div class="h-item">
+                    <div>
+                        <p style="font-weight:800; color:var(--yellow)">${item.method}</p>
+                        <small style="font-size:10px; opacity:0.6;">${item.time || ''}</small>
                     </div>
-                `;
-            });
-        }
-        window.onload = render;
-    </script>
+                    <div style="text-align:right">
+                        <p style="font-weight:600;">${item.amount}</p>
+                        ${statusHtml}
+                    </div>
+                </div>
+            `;
+        });
+    }
+
+    // পেজ লোড হলে হিস্টোরি রেন্ডার
+    window.onload = render;
+</script>
+
 </body>
 </html>
