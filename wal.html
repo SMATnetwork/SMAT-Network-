@@ -536,7 +536,7 @@
             <div id="uiDeposit" class="mode-ui">
                 <div class="qr-box"><img id="qrCoinLogo" class="qr-logo"><div id="qrcode"></div></div>
                 <div style="background:#0b0e11; padding:12px; border-radius:10px; display:flex; justify-content:space-between; align-items:center">
-                    <span id="depAddr" style="font-size:10px; color:var(--text-sec)">0x...</span>
+                    <span id="depAddr" style="font-size:10px; color:black">0x...</span>
                     <i class="fas fa-copy" onclick="copyValue('depAddr')" style="color:var(--primary)"></i>
                 </div>
                 <p style="font-size:10px; color:var(--down); text-align:center; margin-top:15px">Warning: Only Binance Smart Chain (BSC20) / Ethereum Chain (ERC20) networks supported.</p>
@@ -544,16 +544,16 @@
             </div>
             <div id="uiWithdraw" class="mode-ui" style="display:none">
                 <p style="font-size:11px; color:var(--text-sec)">Available: <b id="availWith" style="color:var(--up)">0.00</b></p>
-                <select id="withNet" class="form-input" style="width:100%; background:#0b0e11; border:1px solid var(--border); color:white; padding:12px; border-radius:10px; margin:10px 0"><option>BEP20</option><option>ERC20</option></select>
-                <input type="text" id="withAddr" placeholder="Recipient Address" style="width:100%; background:#0b0e11; border:1px solid var(--border); color:white; padding:12px; border-radius:10px; margin-bottom:10px">
-                <input type="number" id="withAmt" placeholder="Amount" style="width:100%; background:#0b0e11; border:1px solid var(--border); color:white; padding:12px; border-radius:10px">
+                <select id="withNet" class="form-input" style="width:100%; background:silver; border:1px solid var(--border); color:black; padding:12px; border-radius:10px; margin:10px 0"><option>BEP20</option><option>ERC20</option></select>
+                <input type="text" id="withAddr" placeholder="Recipient Address" style="width:100%; background:silver; border:1px solid var(--border); color:black; padding:12px; border-radius:10px; margin-bottom:10px">
+                <input type="number" id="withAmt" placeholder="Amount" style="width:100%; background:silver; border:1px solid var(--border); color:black; padding:12px; border-radius:10px">
                 <button class="btn-main" onclick="processWithdraw()">WITHDRAW NOW</button>
             </div>
             <div id="uiTransfer" class="mode-ui" style="display:none">
                 <p style="font-size:11px; color:var(--text-sec)">Transferable: <b id="availTrans" style="color:var(--primary)">0.00</b></p>
-                <select id="transType" style="width:100%; background:#0b0e11; border:1px solid var(--border); color:white; padding:12px; border-radius:10px; margin:10px 0"><option value="gmail">Email</option><option value="smatid">SMAT ID</option></select>
-                <input type="text" id="transTarget" placeholder="Recipient Details" style="width:100%; background:#0b0e11; border:1px solid var(--border); color:white; padding:12px; border-radius:10px; margin-bottom:10px">
-                <input type="number" id="transAmt" placeholder="Amount" style="width:100%; background:#0b0e11; border:1px solid var(--border); color:white; padding:12px; border-radius:10px">
+                <select id="transType" style="width:100%; background:silver; border:1px solid var(--border); color:black; padding:12px; border-radius:10px; margin:10px 0"><option value="gmail">Email</option><option value="smatid">SMAT ID</option></select>
+                <input type="text" id="transTarget" placeholder="Recipient Details" style="width:100%; background:silver; border:1px solid var(--border); color:black; padding:12px; border-radius:10px; margin-bottom:10px">
+                <input type="number" id="transAmt" placeholder="Amount" style="width:100%; background:silver; border:1px solid var(--border); color:black; padding:12px; border-radius:10px">
                 <button class="btn-main" onclick="processTransfer()">TRANSFER NOW</button>
             </div>
         </div>
