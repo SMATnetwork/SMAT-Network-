@@ -142,7 +142,6 @@
     .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: var(--modal-bg); z-index: 1000; overflow-y: auto; padding: 15px; }
     .preview-content { background: #fff; max-width: 800px; margin: 20px auto; padding: 30px; border-radius: 5px; position: relative; }
     
-    /* Preview Grid (Force 2 columns) */
     .preview-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px 20px; margin-top: 15px; }
     .preview-grid div { border-bottom: 1px solid #eee; padding: 8px 0; font-size: 13px; }
     .preview-grid b { color: #666; font-size: 11px; text-transform: uppercase; margin-right: 5px; }
@@ -320,9 +319,30 @@
         
         <div id="previewData"></div>
 
-        <div style="margin-top:25px; border-top: 1px dashed #ccc; padding-top: 15px;">
-            <b style="font-size: 11px; text-transform: uppercase; color: #666;">Candidate Signature:</b><br>
-            <img id="modalSig" style="max-width:200px; height:60px; margin-top: 10px; object-fit: contain;">
+        <!-- Triple Signature Section -->
+        <div style="margin-top:40px; display: flex; justify-content: space-between; align-items: flex-end; gap: 20px;">
+            <div style="text-align: center; flex: 1;">
+                <img id="modalSig" style="max-width:140px; height:50px; object-fit: contain; display: block; margin: 0 auto 5px auto;">
+                <div style="border-top: 1px solid #000; padding-top: 5px;">
+                    <b style="font-size: 10px; text-transform: uppercase; color: #333;">Candidate Signature</b>
+                </div>
+            </div>
+            
+            <div style="text-align: center; flex: 1;">
+                <!-- Admin Signature Slot (For Admin Panel Use) -->
+                <img id="modalAdminSig" src="" style="max-width:140px; height:50px; object-fit: contain; display: block; margin: 0 auto 5px auto;">
+                <div style="border-top: 1px solid #000; padding-top: 5px;">
+                    <b style="font-size: 10px; text-transform: uppercase; color: #333;">Admin Signature</b>
+                </div>
+            </div>
+
+            <div style="text-align: center; flex: 1;">
+                <!-- Authority Signature Slot (For Admin Panel Use) -->
+                <img id="modalAuthSig" src="" style="max-width:140px; height:50px; object-fit: contain; display: block; margin: 0 auto 5px auto;">
+                <div style="border-top: 1px solid #000; padding-top: 5px;">
+                    <b style="font-size: 10px; text-transform: uppercase; color: #333;">Authority Signature</b>
+                </div>
+            </div>
         </div>
 
         <div style="background:#fff9db; padding:20px; margin-top:30px; border: 1px solid #ffe066; text-align: center;">
@@ -404,7 +424,7 @@
                 let level = "";
                 const othersLvl = row.querySelector('.e-others-lvl');
                 if(othersLvl) {
-                    level = othersLvl.value; // শুধুমাত্র সিলেক্ট করা অপশন নিবে
+                    level = othersLvl.value; 
                 } else {
                     level = row.cells[0].innerText.trim();
                 }
