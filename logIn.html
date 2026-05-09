@@ -39,14 +39,17 @@
     /* --- Digital Graphics Canvas --- */
  #graphicsCanvas {
     position: fixed;
-    top: 0; left: 0;
-    width: 100%; height: 100%;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
     z-index: -1;
-    /* হার্ডওয়্যার এক্সিলারেশন চালু করার জন্য */
+    /* GPU Acceleration চালু করার ট্রিক */
     transform: translateZ(0);
+    backface-visibility: hidden;
+    perspective: 1000;
     will-change: transform;
 }
-
     
 
     /* ওল্ড স্কুল ডিজিটাল ফিল্টার - ডে মোড এডজাস্টেড */
@@ -180,9 +183,9 @@
     const auth = getAuth(app);
     const db = getDatabase(app);
 
-    // --- ১. Pure Code Graphics (Optimized for SmatBit) ---
+ // --- SmatBit Ultra-Smooth High-Speed Graphics ---
 const canvas = document.getElementById('graphicsCanvas');
-const ctx = canvas.getContext('2d');
+const ctx = canvas.getContext('2d', { alpha: false }); // পারফরম্যান্সের জন্য আলফা চ্যানেল বন্ধ
 let w, h;
 
 function resize() {
@@ -193,32 +196,34 @@ window.addEventListener('resize', resize);
 resize();
 
 const nodes = [];
+// পারফরম্যান্সের জন্য নোড সংখ্যা কমানো হয়েছে (৩০), কিন্তু গতি ও রেঞ্জ বাড়ানো হয়েছে
+const totalNodes = 20; 
+const connectionDst = 220; // কানেকশন রেঞ্জ বাড়ানো হলো
+const nodeSpeed = 4; // গতি উল্লেখযোগ্যভাবে বাড়ানো হলো
 
 class Node {
-    constructor(x, y, vx, vy) {
+    constructor(x, y) {
         this.x = x || Math.random() * w;
         this.y = y || Math.random() * h;
-        this.vx = vx || (Math.random() - 0.5) * 1.5; 
-        this.vy = vy || (Math.random() - 0.5) * 1.5;
-        this.radius = 18; // সামান্য ছোট করা হয়েছে পারফরম্যান্সের জন্য
+        // High Speed Velocity
+        this.vx = (Math.random() - 0.5) * nodeSpeed; 
+        this.vy = (Math.random() - 0.5) * nodeSpeed;
+        this.radius = 15;
         this.color = Math.random() > 0.5 ? "#f3ba2f" : "#00ffff"; 
     }
 
     draw() {
         ctx.beginPath();
         ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2);
-        ctx.fillStyle = this.color;
         
-        // শ্যাডো ব্লার ব্রাউজারকে স্লো করে, তাই এটি কমিয়ে ৫ করা হয়েছে
-        ctx.shadowBlur = 5; 
-        ctx.shadowColor = this.color;
-        ctx.globalAlpha = 0.7; 
+        // পারফরম্যান্স স্লো করে এমন ShadowBlur পুরোপুরি বাদ দেওয়া হয়েছে
+        ctx.fillStyle = this.color;
+        ctx.globalAlpha = 0.7; // হালকা স্বচ্ছতা
         ctx.fill();
-        ctx.shadowBlur = 0; // ড্রয়িং শেষে সাথে সাথে রিসেট
         ctx.globalAlpha = 1;
 
-        // Montserrat 900 ফন্ট
-        ctx.font = "900 9px Montserrat"; 
+        // SMAT টেক্সট
+        ctx.font = "900 10px Montserrat"; 
         ctx.fillStyle = "#000000"; 
         ctx.textAlign = "center";
         ctx.textBaseline = "middle";
@@ -228,27 +233,20 @@ class Node {
     update() {
         this.x += this.vx;
         this.y += this.vy;
+
+        // বর্ডার চেক
         if (this.x < 0 || this.x > w) this.vx *= -1;
         if (this.y < 0 || this.y > h) this.vy *= -1;
     }
 }
 
-function createSNodes() {
-    const totalNodes = 20; // ১৫ থেকে বাড়িয়ে ২৫ করা হলো, ল্যাগ হবে না
-    const centerX = w / 2;
-    const centerY = h / 2;
-    for (let i = 0; i < totalNodes; i++) {
-        let t = (i / totalNodes) * Math.PI * 2.5; 
-        let xOffset = Math.sin(t) * 100;
-        let yOffset = Math.cos(t * 0.5) * 150;
-        nodes.push(new Node(centerX + xOffset, centerY + yOffset));
-    }
+// নোড তৈরি
+for (let i = 0; i < totalNodes; i++) {
+    nodes.push(new Node());
 }
 
-createSNodes();
-
 function animate() {
-    // স্ক্রিন ক্লিয়ারিং এবং ট্রেইল
+    // প্রতি ফ্রেমে পুরো স্ক্রিন ক্লিয়ার করার বদলে হালকা ট্রেইল দেওয়া
     ctx.fillStyle = "rgba(248, 249, 250, 0.3)"; 
     ctx.fillRect(0, 0, w, h);
 
@@ -256,30 +254,32 @@ function animate() {
         n.update();
         n.draw();
 
+        // কানেকশন লাইন চেক (পারফরম্যান্সের জন্য সবচেয়ে ভারী কাজ)
         for (let j = index + 1; j < nodes.length; j++) {
             const n2 = nodes[j];
-            const dist = Math.hypot(n.x - n2.x, n.y - n2.y);
+            const dx = n.x - n2.x;
+            const dy = n.y - n2.y;
+            const distSq = dx * dx + dy * dy; // hypot-এর বদলে squared distance ব্যবহার (ফাস্ট)
 
-            if (dist < 180) {
+            if (distSq < connectionDst * connectionDst) {
+                const dist = Math.sqrt(distSq);
                 ctx.beginPath();
                 ctx.moveTo(n.x, n.y);
                 ctx.lineTo(n2.x, n2.y);
                 
-                const grad = ctx.createLinearGradient(n.x, n.y, n2.x, n2.y);
-                grad.addColorStop(0, n.color);
-                grad.addColorStop(1, n2.color);
-                
-                ctx.strokeStyle = grad;
-                // অপাসিটি ক্যালকুলেশন ফিক্স করা হয়েছে
-                ctx.globalAlpha = Math.max(0, 1 - (dist / 180));
+                // গ্রেডিয়েন্টের বদলে সলিড কালার ব্যবহার (পারফরম্যান্স ফাস্ট)
+                ctx.strokeStyle = n.color; 
+                ctx.globalAlpha = 1 - (dist / connectionDst); // দূরত্ব অনুযায়ী স্বচ্ছতা
                 ctx.lineWidth = 1; 
                 ctx.stroke();
                 ctx.globalAlpha = 1;
             }
         }
     });
+
     requestAnimationFrame(animate);
 }
+
 animate();
 
 
