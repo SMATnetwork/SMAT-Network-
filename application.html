@@ -295,9 +295,9 @@
         <div class="signature-area">
             <label>Upload Your Signature</label><br>
             <input type="file" id="sigInput" accept="image/*" onchange="previewFile(event, 'sigPreview', 'sigTxt')" style="margin-top:10px;">
-            <div style="width: 300px; height: 80px; border: 1px solid #ccc; margin-top: 10px; background: #fff; display:flex; align-items:center; justify-content:center; overflow:hidden;">
+            <div style="width: 200px; height: 70px; border: 1px solid #ccc; margin-top: 10px; background: #fff; display:flex; align-items:center; justify-content:center; overflow:hidden;">
                 <span id="sigTxt" style="font-size: 10px; color: #999;">SIGNATURE PREVIEW</span>
-                <img id="sigPreview" style="width: 100%; height: 100%; object-fit: contain; display:none;">
+                <img id="sigPreview" style="width: 100%; display:none;">
             </div>
         </div>
 
@@ -322,7 +322,7 @@
         <!-- Triple Signature Section -->
         <div style="margin-top:40px; display: flex; justify-content: space-between; align-items: flex-end; gap: 20px;">
             <div style="text-align: center; flex: 1;">
-                <img id="modalSig" style="width:300px; height:80px; object-fit: contain; display: block; margin: 0 auto 5px auto;">
+                <img id="modalSig" style="max-width:140px; height:50px; object-fit: contain; display: block; margin: 0 auto 5px auto;">
                 <div style="border-top: 1px solid #000; padding-top: 5px;">
                     <b style="font-size: 10px; text-transform: uppercase; color: #333;">Candidate Signature</b>
                 </div>
@@ -330,7 +330,7 @@
             
             <div style="text-align: center; flex: 1;">
                 <!-- Admin Signature Slot (For Admin Panel Use) -->
-                <img id="modalAdminSig" src="" style="width:300px; height:80px; object-fit: contain; display: block; margin: 0 auto 5px auto;">
+                <img id="modalAdminSig" src="" style="max-width:140px; height:50px; object-fit: contain; display: block; margin: 0 auto 5px auto;">
                 <div style="border-top: 1px solid #000; padding-top: 5px;">
                     <b style="font-size: 10px; text-transform: uppercase; color: #333;">Admin Signature</b>
                 </div>
@@ -338,7 +338,7 @@
 
             <div style="text-align: center; flex: 1;">
                 <!-- Authority Signature Slot (For Admin Panel Use) -->
-                <img id="modalAuthSig" src="" style="width:300px; height:80px; object-fit: contain; display: block; margin: 0 auto 5px auto;">
+                <img id="modalAuthSig" src="" style="max-width:140px; height:50px; object-fit: contain; display: block; margin: 0 auto 5px auto;">
                 <div style="border-top: 1px solid #000; padding-top: 5px;">
                     <b style="font-size: 10px; text-transform: uppercase; color: #333;">Authority Signature</b>
                 </div>
