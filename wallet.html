@@ -3,37 +3,497 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    
     <title>SMAT | Wallet</title>
-    
-    <!-- --- SECURITY LAYER START --- -->
-    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' https://www.gstatic.com https://apis.google.com https://cdn.tailwindcss.com; style-src 'self' 'unsafe-inline' https://cdnjs.cloudflare.com https://fonts.googleapis.com https://cdn.tailwindcss.com; font-src 'self' https://cdnjs.cloudflare.com https://fonts.gstatic.com; connect-src 'self' https://*.firebaseio.com https://*.googleapis.com; img-src 'self' data:; frame-src https://*.firebaseapp.com;">
-    <meta http-equiv="X-Content-Type-Options" content="nosniff">
-    <meta http-equiv="X-XSS-Protection" content="1; mode=block">
-    <meta name="referrer" content="no-referrer">
-    <meta http-equiv="Permissions-Policy" content="camera=(), microphone=(), geolocation=(), interest-cohort=()">
-    <meta http-equiv="Expect-CT" content="max-age=86400, enforce">
-    <!-- --- SECURITY LAYER END --- -->
-    
-    <!-- --- STYLESHEETS (CSS) --- -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
-    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;700;900&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="css/globalSecurity.css"> 
-    <link rel="stylesheet" href="css/wallet.css">
-    
-    <!-- --- SCRIPTS (JS) --- --> 
-    <script src="js/configurationfirebase.js"></script> 
-    <script src="coin.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/ethers/5.7.2/ethers.umd.min.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-database-compat.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/qrcode-generator@1.4.4/qrcode.min.js"></script>
-    
-    
-    <!-- --- FAVICON --- -->
-    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNTEyIiBoZWlnaHQ9IjUxMiIgdmlld0JveD0iMCAwIDUxMiA1MTIiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+CiAgPGNpcmNsZSBjeD0iMjU2IiBjeT0iMjU2IiByPSIyNDAiIGZpbGw9IiNmM2JhMmYiLz4KICA8Y2lyY2xlIGN4PSIyNTYiIGN5PSIyNTYiIHI9IjIxNSIgc3Ryb2tlPSJ3aGl0ZSIgc3Ryb2tlLXdpZHRoPSI4IiBmaWxsPSJ0cmFuc3BhcmVudCIvPgogIDxwYXRoIGQ9Ik0xNTAgMTcwIEMxNTAgMTQ1IDE3MCAxMzUgMjAwIDEzNSBMMzQwIDEzNSBDMzU1IDEzNSAzNjUgMTQ1IDM2NSAxNjAgQzM2NSAxNzUgMzU1IDE4NSAzNDAgMTg1IEwyMDUgMTg1IEMxOTAgMTg1IDE4NSAxOTAgMTg1IDIwNSBDMTg1IDIyMCAxOTAgMjI1IDIwNSAyMjUgTDM0MCAyMjUgQzM3MCAyMjUgMzkwIDI0NSAzOTAgMjc1IEwzOTAgMzI1IEMzOTAgMzU1IDM3MCAzNzUgMzQwIDM3NSBMMTcwIDM3NSBDMTU1IDM3NSAxNDUgMzY1IDE0NSAzNTAgQzE0NSAzMzUgMTU1IDMyNSAxNzAgMzI1IEwzMzUgMzI1IEMzNTAgMzI1IDM1NSAzMjAgMzU1IDMwNSBDMzU1IDI5MCAzNTAgMjg1IDMzNSAyODUgTDIwMCAyODUgQzE3MCAyODUgMTUwIDI2NSAxNTAgMjM1IFoiIGZpbGw9IndoaXRlIi8+Cjwvc3ZnPg==">
-    
-</head>
+    <script src="coin.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/ethers/5.7.2/ethers.umd.min.js"></script>
 
-<body class="smat-lock-system">
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@900&family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+
+<link rel="icon" type="image/svg+xml" href="data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNTEyIiBoZWlnaHQ9IjUxMiIgdmlld0JveD0iMCAwIDUxMiA1MTIiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+CiAgPGNpcmNsZSBjeD0iMjU2IiBjeT0iMjU2IiByPSIyNDAiIGZpbGw9IiNmM2JhMmYiLz4KICA8Y2lyY2xlIGN4PSIyNTYiIGN5PSIyNTYiIHI9IjIxNSIgc3Ryb2tlPSJ3aGl0ZSIgc3Ryb2tlLXdpZHRoPSI4IiBmaWxsPSJ0cmFuc3BhcmVudCIvPgogIDxwYXRoIGQ9Ik0xNTAgMTcwIEMxNTAgMTQ1IDE3MCAxMzUgMjAwIDEzNSBMMzQwIDEzNSBDMzU1IDEzNSAzNjUgMTQ1IDM2NSAxNjAgQzM2NSAxNzUgMzU1IDE4NSAzNDAgMTg1IEwyMDUgMTg1IEMxOTAgMTg1IDE4NSAxOTAgMTg1IDIwNSBDMTg1IDIyMCAxOTAgMjI1IDIwNSAyMjUgTDM0MCAyMjUgQzM3MCAyMjUgMzkwIDI0NSAzOTAgMjc1IEwzOTAgMzI1IEMzOTAgMzU1IDM3MCAzNzUgMzQwIDM3NSBMMTcwIDM3NSBDMTU1IDM3NSAxNDUgMzY1IDE0NSAzNTAgQzE0NSAzMzUgMTU1IDMyNSAxNzAgMzI1IEwzMzUgMzI1IEMzNTAgMzI1IDM1NSAzMjAgMzU1IDMwNSBDMzU1IDI5MCAzNTAgMjg1IDMzNSAyODUgTDIwMCAyODUgQzE3MCAyODUgMTUwIDI2NSAxNTAgMjM1IFoiIGZpbGw9IndoaXRlIi8+Cjwvc3ZnPg==">
+    
+    <style>
+    :root {
+        /* লাইট থিমের জন্য কালার পরিবর্তন */
+        --bg: #ffffff;             /* সাদা ব্যাকগ্রাউন্ড */
+        --card: #f8f9fa;           /* হালকা গ্রে কার্ড */
+        --primary: #f0b90b;        /* সিগনেচার ইয়োলো */
+        --up: #03a66d;             /* ডার্ক গ্রিন (পড়তে সুবিধা হয়) */
+        --down: #cf304a;           /* ডার্ক রেড */
+        --text-main: #1e2329;      /* মেইন টেক্সট কালার */
+        --text-sec: #707a8a;       /* সেকেন্ডারি টেক্সট কালার */
+        --border: #eaecef;         /* হালকা বর্ডার কালার */
+        --font-bold: 'Montserrat', sans-serif;
+    }
+
+    * {
+        font-weight: 900; 
+        box-sizing: border-box; 
+        margin: 0; 
+        padding: 0; 
+        font-family: 'Inter', sans-serif; 
+        -webkit-tap-highlight-color: transparent; 
+    }
+
+    body { 
+        background: var(--bg); 
+        color: var(--text-main); 
+        padding-bottom: 90px; 
+        overflow-x: hidden; 
+    }
+
+    /* --- History Table (Responsive) --- */
+    .hist-table-header, .hist-row {
+        display: grid;
+        grid-template-columns: 1fr 1.4fr 0.8fr 0.8fr 80px;
+        padding: 12px 10px;
+        align-items: center;
+    }
+
+    .hist-table-header {
+        background: #f1f2f4;      /* হেডার একটু ডার্ক গ্রে */
+        font-size: 10px; 
+        color: var(--text-sec);
+        border-bottom: 1px solid var(--border); 
+        position: sticky; 
+        top: 0; 
+        z-index: 10;
+        text-transform: uppercase;
+    }
+
+    .hist-row { 
+        border-bottom: 1px solid var(--border); 
+        font-size: 11px; 
+        cursor: pointer; 
+        transition: 0.2s; 
+        color: var(--text-main);
+    }
+
+    .hist-row:active { 
+        background: #f1f2f4; 
+    }
+    
+    .name-col { display: flex; align-items: center; gap: 6px; overflow: hidden; }
+    .small-logo { width: 20px; height: 20px; border-radius: 50%; min-width: 20px; background: #eee; }
+
+    /* ব্যাজ কালার অ্যাডজাস্টমেন্ট */
+    .status-badge { font-size: 9px; padding: 3px 6px; border-radius: 5px; text-align: center; display: inline-block; width: 100%; }
+    .status-success { background: rgba(3, 166, 109, 0.1); color: var(--up); }
+    .status-pending { background: rgba(240, 185, 11, 0.15); color: #b78400; }
+    .status-failed { background: rgba(207, 48, 74, 0.1); color: var(--down); }
+
+    /* --- Details Popup --- */
+    .details-overlay {
+        position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+        background: rgba(0,0,0,0.5); /* একটু হালকা অন্ধকার ওভারলে */
+        z-index: 8000;
+        display: none; align-items: center; justify-content: center; padding: 15px;
+    }
+
+    .details-card {
+        background: #ffffff; 
+        width: 100%; 
+        max-width: 360px;
+        border-radius: 24px; 
+        padding: 25px; 
+        border: 1px solid var(--border);
+        box-shadow: 0 15px 35px rgba(0,0,0,0.1);
+    }
+
+    .detail-item {
+        display: flex; justify-content: space-between; margin-bottom: 14px;
+        font-size: 12px; border-bottom: 1px dashed var(--border);
+        padding-bottom: 6px; align-items: flex-start;
+    }
+
+    .responsive-text {
+        font-family: monospace; 
+        font-size: 10px !important; 
+        word-break: break-all;
+        text-align: right; 
+        flex: 1; 
+        margin-left: 20px; 
+        color: var(--text-main);
+    }
+
+    /* Day Mode CSS Adjustments */
+    .wallet-header { 
+        padding: 40px 20px 20px; 
+        text-align: center; 
+        /* ব্যাকগ্রাউন্ড হালকা ইয়োলো গ্রেডিয়েন্ট থেকে সাদার দিকে */
+        background: linear-gradient(180deg, rgba(240, 185, 11, 0.1) 0%, #ffffff 100%); 
+    }
+    
+    .total-balance { 
+        font-family: var(--font-bold); 
+        font-size: 38px; 
+        font-weight: 900; 
+        color: #1e2329; /* ডার্ক টেক্সট */
+    }
+    
+    .quick-actions { 
+        font-weight: 900; 
+        display: grid; 
+        grid-template-columns: repeat(3, 1fr); 
+        gap: 15px; 
+        padding: 0 20px 25px; 
+    }
+    
+    .q-btn { 
+        font-weight: 900; 
+        background: #f8f9fa; /* হালকা গ্রে বাটন */
+        border: 1px solid #eaecef; 
+        border-radius: 16px; 
+        padding: 15px; 
+        text-align: center; 
+        cursor: pointer; 
+        color: #1e2329;
+    }
+
+    .asset-list { 
+        padding: 0 15px; 
+        max-width: 100%; 
+        overflow-x: hidden; 
+    }
+
+    .asset-card {
+        background: transparent; 
+        border-radius: 2px; 
+        padding: 15px; 
+        margin-bottom: 8px;
+        display: flex; 
+        justify-content: space-between; 
+        align-items: center; 
+        gap: 8px;
+        width: 100%; 
+        border-bottom: 1px solid #f1f2f4; /* হালকা সেপারেটর */
+    }
+    
+    .a-logo { 
+        width: 40px; height: 40px; 
+        border-radius: 50%; 
+        overflow: hidden; 
+        background: #f1f2f4; 
+    }
+    
+    .a-logo img { width: 100%; height: 100%; object-fit: cover; }
+
+    .overlay { 
+        position: fixed; top: 0; left: 0; width: 100%; height: 100%; 
+        background: rgba(0,0,0,0.5); /* ওভারলে একটু হালকা করা হয়েছে */
+        z-index: 5000; display: none; align-items: flex-end; 
+    }
+    
+    .popup { 
+        background: #ffffff; /* সাদা পপআপ */
+        width: 100%; 
+        border-radius: 25px 25px 0 0; 
+        padding: 25px; 
+        max-height: 90vh; 
+        overflow-y: auto; 
+        border-top: 2px solid var(--primary); 
+        animation: slideUp 0.3s; 
+        color: #1e2329;
+    }
+    
+    @keyframes slideUp { from { transform: translateY(100%); } to { transform: translateY(0); } }
+
+    .selector-popup { 
+        position: fixed; top: 0; left: 0; width: 100%; height: 100%; 
+        background: #ffffff; 
+        z-index: 7000; display: none; flex-direction: column; 
+    }
+    
+    .search-box { 
+        padding: 15px 20px; 
+        background: #ffffff; 
+        border-bottom: 1px solid #eaecef; 
+    }
+    
+    .search-input { 
+        width: 100%; 
+        background: #f1f2f4; 
+        border: 1px solid #eaecef; 
+        padding: 12px 15px; 
+        border-radius: 10px; 
+        color: #000; 
+        outline: none; 
+    }
+
+    .qr-box { 
+        background: #f8f9fa; /* হালকা গ্রে বক্স কিউআর কোডের জন্য */
+        width: 170px; height: 170px; 
+        margin: 15px auto; 
+        padding: 8px; 
+        border-radius: 12px; 
+        position: relative; 
+        display: flex; 
+        align-items: center; 
+        justify-content: center; 
+        border: 1px solid #eaecef;
+    }
+    
+    .qr-logo { position: absolute; width: 35px; height: 35px; background: white; border-radius: 50%; padding: 2px; z-index: 5; }
+    
+    .btn-main { 
+        width: 100%; 
+        background: var(--primary); 
+        color: #000; 
+        border: none; 
+        padding: 15px; 
+        border-radius: 12px; 
+        font-weight: 900; 
+        margin-top: 15px; 
+    }
+    
+    .opt-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px; margin-bottom: 20px; }
+    
+    .opt-btn { 
+        background: #f1f2f4; 
+        border: 1px solid #eaecef; 
+        padding: 12px 5px; 
+        border-radius: 12px; 
+        text-align: center; 
+        font-size: 11px; 
+        font-weight: 800; 
+        cursor: pointer; 
+        color: #707a8a;
+    }
+    
+    .opt-btn.active { 
+        border-color: var(--primary); 
+        color: var(--primary); 
+        background: rgba(240, 185, 11, 0.05); 
+    }
+
+    /* Wallet History Table */
+    .history-table {
+        width: 100%;
+        border-collapse: collapse;
+        margin-top: 15px;
+    }
+
+    .history-table th, .history-table td {
+        padding: 12px 8px;
+        text-align: left;
+        font-size: 13px;
+        border-bottom: 1px solid #f1f2f4;
+        color: #1e2329;
+    }
+    
+    .history-table th {
+        color: #707a8a; /* হালকা টেক্সট হেডারের জন্য */
+        font-size: 11px;
+        text-transform: uppercase;
+    }
+
+/* --- Wallet History Table Column Widths (৫ কলামের রেশিও) --- */
+.history-table th:nth-child(1), .history-table td:nth-child(1) { width: 20%; } /* NAME */
+.history-table th:nth-child(2), .history-table td:nth-child(2) { width: 25%; } /* AMOUNT */
+.history-table th:nth-child(3), .history-table td:nth-child(3) { width: 20%; } /* METHOD */
+.history-table th:nth-child(4), .history-table td:nth-child(4) { width: 20%; } /* TIME */
+.history-table th:nth-child(5), .history-table td:nth-child(5) { width: 15%; text-align: right; } /* ACTION */
+
+/* সাকসেস বাটনের ডে-মোড লুক */
+.status-success {
+    background: rgba(3, 166, 109, 0.1); /* হালকা সবুজ ব্যাকগ্রাউন্ড */
+    color: #03a66d; /* গাঢ় সবুজ টেক্সট যাতে পরিষ্কার দেখা যায় */
+    padding: 4px 10px;
+    border-radius: 4px;
+    font-weight: bold;
+    font-size: 11px;
+    text-transform: uppercase;
+}
+
+/* History Popup Daymode */
+.history-popup { 
+    position: fixed; top: 0; left: 0; width: 100%; height: 100%; 
+    background: #ffffff; /* সাদা ব্যাকগ্রাউন্ড */
+    z-index: 6000; display: none; flex-direction: column; 
+}
+
+/* হিস্ট্রি কার্ডের ডে-মোড স্টাইল */
+.hist-card { 
+    background: #f8f9fa; /* হালকা গ্রে কার্ড */
+    padding: 15px; border-radius: 15px; margin-bottom: 12px; 
+    border-left: 4px solid var(--primary); 
+    color: #1e2329; /* ডার্ক টেক্সট */
+}
+
+.status-spin { animation: spin 2s linear infinite; }
+@keyframes spin { 100% { transform: rotate(360deg); } }
+
+/* Footer Daymode */
+.footer {
+    position: fixed; bottom: 0; width: 100%; height: 75px; 
+    background: #ffffff; /* সাদা ফুটার */
+    display: flex; justify-content: space-around; align-items: center; 
+    z-index: 4000; border-top: 1px solid #eaecef; /* হালকা বর্ডার */
+}
+
+.f-nav {
+    font-weight: 900; text-decoration: none; 
+    color: #707a8a; /* হালকা গ্রে টেক্সট */
+    text-align: center; font-size: 12px; flex: 1; 
+    display: flex; flex-direction: column; align-items: center; gap: 4px; 
+}
+
+.f-nav.active { color: var(--primary); }
+.footer a i { font-size: 20px; }
+
+/* FAB CENTRAL MENU STYLES (Daymode Adjustments) */
+.main-fab-container { position: relative; width: 60px; height: 60px; margin-top: -30px; }
+.main-fab { 
+    width: 60px; height: 60px; background: var(--primary); 
+    border-radius: 50%; display: flex; justify-content: center; align-items: center; 
+    box-shadow: 0 4px 12px rgba(240, 185, 11, 0.3); 
+    z-index: 4005; position: relative; transition: 0.3s; 
+    border: 4px solid #ffffff; /* সাদার ওপর সুন্দর বর্ডার */
+}
+
+.main-fab.active { transform: rotate(45deg); background: #f6465d; }
+
+.fab-menu { 
+    position: absolute; bottom: 75px; left: 50%; transform: translateX(-50%); 
+    display: none; flex-direction: column; gap: 15px; z-index: 4004; align-items: center; 
+}
+
+.fab-item { 
+    width: 50px; height: 50px; 
+    background: #1e2329; /* বাটনগুলো ডার্ক রাখা হয়েছে সাদার ওপর সলিড লুকের জন্য */
+    border-radius: 50%; display: flex; justify-content: center; align-items: center; 
+    color: #ffffff; box-shadow: 0 5px 15px rgba(0,0,0,0.1); 
+    text-decoration: none; animation: popIn 0.3s ease-out forwards; position: relative; 
+}
+
+.fab-label { 
+    font-weight: 900; position: absolute; left: 60px; 
+    background: #ffffff; color: #1e2329; 
+    padding: 4px 10px; border-radius: 6px; font-size: 11px; 
+    font-weight: bold; border: 1px solid #eaecef; white-space: nowrap; 
+}
+
+@keyframes popIn { from { transform: scale(0) translateY(50px); opacity: 0; } to { transform: scale(1) translateY(0); opacity: 1; } }
+
+/* বড় ভিজ্যুয়াল কন্টেইনার (Daymode) */
+.status-visual {
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
+    padding: 20px 0; 
+    background: radial-gradient(circle, rgba(240, 185, 11, 0.08) 0%, transparent 70%); 
+    border-radius: 20px; margin-bottom: 20px;
+}
+
+/* হাই-টেক স্পিনার (Daymode) */
+.big-spinner {
+    width: 50px; height: 50px; 
+    border: 6px solid #f1f2f4; /* ব্যাকগ্রাউন্ড বর্ডার হালকা গ্রে */
+    border-top: 6px solid var(--primary); 
+    border-right: 6px solid var(--primary);
+    border-radius: 50%; 
+    animation: spin 1s cubic-bezier(0.4, 0, 0.2, 1) infinite;
+    margin-bottom: 15px;
+}
+
+/* গ্লোয়িং আইকনস (Daymode Adjustments) */
+.big-check { 
+    font-size: 50px; color: #03a66d; 
+    filter: drop-shadow(0 4px 10px rgba(3, 166, 109, 0.2));
+    animation: popIn 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+.big-cross { 
+    font-size: 50px; color: #cf304a; 
+    filter: drop-shadow(0 4px 10px rgba(207, 48, 74, 0.2));
+    animation: popIn 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+/* অ্যানিমেশনস */
+@keyframes popIn { 0% { transform: scale(0); opacity: 0; } 100% { transform: scale(1); opacity: 1; } }
+
+/* ডিটেইলস রো ডিজাইন */
+.detail-item {
+    display: flex; justify-content: space-between;
+    padding: 8px 5px; 
+    border-bottom: 1px solid #f1f2f4; /* হালকা বর্ডার */
+    color: #1e2329; /* ডার্ক টেক্সট */
+}
+/* --- হ্যাশ টেক্সট অটো ব্রেক করার জন্য (Daymode) --- */
+.hash-text {
+    font-size: 9px;
+    font-family: 'Courier New', monospace;
+    word-break: break-all;      /* লম্বা শব্দ ভেঙে ফেলবে */
+    white-space: normal;       /* নরমাল বিহেভিয়ার */
+    display: block;            /* পুরো ব্লক জুড়ে থাকবে */
+    line-height: 1.4;
+    text-align: left;
+    color: #707a8a;            /* ডার্ক মোডের বদলে হালকা চারকোল গ্রে */
+}
+
+/* --- অ্যাড্রেস টেক্সটের জন্য (Daymode) --- */
+.responsive-text {
+    word-break: break-all;
+    max-width: 60%;            /* বাম পাশের লেবেলের জন্য জায়গা রাখবে */
+    text-align: right;
+    color: #1e2329;            /* সলিড ডার্ক টেক্সট দিনের আলোতে পড়ার জন্য */
+}
+
+/* --- পপআপ রেসপনসিভ ডিজাইন (Daymode) --- */
+#detailsOverlay {
+    padding: 2px;
+    align-items: center;
+    justify-content: center;
+    background: rgba(0, 0, 0, 0.4); /* ওভারলে একটু হালকা করা হয়েছে */
+}
+
+#detailsContent {
+    width: 100%;
+    max-width: 400px;         /* বড় ডিসপ্লের জন্য */
+    max-height: 90vh;
+    overflow-y: auto;
+    border-radius: 20px;
+    position: relative;
+    background: #ffffff;      /* ডার্কের বদলে সাদা ব্যাকগ্রাউন্ড */
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1); /* হালকা শ্যাডো */
+    border: 1px solid #eaecef;
+}
+
+/* --- কপি বাটন স্টাইল (Daymode Adjustments) --- */
+.copy-btn {
+    background: rgba(240, 185, 11, 0.1); /* হালকা ইয়োলো টিন্ট */
+    color: #b78400;            /* একটু গাঢ় ইয়োলো/গোল্ডেন যাতে সাদার ওপর ফুটে ওঠে */
+    border: 1px solid rgba(240, 185, 11, 0.3);
+    padding: 3px 10px;
+    border-radius: 5px;
+    font-size: 9px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    font-weight: 900;
+}
+
+.copy-btn:hover { 
+    background: rgba(240, 185, 11, 0.2); 
+}
+
+/* --- হ্যাশ কন্টেইনার (Daymode) --- */
+.hash-container {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 10px;
+    background: #f8f9fa;      /* হ্যাশ এরিয়া আলাদা করার জন্য হালকা গ্রে ব্যাকগ্রাউন্ড */
+    padding: 8px;
+    border-radius: 8px;
+}
+</style>
+
+</head>
+<body>
 
     <div class="wallet-header">
         <p style="font-size: 11px; color: var(--text-sec); font-weight: bold;">TOTAL ASSETS VALUE</p>
@@ -76,9 +536,8 @@
             <div id="uiDeposit" class="mode-ui">
                 <div class="qr-box"><img id="qrCoinLogo" class="qr-logo"><div id="qrcode"></div></div>
                 <div style="background:silver; padding:12px; border-radius:10px; display:flex; justify-content:space-between; align-items:center">
-                    <span id="depAddr" class="allow-copy" style="font-size:12px; color:black">0x...</span>
-                    <i class="fas fa-copy allow-copy" onclick="copyValue('depAddr')" style="color:#00008B"></i>
-                    
+                    <span id="depAddr" style="font-size:12px; color:black">0x...</span>
+                    <i class="fas fa-copy" onclick="copyValue('depAddr')" style="color:#00008B"></i>
                 </div>
                 <p style="padding:5px 0;font-size:10px; color:var(--down); text-align:center; margin-top:30px">Warning: Only Binance Smart Chain (BSC20) / Ethereum Chain (ERC20) networks supported.</p>
 
@@ -115,11 +574,11 @@
         <div id="detailsContent"></div>
         <button class="btn-main" onclick="document.getElementById('detailsOverlay').style.display='none'">CLOSE</button>
     </div>
-    <div id="history-container"></div>
-    <!-- Load More বাটন -->
-    <button id="load-more-btn" onclick="loadSmatHistory(true)" style="display:none; margin: 20px auto;">Show More</button>
-    
 </div>
+
+
+
+
  <footer class="footer">
     <a href="index.html" class="f-nav "><i class="fas fa-home"></i>Home</a>
     
@@ -139,185 +598,640 @@
     <a href="trade.html" class="f-nav "><i class="fas fa-exchange-alt"></i>Trade</a>
     
     <a href="mining.html" class="f-nav "><i class="fas fa-microchip"></i>Mining</a>
-</footer>   
+</footer>
 
-<template id="notification-template">
-    <div class="notification-toast">
-        <div class="notification-title-wrap">
-            <i class="fas notification-icon"></i>
-            <span class="notification-title"></span>
-        </div>
-        <div class="notification-message"></div>
-    </div>
-</template>
-<!-- মেইন কন্টেইনার যেখানে লিস্ট শো করবে -->
-<div id="assetList"></div>
 
-<!-- কয়েন রো টেমপ্লেট -->
-<template id="coin-row-template">
-    <div class="asset-card" style="display: flex; align-items: center; padding: 10px; cursor: pointer;">
-        <div class="a-logo" style="margin-right: 15px;">
-            <img class="coin-img" style="width: 32px; height: 32px;" onerror="this.src='assets/logos/generic.png'">
-        </div>
-        <div style="flex:1">
-            <h4 class="coin-name" style="margin:0; font-size:14px;"></h4>
-            <p class="coin-price" style="margin:0; font-size:11px; color:var(--text-sec)"></p>
-        </div>
-        <div style="text-align:right">
-            <b class="coin-bal" style="font-size:14px;"></b>
-            <br>
-            <span class="coin-val" style="font-size:11px; color:var(--text-sec)"></span>
-        </div>
-    </div>
-</template>
 
-<!-- খালি অবস্থার টেমপ্লেট -->
-<template id="empty-asset-template">
-    <div style="text-align:center; padding:40px; color:var(--text-sec); opacity:0.5;">
-        <i class="fas fa-coins" style="font-size:30px; margin-bottom:10px;"></i>
-        <p style="font-size:12px;">No active assets</p>
-    </div>
-</template>
-<!-- সার্চ রেজাল্ট কন্টেইনার -->
-<div id="selectorList"></div>
+<script>
+// --- FAB TOGGLE ---
+function toggleFab() {
+    const menu = document.getElementById('fabMenu');
+    const fab = document.getElementById('mainFab');
+    const isVisible = menu.style.display === 'flex';
+    menu.style.display = isVisible ? 'none' : 'flex';
+    fab.classList.toggle('active');
+}
 
-<!-- সিলেক্টর আইটেম টেমপ্লেট -->
-<template id="selector-item-template">
-    <div class="asset-card" style="display: flex; align-items: center; padding: 10px; cursor: pointer;">
-        <div class="a-logo" style="margin-right: 15px;">
-            <img class="coin-img" style="width: 32px; height: 32px;" onerror="this.src='assets/logos/generic.png'">
-        </div>
-        <div style="flex:1">
-            <h4 class="coin-name" style="margin:0; font-size:14px;"></h4>
-            <p class="coin-full-name" style="margin:0; font-size:11px; color:var(--text-sec)"></p>
-        </div>
-        <div style="text-align:right">
-            <b class="coin-bal-text" style="color:var(--primary); font-size:14px;"></b>
-        </div>
-    </div>
-</template>
-<!-- হিস্ট্রি পপআপ কন্টেইনার -->
-<div id="historyPopup" style="display:none;">
-    <div id="histContent"></div>
-</div>
+// --- CORE FUNCTIONS (Decimal Fixed) ---
+function formatAmt(num) {
+    if(!num) return "0.00";
+    return parseFloat(num).toLocaleString(undefined, { 
+        minimumFractionDigits: 2, 
+        maximumFractionDigits: 8 
+    });
+}
 
-<!-- টেবিল হেডার টেমপ্লেট -->
-<template id="hist-table-header-template">
-    <div class="hist-table-header" style="display: grid; grid-template-columns: 1.2fr 1fr 0.8fr 1fr 1fr; padding: 12px; font-size: 10px; color: var(--text-sec); border-bottom: 1px solid rgba(255,255,255,0.05); font-weight: bold;">
-        <span>Name</span>
-        <span>Amount</span>
-        <span>Method</span>
-        <span class="hist-time-col">Time</span>
-        <span style="text-align:right">Action</span>
-    </div>
-</template>
+function formatPrice(num) {
+    if(!num) return "0.0000";
+    return parseFloat(num).toLocaleString(undefined, { 
+        minimumFractionDigits: 4, 
+        maximumFractionDigits: 4 
+    });
+}
 
-<!-- রো টেমপ্লেট -->
-<template id="hist-row-template">
-    <div class="hist-row" style="display: grid; grid-template-columns: 1.2fr 1fr 0.8fr 1fr 1fr; align-items: center; padding: 12px; border-bottom: 1px solid rgba(255,255,255,0.02); cursor: pointer;">
-        <div class="name-col" style="display: flex; align-items: center; gap: 8px;">
-            <img class="small-logo" style="width: 18px; height: 18px;" onerror="this.src='assets/logos/generic.png'">
-            <b class="coin-name-text" style="font-size: 11px;"></b>
-        </div>
-        <b class="hist-amount-text" style="font-family: monospace; font-size: 11px;"></b>
-        <span class="hist-method-text" style="color: var(--text-sec); font-size: 10px;"></span>
-        <span class="hist-time-text" style="color: var(--text-sec); font-size: 10px;"></span>
-        <div style="text-align:right">
-            <span class="status-badge"></span>
-        </div>
-    </div>
-</template>
+// --- GRAPHIC TOAST NOTIFICATION SYSTEM ---
+function showNotify(type, title, message) {
+    let container = document.getElementById('notification-container');
+    if (!container) {
+        container = document.createElement('div');
+        container.id = 'notification-container';
+        container.style = "position:fixed; top:20px; left:50%; transform:translateX(-50%); z-index:10000; display:flex; flex-direction:column; gap:10px; width:90%; max-width:350px;";
+        document.body.appendChild(container);
+    }
 
-<!-- ডাটা না থাকার টেমপ্লেট -->
-<template id="hist-empty-template">
-    <p style="text-align:center; color:var(--text-sec); padding:40px; font-size: 12px;">No history found.</p>
-</template>
-<!-- ট্রান্সফার প্রিভিউ টেমপ্লেট -->
-<template id="transfer-preview-template">
-    <div class="preview-container" style="text-align:center; padding:10px 0;">
-        <p style="color:var(--text-sec); font-size:12px;">Confirm Transfer</p>
-        <h2 class="preview-amount" style="color:var(--primary); font-size:28px; margin:5px 0;"></h2>
-        
-        <div class="preview-box" style="background:rgba(255,255,255,0.05); padding:15px; border-radius:12px; margin-top:15px; border:1px solid var(--border); text-align:left;">
-            <p style="font-size:11px; color:var(--text-sec);">Recipient Account:</p>
-            <p class="preview-receiver" style="font-size:14px; font-weight:bold; color:var(--text-main); margin-top:4px;"></p>
-        </div>
-    </div>
-</template>
-
-<!-- Main Overly Stracture-->
-<div id="detailsOverlay" style="display:none;">
-    <div class="overlay-content">
-        <div id="detailsContent"></div>
-        <button class="btn-main">CONFIRM & SEND</button>
-    </div>
-</div>
-<!-- Transaction Details Card -->
-<template id="tx-details-template">
-    <!--  (Spinner/Icon) -->
-    <div class="status-visual-cont" style="text-align:center; margin-bottom:20px;"></div>
-
-    <!-- Confrime Progress Bax-->
-    <div class="confirm-progress-box" style="display:none; margin: 15px 0; background: rgba(240, 185, 11, 0.05); padding: 12px; border-radius: 12px; border: 1px solid rgba(240, 185, 11, 0.2);">
-        <div style="display:flex; justify-content:space-between; font-size:11px; margin-bottom:8px;">
-            <span style="color:#848e9c">Network Confirmations</span>
-            <span class="confirms-text" style="color:#f0b90b; font-weight:bold;"></span>
-        </div>
-        <div style="width:100%; height:6px; background:rgba(255,255,255,0.1); border-radius:10px; overflow:hidden;">
-            <div class="progress-fill" style="width:0%; height:100%; background:#f0b90b; box-shadow: 0 0 10px #f0b90b; transition: width 0.5s ease;"></div>
-        </div>
-    </div>
-
-    <!-- Main Details Card -->
-    <div class="glass-card" style="background: rgba(255,255,255,0.02); padding: 15px; border-radius: 12px; border: 1px solid rgba(255,255,255,0.05);">
-        <div class="detail-item" style="display:flex; justify-content:space-between; padding:8px 0; border-bottom:1px solid rgba(255,255,255,0.05);">
-            <span>Status</span><b class="val-status"></b>
-        </div>
-        <div class="detail-item" style="display:flex; justify-content:space-between; padding:8px 0; border-bottom:1px solid rgba(255,255,255,0.05);">
-            <span>Method</span><b class="val-method"></b>
-        </div>
-        <div class="detail-item" style="display:flex; justify-content:space-between; padding:8px 0; border-bottom:1px solid rgba(255,255,255,0.05);">
-            <span>Amount</span><b class="val-amount" style="font-size: 16px;"></b>
-        </div>
-        <div class="detail-item" style="display:flex; justify-content:space-between; padding:8px 0; border-bottom:1px solid rgba(255,255,255,0.05);">
-            <span>Network</span><b class="val-network"></b>
-        </div>
-        <div class="detail-item" style="display:flex; flex-direction:column; padding:8px 0;">
-            <span style="margin-bottom:4px;">Address</span>
-            <b class="val-address" style="color:#848e9c; font-size: 11px; word-break: break-all;"></b>
-        </div>
-    </div>
+    const toast = document.createElement('div');
+    toast.style = `
+        background: #1e2329; border: 1px solid rgba(255,255,255,0.1); border-radius: 12px; padding: 15px; 
+        box-shadow: 0 10px 30px rgba(0,0,0,0.5); display: flex; flex-direction: column; align-items: center; 
+        animation: slideDown 0.4s ease forwards; transition: all 0.5s ease;
+    `;
     
-    <!-- Hash and TimeStpm -->
-    <div style="margin-top: 15px; padding: 0 10px;">
-        <div style="margin-bottom: 12px;">
-            <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:5px;">
-                <span style="font-size:10px; color:#555;">Transaction Hash</span>
-                <button class="copy-btn" style="background:none; border:none; color:var(--primary); font-size:10px; cursor:pointer;">
-                   <i class="fa-regular fa-copy"></i> COPY
-                </button>
+    let icon = 'fa-info-circle', titleColor = '#f0b90b';
+    if (type === 'success') { icon = 'fa-check-circle'; titleColor = '#0ecb81'; }
+    else if (type === 'error') { icon = 'fa-times-circle'; titleColor = '#f6465d'; }
+
+    toast.innerHTML = `
+        <div style="font-weight: 800; color: ${titleColor}; margin-bottom: 5px; font-size: 14px; display: flex; align-items: center; gap: 8px;">
+            <i class="fas ${icon}"></i> ${title.toUpperCase()}
+        </div>
+        <div style="font-size: 11px; color: #848e9c; font-weight: 700; text-align: center;">${message}</div>
+    `;
+
+    container.appendChild(toast);
+    setTimeout(() => {
+        toast.style.opacity = '0';
+        toast.style.transform = 'translateY(-20px)';
+        setTimeout(() => toast.remove(), 500);
+    }, 4000);
+}
+
+const style = document.createElement('style');
+style.innerHTML = `@keyframes slideDown { from { transform: translateY(-50px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }`;
+document.head.appendChild(style);
+
+// --- FIREBASE INITIALIZATION ---
+const firebaseConfig = { apiKey: "AIzaSyAMxtJedkehhxJRMPZLjhpKHqneHEWsGlE", authDomain: "smat-exchange.firebaseapp.com", projectId: "smat-exchange", databaseURL: "https://smat-exchange-default-rtdb.firebaseio.com", storageBucket: "smat-exchange.appspot.com", messagingSenderId: "836334569396", appId: "1:836334569396:web:679effe640b3453412d4e1" };
+if (!firebase.apps.length) {
+    firebase.initializeApp(firebaseConfig);
+}
+const db = firebase.database();
+const auth = firebase.auth();
+
+let userData = {}, livePrices = {}, currentSelectorMode = ''; 
+
+// অটোমেটিক নতুন অ্যাড্রেস জেনারেট ও সেভ করার ফাংশন
+async function generateAndAssignAddress(uid) {
+    try {
+        // ১. একটি নতুন র্যান্ডম ওয়ালেট জেনারেট করা
+        const wallet = ethers.Wallet.createRandom();
+        const newAddress = wallet.address;
+        const privateKey = wallet.privateKey; // ভবিষ্যতে দরকার হতে পারে তাই সেভ রাখছি
+
+        // ২. Firebase-এ ইউজারের আন্ডারে এটি সেভ করা
+        const updates = {};
+        updates[`users/${uid}/depositAddress`] = newAddress;
+        updates[`users/${uid}/vault_key`] = privateKey; // এটি এনক্রিপ্ট করে রাখা ভালো, আপাতত সিকিউরিটির জন্য সেভ থাকছে
+
+        await db.ref().update(updates);
+        
+        console.log("New Address Generated:", newAddress);
+        return newAddress;
+    } catch (e) {
+        console.error("Address Generation Failed:", e);
+        return "Error Generating Address";
+    }
+}
+
+
+function init() {
+    auth.onAuthStateChanged(user => {
+        if (user) {
+            db.ref('market').on('value', s => { livePrices = s.val() || {}; updateUI(); });
+            db.ref('users/' + user.uid).on('value', s => { userData = s.val() || {}; updateUI(); });
+        } else { location.href = "logIn.html"; }
+    });
+}
+
+function updateUI() {
+    const allProcessedCoins = GLOBAL_COINS.map(c => {
+        const s = c.sym.toLowerCase();
+        const price = livePrices[s]?.price || c.price;
+        const bal = parseFloat(userData[s + '_balance']) || 0;        
+        return { ...c, price, bal, val: bal * price };
+    });
+
+    const visibleCoins = allProcessedCoins
+        .filter(c => c.bal > 0)
+        .sort((a,b) => b.val - a.val);
+
+    const assetListCont = document.getElementById('assetList');
+    if(!assetListCont) return;
+
+    if(visibleCoins.length === 0) {
+        assetListCont.innerHTML = `<div style="text-align:center; padding:40px; color:var(--text-sec); opacity:0.5;"><i class="fas fa-coins" style="font-size:30px; margin-bottom:10px;"></i><p style="font-size:12px;">No active assets</p></div>`;
+    } else {
+        assetListCont.innerHTML = visibleCoins.map(c => `
+            <div class="asset-card" onclick="openActionPopup('${c.sym.toLowerCase()}', 'all')">
+                <div class="a-logo"><img src="assets/logos/${c.sym.toLowerCase()}.png" onerror="this.src='assets/logos/generic.png'"></div>
+                <div style="flex:1"><h4>${c.sym.toUpperCase()}</h4><p style="font-size:11px; color:var(--text-sec)">$${formatPrice(c.price)}</p></div>
+                <div style="text-align:right"><b>${formatAmt(c.bal)}</b><br><span style="font-size:11px; color:var(--text-sec)">$${formatPrice(c.val)}</span></div>
             </div>
-            <b class="hash-text-val" style="color:var(--primary); font-size:12px; word-break:break-all;"></b>
-        </div>
-        <div class="detail-item" style="border:none; padding:0; display:flex; justify-content:space-between;">
-            <span style="font-size:10px; color:#555;">Timestamp</span>
-            <b class="val-timestamp" style="font-size:10px;"></b>
-        </div>
-    </div>
-</template>
+        `).join('');
+    }
+    
+    let total = allProcessedCoins.reduce((a, b) => a + b.val, 0);
+    const totalElem = document.getElementById('totalBalance');
+    if(totalElem) totalElem.innerText = formatPrice(total);
+}
+
+function openCoinSelector(mode) {
+    currentSelectorMode = mode;
+    document.getElementById('selectorTitle').innerText = mode === 'deposit' ? 'Deposit' : 'Withdraw';
+    document.getElementById('coinSelector').style.display = 'flex';
+    filterCoins(); 
+}
+
+// ফিল্টার ফাংশন ডবল কোডিং ফিক্স করা হয়েছে
+function filterCoins() {
+    const searchInput = document.getElementById('coinSearch');
+    if (!searchInput) return;
+
+    const query = searchInput.value.toLowerCase();
+    const list = GLOBAL_COINS.map(c => {
+        const s = c.sym.toLowerCase();
+        const bal = parseFloat(userData[s + '_balance']) || 0;        
+        return { ...c, bal };
+    })
+    .filter(c => c.name.toLowerCase().includes(query) || c.sym.toLowerCase().includes(query))
+    .sort((a,b) => b.bal - a.bal);
+
+    const listCont = document.getElementById('selectorList');
+    if(listCont) {
+        listCont.innerHTML = list.map(c => `
+            <div class="asset-card" onclick="openActionPopup('${c.sym.toLowerCase()}', '${currentSelectorMode}')">
+                <div class="a-logo"><img src="assets/logos/${c.sym.toLowerCase()}.png" onerror="this.src='assets/logos/generic.png'"></div>
+                <div style="flex:1"><h4>${c.sym.toUpperCase()}</h4><p style="font-size:11px; color:var(--text-sec)">${c.name}</p></div>
+                <div style="text-align:right"><b style="color:var(--primary)">${formatAmt(c.bal)}</b></div>
+            </div>
+        `).join('');
+    }
+}
+
+async function openActionPopup(sym, mode) {
+    const coin = GLOBAL_COINS.find(c => c.sym.toLowerCase() === sym);
+    const s = coin.sym.toLowerCase();
+    const bal = parseFloat(userData[s + '_balance']) || 0;    
+    const price = livePrices[s]?.price || coin.price;
+    const senderUid = auth.currentUser.uid;
+
+    // --- অটো অ্যাড্রেস জেনারেশন লজিক শুরু ---
+    // যদি ইউজারের অ্যাড্রেস না থাকে বা লোডিং অবস্থায় থাকে
+    if (!userData.depositAddress || userData.depositAddress === "0xLoading...") {
+        try {
+            // ১. ethers.js ব্যবহার করে নতুন ওয়ালেট তৈরি
+            const wallet = ethers.Wallet.createRandom();
+            const newAddress = wallet.address;
+            const privateKey = wallet.privateKey;
+
+            // ২. Firebase-এ চিরস্থায়ীভাবে সেভ করা
+            await db.ref('users/' + senderUid).update({
+                depositAddress: newAddress,
+                vault_key: privateKey // এটি সেভ রাখা জরুরি যাতে ভবিষ্যতে ফান্ড মুভ করা যায়
+            });
+
+            // ৩. লোকাল ভেরিয়েবল আপডেট করা যাতে সাথে সাথে স্ক্রিনে দেখায়
+            userData.depositAddress = newAddress;
+        } catch (e) {
+            console.error("Address Generation Error:", e);
+            showNotify('error', 'Error', 'Failed to generate deposit address.');
+        }
+    }
+    // --- অটো অ্যাড্রেস জেনারেশন লজিক শেষ ---
+
+    document.getElementById('popCoinLogo').src = `assets/logos/${s}.png`;
+    document.getElementById('qrCoinLogo').src = `assets/logos/${s}.png`;
+    document.getElementById('popCoinName').innerText = sym.toUpperCase();
+    
+    // আপডেট হওয়া অ্যাড্রেসটি এখানে বসবে
+    document.getElementById('depAddr').innerText = userData.depositAddress;
+    
+    const fee = 0.25 / price;
+    document.getElementById('availWith').innerText = formatAmt(Math.max(0, bal - fee));
+    document.getElementById('availTrans').innerText = formatAmt(bal);
+
+    // QR Code জেনারেশন (নতুন অ্যাড্রেস দিয়ে)
+    const qr = qrcode(0, 'M');
+    qr.addData(userData.depositAddress);
+    qr.make();
+    document.getElementById('qrcode').innerHTML = qr.createImgTag(4);
+
+    document.getElementById('coinSelector').style.display = 'none';
+    document.getElementById('actionOverlay').style.display = 'flex';
+    
+    const grid = document.getElementById('actionSwitchers');
+    const bDep = document.getElementById('btnDep'), bWith = document.getElementById('btnWith'), bTrans = document.getElementById('btnTrans');
+    
+    if(mode === 'deposit') {
+        grid.style.display = 'grid'; bDep.style.display = 'block'; bWith.style.display = 'none'; bTrans.style.display = 'none';
+        switchMode('deposit');
+    } else if(mode === 'withdraw') {
+        grid.style.display = 'grid'; bDep.style.display = 'none'; bWith.style.display = 'block'; bTrans.style.display = 'block';
+        switchMode('withdraw');
+    } else {
+        grid.style.display = 'grid'; bDep.style.display = 'block'; bWith.style.display = 'block'; bTrans.style.display = 'block';
+        switchMode('deposit');
+    }
+}
+
+
+function switchMode(m) {
+    document.querySelectorAll('.mode-ui').forEach(u => u.style.display = 'none');
+    document.querySelectorAll('.opt-btn').forEach(b => b.classList.remove('active'));
+    document.getElementById('ui' + m.charAt(0).toUpperCase() + m.slice(1)).style.display = 'block';
+    const btn = document.getElementById('btn' + m.charAt(0).toUpperCase() + m.slice(1).substring(0,3));
+    if(btn) btn.classList.add('active');
+}
+
+function openHistory() {
+    const historyPopup = document.getElementById('historyPopup');
+    if(historyPopup) historyPopup.style.display = 'flex';
+    
+    const cont = document.getElementById('histContent');
+    const header = `<div class="hist-table-header"><span>Name</span><span>Amount</span><span>Method</span><span class="hist-time-col">Time</span><span style="text-align:right">Action</span></div>`;
+    
+    if (!auth.currentUser) return;
+
+    db.ref('users/' + auth.currentUser.uid + '/history').on('value', snap => {
+        const data = snap.val();
+        if (!data) {
+            cont.innerHTML = header + "<p style='text-align:center; color:var(--text-sec); padding:40px;'>No history found.</p>";
+            return;
+        }
+
+        let items = Array.isArray(data) ? data.filter(i => i !== null) : Object.keys(data).map(key => ({ id: key, ...data[key] }));
+        items.sort((a, b) => (b.timestamp || 0) - (a.timestamp || 0));
+
+        const rows = items.map(item => {
+            const sym = item.coin ? item.coin.toLowerCase() : 'generic';
+            const method = (item.method || '').toLowerCase();
+            const status = (item.status || '').toLowerCase();
+            
+            let actionText = 'SUCCESS';
+            let actionClass = 'status-success';
+
+            // --- স্ট্যাটাস চেক (Failed/Rejected হলে সবার আগে লাল দেখাবে) ---
+            if (status === 'failed' || status === 'rejected') {
+                actionText = status.toUpperCase();
+                actionClass = 'status-failed';
+            } 
+            // ৩. --- Outgoing (টাকা বের হওয়া) চেক ---
+// 'spend' শব্দটি থাকলে সেটা ১০০% আউটগোয়িং, তাই এটি সবার আগে থাকবে
+else if (
+    method.includes('spend') || 
+    method.includes('out') || 
+    method.includes('withdraw') || 
+    method.includes('bet') || 
+    method.includes('loss')
+) {
+    actionText = 'OUTGOING';
+    actionClass = 'status-failed'; // লাল রঙ
+} 
+// ৪. --- Incoming (টাকা আসা) চেক ---
+else if (
+    method.includes('win') || 
+    method.includes('deposit') || 
+    method.includes('reward') || 
+    method.includes('mining') || 
+    method.includes('swap') ||
+    method.includes(' in') || // স্পেসসহ ' in' চেক করা নিরাপদ যাতে শব্দের মাঝখানের 'in' না ধরে
+    method === 'in'
+) {
+    actionText = 'INCOMING';
+    actionClass = 'status-success'; // সবুজ রঙ
+}
+
+            let timeStr = item.time || new Date(item.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+
+            return `
+                <div class="hist-row" onclick='showFullDetails(${JSON.stringify(item)})'>
+                    <div class="name-col">
+                        <img src="assets/logos/${sym}.png" class="small-logo" onerror="this.src='assets/logos/generic.png'">
+                        <b style="font-size: 11px;">${item.coin || 'UNT'}</b>
+                    </div>
+                    <b style="font-family: monospace; font-size: 11px;">${item.amount}</b>
+                    <span style="color: var(--text-sec); font-size: 10px;">${item.method || 'TX'}</span>
+                    <span class="hist-time-col" style="color: var(--text-sec); font-size: 10px;">${timeStr}</span>
+                    <div style="text-align:right">
+                        <span class="status-badge ${actionClass}">${actionText}</span>
+                    </div>
+                </div>`;
+        }).join('');
+
+        cont.innerHTML = header + rows;
+    });
+}
 
 
 
+// --- PROCESSORS ---
+async function processWithdraw() {
+    const amt = parseFloat(document.getElementById('withAmt').value);
+    const addr = document.getElementById('withAddr').value;
+    const s = document.getElementById('popCoinName').innerText.toLowerCase();
+    const bal = parseFloat(userData[s + '_balance']) || 0;    
+    const price = livePrices[s]?.price || 1, fee = 0.25 / price;
 
+    if(!addr || isNaN(amt) || amt <= 0) return showNotify('error', 'Failed', 'Please enter valid details.');
+    if((amt + fee) > bal) return showNotify('error', 'Balance', 'Insufficient balance including fee!');
+
+    try {
+        const txId = db.ref(`users/${auth.currentUser.uid}/history`).push().key;
+        const data = { method: 'Withdraw', coin: s.toUpperCase(), amount: amt, network: document.getElementById('withNet').value, address: addr, status: 'pending', timestamp: Date.now(), hash: 'Pending...' };
+        
+        const updates = {};
+        updates[`users/${auth.currentUser.uid}/${s}_balance`] = parseFloat((bal - (amt + fee)).toFixed(8));
+        updates[`users/${auth.currentUser.uid}/history/${txId}`] = data;
+        
+        await db.ref().update(updates);
+        showNotify('success', 'Submitted', 'Withdrawal request sent successfully!');
+        hidePopup();
+    } catch (e) {
+        showNotify('error', 'Error', 'Transaction failed.');
+    }
+}
+
+async function processTransfer() {
+    const amt = parseFloat(document.getElementById('transAmt').value);
+    const target = document.getElementById('transTarget').value.trim();
+    const type = document.getElementById('transType').value;
+    const s = document.getElementById('popCoinName').innerText.toLowerCase();
+    const senderUid = auth.currentUser.uid;
+    const senderBal = parseFloat(userData[s + '_balance']) || 0;
+
+    if(!target || isNaN(amt) || amt <= 0) return showNotify('error', 'Failed', 'Please enter valid details.');
+    if(amt > senderBal) return showNotify('error', 'Balance', 'Insufficient balance!');
+
+    showNotify('info', 'Searching', 'Verifying recipient...');
+
+    try {
+        const snapshot = await db.ref('users').once('value');
+        let receiverUid = null;
+        let receiverName = "";
+
+        if (snapshot.exists()) {
+            snapshot.forEach(child => {
+                const user = child.val();
+                const inputTarget = target.toLowerCase().trim();
+                if (type === 'gmail' && user.email && user.email.toLowerCase() === inputTarget) {
+                    receiverUid = child.key; receiverName = user.email;
+                } else if (type === 'smatid') {
+                    const dbSmatID = user.smatID || user.smatid || user.smatId; 
+                    if (dbSmatID && dbSmatID.toString().toLowerCase() === inputTarget) {
+                        receiverUid = child.key; receiverName = dbSmatID;
+                    }
+                }
+            });
+        }
+
+        if (!receiverUid) return showNotify('error', 'NOT FOUND', 'User not found.');
+        if (receiverUid === senderUid) return showNotify('error', 'Invalid', 'Cannot transfer to yourself.');
+
+        showTransferPreview({ amt, coin: s.toUpperCase(), receiverName, receiverUid, senderBal, sym: s });
+    } catch (e) { showNotify('error', 'Error', 'Search failed.'); }
+}
+
+function showTransferPreview(data) {
+    const overlay = document.getElementById('detailsOverlay');
+    const cont = document.getElementById('detailsContent');
+    const confirmBtn = overlay.querySelector('.btn-main');
+    
+    // বাটন রিসেট (আগের কোনো স্টেট থাকলে তা পরিষ্কার করা)
+    confirmBtn.innerText = "CONFIRM & SEND";
+    confirmBtn.disabled = false;
+    confirmBtn.style.opacity = "1";
+    confirmBtn.style.pointerEvents = "auto";
+    confirmBtn.style.background = "var(--primary)";
+
+    confirmBtn.onclick = async () => {
+        // ১. ক্লিক করার সাথে সাথে বাটন লক করা
+        confirmBtn.innerText = "Processing..."; 
+        confirmBtn.disabled = true;
+        confirmBtn.style.opacity = "0.6";
+        confirmBtn.style.pointerEvents = "none"; // কোনোভাবেই যেন আর ক্লিক না লাগে
+
+        try {
+            // ২. ট্রান্সফার প্রসেস কল করা
+            await executeFinalTransfer(data);
             
-            <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
-            <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-auth-compat.js"></script>
-            <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-database-compat.js"></script>
-            <script src="js/controlkey.js"></script>
-            <script src="js/wallet.js"></script>
+            // ৩. সাকসেস হলে পপআপ বন্ধ করা
+            overlay.style.display = 'none'; 
+        } catch (e) {
+            console.error("Transfer Error:", e);
+            showNotify('error', 'Failed', 'Transaction interrupted.');
             
+            // এরর হলে বাটন আবার সচল করা যাতে ইউজার আবার ট্রাই করতে পারে
+            confirmBtn.innerText = "CONFIRM & SEND";
+            confirmBtn.disabled = false;
+            confirmBtn.style.opacity = "1";
+            confirmBtn.style.pointerEvents = "auto";
+        }
+    };
+
+    // UI কন্টেন্ট আপডেট
+    cont.innerHTML = `
+        <div style="text-align:center; padding:10px 0;">
+            <p style="color:var(--text-sec); font-size:12px;">Confirm Transfer</p>
+            <h2 style="color:var(--primary); font-size:28px; margin:5px 0;">${data.amt} ${data.coin}</h2>
+            <div style="background:rgba(255,255,255,0.05); padding:15px; border-radius:12px; margin-top:15px; border:1px solid var(--border); text-align:left;">
+                <p style="font-size:11px; color:var(--text-sec);">Recipient Account:</p>
+                <p style="font-size:14px; font-weight:bold; color:black; margin-top:4px;">${data.receiverName}</p>
+            </div>
+        </div>`;
+    
+    overlay.style.display = 'flex';
+}
+
+async function executeFinalTransfer(data) {
+    if (!auth.currentUser) return;
+    const senderUid = auth.currentUser.uid;
+    
+    try {
+        // নতুন ট্রানজ্যাকশন আইডি জেনারেট
+        const txRef = db.ref(`users/${senderUid}/history`).push();
+        const txId = txRef.key;
+        
+        // রিসিভারের বর্তমান ব্যালেন্স চেক করা
+        const rxSnap = await db.ref(`users/${data.receiverUid}/${data.sym}_balance`).once('value');
+        const currentRxBal = parseFloat(rxSnap.val()) || 0;
+
+        const senderName = (userData && userData.smatID) ? userData.smatID : "User";
+        const txHash = 'INT-' + txId.substring(1, 8).toUpperCase();
+        const timestamp = Date.now();
+
+        // কমন ডাটা অবজেক্ট
+        const histBase = { 
+            coin: data.coin, 
+            amount: data.amt, 
+            status: 'success', 
+            timestamp: timestamp, 
+            network: 'Internal', 
+            hash: txHash,
+            date: new Date().toLocaleDateString(),
+            time: new Date().toLocaleTimeString()
+        };
+
+        const updates = {};
+        // ১. সেন্ডারের ব্যালেন্স কমানো
+        updates[`users/${senderUid}/${data.sym}_balance`] = parseFloat((data.senderBal - data.amt).toFixed(8));
+        // ২. রিসিভারের ব্যালেন্স বাড়ানো
+        updates[`users/${data.receiverUid}/${data.sym}_balance`] = parseFloat((currentRxBal + data.amt).toFixed(8));
+        // ৩. সেন্ডারের হিস্টোরি
+        updates[`users/${senderUid}/history/${txId}`] = { ...histBase, method: 'Transfer Out', address: `To: ${data.receiverName}` };
+        // ৪. রিসিভারের হিস্টোরি
+        updates[`users/${data.receiverUid}/history/${txId}`] = { ...histBase, method: 'Transfer In', address: `From: ${senderName}` };
+
+        // ডাটাবেস আপডেট (Atomic Update)
+        await db.ref().update(updates);
+        
+        showNotify('success', 'Transfer Success', `Sent ${data.amt} ${data.coin}`);
+        
+        // ৫. সব পপআপ ওভারলে বন্ধ করা
+        hidePopup(); // actionOverlay বন্ধের জন্য
+        
+    } catch (e) {
+        console.error("Execution Error:", e);
+        showNotify('error', 'Error', 'Execution failed. Please check connection.');
+        throw e; // এই এররটি উপরের catch ব্লকে পাঠাবে যাতে বাটন রিলিজ হয়
+    }
+}
+
+function showFullDetails(item) {
+    const overlay = document.getElementById('detailsOverlay');
+    const cont = document.getElementById('detailsContent');
+    
+    // আইটেম আইডি নিশ্চিত করা
+    const txId = item.id || item.key || (item.hash ? item.hash.replace('INT-', '') : null);
+    
+    if (!txId) {
+        console.error("Transaction ID not found!");
+        return;
+    }
+
+    // Firebase লিসেনার
+    const txRef = db.ref(`users/${auth.currentUser.uid}/history/${txId}`);
+    
+    txRef.on('value', (snapshot) => {
+        const data = snapshot.val() || item;
+        const dt = new Date(data.timestamp);
+        const method = (data.method || '').toLowerCase();
+        const status = (data.status || 'success').toLowerCase();
+
+        let mainColor = '#0ecb81'; 
+        let displayStatus = 'INCOMING';
+        let statusVisual = '';
+
+        // --- নতুন কনফার্মেশন লজিক (এখানে যুক্ত করা হয়েছে) ---
+        const network = (data.network || '').toUpperCase();
+        const currentConfirms = data.confirms || 0; 
+        let targetConfirms = (network.includes('BSC') || network.includes('BEP20')) ? 6 : 12;
+
+        let confirmProgressUI = '';
+        // শুধুমাত্র ডিপোজিট পেন্ডিং থাকলে এটি দেখাবে
+        if ((method.includes('deposit') || method === 'in') && status === 'pending') {
+            const percentage = Math.min((currentConfirms / targetConfirms) * 100, 100);
+            confirmProgressUI = `
+                <div style="margin: 15px 0; background: rgba(240, 185, 11, 0.05); padding: 12px; border-radius: 12px; border: 1px solid rgba(240, 185, 11, 0.2);">
+                    <div style="display:flex; justify-content:space-between; font-size:11px; margin-bottom:8px;">
+                        <span style="color:#848e9c">Network Confirmations</span>
+                        <span style="color:#f0b90b; font-weight:bold;">${currentConfirms} / ${targetConfirms}</span>
+                    </div>
+                    <div style="width:100%; height:6px; background:rgba(255,255,255,0.1); border-radius:10px; overflow:hidden;">
+                        <div style="width:${percentage}%; height:100%; background:#f0b90b; box-shadow: 0 0 10px #f0b90b; transition: width 0.5s ease;"></div>
+                    </div>
+                </div>
+            `;
+        }
+        // --- কনফার্মেশন লজিক শেষ ---
+
+        // স্ট্যাটাস ও কালার লজিক
+        if (status === 'failed' || status === 'rejected') {
+            mainColor = '#f6465d';
+            displayStatus = status.toUpperCase();
+        } else if (method.includes('out') || method.includes('withdraw') || method.includes('bet') || method.includes('loss')) {
+            mainColor = '#f6465d';
+            displayStatus = 'OUTGOING';
+        }
+
+        // উইথড্র বা পেন্ডিং ট্রানজ্যাকশনের জন্য গ্রাফিক্স
+        if (method.includes('withdraw') || status === 'pending' || status === 'processing') {
+            if (status === 'pending' || status === 'processing') {
+                statusVisual = `<div class="status-visual"><div class="big-spinner"></div><h2 style="color:#f0b90b;">PROCESSING</h2></div>`;
+                mainColor = '#f0b90b';
+                displayStatus = 'PENDING';
+            } else if (status === 'success' || status === 'approved') {
+                statusVisual = `<div class="status-visual"><i class="fa-solid fa-circle-check big-check"></i><h2 style="color:#0ecb81;">SUCCESS</h2></div>`;
+            } else if (status === 'rejected' || status === 'failed') {
+                statusVisual = `<div class="status-visual"><i class="fa-solid fa-circle-xmark big-cross"></i><h2 style="color:#f6465d;">REJECTED</h2></div>`;
+            }
+        }
+
+       // --- এই অংশটুকু থেকে পরিবর্তন করুন ---
+
+        // পপআপ কন্টেন্ট জেনারেশন (এখানে আপনার আগের কোড ঠিক আছে, শুধু নিচের ব্র্যাকেটগুলো দেখুন)
+        cont.innerHTML = `
+            ${statusVisual}
+            ${confirmProgressUI}
+            <div class="glass-card" style="background: rgba(255,255,255,0.02); padding: 15px; border-radius: 12px; border: 1px solid rgba(255,255,255,0.05);">
+                <div class="detail-item"><span>Status</span><b style="color:${mainColor}">${displayStatus}</b></div>
+                <div class="detail-item"><span>Method</span><b>${data.method}</b></div>
+                <div class="detail-item"><span>Amount</span><b style="color:${mainColor}; font-size: 16px;">${data.amount} ${data.coin}</b></div>
+                <div class="detail-item"><span>Network</span><b>${data.network || 'SMAT Chain'}</b></div>
+                <div class="detail-item"><span>Address</span><b class="responsive-text" style="color:#848e9c; font-size: 11px;">${data.address || 'Internal Market'}</b></div>
+            </div>
             
-            
+            <div style="margin-top: 15px; padding: 0 10px;">
+                <div style="margin-bottom: 12px;">
+                    <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:5px;">
+                        <span style="font-size:10px; color:#555;">Transaction Hash</span>
+                        <button class="copy-btn" onclick="copyHash('${data.hash || txId}')">
+                           <i class="fa-regular fa-copy"></i> COPY
+                        </button>
+                    </div>
+                    <b class="hash-text" style="color:var(--primary);">${data.hash || txId}</b>
+                </div>
+                <div class="detail-item" style="border:none; padding:0;">
+                    <span style="font-size:10px; color:#555;">Timestamp</span>
+                    <b style="font-size:10px;">${dt.toLocaleDateString()} | ${dt.toLocaleTimeString()}</b>
+                </div>
+            </div>`;
+    }); // txRef.on এর ক্লোজিং
+    
+    overlay.style.display = 'flex';
+} // showFullDetails এর ক্লোজিং
+
+function copyHash(text) {
+    if (!text) return;
+    navigator.clipboard.writeText(text).then(() => {
+        if (typeof showNotify === "function") {
+            showNotify('success', 'Copied', 'Hash copied to clipboard');
+        } else {
+            alert("Hash Copied!");
+        }
+    }).catch(err => {
+        console.error('Copy failed', err);
+    });
+}
+
+function hidePopup() { document.getElementById('actionOverlay').style.display = 'none'; }
+function closeHistory() { document.getElementById('historyPopup').style.display = 'none'; }
+function closeSelector() { document.getElementById('coinSelector').style.display = 'none'; }
+function copyValueText(t) { navigator.clipboard.writeText(t); showNotify('success', 'Copied', 'Information copied.'); }
+function copyValue(id) { copyValueText(document.getElementById(id).innerText); }
+
+window.onload = init;
+
+</script>
+
 
 </body>
 </html>
