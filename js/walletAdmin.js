@@ -77,7 +77,7 @@ function loadMainData() {
                 <i class="fas fa-user-shield inspect-trigger" onclick="openInspector('${tx.uid}', '${tx.email}')"></i>
                 <div><div class="label">User Email</div><div class="val" style="color:var(--primary)">${tx.email}</div><small style="font-size:8px; opacity:0.6;">${new Date(tx.timestamp).toLocaleString()}</small></div>
                 <div><div class="label">Amount</div><div class="val">${tx.amount} ${tx.coin}</div><small style="color:var(--up); font-size:9px;">${tx.network}</small></div>
-                <div><div class="label">Address</div><div class="address-box"><span class="val" style="font-size:10px; font-family:monospace; opacity:0.8;">${tx.address.substring(0,15)}...</span><i class="fas fa-copy" style="cursor:pointer;color:var(--primary)" onclick="copyAddr('${tx.address}')"></i></div></div>
+                <div><div class="label">Address</div><div class="address-box allow-copy"><span class="val" style="font-size:10px; font-family:monospace; opacity:0.8;">${tx.address.substring(0,15)}...</span><i class="fas fa-copy allow-copy" style="cursor:pointer;color:var(--primary)" onclick="copyAddr('${tx.address}')"></i></div></div>
                 <div style="text-align:right">
                     ${tx.status === 'pending' ? `
                         <input type="text" id="h_${tx.tid}" class="hash-input" placeholder="Paste TrxHash">
@@ -195,7 +195,7 @@ async function reject(uid, tid, coin, amt) {
             const newBal = (currentBal + refundAmt).toFixed(8);
 
             const updates = {};
-            updates[`users/${uid}/${key}`] = parseFloat(newBal); // সংখ্যা হিসেবে সেভ করা ভালো
+            updates[`users/${uid}/${key}`] = parseFloat(newBal); 
             updates[`users/${uid}/history/${tid}/status`] = 'failed';
             updates[`users/${uid}/history/${tid}/hash`] = 'REJECTED';
 
