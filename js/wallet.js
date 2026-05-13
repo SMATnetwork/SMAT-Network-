@@ -69,6 +69,7 @@ function showNotify(type, title, message) {
         setTimeout(() => toast.remove(), 500);
     }, 4000);
 }
+let userData = {}, livePrices = {}, currentSelectorMode = ''; 
 
 // অটোমেটিক নতুন অ্যাড্রেস জেনারেট ও সেভ করার ফাংশন
 async function generateAndAssignAddress(uid) {
@@ -97,96 +98,42 @@ async function generateAndAssignAddress(uid) {
 function init() {
     auth.onAuthStateChanged(user => {
         if (user) {
-            // --- ১. অটো-ক্লিনআপ এবং হিস্ট্রি লোড (নতুন যুক্ত করা হয়েছে) ---
-            autoCleanHistory(); // ৩ মাসের পুরনো ডাটা ডিলিট করবে
-            loadSmatHistory();  // শুরুতে ২৪টি হিস্ট্রি লোড করবে
-
-            // ২. মার্কেট ডাটা লিসেনার
-            db.ref('market').on('value', s => { 
-                livePrices = s.val() || {}; 
-                // ডাটা থাকলেই শুধু UI আপডেট হবে
-                if(userData && Object.keys(userData).length > 0) updateUI(); 
-            });
-
-            // ৩. ইউজার ডাটা লিসেনার
-            db.ref('users/' + user.uid).on('value', s => { 
-                userData = s.val() || {}; 
-                updateUI(); 
-            });
-            
-        } else { 
-            // ইউজার লগ-আউট থাকলে রিডাইরেক্ট (লগইন ফাইল না থাকলে এটি কমেন্ট করে রাখুন)
-            // location.href = "logIn.html"; 
-        }
+            db.ref('market').on('value', s => { livePrices = s.val() || {}; updateUI(); });
+            db.ref('users/' + user.uid).on('value', s => { userData = s.val() || {}; updateUI(); });
+        } else { location.href = "logIn.html"; }
     });
 }
 
 function updateUI() {
-    // ১. গ্লোবাল ডাটা চেক: ডাটা লোড না হওয়া পর্যন্ত ফাংশন রান করবে না, যা এরর প্রতিরোধ করবে
-    if (!userData || !livePrices || !GLOBAL_COINS) return;
-
-    // ২. কয়েন ডাটা প্রসেসিং
     const allProcessedCoins = GLOBAL_COINS.map(c => {
-        const s = (c.sym || "").toLowerCase(); // সিম্বল চেক
-        
-        // মার্কেট প্রাইস না থাকলে ডিফল্ট প্রাইস বা ০ ধরবে
-        const price = livePrices[s]?.price || c.price || 0; 
+        const s = c.sym.toLowerCase();
+        const price = livePrices[s]?.price || c.price;
         const bal = parseFloat(userData[s + '_balance']) || 0;        
         return { ...c, price, bal, val: bal * price };
     });
 
-    // ৩. ফিল্টারিং এবং সর্টিং (বেশি ব্যালেন্সের কয়েন উপরে থাকবে)
     const visibleCoins = allProcessedCoins
         .filter(c => c.bal > 0)
-        .sort((a, b) => b.val - a.val);
+        .sort((a,b) => b.val - a.val);
 
     const assetListCont = document.getElementById('assetList');
-    if (!assetListCont) return;
+    if(!assetListCont) return;
 
-    // ৪. কন্টেন্ট ক্লিয়ার করা
-    assetListCont.innerHTML = '';
-
-    // ৫. UI রেন্ডারিং (টেমপ্লেট লজিক)
-    if (visibleCoins.length === 0) {
-        const emptyTemp = document.getElementById('empty-asset-template');
-        if (emptyTemp) {
-            assetListCont.appendChild(emptyTemp.content.cloneNode(true));
-        }
+    if(visibleCoins.length === 0) {
+        assetListCont.innerHTML = `<div style="text-align:center; padding:40px; color:var(--text-sec); opacity:0.5;"><i class="fas fa-coins" style="font-size:30px; margin-bottom:10px;"></i><p style="font-size:12px;">No active assets</p></div>`;
     } else {
-        const temp = document.getElementById('coin-row-template');
-        if (!temp) return;
-
-        // ডকুমেন্ট ফ্র্যাগমেন্ট ব্যবহার করা হয়েছে পারফরম্যান্সের জন্য (অতিরিক্ত কয়েন থাকলেও ল্যাগ হবে না)
-        const fragment = document.createDocumentFragment();
-
-        visibleCoins.forEach(c => {
-            const clone = temp.content.cloneNode(true);
-            const card = clone.querySelector('.asset-card');
-
-            // ইমেজ এবং টেক্সট সেটআপ
-            const img = clone.querySelector('.coin-img');
-            if(img) img.src = `assets/logos/${c.sym.toLowerCase()}.png`;
-            
-            clone.querySelector('.coin-name').innerText = c.sym.toUpperCase();
-            clone.querySelector('.coin-price').innerText = `$${formatPrice(c.price)}`;
-            clone.querySelector('.coin-bal').innerText = formatAmt(c.bal);
-            clone.querySelector('.coin-val').innerText = `$${formatPrice(c.val)}`;
-
-            // ক্লিক করলে পপআপ ওপেন হবে
-            if(card) card.onclick = () => openActionPopup(c.sym.toLowerCase(), 'all');
-
-            fragment.appendChild(clone);
-        });
-        
-        assetListCont.appendChild(fragment);
+        assetListCont.innerHTML = visibleCoins.map(c => `
+            <div class="asset-card" onclick="openActionPopup('${c.sym.toLowerCase()}', 'all')">
+                <div class="a-logo"><img src="assets/logos/${c.sym.toLowerCase()}.png" onerror="this.src='assets/logos/generic.png'"></div>
+                <div style="flex:1"><h4>${c.sym.toUpperCase()}</h4><p style="font-size:11px; color:var(--text-sec)">$${formatPrice(c.price)}</p></div>
+                <div style="text-align:right"><b>${formatAmt(c.bal)}</b><br><span style="font-size:11px; color:var(--text-sec)">$${formatPrice(c.val)}</span></div>
+            </div>
+        `).join('');
     }
     
-    // ৬. টোটাল ব্যালেন্স আপডেট
-    const total = allProcessedCoins.reduce((a, b) => a + b.val, 0);
+    let total = allProcessedCoins.reduce((a, b) => a + b.val, 0);
     const totalElem = document.getElementById('totalBalance');
-    if (totalElem) {
-        totalElem.innerText = formatPrice(total);
-    }
+    if(totalElem) totalElem.innerText = formatPrice(total);
 }
 function openCoinSelector(mode) {
     currentSelectorMode = mode;
