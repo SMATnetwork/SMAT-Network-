@@ -5,68 +5,46 @@
         blockInspect: true,
         blockRightClick: true,
         blockCopy: true,
-        blockDevTools: true,
+        blockDevTools: false, // স্ক্রিনশট স্মুথ রাখতে এটি false করা হয়েছে
         clearConsole: true
     };
 
-    // ১. কিবোর্ড শর্টকাট ব্লকার
+    // ১. কিবোর্ড শর্টকাট ব্লকার (সংশোধিত)
     document.addEventListener("keydown", function(e) {
-        // Block Ctrl + (U, S, P, F, A, C, V)
-        const forbiddenKeys = [85, 83, 80, 70, 65, 67, 86]; 
+        // স্ক্রিনশট ও ব্যবহারের সুবিধার জন্য P (80) এবং S (83) বাদ দেওয়া হয়েছে
+        // এখন শুধু U (View Source), F (Find), A (Select All), C (Copy), V (Paste) ব্লক থাকবে
+        const forbiddenKeys = [85, 70, 65, 67, 86]; 
+        
         if (e.ctrlKey && forbiddenKeys.includes(e.keyCode)) {
             e.preventDefault();
             return false;
         }
 
-        // Block Ctrl + Shift + (I, J, C)
-        if (e.ctrlKey && e.shiftKey && [73, 74, 67].includes(e.keyCode)) {
-            e.preventDefault();
-            return false;
-        }
-
-        // Block F12
-        if (e.keyCode === 123) {
+        // F12 এবং Ctrl+Shift+I (ইনস্পেক্ট) ব্লক থাকবে
+        if (e.keyCode === 123 || (e.ctrlKey && e.shiftKey && [73, 74, 67].includes(e.keyCode))) {
             e.preventDefault();
             return false;
         }
     }, false);
 
-    // ২. টেক্সট সিলেকশন এবং কপি সুরক্ষা (এটি আলাদা থাকতে হবে)
+    // ২. টেক্সট সিলেকশন এবং কপি সুরক্ষা
     if (securityConfig.blockCopy) {
         document.addEventListener("copy", (e) => e.preventDefault(), false);
         document.addEventListener("cut", (e) => e.preventDefault(), false);
         document.addEventListener("selectstart", (e) => e.preventDefault(), false);
     }
 
-    // ৩. DevTools Detection (অপ্টিমাইজড)
-    if (securityConfig.blockDevTools) {
-        let isRedirecting = false;
-        setInterval(() => {
-            if (isRedirecting) return;
-            const threshold = 160;
-            const widthDiff = window.outerWidth - window.innerWidth > threshold;
-            const heightDiff = window.outerHeight - window.innerHeight > threshold;
-            
-            if (widthDiff || heightDiff) {
-                isRedirecting = true;
-                console.clear();
-                console.log("%cSTOP! SmatBit Security Active.", "color: red; font-size: 20px;");
-                setTimeout(() => { isRedirecting = false; }, 2000);
-            }
-        }, 1000);
-    }
-
-    // ৪. রাইট ক্লিক এবং ড্র্যাগ সুরক্ষা
+    // ৩. রাইট ক্লিক এবং ড্র্যাগ সুরক্ষা
     if (securityConfig.blockRightClick) {
         document.addEventListener("contextmenu", (e) => e.preventDefault(), false);
     }
     document.addEventListener("dragstart", (e) => e.preventDefault(), false);
 
-    // ৫. Anti-Iframe
+    // ৪. Anti-Iframe
     if (window.top !== window.self) {
         window.top.location = window.self.location;
     }
 
-    console.log("SmatBit Security System v2.0 - Active");
+    console.log("SmatBit Security System v2.1 - Screenshot Enabled");
 
 })();
