@@ -1,181 +1,101 @@
+
 <!DOCTYPE html>
 <html lang="en">
-<head>      
-<!------------- Fornted Meta Security Starting ---------------->
-            
-            <!-- --- Meta ViewPort --- -->
-            <meta charset="UTF-8">
-            <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-            
-            <!-- --- Project Title --- -->
-            <title>SMAT | walletPanel</title>
-            
-            <!-- --- Firebase Configuration --- -->
-            <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
-            <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-auth-compat.js"></script>
-            <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-database-compat.js"></script>
-            
-            <!-- --- SECURITY LAYER START --- -->
-            <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' https://www.gstatic.com https://apis.google.com https://cdn.tailwindcss.com; style-src 'self' 'unsafe-inline' https://cdnjs.cloudflare.com https://fonts.googleapis.com https://cdn.tailwindcss.com; font-src 'self' https://cdnjs.cloudflare.com https://fonts.gstatic.com; connect-src 'self' https://*.firebaseio.com https://*.googleapis.com; img-src 'self' data:; frame-src https://*.firebaseapp.com;">
-            <meta http-equiv="X-Content-Type-Options" content="nosniff">
-            <meta http-equiv="X-XSS-Protection" content="1; mode=block">
-            <meta name="referrer" content="no-referrer">
-            <meta http-equiv="Permissions-Policy" content="camera=(), microphone=(), geolocation=(), interest-cohort=()">
-            <meta http-equiv="Expect-CT" content="max-age=86400, enforce">
-            <!-- --- SECURITY LAYER END --- -->
-            
-            <!-- --- STYLESHEETS (CSS) --- -->
-            <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
-            <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;700;900&display=swap" rel="stylesheet">
-            <link rel="stylesheet" href="css/globalSecurity.css"> 
-            
-            <!-- --- SCRIPTS (JS) --- -->  
-            <script src="coin.js"></script>
-            
-            <!-- --- FAVICON --- -->
-            <link rel="icon" type="image/svg+xml" href="data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNTEyIiBoZWlnaHQ9IjUxMiIgdmlld0JveD0iMCAwIDUxMiA1MTIiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+CiAgPGNpcmNsZSBjeD0iMjU2IiBjeT0iMjU2IiByPSIyNDAiIGZpbGw9IiNmM2JhMmYiLz4KICA8Y2lyY2xlIGN4PSIyNTYiIGN5PSIyNTYiIHI9IjIxNSIgc3Ryb2tlPSJ3aGl0ZSIgc3Ryb2tlLXdpZHRoPSI4IiBmaWxsPSJ0cmFuc3BhcmVudCIvPgogIDxwYXRoIGQ9Ik0xNTAgMTcwIEMxNTAgMTQ1IDE3MCAxMzUgMjAwIDEzNSBMMzQwIDEzNSBDMzU1IDEzNSAzNjUgMTQ1IDM2NSAxNjAgQzM2NSAxNzUgMzU1IDE4NSAzNDAgMTg1IEwyMDUgMTg1IEMxOTAgMTg1IDE4NSAxOTAgMTg1IDIwNSBDMTg1IDIyMCAxOTAgMjI1IDIwNSAyMjUgTDM0MCAyMjUgQzM3MCAyMjUgMzkwIDI0NSAzOTAgMjc1IEwzOTAgMzI1IEMzOTAgMzU1IDM3MCAzNzUgMzQwIDM3NSBMMTcwIDM3NSBDMTU1IDM3NSAxNDUgMzY1IDE0NSAzNTAgQzE0NSAzMzUgMTU1IDMyNSAxNzAgMzI1IEwzMzUgMzI1IEMzNTAgMzI1IDM1NSAzMjAgMzU1IDMwNSBDMzU1IDI5MCAzNTAgMjg1IDMzNSAyODUgTDIwMCAyODUgQzE3MCAyODUgMTUwIDI2NSAxNTAgMjM1IFoiIGZpbGw9IndoaXRlIi8+Cjwvc3ZnPg==">
-            <!--------------- SECURITY LAYER Ending ------------------>
-<!------------- Fornted Meta Security End ---------------->            
-            
-            
-            
-<!--------------- Fornted Style Starting ------------------>   
-    <style>
-              
-                /* Day Mode Colors */
-         :root {
-              --bg: #f5f7fa; 
-              --card: #ffffff; 
-              --primary: #f0b90b; 
-              --text-main: #1e2329; 
-              --text-sub: #707a8a; 
-              --up: #03a66d; 
-              --down: #cf304a; 
-              --border: #e6e8ea; 
-              --input-bg: #f0f2f5;
-              --font: 'Montserrat', sans-serif;  }
-        *     { box-sizing: border-box; margin: 0; padding: 0; font-family: var(--font); outline: none; }
-              
-        body {  background: var(--bg); 
-              color: var(--text-main); 
-              overflow-x: hidden; 
-              min-height: 100vh;  }
-              
-              /* --- LOGIN --- */
-       #loginScreen {  position: fixed; inset: 0; background: var(--bg);  display: flex; justify-content: center; align-items: center; z-index: 9999;  }
-       .login-card { 
-              background: #98AFC7; border-radius: 30px; padding: 50px 40px; 
-              width: 90%; max-width: 420px; border: 1px solid var(--border); 
-              text-align: center; box-shadow: 0 10px 30px rgba(0,0,0,0.05);  }
-      .login-input { 
-              width: 100%; background: var(--input-bg); border: 1px solid var(--border); 
-              padding: 18px; border-radius: 12px; color: var(--text-main); margin-bottom: 20px;  }
-      .login-btn { 
-              width: 100%; background: var(--primary); border: none; padding: 18px; 
-              border-radius: 12px; font-weight: 900; cursor: pointer; color: #000; }
-              
-              /* --- DASHBOARD --- */
-      #dashboard { display: none; }
-              header { 
-              height: 75px; background: #98AFC7; display: flex; align-items: center; 
-              justify-content: space-between; padding: 0 30px; text-align:center;
-              border-bottom: 2px solid var(--primary); position: sticky; top: 0; z-index: 1000; 
-              box-shadow: 0 2px 10px rgba(0,0,0,0.02); }
-              
-     .container { padding: 25px; max-width: 1300px; margin: 0 auto; }
-              
-     .tab-box { 
-              display: flex; gap: 10px; margin-bottom: 25px; 
-              background: #eceef2; padding: 8px; border-radius: 15px;  }
-     .tab { 
-              flex: 1; padding: 12px; text-align: center; border-radius: 10px; 
-              cursor: pointer; color: var(--text-sub); font-size: 11px; transition: 0.3s; font-weight: 700;  }
-     .tab.active { 
-              background: var(--card); box-shadow: 0 4px 10px rgba(0,0,0,0.05); 
-              color: var(--primary); border: 1px solid var(--border);  }
-              
-              /* Withdraw Card */
-     .withdraw-card { 
-              background: var(--card); border-radius: 20px; padding: 20px; margin-bottom: 15px;
-              border: 1px solid var(--border); display: grid; grid-template-columns: 1fr 1fr 1fr 1.2fr; 
-              align-items: center; gap: 15px; position: relative;
-              box-shadow: 0 4px 12px rgba(0,0,0,0.03); }
-     .label { font-size: 9px; color: var(--text-sub); text-transform: uppercase; margin-bottom: 4px; font-weight: 700; }
-     .val { font-size: 13px; font-weight: 900; color: var(--text-main); word-break: break-all; }
-              
-              /* Address & Hash Boxes */
-     .address-box { 
-              display: flex; align-items: center; justify-content: space-between; 
-              background: var(--input-bg); padding: 8px; border-radius: 8px; 
-              border: 1px solid var(--border); margin-top: 5px;  }
-      .hash-link { 
-              color: #b78a00; text-decoration: none; font-size: 10px; font-family: monospace;
-              display: inline-block; max-width: 140px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
-              background: rgba(240, 185, 11, 0.1); padding: 5px 8px; border-radius: 5px; margin-top: 5px; }
-              
-      .hash-input { 
-              background: var(--input-bg); border: 1px solid var(--border); 
-              color: var(--text-main); padding: 10px; border-radius: 8px; 
-              width: 100%; margin-bottom: 8px; font-size: 11px;   }
-              
-              /* --- INVESTIGATION MODAL --- */
-      #userModal { 
-              position: fixed; inset: 0; background: rgba(0,0,0,0.4); 
-              display: none; justify-content: center; align-items: center; z-index: 10001; padding: 15px; 
-              backdrop-filter: blur(5px);  }
-     .modal-content { 
-              background: var(--card); width: 100%; max-width: 800px; max-height: 90vh; 
-              border-radius: 25px; border: 1px solid var(--border); padding: 25px; 
-              position: relative; display: flex; flex-direction: column; overflow: hidden;
-              box-shadow: 0 20px 50px rgba(0,0,0,0.15);  }
-              
-     .stat-item { 
-              background: var(--input-bg); padding: 12px; border-radius: 12px; 
-              text-align: center; border: 1px solid var(--border);   }
-     .stat-val { font-size: 14px; color: #b78a00; font-weight: 900; }
-              
-     .i-tab { 
-              background: var(--input-bg); border: 1px solid var(--border); 
-              color: var(--text-sub); padding: 8px 15px; border-radius: 8px;   }
-     .i-tab.active { background: var(--primary); color: black; border-color: var(--primary); }
-              
-      #sectorSummary { 
-              background: rgba(240, 185, 11, 0.05); padding: 12px; border-radius: 10px; 
-              color: #856404; border: 1px dashed var(--primary);   }  
-              /* Scrollbar Fix for Day Mode */
-              ::-webkit-scrollbar { width: 6px; }
-              ::-webkit-scrollbar-track { background: #f1f1f1; }
-              ::-webkit-scrollbar-thumb { background: #ccc; border-radius: 10px; }
-     .glow-title {
-              text-transform: uppercase;
-              position: relative;
-              display: inline-block;
-              text-shadow: 0 0 10px rgba(240, 185, 11, 0.3), 
-              0 0 20px rgba(240, 185, 11, 0.1);
-              animation: admin-glow 3s infinite ease-in-out;   }
-              
-      .glow-title span {
-              text-shadow: 0 0 15px rgba(240, 185, 11, 0.6);  }
-              @keyframes admin-glow {
-              0%, 100% {
-              text-shadow: 0 0 10px rgba(240, 185, 11, 0.3), 
-              0 0 20px rgba(240, 185, 11, 0.1);
-              transform: scale(1);    }     50% {
-              text-shadow: 0 0 20px rgba(240, 185, 11, 0.6), 
-              0 0 30px rgba(240, 185, 11, 0.3);
-              transform: scale(1.3);       }    }             
-    </style>
-<!--------------- Fornted Style End ------------------> 
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>SMAT | Wallet Panel</title>
+    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-database-compat.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@900&display=swap" rel="stylesheet">
     
+    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNTEyIiBoZWlnaHQ9IjUxMiIgdmlld0JveD0iMCAwIDUxMiA1MTIiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+CiAgPGNpcmNsZSBjeD0iMjU2IiBjeT0iMjU2IiByPSIyNDAiIGZpbGw9IiNmM2JhMmYiLz4KICA8Y2lyY2xlIGN4PSIyNTYiIGN5PSIyNTYiIHI9IjIxNSIgc3Ryb2tlPSJ3aGl0ZSIgc3Ryb2tlLXdpZHRoPSI4IiBmaWxsPSJ0cmFuc3BhcmVudCIvPgogIDxwYXRoIGQ9Ik0xNTAgMTcwIEMxNTAgMTQ1IDE3MCAxMzUgMjAwIDEzNSBMMzQwIDEzNSBDMzU1IDEzNSAzNjUgMTQ1IDM2NSAxNjAgQzM2NSAxNzUgMzU1IDE4NSAzNDAgMTg1IEwyMDUgMTg1IEMxOTAgMTg1IDE4NSAxOTAgMTg1IDIwNSBDMTg1IDIyMCAxOTAgMjI1IDIwNSAyMjUgTDM0MCAyMjUgQzM3MCAyMjUgMzkwIDI0NSAzOTAgMjc1IEwzOTAgMzI1IEMzOTAgMzU1IDM3MCAzNzUgMzQwIDM3NSBMMTcwIDM3NSBDMTU1IDM3NSAxNDUgMzY1IDE0NSAzNTAgQzE0NSAzMzUgMTU1IDMyNSAxNzAgMzI1IEwzMzUgMzI1IEMzNTAgMzI1IDM1NSAzMjAgMzU1IDMwNSBDMzU1IDI5MCAzNTAgMjg1IDMzNSAyODUgTDIwMCAyODUgQzE3MCAyODUgMTUwIDI2NSAxNTAgMjM1IFoiIGZpbGw9IndoaXRlIi8+Cjwvc3ZnPg==">
+
+    <style>
+        :root {
+            --bg: #0b0e11; --card: #1e2329; --primary: #f0b90b;
+            --up: #0ecb81; --down: #f6465d; --border: rgba(255, 255, 255, 0.1);
+            --font: 'Montserrat', sans-serif;
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: var(--font); outline: none; }
+        body { background: var(--bg); color: white; overflow-x: hidden; min-height: 100vh; }
+
+        /* --- LOGIN --- */
+        #loginScreen { position: fixed; inset: 0; background: var(--bg); display: flex; justify-content: center; align-items: center; z-index: 9999; }
+        .login-card { background: var(--card); border-radius: 30px; padding: 50px 40px; width: 90%; max-width: 420px; border: 1px solid var(--border); text-align: center; }
+        .login-input { width: 100%; background: #111418; border: 1px solid var(--border); padding: 18px; border-radius: 12px; color: white; margin-bottom: 20px; }
+        .login-btn { width: 100%; background: var(--primary); border: none; padding: 18px; border-radius: 12px; font-weight: 900; cursor: pointer; text-transform: uppercase; }
+
+        /* --- DASHBOARD --- */
+        #dashboard { display: none; }
+        header { height: 75px; background: var(--card); display: flex; align-items: center; justify-content: space-between; padding: 0 30px; border-bottom: 2px solid var(--primary); position: sticky; top: 0; z-index: 1000; }
+        .container { padding: 25px; max-width: 1300px; margin: 0 auto; }
+        
+        .tab-box { display: flex; gap: 10px; margin-bottom: 25px; background: rgba(255,255,255,0.03); padding: 8px; border-radius: 15px; }
+        .tab { flex: 1; padding: 12px; text-align: center; border-radius: 10px; cursor: pointer; color: #848e9c; font-size: 11px; transition: 0.3s; }
+        .tab.active { background: var(--card); border: 1px solid var(--primary); color: var(--primary); }
+        .badge { background: var(--down); color: white; padding: 2px 6px; border-radius: 5px; font-size: 9px; margin-left: 5px; }
+
+        /* Withdraw Card */
+        .withdraw-card { 
+            background: var(--card); border-radius: 20px; padding: 20px; margin-bottom: 15px;
+            border: 1px solid var(--border); display: grid; grid-template-columns: 1fr 1fr 1fr 1.2fr; 
+            align-items: center; gap: 15px; position: relative;
+        }
+        .inspect-trigger { position: absolute; top: 12px; right: 12px; color: var(--primary); cursor: pointer; font-size: 18px; }
+        .label { font-size: 9px; color: #848e9c; text-transform: uppercase; margin-bottom: 4px; }
+        .val { font-size: 13px; font-weight: 900; word-break: break-all; }
+
+        /* Address & Hash Boxes */
+        .address-box { display: flex; align-items: center; justify-content: space-between; background: rgba(0,0,0,0.3); padding: 8px; border-radius: 8px; border: 1px solid var(--border); margin-top: 5px; }
+        .hash-link { 
+            color: var(--primary); text-decoration: none; font-size: 10px; font-family: monospace;
+            display: inline-block; max-width: 140px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+            background: rgba(240, 185, 11, 0.1); padding: 5px 8px; border-radius: 5px; margin-top: 5px; border: 1px solid transparent;
+        }
+        .hash-link:hover { border-color: var(--primary); background: var(--primary); color: black; }
+
+        .hash-input { background: #0b0e11; border: 1px solid var(--border); color: var(--primary); padding: 10px; border-radius: 8px; width: 100%; margin-bottom: 8px; font-size: 11px; }
+        .btn-group { display: flex; gap: 5px; }
+        .btn { flex: 1; padding: 10px; border: none; border-radius: 8px; font-weight: 900; cursor: pointer; font-size: 10px; text-transform: uppercase; }
+
+        /* --- INVESTIGATION MODAL --- */
+        #userModal { position: fixed; inset: 0; background: rgba(0,0,0,0.95); display: none; justify-content: center; align-items: center; z-index: 10001; padding: 15px; }
+        .modal-content { 
+            background: var(--card); width: 100%; max-width: 800px; max-height: 90vh; 
+            border-radius: 25px; border: 2px solid var(--primary); padding: 25px; 
+            position: relative; display: flex; flex-direction: column; overflow: hidden;
+        }
+        .modal-body { overflow-y: auto; flex-grow: 1; padding-right: 10px; }
+        
+        .stat-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin: 20px 0; }
+        .stat-item { background: rgba(255,255,255,0.03); padding: 12px; border-radius: 12px; text-align: center; border: 1px solid var(--border); }
+        .stat-val { font-size: 14px; color: var(--primary); }
+        
+        .invest-tab-row { display: flex; gap: 8px; overflow-x: auto; padding-bottom: 10px; margin-bottom: 10px; border-bottom: 1px solid var(--border); }
+        .i-tab { background: #111418; border: 1px solid var(--border); color: #848e9c; padding: 8px 15px; border-radius: 8px; font-size: 9px; cursor: pointer; white-space: nowrap; font-weight: 900; }
+        .i-tab.active { background: var(--primary); color: black; }
+        
+        #sectorSummary { background: rgba(240, 185, 11, 0.1); padding: 12px; border-radius: 10px; color: var(--primary); font-size: 11px; text-align: center; margin-bottom: 15px; border: 1px dashed var(--primary); font-weight: 900; }
+        #investLogs { background: rgba(0,0,0,0.2); border-radius: 15px; padding: 10px; }
+
+        @media (max-width: 768px) {
+            .withdraw-card { grid-template-columns: 1fr; gap: 12px; padding: 15px; }
+            .stat-grid { grid-template-columns: 1fr; }
+            header { padding: 0 15px; }
+            .container { padding: 15px; }
+        }
+    </style>
 </head>
-<<body class="smat-lock-system">
-<!------------- Fornted Stracture html Starting ---------------->
+<body>
+
     <div id="loginScreen">
         <div class="login-card">
-             <div class="login-title glow-title" style="font-size: 20px; font-weight: 900; padding: 15px; color: black; letter-spacing: 1px;">
-                    Wallet <span style="color: green;">PANEL</span>
-             </div>
-             <input type="email" id="admEmail" class="login-input" placeholder="Admin Email">
+            <div class="login-title">ADMIN <span>PANEL</span></div>
+            <input type="email" id="admEmail" class="login-input" placeholder="Admin Email">
             <input type="password" id="admPass" class="login-input" placeholder="Password">
             <button class="login-btn" onclick="tryLogin()">Access Dashboard</button>
             <p id="admErr" style="color:var(--down); font-size:12px; margin-top:15px; display:none;">Login Failed! Check Credentials.</p>
@@ -184,8 +104,8 @@
 
     <div id="dashboard">
         <header>
-            <div class="glow-title" style="font-size: 16px;font-weight:900;text-align:center; color: green; letter-spacing: 1px;">Wallet Management </div>
-            <i class="fas fa-power-off glow-title" style="color:var(--down); cursor:pointer; font-size: 28px;" onclick="adminLogout()"></i>
+            <div style="font-size: 20px; color: var(--primary); letter-spacing: 1px;">Wallet Management </div>
+            <i class="fas fa-power-off" style="color:var(--down); cursor:pointer; font-size: 22px;" onclick="adminLogout()"></i>
         </header>
 
         <div class="container">
@@ -230,11 +150,233 @@
             </div>
         </div>
     </div>
-<!------------- Fornted Stracture html End ---------------->
 
-<!---------- Fornted And Script Relationship Start ------------->                     
-                       <script src="js/controlkey.js"></script>
-                       <script src="js/walletAdmin.js"></script>
-<!---------- Fornted And Script Relationship End --------------->
+<script>
+// --- CONFIG ---
+const firebaseConfig = { 
+    apiKey: "AIzaSyAMxtJedkehhxJRMPZLjhpKHqneHEWsGlE", 
+    authDomain: "smat-exchange.firebaseapp.com", 
+    databaseURL: "https://smat-exchange-default-rtdb.firebaseio.com",
+    projectId: "smat-exchange" 
+};
+firebase.initializeApp(firebaseConfig);
+const db = firebase.database();
+const auth = firebase.auth();
+
+let activeMainTab = 'pending';
+let lastCount = 0;
+let userFullHistory = [];
+
+// --- AUTH ---
+function tryLogin() {
+    const e = document.getElementById('admEmail').value;
+    const p = document.getElementById('admPass').value;
+    auth.signInWithEmailAndPassword(e, p).catch(() => document.getElementById('admErr').style.display='block');
+}
+
+auth.onAuthStateChanged(user => {
+    if (user) {
+        document.getElementById('loginScreen').style.display = 'none';
+        document.getElementById('dashboard').style.display = 'block';
+        loadMainData();
+    } else {
+        document.getElementById('loginScreen').style.display = 'flex';
+        document.getElementById('dashboard').style.display = 'none';
+    }
+});
+
+function adminLogout() { auth.signOut(); }
+
+// --- DASHBOARD CORE ---
+function switchMainTab(t) {
+    activeMainTab = t;
+    document.querySelectorAll('.tab').forEach(el => el.classList.remove('active'));
+    event.currentTarget.classList.add('active');
+    loadMainData();
+}
+
+function getExplorer(net, hash) {
+    if(!hash) return "#";
+    const n = net ? net.toLowerCase() : "";
+    if(n.includes('trc') || n.includes('tron')) return `https://tronscan.org/#/transaction/${hash}`;
+    if(n.includes('bsc') || n.includes('bep')) return `https://bscscan.com/tx/${hash}`;
+    return `https://tronscan.org/#/transaction/${hash}`;
+}
+
+function loadMainData() {
+    db.ref('users').on('value', snap => {
+        const users = snap.val();
+        let html = ''; let pCount = 0; let list = [];
+        
+        for (let uid in users) {
+            const hist = users[uid].history;
+            if (hist) {
+                Object.keys(hist).forEach(tid => {
+                    const tx = hist[tid];
+                    if (tx.method === 'Withdraw') {
+                        if (tx.status === 'pending') pCount++;
+                        list.push({ uid, tid, email: users[uid].email, ...tx });
+                    }
+                });
+            }
+        }
+
+        document.getElementById('pCount').innerText = pCount;
+        const filtered = list.filter(x => x.status === activeMainTab).sort((a,b) => b.timestamp - a.timestamp);
+
+        filtered.forEach(tx => {
+            const expUrl = getExplorer(tx.network, tx.hash);
+            html += `
+            <div class="withdraw-card">
+                <i class="fas fa-user-shield inspect-trigger" onclick="openInspector('${tx.uid}', '${tx.email}')"></i>
+                <div><div class="label">User Email</div><div class="val" style="color:var(--primary)">${tx.email}</div><small style="font-size:8px; opacity:0.6;">${new Date(tx.timestamp).toLocaleString()}</small></div>
+                <div><div class="label">Amount</div><div class="val">${tx.amount} ${tx.coin}</div><small style="color:var(--up); font-size:9px;">${tx.network}</small></div>
+                <div><div class="label">Address</div><div class="address-box"><span class="val" style="font-size:10px; font-family:monospace; opacity:0.8;">${tx.address.substring(0,15)}...</span><i class="fas fa-copy" style="cursor:pointer;color:var(--primary)" onclick="copyAddr('${tx.address}')"></i></div></div>
+                <div style="text-align:right">
+                    ${tx.status === 'pending' ? `
+                        <input type="text" id="h_${tx.tid}" class="hash-input" placeholder="Paste TrxHash">
+                        <div class="btn-group"><button class="btn" style="background:var(--up)" onclick="approve('${tx.uid}','${tx.tid}')">APPROVE</button><button class="btn" style="background:var(--down)" onclick="reject('${tx.uid}','${tx.tid}','${tx.coin}',${tx.amount})">REJECT</button></div>
+                    ` : `
+                        <div class="val" style="color:${tx.status==='success'?'var(--up)':'var(--down)'}">${tx.status.toUpperCase()}</div>
+                        ${tx.status==='success' ? `<a href="${expUrl}" target="_blank" class="hash-link"><i class="fas fa-external-link-alt"></i> ${tx.hash}</a>` : ''}
+                    `}
+                </div>
+            </div>`;
+        });
+        document.getElementById('withdrawList').innerHTML = html || '<div style="text-align:center; padding:50px; color:#848e9c;">NO DATA FOUND</div>';
+    });
+}
+
+// --- INVESTIGATION LOGIC ---
+async function openInspector(uid, email) {
+    document.getElementById('userModal').style.display = 'flex';
+    document.getElementById('mUserEmail').innerText = email;
+    document.getElementById('investLogs').innerHTML = "Calculating Insights...";
+    
+    const oneYear = Date.now() - (365 * 24 * 60 * 60 * 1000);
+    const uSnap = await db.ref(`users/${uid}`).once('value');
+    const uData = uSnap.val();
+    
+    if(uData) {
+        document.getElementById('mReserve').innerHTML = `RESERVE: <span style="color:var(--primary)">${(uData.balance||0).toFixed(2)} USDT</span> | <span style="color:var(--primary)">${(uData.smat_balance||0).toFixed(2)} SMAT</span>`;
+    }
+
+    userFullHistory = [];
+    let tin = 0, tout = 0, tprof = 0;
+    if(uData && uData.history) {
+        userFullHistory = Object.values(uData.history).filter(i => i.timestamp > oneYear).sort((a,b) => b.timestamp - a.timestamp);
+        userFullHistory.forEach(i => {
+            const a = parseFloat(i.amount) || 0;
+            const m = i.method.toLowerCase();
+            if(m.includes('deposit') || m.includes('airdrop')) tin += a;
+            else if(m.includes('withdraw')) tout += Math.abs(a);
+            else tprof += a;
+        });
+    }
+
+    document.getElementById('mIn').innerText = tin.toFixed(2);
+    document.getElementById('mOut').innerText = tout.toFixed(2);
+    document.getElementById('mProfit').innerText = (tprof >= 0 ? '+' : '') + tprof.toFixed(2);
+    document.getElementById('mProfit').style.color = tprof >= 0 ? 'var(--up)' : 'var(--down)';
+
+    filterInv('all');
+}
+
+function filterInv(type) {
+    document.querySelectorAll('.i-tab').forEach(b => b.classList.toggle('active', b.innerText.toLowerCase().includes(type.toLowerCase()) || (type==='all' && b.innerText==='ALL HISTORY')));
+    
+    let html = ''; let sTotal = 0;
+    const filtered = (type === 'all') ? userFullHistory : userFullHistory.filter(i => i.method.toLowerCase().includes(type.toLowerCase()));
+    
+    filtered.forEach(i => {
+        const a = parseFloat(i.amount) || 0; sTotal += a;
+        html += `<div style="display:flex; justify-content:space-between; padding:12px; border-bottom:1px solid rgba(255,255,255,0.05); font-size:11px;">
+            <div><div style="color:var(--primary); font-weight:900;">${i.method.toUpperCase()}</div><div style="font-size:8px; color:#848e9c;">${new Date(i.timestamp).toLocaleString()}</div></div>
+            <div style="text-align:right"><div style="color:${a>=0?'var(--up)':'var(--down)'}; font-weight:900;">${a>=0?'+':''}${a} ${i.coin}</div><div style="font-size:8px; color:#848e9c;">${i.status}</div></div>
+        </div>`;
+    });
+
+    document.getElementById('sectorSummary').innerHTML = type === 'all' ? "FULL 1-YEAR INSIGHT SUMMARY" : `TOTAL ${type.toUpperCase()}: <span style="color:${sTotal>=0?'var(--up)':'var(--down)'}">${sTotal.toFixed(4)}</span>`;
+    document.getElementById('investLogs').innerHTML = html || '<div style="text-align:center; padding:20px; color:#848e9c;">NO SECTOR DATA</div>';
+}
+
+function closeModal() { document.getElementById('userModal').style.display = 'none'; }
+
+// --- POWERFUL COPY FUNCTION ---
+function copyAddr(text) {
+    if (navigator.clipboard && window.isSecureContext) {
+        navigator.clipboard.writeText(text).then(() => {
+            alert("Address Copied!");
+        }).catch(() => fallbackCopy(text));
+    } else {
+        fallbackCopy(text);
+    }
+}
+
+function fallbackCopy(text) {
+    const textArea = document.createElement("textarea");
+    textArea.value = text;
+    textArea.style.position = "fixed"; textArea.style.left = "-9999px";
+    document.body.appendChild(textArea);
+    textArea.select();
+    try {
+        document.execCommand('copy');
+        alert("Address Copied!");
+    } catch (err) {
+        alert("Failed to copy. Please copy manually.");
+    }
+    document.body.removeChild(textArea);
+}
+
+// --- ACTIONS ---
+async function approve(uid, tid) {
+    const h = document.getElementById('h_'+tid).value;
+    if(!h || h.length < 5) return alert("Valid TrxHash is required!");
+    await db.ref(`users/${uid}/history/${tid}`).update({ status:'success', hash:h });
+    alert("Transaction Approved!");
+}
+
+async function reject(uid, tid, coin, amt) {
+    if(confirm("Are you sure you want to Reject and Refund?")) {
+        try {
+            // ১. কয়েন অনুযায়ী সঠিক ব্যালেন্স কী (Key) নির্ধারণ
+            // আপনার ইউজার প্যানেলে ব্যালেন্সগুলো 'btc_balance', 'eth_balance' এভাবে আছে।
+            // শুধুমাত্র USDT এর ক্ষেত্রে 'balance' অথবা 'usdt_balance' চেক করতে হবে।
+            const coinLower = coin.toLowerCase();
+            let key = coinLower + '_balance';
+            
+            // যদি আপনি USDT-এর মূল ব্যালেন্স 'balance' কী-তে রাখেন তবে এই চেকটি লাগবে
+            if(coinLower === 'usdt') {
+                 // আপনার সিস্টেমে যদি usdt_balance না হয়ে শুধু balance হয়, তবে নিচের লাইনটি আনকমেন্ট করুন
+                 // key = 'balance'; 
+            }
+
+            // ২. ইউজারের বর্তমান ব্যালেন্স ডাটাবেস থেকে আনা
+            const snapshot = await db.ref(`users/${uid}/${key}`).once('value');
+            const currentBal = parseFloat(snapshot.val()) || 0;
+            
+            // ৩. রিফান্ড হিসেব করা (উইথড্র অ্যামাউন্ট + ফি)
+            // নোট: ইউজার প্যানেলে উইথড্র করার সময় আপনি (amt + fee) কেটেছিলেন। 
+            // এখানে শুধু amt রিফান্ড হচ্ছে। যদি ফি-সহ ফেরত দিতে চান তবে amt এর সাথে ফি যোগ করতে হবে।
+            const refundAmt = parseFloat(amt); 
+            const newBal = (currentBal + refundAmt).toFixed(8);
+
+            // ৪. ডাটাবেস আপডেট (ব্যালেন্স ফেরত এবং স্ট্যাটাস পরিবর্তন)
+            const updates = {};
+            updates[`users/${uid}/${key}`] = parseFloat(newBal); // সংখ্যা হিসেবে সেভ করা ভালো
+            updates[`users/${uid}/history/${tid}/status`] = 'failed';
+            updates[`users/${uid}/history/${tid}/hash`] = 'REJECTED';
+
+            await db.ref().update(updates);
+
+            alert("Transaction Rejected & Funds Refunded to: " + key);
+        } catch (e) {
+            console.error("Reject Error: ", e);
+            alert("Error occurred while refunding.");
+        }
+    }
+}
+
+</script>
 </body>
 </html>
