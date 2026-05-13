@@ -1,0 +1,89 @@
+.smat-lock {
+    -webkit-user-select: none !important;
+    -ms-user-select: none !important;
+    user-select: none !important;
+    unicode-bidi: isolate;
+    -webkit-touch-callout: none !important;
+    -webkit-user-drag: none !important;
+}
+
+/* 1. UI Layer Isolation */
+.smat-lock main, .smat-lock section {
+    isolation: isolate !important; 
+    z-index: 1;
+}
+
+/* 2. User Input & Selection Permission (For Trade & Wallet) */
+.smat-lock input, 
+.smat-lock textarea, 
+.smat-lock select {
+    -webkit-user-select: text !important;
+    -ms-user-select: text !important;
+    user-select: text !important;
+    pointer-events: auto !important;
+    -webkit-touch-callout: default !important;
+}
+
+/* 3. Password Input Protection */
+.smat-lock input[type="password"] {
+    -webkit-text-security: disc !important;
+}
+
+/* 4. Image Download & Long Press Lock */
+.smat-lock img {
+    pointer-events: none !important;
+    -webkit-user-drag: none !important;
+    -webkit-touch-callout: none !important;
+    user-select: none !important;
+}
+
+/* 5. Specific Copy Permission (For Wallet Addresses/Referrals) */
+.allow-copy {
+    -webkit-user-select: text !important;
+    -ms-user-select: text !important;
+    user-select: text !important;
+    pointer-events: auto !important;
+}
+
+/* 6. Link Protection & Status Bar Concealment */
+.smat-lock a:not(.allow-copy) {
+    -webkit-user-drag: none !important;
+    cursor: default !important;
+}
+
+.smat-lock a.allow-copy {
+    cursor: pointer !important;
+}
+
+/* 7. Control Key & Print Prevention */
+@media print { 
+    body { display: none !important; } 
+}
+
+/* 8. Text Selection Masking */
+.smat-lock *:not(input):not(textarea):not(select)::selection {
+    background: transparent !important;
+    color: transparent !important;
+}
+
+/* 9. Anti-Clickjacking & Anti-Frame */
+iframe { 
+    display: none !important; 
+}
+
+/* 10. Invisible Tracing Watermark */
+.smat-lock::after {
+    content: "SmatBit Protected Content";
+    position: fixed;
+    bottom: 10px;
+    right: 10px;
+    font-size: 8px;
+    color: rgba(0,0,0,0.02);
+    pointer-events: none;
+    z-index: 9999;
+}
+
+/* 11. RTL Attack Prevention */
+[dir="rtl"] .smat-lock {
+    direction: ltr !important;
+}
