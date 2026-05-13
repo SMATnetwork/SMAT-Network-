@@ -69,7 +69,7 @@ function showNotify(type, title, message) {
         setTimeout(() => toast.remove(), 500);
     }, 4000);
 }
-let userData = {}, livePrices = {}, currentSelectorMode = ''; 
+ 
 
 // অটোমেটিক নতুন অ্যাড্রেস জেনারেট ও সেভ করার ফাংশন
 async function generateAndAssignAddress(uid) {
