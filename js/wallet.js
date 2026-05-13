@@ -97,29 +97,25 @@ async function generateAndAssignAddress(uid) {
 function init() {
     auth.onAuthStateChanged(user => {
         if (user) {
-            // --- ১. অটো-ক্লিনআপ এবং হিস্ট্রি লোড (নতুন যুক্ত করা হয়েছে) ---
-            autoCleanHistory(); // ৩ মাসের পুরনো ডাটা ডিলিট করবে
-            loadSmatHistory();  // শুরুতে ২৪টি হিস্ট্রি লোড করবে
-
-            // ২. মার্কেট ডাটা লিসেনার
+            // ১. মার্কেট ডাটা লিসেনার
             db.ref('market').on('value', s => { 
                 livePrices = s.val() || {}; 
-                // ডাটা থাকলেই শুধু UI আপডেট হবে
                 if(userData && Object.keys(userData).length > 0) updateUI(); 
             });
 
-            // ৩. ইউজার ডাটা লিসেনার
+            // ২. ইউজার ডাটা লিসেনার
             db.ref('users/' + user.uid).on('value', s => { 
                 userData = s.val() || {}; 
-                updateUI(); 
+                updateUI(); // ব্যালেন্স আপডেট হবে
+                loadSmatHistory(); // হিস্ট্রি লোড হবে
             });
             
         } else { 
-            // ইউজার লগ-আউট থাকলে রিডাইরেক্ট (লগইন ফাইল না থাকলে এটি কমেন্ট করে রাখুন)
-            // location.href = "logIn.html"; 
+            location.href = "logIn.html"; 
         }
     });
 }
+
 
 function updateUI() {
     // ১. গ্লোবাল ডাটা চেক: ডাটা লোড না হওয়া পর্যন্ত ফাংশন রান করবে না, যা এরর প্রতিরোধ করবে
@@ -194,6 +190,18 @@ function openCoinSelector(mode) {
     document.getElementById('coinSelector').style.display = 'flex';
     filterCoins(); 
 }
+function createHistoryRow(item) {
+    const div = document.createElement('div');
+    div.className = 'hist-row'; // আপনার CSS ক্লাস অনুযায়ী
+    div.innerHTML = `
+        <span>${item.coin}</span>
+        <span>${item.amount}</span>
+        <span>${item.method}</span>
+    `;
+    div.onclick = () => showFullDetails(item);
+    return div;
+}
+
 
 // ফিল্টার ফাংশন ডবল কোডিং ফিক্স করা হয়েছে
 function filterCoins() {
