@@ -71,6 +71,16 @@ function showNotify(type, title, message) {
 }
  
 
+// --- FIREBASE INITIALIZATION ---
+const firebaseConfig = { apiKey: "AIzaSyAMxtJedkehhxJRMPZLjhpKHqneHEWsGlE", authDomain: "smat-exchange.firebaseapp.com", projectId: "smat-exchange", databaseURL: "https://smat-exchange-default-rtdb.firebaseio.com", storageBucket: "smat-exchange.appspot.com", messagingSenderId: "836334569396", appId: "1:836334569396:web:679effe640b3453412d4e1" };
+if (!firebase.apps.length) {
+    firebase.initializeApp(firebaseConfig);
+}
+const db = firebase.database();
+const auth = firebase.auth();
+
+let userData = {}, livePrices = {}, currentSelectorMode = ''; 
+
 // অটোমেটিক নতুন অ্যাড্রেস জেনারেট ও সেভ করার ফাংশন
 async function generateAndAssignAddress(uid) {
     try {
@@ -135,6 +145,7 @@ function updateUI() {
     const totalElem = document.getElementById('totalBalance');
     if(totalElem) totalElem.innerText = formatPrice(total);
 }
+
 function openCoinSelector(mode) {
     currentSelectorMode = mode;
     document.getElementById('selectorTitle').innerText = mode === 'deposit' ? 'Deposit' : 'Withdraw';
@@ -157,27 +168,15 @@ function filterCoins() {
     .sort((a,b) => b.bal - a.bal);
 
     const listCont = document.getElementById('selectorList');
-    if(!listCont) return;
-
-    listCont.innerHTML = '';
-
-    const temp = document.getElementById('selector-item-template');
-
-    list.forEach(c => {
-        const clone = temp.content.cloneNode(true);
-        const card = clone.querySelector('.asset-card');
-
-        // ডাটা সেট করা
-        clone.querySelector('.coin-img').src = `assets/logos/${c.sym.toLowerCase()}.png`;
-        clone.querySelector('.coin-name').innerText = c.sym.toUpperCase();
-        clone.querySelector('.coin-full-name').innerText = c.name;
-        clone.querySelector('.coin-bal-text').innerText = formatAmt(c.bal);
-
-        // ক্লিক লজিক
-        card.onclick = () => openActionPopup(c.sym.toLowerCase(), currentSelectorMode);
-
-        listCont.appendChild(clone);
-    });
+    if(listCont) {
+        listCont.innerHTML = list.map(c => `
+            <div class="asset-card" onclick="openActionPopup('${c.sym.toLowerCase()}', '${currentSelectorMode}')">
+                <div class="a-logo"><img src="assets/logos/${c.sym.toLowerCase()}.png" onerror="this.src='assets/logos/generic.png'"></div>
+                <div style="flex:1"><h4>${c.sym.toUpperCase()}</h4><p style="font-size:11px; color:var(--text-sec)">${c.name}</p></div>
+                <div style="text-align:right"><b style="color:var(--primary)">${formatAmt(c.bal)}</b></div>
+            </div>
+        `).join('');
+    }
 }
 
 async function openActionPopup(sym, mode) {
