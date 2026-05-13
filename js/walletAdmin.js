@@ -54,11 +54,12 @@ function loadMainData() {
         let html = ''; let pCount = 0; let list = [];
         
         for (let uid in users) {
+            // ইউজারের ভেতর থেকে 'history' নোডটি চেক করা হচ্ছে
             const hist = users[uid].history;
             if (hist) {
                 Object.keys(hist).forEach(tid => {
                     const tx = hist[tid];
-                    // Case-insensitive check for 'withdraw'
+                    // মেথড চেক করার সময় Case Sensitivity ফিক্স করা হয়েছে
                     if (tx.method && tx.method.toLowerCase() === 'withdraw') {
                         if (tx.status === 'pending') pCount++;
                         list.push({ uid, tid, email: users[uid].email, ...tx });
@@ -77,7 +78,7 @@ function loadMainData() {
                 <i class="fas fa-user-shield inspect-trigger" onclick="openInspector('${tx.uid}', '${tx.email}')"></i>
                 <div><div class="label">User Email</div><div class="val" style="color:var(--primary)">${tx.email}</div><small style="font-size:8px; opacity:0.6;">${new Date(tx.timestamp).toLocaleString()}</small></div>
                 <div><div class="label">Amount</div><div class="val">${tx.amount} ${tx.coin}</div><small style="color:var(--up); font-size:9px;">${tx.network}</small></div>
-                <div><div class="label">Address</div><div class="address-box allow-copy"><span class="val" style="font-size:10px; font-family:monospace; opacity:0.8;">${tx.address}</span><i class="fas fa-copy allow-copy" style="cursor:pointer;color:var(--primary)" onclick="copyAddr('${tx.address}')"></i></div></div>
+                <div><div class="label">Address</div><div class="address-box allow-copy"><span class="val" style="font-size:10px; font-family:monospace; opacity:0.8;">${tx.address ? tx.address.substring(0,15) : 'N/A'}...</span><i class="fas fa-copy allow-copy" style="cursor:pointer;color:var(--primary)" onclick="copyAddr('${tx.address}')"></i></div></div>
                 <div style="text-align:right">
                     ${tx.status === 'pending' ? `
                         <input type="text" id="h_${tx.tid}" class="hash-input" placeholder="Paste TrxHash">
@@ -92,6 +93,7 @@ function loadMainData() {
         document.getElementById('withdrawList').innerHTML = html || '<div style="text-align:center; padding:50px; color:#848e9c;">NO DATA FOUND</div>';
     });
 }
+
 
 // ---------- Investigation Logics ----------------
 async function openInspector(uid, email) {
