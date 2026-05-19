@@ -346,8 +346,8 @@
     }
 
     let userUID = null;
+    let userUniqueGameName = "YOU";
     let oxsmatBalance = 0.000000;
-    let bankBalance = 0.0000;
     let gameId = 100001;
     let currentMultiplier = 1.00;
     let isRunning = false;
@@ -365,8 +365,11 @@
     let visiblePlayersCount = 10; 
     let crashHistoryDots = [];
     let isProcessingBet = false;
-    let isMuted = false;
+    
+    let isMuted = true; 
     const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+    
+    let userCashoutMultiplier = 1.00; 
     
     let canvas, ctx;
     const axisLeftMargin = 55;   
@@ -376,17 +379,32 @@
         if (user) {
             userUID = user.uid;
             
+            // নাম ফিক্স করার লজিক
+            const nameRef = ref(db, `users/${userUID}/crash_game_name`);
+            onValue(nameRef, (snapshot) => {
+                if(snapshot.exists()){
+                    userUniqueGameName = snapshot.val();
+                } else {
+                    let hash = 0;
+                    for (let i = 0; i < userUID.length; i++) {
+                        hash = ((hash << 5) - hash) + userUID.charCodeAt(i);
+                        hash |= 0;
+                    }
+                    userUniqueGameName = "SMAT-" + Math.abs(hash).toString(36).toUpperCase().substring(0, 4);
+                    set(nameRef, userUniqueGameName);
+                }
+            }, { onlyOnce: true });
+            
             onValue(ref(db, 'crash_arena/config'), (snapshot) => {
                 const data = snapshot.val();
                 if(data) {
                     gameId = data.gameId || gameId;
-                    bankBalance = parseFloat(data.bankBalance) || 0.0000;
                     crashHistoryDots = data.history || [];
                     updateUI();
                 }
             });
 
-            onValue(ref(db, `users/${userUID}/balances/oxsmat_balance`), (snapshot) => {
+            onValue(ref(db, `users/${userUID}/oxsmat_balance`), (snapshot) => {
                 oxsmatBalance = parseFloat(snapshot.val()) || 0.000000;
                 updateUI();
             });
@@ -433,6 +451,9 @@
         renderDots(); 
         updateActiveCount();
         manageButtonStateText();
+        if(document.getElementById('sound-icon')) {
+            document.getElementById('sound-icon').className = isMuted ? 'fas fa-volume-mute' : 'fas fa-volume-up';
+        }
     }
 
     function manageButtonStateText() {
@@ -454,6 +475,7 @@
             btn.innerText = "PLACE BET";
             btn.className = "w-full bg-[#ffa502] text-white py-4 rounded-xl font-black text-xl shadow-md active:scale-95 transition-all";
             btn.disabled = false;
+            btn.onclick = window.placeBet;
         }
     }
 
@@ -495,66 +517,74 @@
     }
 
     function calculateCrashPoint() {
-        let r = Math.random() * 100;
-        let cp = 1.00;
-        if (under2xStreak >= 8) r = 52.5 + Math.random() * 47.5; 
-        if (over2xStreak >= 7) r = Math.random() * 52.5; 
-        if (r <= 5.0) cp = 1.00;
-        else if (r <= 10.0) cp = 1.01 + Math.random() * 0.08;
-        else if (r <= 15.0) cp = 1.10 + Math.random() * 0.09;
-        else if (r <= 20.0) cp = 1.20 + Math.random() * 0.09;
-        else if (r <= 25.0) cp = 1.30 + Math.random() * 0.09;
-        else if (r <= 30.0) cp = 1.40 + Math.random() * 0.09;
-        else if (r <= 34.5) cp = 1.50 + Math.random() * 0.09;
-        else if (r <= 39.0) cp = 1.60 + Math.random() * 0.09;
-        else if (r <= 43.5) cp = 1.70 + Math.random() * 0.09;
-        else if (r <= 48.0) cp = 1.80 + Math.random() * 0.09;
-        else if (r <= 52.5) cp = 1.90 + Math.random() * 0.09;
-        else if (r <= 62.5) cp = 2.00 + Math.random() * 0.49;
-        else if (r <= 69.5) cp = 2.50 + Math.random() * 0.24;
-        else if (r <= 76.5) cp = 2.75 + Math.random() * 0.24;
-        else if (r <= 81.5) cp = 3.00 + Math.random() * 0.49;
-        else if (r <= 83.7) cp = 3.50 + Math.random() * 0.49;
-        else if (r <= 85.9) cp = 4.00 + Math.random() * 0.49;
-        else if (r <= 88.1) cp = 4.50 + Math.random() * 0.49;
-        else if (r <= 90.1) cp = 5.00 + Math.random() * 0.49;
-        else if (r <= 91.6) cp = 5.50 + Math.random() * 0.49;
-        else if (r <= 93.1) cp = 6.00 + Math.random() * 0.99;
-        else if (r <= 94.6) cp = 7.00 + Math.random() * 2.99;
-        else if (r <= 95.6) cp = 10.00 + Math.random() * 4.99;
-        else if (r <= 96.6) cp = 15.00 + Math.random() * 4.99;
-        else if (r <= 97.1) cp = 20.00 + Math.random() * 4.99;
-        else if (r <= 97.6) cp = 25.00 + Math.random() * 24.99;
-        else if (r <= 98.1) cp = 50.00 + Math.random() * 24.99;
-        else if (r <= 98.35) cp = 75.00 + Math.random() * 24.99;
-        else if (r <= 98.60) cp = 100.00 + Math.random() * 49.99;
-        else if (r <= 98.85) cp = 150.00 + Math.random() * 99.99;
-        else if (r <= 99.10) cp = 250.00 + Math.random() * 249.99;
-        else if (r <= 99.225) cp = 500.00 + Math.random() * 249.99;
-        else if (r <= 99.35) cp = 750.00 + Math.random() * 249.99;
-        else if (r <= 99.475) cp = 1000.00 + Math.random() * 499.99;
-        else if (r <= 99.60) cp = 1500.00 + Math.random() * 499.99;
-        else if (r <= 99.70) cp = 2000.00 + Math.random() * 499.99;
-        else if (r <= 99.80) cp = 2500.00 + Math.random() * 2499.99;
-        else if (r <= 99.85) cp = 5000.00 + Math.random() * 4999.99;
-        else if (r <= 99.90) cp = 10000.00 + Math.random() * 14999.99;
-        else if (r <= 99.93) cp = 25000.00 + Math.random() * 24999.99;
-        else if (r <= 99.96) cp = 50000.00 + Math.random() * 49999.99;
-        else if (r <= 99.98) cp = 100000.00 + Math.random() * 99999.99;
-        else cp = 200000.00 + Math.random() * 799999.99;
-        if (cp >= 2) { over2xStreak++; under2xStreak = 0; }
-        else { under2xStreak++; over2xStreak = 0; }
-        return parseFloat(cp.toFixed(2));
+    let r = Math.random() * 100;
+    let cp = 1.00;
+    
+    if (under2xStreak >= 8) r = 52.5 + Math.random() * 47.5; 
+    if (over2xStreak >= 7) r = Math.random() * 52.5; 
+    
+    if (r <= 5.0) cp = 1.00;
+    else if (r <= 20.0) cp = 1.01 + Math.random() * 0.08;
+    else if (r <= 52.5) cp = 1.10 + Math.random() * 0.89;
+    else if (r <= 62.5) cp = 2.00 + Math.random() * 0.49;
+    else if (r <= 69.5) cp = 2.50 + Math.random() * 0.24;
+    else if (r <= 76.5) cp = 2.75 + Math.random() * 0.24;
+    else if (r <= 81.5) cp = 3.00 + Math.random() * 0.49;
+    else if (r <= 83.7) cp = 3.50 + Math.random() * 0.49;
+    else if (r <= 85.9) cp = 4.00 + Math.random() * 0.49;
+    else if (r <= 88.1) cp = 4.50 + Math.random() * 0.49;
+    else if (r <= 90.1) cp = 5.00 + Math.random() * 0.49;
+    else if (r <= 91.6) cp = 5.50 + Math.random() * 0.49;
+    else if (r <= 93.1) cp = 6.00 + Math.random() * 0.99;
+    else if (r <= 94.6) cp = 7.00 + Math.random() * 2.99;
+    else if (r <= 95.6) cp = 10.00 + Math.random() * 4.99;
+    else if (r <= 96.6) cp = 15.00 + Math.random() * 4.99;
+    else if (r <= 97.1) cp = 20.00 + Math.random() * 4.99;
+    else if (r <= 97.6) cp = 25.00 + Math.random() * 24.99;
+    else if (r <= 98.1) cp = 50.00 + Math.random() * 24.99;
+    else if (r <= 98.35) cp = 75.00 + Math.random() * 24.99;
+    else if (r <= 98.60) cp = 100.00 + Math.random() * 49.99;
+    else if (r <= 98.85) cp = 150.00 + Math.random() * 99.99;
+    else if (r <= 99.10) cp = 250.00 + Math.random() * 249.99;
+    else if (r <= 99.225) cp = 500.00 + Math.random() * 249.99;
+    else if (r <= 99.35) cp = 750.00 + Math.random() * 249.99;
+    else if (r <= 99.475) cp = 1000.00 + Math.random() * 499.99;
+    else if (r <= 99.60) cp = 1500.00 + Math.random() * 499.99;
+    else if (r <= 99.70) cp = 2000.00 + Math.random() * 499.99;
+    else if (r <= 99.80) cp = 2500.00 + Math.random() * 2499.99;
+    else if (r <= 99.85) cp = 5000.00 + Math.random() * 4999.99;
+    else if (r <= 99.90) cp = 10000.00 + Math.random() * 14999.99;
+    else if (r <= 99.93) cp = 25000.00 + Math.random() * 24999.99;
+    else if (r <= 99.96) cp = 50000.00 + Math.random() * 49999.99;
+    else if (r <= 99.98) cp = 100000.00 + Math.random() * 99999.99;
+    else cp = 200000.00 + Math.random() * 799999.99;
+    
+    if (cp >= 2) { over2xStreak++; under2xStreak = 0; }
+    else { under2xStreak++; over2xStreak = 0; }
+    
+    return parseFloat(cp.toFixed(2));
     }
+    
 
     function generateFakePlayers() {
         players = []; fakePool = 0;
-        const names = ["Alpha", "Bull", "Whale", "Rich", "Satoshi", "Trade", "Dexter", "Moon"];
-        const count = Math.floor(Math.random() * 20 + 210);
+         const names = [
+         "SMAT-ALPHA", "SMAT-B6M23", "SMAT-W6MOL", "SMAT-RP9OJ", "SMAT-S3MLK", "SMAT-25JHY", "SMAT-DE780", "SMAT-MG200", "SMAT-AH6GH", "SMAT-T9LKJ",
+         "SMAT-B7YIP", "SMAT-VOLM8", "SMAT-SJ7KL", "SMAT-AYTIO", "SMAT-NOU7Y", "SMAT-OR6YU", "SMAT-NMHKJ", "SMAT-PASYU", "SMAT-MPYTU", "SMAT-ZLOUI",
+         "SMAT-CFGTY", "SMAT-SOUTR", "SMAT-FLPUO", "SMAT-BUTRE", "SMAT-STRUH", "SMAT-GIPLO", "SMAT-RYTRE", "SMAT-PJHGB", "SMAT-G6TH8", "SMAT-S0IO7",
+         "SMAT-NUTRF", "SMAT-LAS5G", "SMAT-TUR5O", "SMAT-VLPOU", "SMAT-CIYGB", "SMAT-PHOEX", "SMAT-FALCN", "SMAT-HAWKK", "SMAT-EAGLE", "SMAT-RAVEN",
+         "SMAT-HUNTR", "SMAT-RIDRR", "SMAT-RANGR", "SMAT-SCOUT", "SMAT-KNGHT", "SMAT-BARON", "SMAT-DUKEE", "SMAT-KINGG", "SMAT-CHIEF", "SMAT-CAPTN",
+         "SMAT-MAJRR", "SMAT-WIZRD", "SMAT-MAGGE", "SMAT-NINJA", "SMAT-SAMUR", "SMAT-HACKR", "SMAT-GEEKK", "SMAT-NERDD", "SMAT-GURUU", "SMAT-MASTR",
+         "SMAT-EXPRT", "SMAT-PROOO", "SMAT-BOSSS", "SMAT-CHAMP", "SMAT-HEROO", "SMAT-LEGND", "SMAT-MYTHH", "SMAT-TITAN", "SMAT-GOLDD", "SMAT-SILVR",
+         "SMAT-BRONZ", "SMAT-DIAMD", "SMAT-RUBYY", "SMAT-CRYPT", "SMAT-COINN", "SMAT-TOKEN", "SMAT-BLOCK", "SMAT-CHAIN", "SMAT-NODEE", "SMAT-MINER",
+         "SMAT-STAKR", "SMAT-TRADR", "SMAT-BROKR", "SMAT-SCALP", "SMAT-HODLR", "SMAT-FOMOO", "SMAT-FUDDD", "SMAT-PUMPP", "SMAT-DUMPP", "SMAT-BULLR",
+         "SMAT-ALTCN", "SMAT-DEFII", "SMAT-NFTTT", "SMAT-WEB33", "SMAT-METAA", "SMAT-CYBER", "SMAT-PIXEL", "SMAT-VECTR", "SMAT-DELTA", "SMAT-OMEGA"
+         ];
+         const count = Math.floor(Math.random() * 21 + 70); 
         for(let i=0; i<count; i++) {
-            let pBet = (Math.random() * 10 + 5).toFixed(6);
+            let pBet = (Math.random() * 1 + 0.9).toFixed(6);
             let pTarget = (1.1 + Math.random() * (Math.random() > 0.9 ? 10 : 3)).toFixed(2);
-            players.push({ name: names[Math.floor(Math.random()*names.length)] + "-" + Math.floor(Math.random()*99), bet: parseFloat(pBet), target: parseFloat(pTarget), won: false, isUser: false });
+            players.push({ name: names[i % names.length], bet: parseFloat(pBet), target: parseFloat(pTarget), won: false, isUser: false });
             fakePool += parseFloat(pBet);
         }
         updateUI();
@@ -569,26 +599,20 @@
 
     window.toggleMore = function() {
         visiblePlayersCount += 10;
-        if (visiblePlayersCount > players.length + 1) {
-            visiblePlayersCount = 10;
-        }
+        if (visiblePlayersCount > players.length + 1) visiblePlayersCount = 10;
         renderBets();
     }
     
     function renderBets() {
         const list = document.getElementById('live-bet-list');
-        let userBetObj = hasBet ? { name: "YOU (OXSMAT)", bet: betAmt, isUser: true, won: hasCashed } : null;
+        let userBetObj = hasBet ? { name: userUniqueGameName, bet: betAmt, isUser: true, won: hasCashed } : null;
         let sortedPlayers = [...players].sort((a, b) => b.bet - a.bet);
         let displayList = userBetObj ? [userBetObj, ...sortedPlayers] : sortedPlayers;
         const moreBtn = document.getElementById('more-btn');
 
         if (displayList.length > 10) { 
             moreBtn.style.display = 'block'; 
-            if (visiblePlayersCount >= displayList.length) {
-                moreBtn.innerHTML = `Show Less <i class="fas fa-chevron-up ml-1"></i>`;
-            } else {
-                moreBtn.innerHTML = `Show More (${visiblePlayersCount}/${displayList.length}) <i class="fas fa-chevron-down ml-1"></i>`;
-            }
+            moreBtn.innerHTML = (visiblePlayersCount >= displayList.length) ? `Show Less <i class="fas fa-chevron-up ml-1"></i>` : `Show More (${visiblePlayersCount}/${displayList.length}) <i class="fas fa-chevron-down ml-1"></i>`;
             displayList = displayList.slice(0, visiblePlayersCount);
         } else { 
             moreBtn.style.display = 'none'; 
@@ -598,23 +622,13 @@
             let pCol = "text-wait", mDisp = "-", pDisp = "-";
             if(p.won) { 
                 pCol="text-win"; 
-                const m = p.isUser ? currentMultiplier.toFixed(2) : p.target; 
+                const m = p.isUser ? userCashoutMultiplier.toFixed(2) : p.target; 
                 mDisp=m+"x"; 
                 pDisp="+"+(p.bet*m - p.bet).toFixed(4); 
+            } else if(isGameOver) { 
+                pCol="text-loss"; mDisp="0.00x"; pDisp="-"+p.bet.toFixed(4); 
             }
-            else if(isGameOver) { 
-                pCol="text-loss"; 
-                mDisp="0.00x"; 
-                pDisp="-"+p.bet.toFixed(4); 
-            }
-            return `<div class="bet-row">
-                <span class="player-name ${p.isUser?'text-[#ffa502] font-black':''}">
-                    ${p.isUser ? '<i class="fas fa-user-circle mr-1 text-[#00b3cc]"></i>' : ''}${p.name}
-                </span>
-                <span class="bet-value">${p.bet.toFixed(4)}</span>
-                <span class="mult-value ${pCol}">${mDisp}</span>
-                <span class="profit-value ${pCol}">${pDisp}</span>
-            </div>`;
+            return `<div class="bet-row"><span class="player-name ${p.isUser?'text-[#ffa502] font-black':''}">${p.isUser ? '<i class="fas fa-user-circle mr-1 text-[#00b3cc]"></i>' : ''}${p.name}</span><span class="bet-value">${p.bet.toFixed(4)}</span><span class="mult-value ${pCol}">${mDisp}</span><span class="profit-value ${pCol}">${pDisp}</span></div>`;
         }).join("");
         updateActiveCount();
     }
@@ -641,39 +655,29 @@
         const renderHeight = canvas.clientHeight - axisBottomMargin - 35;
         const maxTime = Math.max(8, flightSeconds);
         const maxMult = Math.max(2.0, currentMultiplier);
-        
         const endPointX = axisLeftMargin + (flightSeconds / maxTime) * renderWidth;
         const endPointY = (canvas.clientHeight - axisBottomMargin) - ((currentMultiplier - 1) / (maxMult - 1)) * renderHeight;
-        
         return { startX: axisLeftMargin, startY: canvas.clientHeight - axisBottomMargin, x: endPointX, y: endPointY, maxX: maxTime, maxY: maxMult };
     }
 
     function drawNeonGlowingCurve() {
         if (!canvas || !ctx) return;
-        const w = canvas.clientWidth;
-        const h = canvas.clientHeight;
+        const w = canvas.clientWidth; const h = canvas.clientHeight;
         ctx.clearRect(0, 0, w, h);
         const pos = getVectorPoints();
-
-        ctx.strokeStyle = 'rgba(0, 0, 0, 0.03)';
-        ctx.lineWidth = 1;
+        ctx.strokeStyle = 'rgba(0, 0, 0, 0.03)'; ctx.lineWidth = 1;
         for (let i = 1; i <= 5; i++) {
             let gridY = pos.startY - (i / 5) * (pos.startY - 35);
             ctx.beginPath(); ctx.moveTo(axisLeftMargin, gridY); ctx.lineTo(w - 20, gridY); ctx.stroke();
-
             let gridX = axisLeftMargin + (i / 5) * (w - axisLeftMargin - 20);
             ctx.beginPath(); ctx.moveTo(gridX, 0); ctx.lineTo(gridX, pos.startY); ctx.stroke();
         }
-
-        ctx.fillStyle = '#65676b';
-        ctx.font = '900 10px Inter';
-        ctx.textAlign = 'right';
+        ctx.fillStyle = '#65676b'; ctx.font = '900 10px Inter'; ctx.textAlign = 'right';
         for (let i = 0; i <= 4; i++) {
             let valY = 1 + (pos.maxY - 1) * (i / 4);
             let labelY = pos.startY - (i / 4) * (pos.startY - 35);
             ctx.fillText(valY.toFixed(1) + 'x', axisLeftMargin - 10, labelY + 4);
         }
-
         ctx.textAlign = 'center';
         for (let i = 0; i <= 4; i++) {
             let valX = pos.maxX * (i / 4);
@@ -681,48 +685,24 @@
             ctx.fillText(valX.toFixed(0) + 's', labelX, h - 12);
         }
         ctx.textAlign = 'left'; 
-
         if (flightSeconds > 0) {
-            ctx.beginPath();
-            ctx.moveTo(pos.startX, pos.startY);
+            ctx.beginPath(); ctx.moveTo(pos.startX, pos.startY);
             let ctrlPointX = pos.startX + (pos.x - pos.startX) * 0.5;
             let ctrlPointY = pos.startY + (pos.y - pos.startY) * 0.5;
-            ctx.quadraticCurveTo(ctrlPointX, pos.startY, pos.x, pos.y);
-            ctx.lineTo(pos.x, pos.startY);
-            ctx.closePath();
-
+            ctx.quadraticCurveTo(ctrlPointX, pos.startY, pos.x, pos.y); ctx.lineTo(pos.x, pos.startY); ctx.closePath();
             let vectorGradient = ctx.createLinearGradient(pos.startX, pos.y, pos.startX, pos.startY);
-            vectorGradient.addColorStop(0, 'rgba(0, 179, 204, 0.45)'); 
-            vectorGradient.addColorStop(1, 'rgba(0, 179, 204, 0.0)');
-            ctx.fillStyle = vectorGradient;
-            ctx.fill();
-
-            ctx.save();
-            ctx.beginPath();
-            ctx.moveTo(pos.startX, pos.startY);
-            ctx.quadraticCurveTo(ctrlPointX, pos.startY, pos.x, pos.y);
-            ctx.lineWidth = 5.0;
-            ctx.strokeStyle = '#00b3cc';
-            ctx.shadowBlur = 15;
-            ctx.shadowColor = '#00b3cc';
-            ctx.stroke();
-            ctx.restore();
-
-            ctx.save();
-            ctx.beginPath();
-            ctx.arc(pos.x, pos.y, 7, 0, 2 * Math.PI);
-            ctx.fillStyle = '#ffa502';
-            ctx.shadowBlur = 10;
-            ctx.shadowColor = '#ffa502';
-            ctx.fill();
-            ctx.restore();
+            vectorGradient.addColorStop(0, 'rgba(0, 179, 204, 0.45)'); vectorGradient.addColorStop(1, 'rgba(0, 179, 204, 0.0)');
+            ctx.fillStyle = vectorGradient; ctx.fill();
+            ctx.save(); ctx.beginPath(); ctx.moveTo(pos.startX, pos.startY); ctx.quadraticCurveTo(ctrlPointX, pos.startY, pos.x, pos.y);
+            ctx.lineWidth = 5.0; ctx.strokeStyle = '#00b3cc'; ctx.shadowBlur = 15; ctx.shadowColor = '#00b3cc'; ctx.stroke(); ctx.restore();
+            ctx.save(); ctx.beginPath(); ctx.arc(pos.x, pos.y, 7, 0, 2 * Math.PI);
+            ctx.fillStyle = '#ffa502'; ctx.shadowBlur = 10; ctx.shadowColor = '#ffa502'; ctx.fill(); ctx.restore();
         }
     }
 
     function renderPills() {
         const pillContainer = document.getElementById('history-pills');
         pillContainer.innerHTML = "";
-        
         let displayPills = [...crashHistoryDots].reverse().slice(0, 16);
         displayPills.forEach(result => {
             const pill = document.createElement('div');
@@ -734,127 +714,69 @@
 
     function prepareRound() {
         isRunning=false; hasCashed=false; isGameOver=false; flightSeconds=0; isProcessingBet = false;
-        
+        userCashoutMultiplier = 1.00; 
         const m = document.getElementById('multiplier');
         m.innerText = "1.00x"; m.className = ""; m.style.color = "#00b3cc";
-        
         if(ctx) ctx.clearRect(0, 0, canvas.width, canvas.height);
-        
         let t = 10; 
         document.getElementById('timer-num').innerText = t;
         visiblePlayersCount = 10; 
         generateFakePlayers(); 
         document.getElementById('countdown-overlay').style.display='flex';
-        updateUI();
-        drawNeonGlowingCurve();
-
+        updateUI(); drawNeonGlowingCurve();
         const timer = setInterval(()=>{ 
-            t--; 
-            document.getElementById('timer-num').innerText = t; 
+            t--; document.getElementById('timer-num').innerText = t; 
             if(t <= 3 && t > 0) playSound('tick');
-            if(t<=0){ 
-                clearInterval(timer); 
-                document.getElementById('countdown-overlay').style.display='none'; 
-                startFlight(); 
-            }
+            if(t<=0){ clearInterval(timer); document.getElementById('countdown-overlay').style.display='none'; startFlight(); }
         }, 1000);
     }
 
     window.placeBet = function() {
         if(!userUID) return showModernToast("Access Denied", "Please sign in to start betting.", "danger");
         if(isRunning || hasBet || isProcessingBet) return;
-        
         const val = parseFloat(document.getElementById('bet-amount').value);
         if(isNaN(val) || val <= 0) return showModernToast("Invalid Input", "Enter a valid OXSMAT amount.", "danger");
         if(oxsmatBalance < val) return showModernToast("Insufficient Funds", "You do not have enough OXSMAT balance.", "danger");
-        
         isProcessingBet = true;
         const actionBtn = document.getElementById('action-btn');
-        actionBtn.innerText = "PROCESSING..."; 
-        actionBtn.disabled = true;
-
-        const userBalanceRef = ref(db, `users/${userUID}/balances/oxsmat_balance`);
+        actionBtn.innerText = "PROCESSING..."; actionBtn.disabled = true;
+        const userBalanceRef = ref(db, `users/${userUID}/oxsmat_balance`);
         runTransaction(userBalanceRef, (currentBal) => {
             if (currentBal === null || currentBal < val) return currentBal; 
             return currentBal - val;
         }).then((result) => {
             if (!result.committed) {
                 showModernToast("Execution Error", "Deduction failed. Try again.", "danger");
-                isProcessingBet = false;
-                manageButtonStateText();
+                isProcessingBet = false; manageButtonStateText();
             } else {
-                betAmt = val; 
-                hasBet = true;
-                
-                // History Push for Bet Placement
+                betAmt = val; hasBet = true;
                 const hKey = push(ref(db, `users/${userUID}/history`)).key;
-                set(ref(db, `users/${userUID}/history/${hKey}`), { 
-                    method: "To Crash Out", 
-                    amount: val.toFixed(6), 
-                    coin: "OXSMAT", 
-                    status: 'success', 
-                    color: 'red', 
-                    timestamp: Date.now(), 
-                    address: "Crash Arena", 
-                    network: "SmatBit Explore", 
-                    hash: "CRASH-" + Math.random().toString(36).substr(2,9).toUpperCase() 
-                });
-
-                showModernToast("Bet Placed", `${val.toFixed(2)} OXSMAT locked inside current round.`, "success");
-                manageButtonStateText();
-                renderBets();
-                updateUI();
+                set(ref(db, `users/${userUID}/history/${hKey}`), { method: "To Crash Out", amount: val.toFixed(6), coin: "OXSMAT", status: 'success', color: 'red', timestamp: Date.now(), address: "Crash Arena", network: "Internal Crash Game", hash: "CRASH-" + Math.random().toString(36).substr(2,9).toUpperCase() });
+                showModernToast("Bet Placed", `${val.toFixed(2)} OXSMAT locked.`, "success");
+                manageButtonStateText(); renderBets(); updateUI();
             }
-        }).catch(() => {
-            isProcessingBet = false;
-            manageButtonStateText();
-        });
+        }).catch(() => { isProcessingBet = false; manageButtonStateText(); });
     }
 
     function startFlight() {
         isRunning = true; currentMultiplier = 1.00; crashAt = calculateCrashPoint(); renderDots();
         const btn = document.getElementById('action-btn');
-        
         if(hasBet){ 
-            btn.disabled = false; 
-            btn.onclick = manualCashOut; 
+            btn.disabled = false; btn.onclick = manualCashOut; 
             btn.innerText = "CASH OUT: " + (betAmt * currentMultiplier).toFixed(4);
-            btn.className = "w-full bg-[#2ed573] text-white py-4 rounded-xl font-black text-xl shadow-md transition-all active:scale-95 transition-all"; 
+            btn.className = "w-full bg-[#2ed573] text-white py-4 rounded-xl font-black text-xl shadow-md transition-all active:scale-95"; 
         } else { 
-            btn.disabled = true; 
-            btn.innerText = "ARENA LIVE RUNNING..."; 
-            btn.className = "w-full bg-gray-200 text-gray-400 py-4 rounded-xl font-black text-xl cursor-not-allowed"; 
+            btn.disabled = true; btn.innerText = "Game Running..."; btn.className = "w-full bg-gray-200 text-gray-400 py-4 rounded-xl font-black text-xl cursor-not-allowed"; 
         }
-        
-        if (crashAt <= 1.00) { 
-            doCrash(); 
-            return; 
-        }
-
+        if (crashAt <= 1.00) { doCrash(); return; }
         gameLoop = setInterval(()=>{
             currentMultiplier += (currentMultiplier < 10 ? 0.01 : currentMultiplier * 0.006);
             flightSeconds += 0.06; 
-            
-            if(currentMultiplier >= crashAt) { 
-                currentMultiplier = crashAt; 
-                doCrash(); 
-                return; 
-            }
-            
+            if(currentMultiplier >= crashAt) { currentMultiplier = crashAt; doCrash(); return; }
             document.getElementById('multiplier').innerText = currentMultiplier.toFixed(2) + "x";
             if(hasBet && !hasCashed) btn.innerText = "CASH OUT: " + (betAmt * currentMultiplier).toFixed(4) + " OXSMAT";
-            
-            players.forEach(p => { 
-                if (!p.won && currentMultiplier >= p.target) { 
-                    p.won = true; 
-                    bankBalance -= (p.bet * p.target - p.bet); 
-                    updateUI(); 
-                    renderBets(); 
-                } 
-            });
-            
+            players.forEach(p => { if (!p.won && currentMultiplier >= p.target) { p.won = true; updateUI(); renderBets(); } });
             drawNeonGlowingCurve();
-            
             let autoVal = parseFloat(document.getElementById('auto-cashout').value) || Infinity;
             if(hasBet && !hasCashed && currentMultiplier >= autoVal) manualCashOut();
         }, 60);
@@ -862,85 +784,42 @@
     
     function manualCashOut() {
         if(!hasBet || hasCashed || !isRunning) return;
-        hasCashed = true; 
-        const winAmount = (betAmt * currentMultiplier);
-        const profit = winAmount - betAmt;
-        
-        const userBalanceRef = ref(db, `users/${userUID}/balances/oxsmat_balance`);
-        runTransaction(userBalanceRef, (currentBal) => {
-            return (currentBal || 0) + winAmount;
-        }).then(() => {
-            bankBalance -= profit;
+        hasCashed = true; userCashoutMultiplier = currentMultiplier; 
+        const winAmount = (betAmt * userCashoutMultiplier);
+        const actionBtn = document.getElementById('action-btn');
+        actionBtn.innerText = "WIN ACCUMULATED"; actionBtn.disabled = true; 
+        actionBtn.className = "w-full bg-gray-200 text-[#2ed573] py-4 rounded-xl font-black text-xl cursor-not-allowed";
+        renderBets(); 
+        const userBalanceRef = ref(db, `users/${userUID}/oxsmat_balance`);
+        runTransaction(userBalanceRef, (currentBal) => { return (currentBal || 0) + winAmount; }).then(() => {
             updateUI();
-            
-            // History Push for Win Cashout
             const hKey = push(ref(db, `users/${userUID}/history`)).key;
-            set(ref(db, `users/${userUID}/history/${hKey}`), { 
-                method: "From Crash In", 
-                amount: winAmount.toFixed(6), 
-                coin: "OXSMAT", 
-                status: 'success', 
-                color: 'green', 
-                timestamp: Date.now(), 
-                address: "Crash Arena", 
-                network: "SmatBit Explore", 
-                hash: "CRASH-" + Math.random().toString(36).substr(2,9).toUpperCase() 
-            });
-
-            showModernToast("SUCCESSFUL CASH OUT", `Received +${winAmount.toFixed(6)} OXSMAT safely.`, "success");
-            
-            const actionBtn = document.getElementById('action-btn');
-            actionBtn.innerText = "WINNER ACCUMULATED"; 
-            actionBtn.disabled = true; 
-            actionBtn.className = "w-full bg-gray-200 text-[#2ed573] py-4 rounded-xl font-black text-xl cursor-not-allowed";
-            renderBets();
+            set(ref(db, `users/${userUID}/history/${hKey}`), { method: "From Crash In", amount: winAmount.toFixed(6), coin: "OXSMAT", status: 'success', color: 'green', timestamp: Date.now(), address: "Crash Arena", network: "Internal Crash Game", hash: "CRASH-" + Math.random().toString(36).substr(2,9).toUpperCase() });
+            showModernToast("SUCCESSFUL CASH OUT", `Received +${winAmount.toFixed(6)} OXSMAT.`, "success");
         });
     }
 
     function doCrash() {
         if(!isRunning && !isGameOver) return;
         clearInterval(gameLoop); isRunning=false; isGameOver=true;
-        
         const actionBtn = document.getElementById('action-btn');
-        actionBtn.disabled = true; 
-        actionBtn.innerText = "CRASHED AREA EXPLODED";
-        actionBtn.className = "w-full bg-red-100 text-red-500 py-4 rounded-xl font-black text-xl cursor-not-allowed border border-red-200";
-        
-        if (hasBet && !hasCashed) { 
-            bankBalance += betAmt; 
-            showModernToast("BOOM! CRASHED", `Lost ${betAmt.toFixed(2)} OXSMAT this round.`, "danger");
-        }
-        
-        players.forEach(p => { if(!p.won) bankBalance += p.bet; });
+        actionBtn.disabled = true; actionBtn.innerText = "CRASHED EXPLODED";
+        actionBtn.className = "w-full bg-red-100 text-red-300 py-4 rounded-xl font-black text-xl cursor-not-allowed border border-red-200";
+        if (hasBet && !hasCashed) showModernToast("BOOM! CRASHED", `Lost ${betAmt.toFixed(2)} OXSMAT.`, "danger");
         const result = parseFloat(currentMultiplier.toFixed(2));
-        
         const m = document.getElementById('multiplier');
-        m.innerText = result.toFixed(2) + "x\nCRASHED"; 
-        m.className = "crashed-text"; 
-        
+        m.innerText = result.toFixed(2) + "x\nCRASHED"; m.className = "crashed-text"; 
         crashHistoryDots.push(result);
         if(crashHistoryDots.length > 50) crashHistoryDots.shift();
         gameId++; 
-        
-        set(ref(db, 'crash_arena/config'), {
-            gameId: gameId,
-            bankBalance: bankBalance,
-            history: crashHistoryDots
-        });
-
-        renderDots(); 
-        renderBets();
-        renderPills();
-
-        setTimeout(()=>{
-            hasBet = false; betAmt = 0; isProcessingBet = false; hasCashed = false;
-            manageButtonStateText();
-            prepareRound();
-        }, 2200);
+        set(ref(db, 'crash_arena/config'), { gameId: gameId, history: crashHistoryDots });
+        renderDots(); renderBets(); renderPills();
+        setTimeout(()=>{ hasBet = false; betAmt = 0; isProcessingBet = false; hasCashed = false; manageButtonStateText(); prepareRound(); }, 2200);
     }
 
     initCanvasSystem();
     prepareRound();
 </script>
+
 </body>
 </html>
