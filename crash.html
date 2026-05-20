@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>SmatBit Explore - Crash Arena</title>
+    <title>SMAT | Crash Arena</title>
     
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
@@ -11,197 +11,144 @@
     <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><circle cx='50' cy='50' r='50' fill='%2300E5FF'/><text x='50%25' y='55%25' text-anchor='middle' dy='.3em' fill='white' font-family='Inter, sans-serif' font-weight='900' font-size='60'>S</text></svg>">
     
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@400;700;900&family=Inter:wght@400;600;700;900&display=swap');
-        
-        body { 
-            background-color: #f0f2f5; 
-            color: #1a1f26; 
-            font-family: 'Inter', sans-serif; 
-            overflow-x: hidden; 
-            width: 100%; 
-            margin: 0; 
-            padding: 0; 
-        }
-        
-        .app-container { 
-            width: 100%;             
-            min-height: 100vh;       
-            background: #f0f2f5; 
-            padding-bottom: 50px;
-            box-sizing: border-box;  
-        }
-        
-        .s-logo-wrapper { 
-            position: relative; 
-            width: 45px; 
-            height: 45px; 
-            background: linear-gradient(135deg, #e6b800 0%, #00b3cc 100%); 
-            border-radius: 12px; 
-            display: flex; 
-            align-items: center; 
-            justify-content: center; 
-            box-shadow: 0 4px 12px rgba(0, 179, 204, 0.2); 
-            margin-right: 12px; 
-        }    
-        .s-logo-inner { 
-            font-family: 'Montserrat', sans-serif; 
-            font-weight: 900; 
-            font-size: 26px; 
-            color: #ffffff; 
-        }       
-        .header-title { 
-            font-family: 'Montserrat', sans-serif;
-            font-size: 22px; 
-            font-weight: 900; 
-            letter-spacing: -0.5px; 
-            line-height: 1; 
-            color: #d4a373;
-        }
-
-        .game-screen { 
-            height: 42vh; 
-            min-height: 300px; 
-            background: #ffffff; 
-            border: 1px solid rgba(0, 179, 204, 0.2); 
-            border-radius: 16px; 
-            position: relative; 
-            overflow: hidden; 
-            margin: 0 16px; 
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.05);
-        }
-        
-        #chartCanvas { 
-            position: absolute; 
-            inset: 0; 
-            width: 100%; 
-            height: 100%; 
-            z-index: 25; 
-            pointer-events: none; 
-            display: block; 
-        }
-
-        #multiplier { 
-            position: absolute; 
-            top: 45%; 
-            left: 50%; 
-            transform: translate(-50%, -50%); 
-            font-family: 'Montserrat', sans-serif;
-            font-size: 4.5rem; 
-            font-weight: 900; 
-            color: #00b3cc; 
-            z-index: 50; 
-            text-shadow: 0 2px 10px rgba(0, 179, 204, 0.1); 
-            letter-spacing: -2px;
-            pointer-events: none;
-            text-align: center;
-            width: 100%;
-            max-width: 90%;
-            word-wrap: break-word;
-        }
-        @media(max-width: 480px) {
-            #multiplier { font-size: 3.2rem; }
-        }
-        #multiplier.crashed-text { 
-            font-size: 2.5rem; 
-            letter-spacing: 0; 
-            white-space: normal; 
-            color: #d93838;
-            text-shadow: 0 2px 10px rgba(219, 56, 56, 0.1);
-            line-height: 1.2;
-        }
-        @media(max-width: 480px) {
-            #multiplier.crashed-text { font-size: 1.8rem; }
-        }
-
-        #dots-wrapper { display: flex; flex-direction: row; justify-content: space-between; align-items: center; width: 100%; }
-        
-        #history-pills {
-            display: grid;
-            grid-template-columns: repeat(8, minmax(0, 1fr));
-            gap: 6px;        
-            width: calc(100% - 32px);
-            margin: 12px 16px;
-        }
-        
-        .history-pill-item {
-            text-align: center;
-            font-size: 11px;
-            font-weight: 900;
-            padding: 6px 0;
-            border-radius: 6px;
-            background: #ffffff;
-            border: 1px solid rgba(0, 0, 0, 0.05);
-            font-family: 'Montserrat', sans-serif;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.02);
-        }
-        
-        .history-dot { width: 14px; height: 14px; border-radius: 50%; flex-shrink: 0; box-shadow: 0 1px 3px rgba(0,0,0,0.1); }
-        .dot-white { background-color: #b0bec5; }
-        .dot-gray { background-color: #78909c; }
-        .dot-green { background-color: #2ed573; box-shadow: 0 0 6px rgba(46, 213, 115, 0.3); }
-        .dot-yellow { background-color: #ffa502; box-shadow: 0 0 6px rgba(255, 165, 2, 0.3); }
-        
-        .pill-white { color: #78909c; border-color: rgba(0,0,0,0.08); }
-        .pill-gray { color: #37474f; border-color: rgba(0,0,0,0.15); }
-        .pill-green { color: #2ed573; border-color: rgba(46, 213, 115, 0.2); background: rgba(46, 213, 115, 0.05); }
-        .pill-yellow { color: #ffa502; border-color: rgba(255, 165, 2, 0.2); background: rgba(255, 165, 2, 0.05); }
-        .dot-live { background: transparent; border: 2px dashed #00b3cc; animation: rotateLive 4s linear infinite; order: -1; }
-
-        @keyframes rotateLive { 100% { transform: rotate(360deg); } }
-
-        .bet-container { margin-top: 20px; padding: 0 16px; }
-        .bet-header { display: grid; grid-template-columns: 1.5fr 1fr 1fr 1fr; padding: 12px 14px; background: #ffffff; border-radius: 8px 8px 0 0; border: 1px solid rgba(0,0,0,0.05); font-size: 11px; font-weight: 800; color: #65676b; text-transform: uppercase; letter-spacing: 1px; }
-        .bet-grid-box { background: #ffffff; border: 1px solid rgba(0,0,0,0.05); border-top: none; border-radius: 0 0 8px 8px; overflow: hidden; box-shadow: 0 4px 12px rgba(0,0,0,0.02); }
-        .bet-row { display: grid; grid-template-columns: 1.5fr 1fr 1fr 1fr; padding: 14px; border-bottom: 1px solid rgba(0,0,0,0.02); align-items: center; }
-        .player-name { font-size: 12px; font-weight: 700; color: #1c1e21; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-        .bet-value { font-size: 12px; font-weight: 800; color: #e6b800; text-align: center; }
-        .mult-value { font-size: 12px; font-weight: 900; text-align: center; }
-        .profit-value { font-size: 12px; font-weight: 900; text-align: right; }
-        
-        .text-win { color: #2ed573 !important; }
-        .text-loss { color: #d93838 !important; }
-        .text-wait { color: #bcc0c4; }
-
-        #countdown-overlay { position: absolute; inset: 0; background: rgba(240, 242, 245, 0.95); z-index: 100; display: none; flex-direction: column; align-items: center; justify-content: center; }
-        
-        #toast-container {
-            position: fixed;
-            top: 20px;
-            right: 20px;
-            z-index: 100000;
-            display: flex;
-            flex-direction: column;
-            gap: 10px;
-            width: 340px;
-            max-width: calc(100vw - 40px);
-        }
-        .modern-toast {
-            background: #ffffff;
-            border-left: 4px solid #ffa502;
-            border-top: 1px solid rgba(0,0,0,0.05);
-            border-right: 1px solid rgba(0,0,0,0.05);
-            border-bottom: 1px solid rgba(0,0,0,0.05);
-            padding: 16px;
-            border-radius: 8px;
-            box-shadow: 0 10px 25px rgba(0,0,0,0.08);
-            display: flex;
-            align-items: center;
-            gap: 12px;
-            transform: translateX(120%);
-            transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-        }
-        .modern-toast.show { transform: translateX(0); }
-        .modern-toast.success { border-left-color: #2ed573; }
-        .modern-toast.danger { border-left-color: #d93838; }
-        .modern-toast.info { border-left-color: #00b3cc; }
-        .modern-toast div { color: #1c1e21; }
-
-        #sound-toggle { background: #ffffff; width: 38px; height: 38px; border-radius: 10px; border: 1px solid rgba(0,0,0,0.08); display: flex; align-items: center; justify-content: center; cursor: pointer; margin-right: 10px; }
-        #sound-toggle i { color: #00b3cc; font-size: 14px; }
-
-        .action-button-wrapper { position: relative; width: 100%; height: 56px; }
-        #action-btn { position: absolute; top: 0; left: 0; width: 100%; height: 100%; margin: 0 !important; font-family: 'Montserrat', sans-serif; letter-spacing: 1px; }
+    @import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@400;700;900&family=Inter:wght@400;600;700;900&display=swap');
+    
+    body { 
+    background-color: #f0f2f5; 
+    color: #1a1f26; 
+    font-family: 'Inter', sans-serif; 
+    margin: 0; 
+    padding: 0; 
+    height: 100vh;
+    display: flex;
+    flex-direction: column;
+    }
+    
+    /* হেডার ফিক্সড রাখার জন্য কন্টেইনার */
+    .header-fixed-wrapper {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    z-index: 1000;
+    background: #ffffff;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+    }
+    
+    /* স্ক্রলযোগ্য অংশ */
+    .app-container { 
+    flex: 1;
+    overflow-y: auto;
+    padding-top: 80px; /* হেডার এর উচ্চতা অনুযায়ী জায়গা */
+    padding-bottom: 50px;
+    box-sizing: border-box;
+    }
+    
+    .s-logo-wrapper { 
+    position: relative; 
+    width: 45px; 
+    height: 45px; 
+    background: linear-gradient(135deg, #e6b800 0%, #00b3cc 100%); 
+    border-radius: 12px; 
+    display: flex; 
+    align-items: center; 
+    justify-content: center; 
+    box-shadow: 0 4px 12px rgba(0, 179, 204, 0.2); 
+    margin-right: 12px; 
+    }    
+    .s-logo-inner { font-family: 'Montserrat', sans-serif; font-weight: 900; font-size: 26px; color: #ffffff; }       
+    .header-title { font-family: 'Montserrat', sans-serif; font-size: 22px; font-weight: 900; letter-spacing: -0.5px; line-height: 1; color: #d4a373; }
+    
+    .game-screen { 
+    height: 42vh; 
+    min-height: 300px; 
+    background: #ffffff; 
+    border: 1px solid rgba(0, 179, 204, 0.2); 
+    border-radius: 16px; 
+    position: relative; 
+    overflow: hidden; 
+    margin: 0 16px; 
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.05);
+    }
+    
+    #chartCanvas { position: absolute; inset: 0; width: 100%; height: 100%; z-index: 25; pointer-events: none; display: block; }
+    
+    #multiplier { 
+    position: absolute; top: 45%; left: 50%; transform: translate(-50%, -50%); 
+    font-family: 'Montserrat', sans-serif; font-size: 4.5rem; font-weight: 900; color: #00b3cc; 
+    z-index: 50; text-shadow: 0 2px 10px rgba(0, 179, 204, 0.1); letter-spacing: -2px;
+    text-align: center; width: 100%; max-width: 90%;
+    }
+    @media(max-width: 480px) { #multiplier { font-size: 3.2rem; } }
+    #multiplier.crashed-text { font-size: 2.5rem; color: #d93838; }
+    @media(max-width: 480px) { #multiplier.crashed-text { font-size: 1.8rem; } }
+    
+    #dots-wrapper { display: flex; flex-direction: row; justify-content: space-between; align-items: center; width: 100%; }
+    
+    #history-pills { display: grid; grid-template-columns: repeat(8, minmax(0, 1fr)); gap: 6px; width: calc(100% - 32px); margin: 12px 16px; }
+    
+    .history-pill-item { text-align: center; font-size: 11px; font-weight: 900; padding: 6px 0; border-radius: 6px; background: #ffffff; border: 1px solid rgba(0, 0, 0, 0.05); font-family: 'Montserrat', sans-serif; box-shadow: 0 2px 4px rgba(0,0,0,0.02); }
+    
+    .history-dot { width: 14px; height: 14px; border-radius: 50%; flex-shrink: 0; }
+    /* ডট কালার */
+    .dot-white { background-color: #b0bec5; }
+    .dot-gray { background-color: #78909c; }
+    .dot-green { background-color: #2ed573; }
+    .dot-yellow { background-color: #ffa502; }
+    
+    /* পিল কালার (এগুলো অবশ্যই আপনার CSS এ থাকতে হবে) */
+    .pill-white { color: #78909c; border-color: rgba(0,0,0,0.08); background: #ffffff; }
+    .pill-gray { color: #37474f; border-color: rgba(0,0,0,0.15); background: #f0f2f5; }
+    .pill-green { color: #2ed573; border-color: rgba(46, 213, 115, 0.2); background: rgba(46, 213, 115, 0.05); }
+    .pill-yellow { color: #ffa502; border-color: rgba(255, 165, 2, 0.2); background: rgba(255, 165, 2, 0.05); }
+    
+    .dot-live { background: transparent; border: 2px dashed #00b3cc; animation: rotateLive 4s linear infinite; }
+    
+    @keyframes rotateLive { 100% { transform: rotate(360deg); } }
+    
+    .bet-container { margin-top: 20px; padding: 0 16px; }
+    .bet-header { display: grid; grid-template-columns: 1.5fr 1fr 1fr 1fr; padding: 12px 14px; background: #ffffff; border-radius: 8px 8px 0 0; border: 1px solid rgba(0,0,0,0.05); font-size: 11px; font-weight: 800; color: #65676b; text-transform: uppercase; }
+    .bet-grid-box { background: #ffffff; border: 1px solid rgba(0,0,0,0.05); border-top: none; border-radius: 0 0 8px 8px; overflow: hidden; }
+    .bet-row { display: grid; grid-template-columns: 1.5fr 1fr 1fr 1fr; padding: 14px; border-bottom: 1px solid rgba(0,0,0,0.02); align-items: center; }
+    .player-name { font-size: 12px; font-weight: 700; color: #1c1e21; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .bet-value { font-size: 12px; font-weight: 800; color: #e6b800; text-align: center; }
+    .mult-value { font-size: 12px; font-weight: 900; text-align: center; }
+    .profit-value { font-size: 12px; font-weight: 900; text-align: right; }
+    
+    .text-win { color: #2ed573 !important; }
+    .text-loss { color: #d93838 !important; }
+    .text-wait { color: #bcc0c4; }
+    
+    #countdown-overlay { position: absolute; inset: 0; background: rgba(240, 242, 245, 0.95); z-index: 100; display: none; flex-direction: column; align-items: center; justify-content: center; }
+    
+    #toast-container { position: fixed; top: 20px; right: 20px; z-index: 100000; display: flex; flex-direction: column; gap: 10px; width: 340px; }
+    .modern-toast { background: #ffffff; border-left: 4px solid #ffa502; padding: 16px; border-radius: 8px; box-shadow: 0 10px 25px rgba(0,0,0,0.08); transform: translateX(120%); transition: transform 0.3s; }
+    .modern-toast.show { transform: translateX(0); }
+    
+    #sound-toggle { background: #ffffff; width: 38px; height: 38px; border-radius: 10px; border: 1px solid rgba(0,0,0,0.08); display: flex; align-items: center; justify-content: center; cursor: pointer; margin-right: 10px; }
+    
+    .action-button-wrapper { position: relative; width: 100%; height: 56px; }
+    #action-btn { position: absolute; top: 0; left: 0; width: 100%; height: 100%; }
+   /* হেডারটি স্থির করার জন্য */
+   .app-container > div:first-child {
+   position: fixed;
+   top: 0;
+   left: 0;
+   width: 100%;
+   z-index: 1000;
+   box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+   }
+   
+   /* কন্টেন্ট যেন হেডারের নিচে ঢাকা না পড়ে */
+   .app-container {
+   padding-top: 80px; /* হেডার এর উচ্চতা অনুযায়ী জায়গা */
+   overflow-y: auto;
+   height: 100vh;
+   }
+   
+    
     </style>
+    
 </head>
 <body>
 
