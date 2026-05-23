@@ -1,112 +1,98 @@
-/**
- * SMAT CEX - Central Data Engine (Final Mainnet Version)
- * Description: Handles Global Balance, Price, Networks, and Assets across the platform.
- * Author: Gemini AI Collaboration
- */
-
-// ১. এপিআই কনফিগারেশন
 const API_CONFIG = {
-    baseUrl: "api/v1", 
+    baseUrl: "api/v1",
     isLive: false // মেইন সার্ভারে দেওয়ার সময় এটি true করে দিবেন
 };
 
-// ২. মূল কয়েন কনফিগারেশন (এখান থেকে লগো, নাম, সিম্বল, নেটওয়ার্ক এবং কন্টাক্ট অটো লোড হবে)
 const GLOBAL_COINS = [
     { 
         sym: 'smat', 
         name: 'SMAT Native', 
+        type: 'native', 
         price: 10.00, 
         decimal: 4, 
         key: 'smat_balance', 
         networks: ['SMAT Chain', 'BEP20'], 
-        contract: '0x123...smat', 
+        bscContract: null, 
+        ercContract: null, 
         vol: '1.2M' 
     },
-{ 
-        sym: 'oxSMAT', 
+    { 
+        sym: 'oxsmat', 
         name: 'oxPower SMAT', 
+        type: 'token', 
         price: 8.00, 
         decimal: 18, 
         key: 'oxsmat_balance', 
-        networks: ['No Transferable Token'], 
-        contract: '0x217...eth', 
-        vol: '12.1B' 
-    },
-{ 
-        sym: 'tbnb', 
-        name: 'tBNB', 
-        price: 1.00, 
-        decimal: 18, 
-        key: 'tbnb_balance', 
-        networks: ['No Transferable Token'], 
-        contract: '0x217...eth', 
+        networks: ['BEP20', 'ERC20'], 
+        bscContract: '0x217...eth', 
+        ercContract: '0x217...eth', 
         vol: '12.1B' 
     },
     { 
         sym: 'btc', 
         name: 'Bitcoin', 
+        type: 'token', 
         price: 61000.00, 
         decimal: 8, 
         key: 'btc_balance', 
         networks: ['BTC', 'BEP20'], 
-        contract: 'Native', 
+        bscContract: '0x123...btc', 
+        ercContract: '0x456...btc', 
         vol: '25.5B' 
     },
     { 
         sym: 'eth', 
         name: 'Ethereum', 
+        type: 'token', 
         price: 2350.50, 
         decimal: 18, 
         key: 'eth_balance', 
         networks: ['ERC20', 'BEP20'], 
-        contract: '0x217...eth', 
+        bscContract: '0x217...eth', 
+        ercContract: '0x217...eth', 
         vol: '12.1B' 
     },
-   
-  
     { 
         sym: 'bnb', 
         name: 'Binance Coin', 
+        type: 'native', 
         price: 588.00, 
         decimal: 8, 
         key: 'bnb_balance', 
-        networks: ['BEP20'], 
-        contract: 'Native', 
+        networks: ['BEP20', 'ERC20'], 
+        bscContract: null, 
+        ercContract: null, 
         vol: '850M' 
     },
     { 
         sym: 'usdt', 
         name: 'Tether', 
+        type: 'token', 
         price: 1.00, 
         decimal: 6, 
         key: 'usdt_balance', 
         networks: ['TRC20', 'BEP20', 'ERC20'], 
-        contract: '0x55d...usdt', 
+        bscContract: '0x55d...usdt', 
+        ercContract: '0x55d...usdt', 
         vol: '65.2B' 
     },
-    
-    
-{ 
-        sym: 'XRP', 
-        name: 'Ripple', 
+    { 
+        sym: 'xlm', 
+        name: 'Monoro', 
+        type: 'token', 
         price: 1.15, 
         decimal: 8, 
-        key: 'xrp_balance', 
-        networks: ['BSC20'], 
-        contract: 'Native', 
+        key: 'xlm_balance', 
+        networks: ['BSC20', 'ERC20'], 
+        bscContract: '0xabc...xrp', 
+        ercContract: null, 
         vol: '1.1B' 
     }
-    // নতুন কয়েন এড করতে হলে শুধু এখানে উপরের ফরম্যাটে একটি অবজেক্ট যোগ করবেন।
 ];
 
-/**
- * ৩. লাইভ ডাটা কানেক্টর (Server API Connector)
- * রিয়াল ইউজার ডাটাবেস থেকে ব্যালেন্স নিয়ে আসবে।
- */
 async function getLiveBalance(coinKey) {
     if (API_CONFIG.isLive) {
         try {
-            // আপনার সার্ভারের PHP ফাইল থেকে ডাটা নিবে
             const response = await fetch(`${API_CONFIG.baseUrl}/get_balance.php?asset=${coinKey}`);
             const data = await response.json();
             return data.status === "success" ? data.balance : "0.0000"; 
@@ -114,50 +100,45 @@ async function getLiveBalance(coinKey) {
             console.error("Critical API Error:", error);
             return "0.0000";
         }
-    } else {
-        // টেস্টিং মোড: লোকাল মেমোরি থেকে ডাটা নিবে
-        let stored = localStorage.getItem(coinKey);
-        return stored ? stored : "0.00000000"; 
     }
+    return localStorage.getItem(coinKey) || "0.00000000";
 }
 
-/**
- * ৪. ওমনি-ইঞ্জিন (System Distribution)
- * এটি Home, Trade এবং Wallet এর জন্য প্রয়োজনীয় সকল ভেরিয়েবল অটো-জেনারেট করে।
- */
+//◉◉◉◉◉◉◉◉◉◉◉◉◉◉◉◉◉◉◉◉◉◉◉◉◉◉◉◉◉◉◉◉◉◉◉◉◉◉◉◉◉◉◉◉◉◉◉◉◉◉◉◉◉◉◉◉◉◉◉◉◉◉◉◉◉◉◉◉◉◉◉◉◉◉◉◉◉◉◉◉◉◉◉◉◉◉◉◉◉◉◉◉◉
 async function initSmatEngine() {
+//◉◉◉◉◉◉◉◉◉◉◉◉◉◉◉◉◉◉◉◉◉◉◉◉◉◉◉◉◉◉◉◉◉◉◉◉◉◉◉◉◉◉◉◉◉◉◉◉◉◉◉◉◉◉◉◉◉◉◉◉◉◉◉◉◉◉◉◉◉◉◉◉◉◉◉◉◉◉◉◉◉◉◉◉◉◉◉◉◉◉◉◉◉
     console.log("🚀 SMAT Engine: Initializing Final Mainnet Logic...");
+
+    const now = new Date();
+    const gmt6Time = new Date(now.getTime() + (6 * 60 * 60 * 1000));
+    const isReset = (gmt6Time.getHours() === 6 && gmt6Time.getMinutes() === 0);
 
     for (const coin of GLOBAL_COINS) {
         const lowSym = coin.sym.toLowerCase();
         const upSym = coin.sym.toUpperCase();
         
-        // ক) গ্লোবাল ভেরিয়েবল ম্যাপিং (window.smatVal, window.smatBalance ইত্যাদি)
-        window[lowSym + "Val"] = parseFloat(coin.price);
-        window[lowSym + "Vol"] = coin.vol;
+        window[lowSym + "Val"] = isReset ? parseFloat(coin.price) : (window[lowSym + "Val"] || parseFloat(coin.price));
+        window[lowSym + "Vol"] = isReset ? coin.vol : (window[lowSym + "Vol"] || coin.vol);
         window[lowSym + "Decimal"] = coin.decimal;
-        window[lowSym + "Contract"] = coin.contract;
+        window[lowSym + "Type"] = coin.type;
+        window[lowSym + "Networks"] = coin.networks;
+        window[lowSym + "ContractBsc"] = coin.bscContract;
+        window[lowSym + "ContractErc"] = coin.ercContract;
         
-        // খ) লাইভ ব্যালেন্স ইনজেকশন
         const rawBalance = await getLiveBalance(coin.key);
         window[lowSym + "Balance"] = parseFloat(rawBalance);
 
-        // গ) অটোমেটিক লগো এবং পেয়ার পাথ জেনারেশন
         coin.logo = `assets/logos/${lowSym}.png`;
         coin.pairName = `${upSym}/USDT`;
 
-        // ঘ) সিনক্রোনাইজেশন (অন্যান্য HTML ফাইলের জন্য ডাটা প্রস্তুত রাখা)
         localStorage.setItem(coin.key, rawBalance);
     }
 
-    // ৫. মার্কেট ডাটাবেস স্টোরেজ (Home এবং Wallet পেজ অটো-রেন্ডার হওয়ার জন্য)
     localStorage.setItem('marketStats', JSON.stringify(GLOBAL_COINS));
     
     console.log("✅ SMAT Engine: All Assets Synced for Mainnet.");
-    
-    // ইভেন্ট ফায়ার করা যাতে UI বুঝতে পারে ডাটা লোড শেষ
     window.dispatchEvent(new Event('smat_engine_ready'));
 }
 
-// ফাইল লোড হওয়ার সাথে সাথে ইঞ্জিন রান করবে
+setInterval(initSmatEngine, 5000);
 initSmatEngine();
